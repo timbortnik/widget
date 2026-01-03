@@ -1,0 +1,21 @@
+{
+  "@@locale": "it",
+
+  "appTitle": "Meteogramma",
+  "temperature": "Temperatura",
+  "precipitation": "Precipitazioni",
+  "cloudCover": "Copertura nuvolosa",
+  "now": "Ora",
+  "updatedAt": "Aggiornato {time}",
+  "minutesAgo": "{count} min fa",
+  "justNow": "Proprio ora",
+  "refresh": "Aggiorna",
+  "settings": "Impostazioni",
+  "location": "Posizione",
+  "currentLocation": "Posizione attuale",
+  "setManually": "Imposta manualmente",
+  "errorNoConnection": "Nessuna connessione internet",
+  "errorLocationUnavailable": "Posizione non disponibile",
+  "errorLoadingData": "Impossibile caricare i dati meteo",
+  "retry": "Riprova"
+}

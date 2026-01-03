@@ -1,0 +1,100 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "Meteogram",
+  "@appTitle": {
+    "description": "App name shown in title bar and widget"
+  },
+
+  "temperature": "Temperature",
+  "@temperature": {
+    "description": "Label for temperature data on chart"
+  },
+
+  "precipitation": "Precipitation",
+  "@precipitation": {
+    "description": "Label for precipitation data on chart"
+  },
+
+  "cloudCover": "Cloud cover",
+  "@cloudCover": {
+    "description": "Label for cloud cover data"
+  },
+
+  "now": "Now",
+  "@now": {
+    "description": "Label for current time indicator on chart"
+  },
+
+  "updatedAt": "Updated {time}",
+  "@updatedAt": {
+    "description": "Shows when weather data was last refreshed",
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "5 min ago"
+      }
+    }
+  },
+
+  "minutesAgo": "{count} min ago",
+  "@minutesAgo": {
+    "description": "Time elapsed in minutes",
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
+
+  "justNow": "Just now",
+  "@justNow": {
+    "description": "Shown when data was updated less than a minute ago"
+  },
+
+  "refresh": "Refresh",
+  "@refresh": {
+    "description": "Button to manually refresh weather data"
+  },
+
+  "settings": "Settings",
+  "@settings": {
+    "description": "Settings screen title"
+  },
+
+  "location": "Location",
+  "@location": {
+    "description": "Location settings label"
+  },
+
+  "currentLocation": "Current location",
+  "@currentLocation": {
+    "description": "Option to use GPS location"
+  },
+
+  "setManually": "Set manually",
+  "@setManually": {
+    "description": "Option to set location manually"
+  },
+
+  "errorNoConnection": "No internet connection",
+  "@errorNoConnection": {
+    "description": "Error shown when network is unavailable"
+  },
+
+  "errorLocationUnavailable": "Location unavailable",
+  "@errorLocationUnavailable": {
+    "description": "Error when GPS/location cannot be determined"
+  },
+
+  "errorLoadingData": "Could not load weather data",
+  "@errorLoadingData": {
+    "description": "Generic error when API request fails"
+  },
+
+  "retry": "Retry",
+  "@retry": {
+    "description": "Button to retry failed operation"
+  }
+}

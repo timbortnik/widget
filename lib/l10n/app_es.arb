@@ -1,0 +1,21 @@
+{
+  "@@locale": "es",
+
+  "appTitle": "Meteograma",
+  "temperature": "Temperatura",
+  "precipitation": "Precipitación",
+  "cloudCover": "Nubosidad",
+  "now": "Ahora",
+  "updatedAt": "Actualizado {time}",
+  "minutesAgo": "hace {count} min",
+  "justNow": "Ahora mismo",
+  "refresh": "Actualizar",
+  "settings": "Ajustes",
+  "location": "Ubicación",
+  "currentLocation": "Ubicación actual",
+  "setManually": "Establecer manualmente",
+  "errorNoConnection": "Sin conexión a internet",
+  "errorLocationUnavailable": "Ubicación no disponible",
+  "errorLoadingData": "No se pudieron cargar los datos del tiempo",
+  "retry": "Reintentar"
+}

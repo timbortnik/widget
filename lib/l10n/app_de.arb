@@ -1,0 +1,21 @@
+{
+  "@@locale": "de",
+
+  "appTitle": "Meteogramm",
+  "temperature": "Temperatur",
+  "precipitation": "Niederschlag",
+  "cloudCover": "Bewölkung",
+  "now": "Jetzt",
+  "updatedAt": "Aktualisiert {time}",
+  "minutesAgo": "vor {count} Min.",
+  "justNow": "Gerade eben",
+  "refresh": "Aktualisieren",
+  "settings": "Einstellungen",
+  "location": "Standort",
+  "currentLocation": "Aktueller Standort",
+  "setManually": "Manuell festlegen",
+  "errorNoConnection": "Keine Internetverbindung",
+  "errorLocationUnavailable": "Standort nicht verfügbar",
+  "errorLoadingData": "Wetterdaten konnten nicht geladen werden",
+  "retry": "Erneut versuchen"
+}
