@@ -4,61 +4,74 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="12dp"
-    android:background="#DD303030">
+    android:padding="16dp"
+    android:background="@drawable/widget_background">
 
-    <!-- Header row -->
+    <!-- Header: Temperature + Location -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical">
 
-        <!-- Temperature -->
+        <!-- Temperature display -->
         <TextView
             android:id="@+id/widget_temperature"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="--°"
-            android:textSize="28sp"
-            android:textStyle="bold"
-            android:textColor="#FFFFFF" />
+            android:textSize="42sp"
+            android:textColor="#FFFFFF"
+            android:fontFamily="sans-serif-light"
+            android:includeFontPadding="false" />
 
-        <!-- Location -->
+        <!-- Spacer -->
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <!-- Location (right aligned) -->
         <TextView
             android:id="@+id/widget_location"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginStart="12dp"
             android:text=""
-            android:textSize="12sp"
-            android:textColor="#BBFFFFFF"
-            android:ellipsize="end"
-            android:maxLines="1" />
+            android:textSize="13sp"
+            android:textColor="#99FFFFFF"
+            android:fontFamily="sans-serif-medium"
+            android:maxLines="1"
+            android:ellipsize="end" />
 
     </LinearLayout>
 
-    <!-- Chart image -->
-    <ImageView
-        android:id="@+id/widget_chart"
+    <!-- Chart container -->
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:layout_marginTop="8dp"
-        android:scaleType="fitXY"
-        android:visibility="gone"
-        android:contentDescription="Weather chart" />
+        android:layout_marginTop="8dp">
 
-    <!-- Placeholder (shown when no chart) -->
-    <TextView
-        android:id="@+id/widget_placeholder"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:gravity="center"
-        android:text="Open app to load weather"
-        android:textSize="12sp"
-        android:textColor="#88FFFFFF" />
+        <!-- Chart image -->
+        <ImageView
+            android:id="@+id/widget_chart"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitXY"
+            android:visibility="gone"
+            android:contentDescription="Weather forecast chart" />
+
+        <!-- Placeholder -->
+        <TextView
+            android:id="@+id/widget_placeholder"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="Tap to load forecast"
+            android:textSize="13sp"
+            android:textColor="#66FFFFFF"
+            android:fontFamily="sans-serif" />
+
+    </FrameLayout>
 
 </LinearLayout>
