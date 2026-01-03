@@ -16,6 +16,7 @@ This file provides context for AI assistants working on this project.
 | Widget package | home_widget |
 | i18n | flutter_localizations + intl (ARB files) |
 | State management | Provider or Riverpod |
+| License | GPL-3.0 |
 
 ## Key Design Decisions
 

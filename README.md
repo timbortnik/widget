@@ -25,4 +25,4 @@ flutter run
 
 ## License
 
-TBD
+GPL-3.0 - see [LICENSE](LICENSE)
