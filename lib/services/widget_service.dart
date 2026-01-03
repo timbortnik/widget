@@ -1,5 +1,8 @@
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:home_widget/home_widget.dart';
+import 'package:path_provider/path_provider.dart';
 import '../models/weather_data.dart';
 
 /// Service for updating the home screen widget.
@@ -11,6 +14,7 @@ class WidgetService {
   Future<void> updateWidget({
     required WeatherData weatherData,
     required String? locationName,
+    String? chartImagePath,
   }) async {
     try {
       final currentHour = weatherData.getCurrentHour();
@@ -24,6 +28,11 @@ class WidgetService {
       // Save location name
       await HomeWidget.saveWidgetData<String>('location_name', locationName ?? '');
 
+      // Save chart image path
+      if (chartImagePath != null) {
+        await HomeWidget.saveWidgetData<String>('meteogram_image', chartImagePath);
+      }
+
       // Trigger widget update
       await HomeWidget.updateWidget(
         androidName: _androidWidgetName,
@@ -31,6 +40,19 @@ class WidgetService {
       );
     } catch (e) {
       debugPrint('Error updating widget: $e');
+    }
+  }
+
+  /// Save chart image and return file path.
+  Future<String?> saveChartImage(Uint8List imageBytes) async {
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      final file = File('${directory.path}/meteogram_chart.png');
+      await file.writeAsBytes(imageBytes);
+      return file.path;
+    } catch (e) {
+      debugPrint('Error saving chart image: $e');
+      return null;
     }
   }
 

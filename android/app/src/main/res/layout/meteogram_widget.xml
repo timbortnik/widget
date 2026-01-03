@@ -1,38 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp"
+    android:padding="12dp"
     android:background="#DD303030">
 
-    <!-- Temperature -->
-    <TextView
-        android:id="@+id/widget_temperature"
-        android:layout_width="wrap_content"
+    <!-- Header row -->
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="--°"
-        android:textSize="36sp"
-        android:textStyle="bold"
-        android:textColor="#FFFFFF" />
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
 
-    <!-- Location -->
-    <TextView
-        android:id="@+id/widget_location"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text=""
-        android:textSize="14sp"
-        android:textColor="#BBFFFFFF"
-        android:layout_marginTop="4dp" />
+        <!-- Temperature -->
+        <TextView
+            android:id="@+id/widget_temperature"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="--°"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF" />
 
-    <!-- Placeholder (at bottom) -->
+        <!-- Location -->
+        <TextView
+            android:id="@+id/widget_location"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="12dp"
+            android:text=""
+            android:textSize="12sp"
+            android:textColor="#BBFFFFFF"
+            android:ellipsize="end"
+            android:maxLines="1" />
+
+    </LinearLayout>
+
+    <!-- Chart image -->
+    <ImageView
+        android:id="@+id/widget_chart"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="8dp"
+        android:scaleType="fitXY"
+        android:visibility="gone"
+        android:contentDescription="Weather chart" />
+
+    <!-- Placeholder (shown when no chart) -->
     <TextView
         android:id="@+id/widget_placeholder"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:gravity="center|bottom"
+        android:gravity="center"
         android:text="Open app to load weather"
         android:textSize="12sp"
         android:textColor="#88FFFFFF" />

@@ -1,4 +1,7 @@
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import '../l10n/app_localizations.dart';
 import '../models/weather_data.dart';
 import '../services/weather_service.dart';
@@ -18,6 +21,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final _weatherService = WeatherService();
   final _locationService = LocationService();
   final _widgetService = WidgetService();
+  final _chartKey = GlobalKey();
 
   WeatherData? _weatherData;
   String? _locationName;
@@ -49,11 +53,15 @@ class _HomeScreenState extends State<HomeScreen> {
         _loading = false;
       });
 
-      // Update home screen widget
-      await _widgetService.updateWidget(
-        weatherData: weather,
-        locationName: _locationName,
-      );
+      // Capture chart after frame is rendered
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        final imagePath = await _captureChart();
+        await _widgetService.updateWidget(
+          weatherData: weather,
+          locationName: _locationName,
+          chartImagePath: imagePath,
+        );
+      });
     } on LocationException catch (e) {
       setState(() {
         _error = e.message;
@@ -169,7 +177,10 @@ class _HomeScreenState extends State<HomeScreen> {
         Expanded(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(8, 0, 8, 16),
-            child: MeteogramChart(data: displayData),
+            child: RepaintBoundary(
+              key: _chartKey,
+              child: MeteogramChart(data: displayData),
+            ),
           ),
         ),
 
@@ -214,5 +225,21 @@ class _HomeScreenState extends State<HomeScreen> {
       return l10n.justNow;
     }
     return l10n.minutesAgo(diff.inMinutes);
+  }
+
+  Future<String?> _captureChart() async {
+    try {
+      final boundary = _chartKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+      if (boundary == null) return null;
+
+      final image = await boundary.toImage(pixelRatio: 2.0);
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      if (byteData == null) return null;
+
+      return _widgetService.saveChartImage(byteData.buffer.asUint8List());
+    } catch (e) {
+      debugPrint('Error capturing chart: $e');
+      return null;
+    }
   }
 }
