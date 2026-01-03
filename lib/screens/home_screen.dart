@@ -3,6 +3,7 @@ import '../l10n/app_localizations.dart';
 import '../models/weather_data.dart';
 import '../services/weather_service.dart';
 import '../services/location_service.dart';
+import '../services/widget_service.dart';
 import '../widgets/meteogram_chart.dart';
 
 /// Main home screen displaying the meteogram.
@@ -16,8 +17,10 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final _weatherService = WeatherService();
   final _locationService = LocationService();
+  final _widgetService = WidgetService();
 
   WeatherData? _weatherData;
+  String? _locationName;
   bool _loading = true;
   String? _error;
 
@@ -42,8 +45,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
       setState(() {
         _weatherData = weather;
+        _locationName = location.isGps ? null : 'Berlin'; // TODO: Reverse geocode
         _loading = false;
       });
+
+      // Update home screen widget
+      await _widgetService.updateWidget(
+        weatherData: weather,
+        locationName: _locationName,
+      );
     } on LocationException catch (e) {
       setState(() {
         _error = e.message;

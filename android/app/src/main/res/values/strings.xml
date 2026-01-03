@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Meteogram</string>
+    <string name="widget_description">Weather meteogram showing temperature, precipitation, and cloud cover forecast</string>
+</resources>
