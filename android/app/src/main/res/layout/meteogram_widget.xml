@@ -8,34 +8,29 @@
     android:background="@drawable/widget_background">
 
     <!-- Header: Temperature + Location -->
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:layout_height="wrap_content">
 
-        <!-- Temperature display -->
+        <!-- Temperature display (left) -->
         <TextView
             android:id="@+id/widget_temperature"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
             android:text="--°"
             android:textSize="42sp"
             android:textColor="#FFFFFF"
             android:fontFamily="sans-serif-light"
             android:includeFontPadding="false" />
 
-        <!-- Spacer -->
-        <Space
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
-
-        <!-- Location (right aligned) -->
+        <!-- Location (right) -->
         <TextView
             android:id="@+id/widget_location"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
             android:text=""
             android:textSize="13sp"
             android:textColor="#99FFFFFF"
@@ -43,7 +38,7 @@
             android:maxLines="1"
             android:ellipsize="end" />
 
-    </LinearLayout>
+    </RelativeLayout>
 
     <!-- Chart container -->
     <FrameLayout
