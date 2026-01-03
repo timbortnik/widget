@@ -23,33 +23,29 @@ class MeteogramChart extends StatelessWidget {
     final colors = MeteogramColors.of(context);
     final now = DateTime.now();
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return CustomPaint(
-          painter: _CloudBackgroundPainter(
-            data: data,
-            colors: colors,
-          ),
-          child: Padding(
-            padding: EdgeInsets.only(
-              left: compact ? 4 : 8,
-              right: compact ? 4 : 8,
-              top: compact ? 4 : 8,
-              bottom: compact ? 16 : 24,
-            ),
-            child: Stack(
-              children: [
-                // Precipitation bars (behind temperature line)
-                _buildPrecipitationBars(colors),
-                // Temperature line chart
-                _buildTemperatureChart(colors, now),
-                // Now indicator
-                _buildNowIndicator(colors, now, constraints.maxHeight),
-              ],
-            ),
-          ),
-        );
-      },
+    return CustomPaint(
+      painter: _CloudBackgroundPainter(
+        data: data,
+        colors: colors,
+      ),
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: compact ? 4 : 8,
+          right: compact ? 4 : 8,
+          top: compact ? 4 : 8,
+          bottom: compact ? 16 : 24,
+        ),
+        child: Stack(
+          children: [
+            // Precipitation bars (behind temperature line)
+            _buildPrecipitationBars(colors),
+            // Temperature line chart
+            _buildTemperatureChart(colors, now),
+            // Now indicator (uses Row with flex, not Positioned)
+            _buildNowIndicator(colors, now),
+          ],
+        ),
+      ),
     );
   }
 
@@ -169,7 +165,7 @@ class MeteogramChart extends StatelessWidget {
     );
   }
 
-  Widget _buildNowIndicator(MeteogramColors colors, DateTime now, double height) {
+  Widget _buildNowIndicator(MeteogramColors colors, DateTime now) {
     // Find the index closest to now
     int? nowIndex;
     for (var i = 0; i < data.length; i++) {
@@ -179,23 +175,28 @@ class MeteogramChart extends StatelessWidget {
       }
     }
 
-    if (nowIndex == null) return const SizedBox();
+    if (nowIndex == null || data.length <= 1) return const SizedBox();
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final chartWidth = constraints.maxWidth;
-        final xPosition = (nowIndex! / (data.length - 1)) * chartWidth;
+    // Use flex-based positioning to avoid Positioned/LayoutBuilder conflict
+    final fraction = nowIndex / (data.length - 1);
+    final leftFlex = (fraction * 1000).round().clamp(1, 999);
+    final rightFlex = ((1 - fraction) * 1000).round().clamp(1, 999);
 
-        return Positioned(
-          left: xPosition - 1,
-          top: 0,
-          bottom: 0,
-          child: Container(
-            width: 2,
-            color: colors.nowIndicator,
-          ),
-        );
-      },
+    return Row(
+      children: [
+        Expanded(
+          flex: leftFlex,
+          child: const SizedBox(),
+        ),
+        Container(
+          width: 2,
+          color: colors.nowIndicator,
+        ),
+        Expanded(
+          flex: rightFlex,
+          child: const SizedBox(),
+        ),
+      ],
     );
   }
 

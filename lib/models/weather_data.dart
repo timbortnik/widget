@@ -12,23 +12,26 @@ class WeatherData {
 
   factory WeatherData.fromJson(Map<String, dynamic> json) {
     final hourlyJson = json['hourly'] as Map<String, dynamic>;
-    final times = (hourlyJson['time'] as List).cast<String>();
-    final temperatures = (hourlyJson['temperature_2m'] as List).cast<num>();
-    final precipitation = (hourlyJson['precipitation'] as List).cast<num>();
-    final cloudCover = (hourlyJson['cloud_cover'] as List).cast<num>();
+    final times = (hourlyJson['time'] as List);
+    final temperatures = (hourlyJson['temperature_2m'] as List);
+    final precipitation = (hourlyJson['precipitation'] as List);
+    final cloudCover = (hourlyJson['cloud_cover'] as List);
 
     final hourlyData = <HourlyData>[];
     for (var i = 0; i < times.length; i++) {
+      // Skip entries with null values
+      if (times[i] == null || temperatures[i] == null) continue;
+
       hourlyData.add(HourlyData(
-        time: DateTime.parse(times[i]),
-        temperature: temperatures[i].toDouble(),
-        precipitation: precipitation[i].toDouble(),
-        cloudCover: cloudCover[i].toInt(),
+        time: DateTime.parse(times[i] as String),
+        temperature: (temperatures[i] as num).toDouble(),
+        precipitation: (precipitation[i] as num?)?.toDouble() ?? 0.0,
+        cloudCover: (cloudCover[i] as num?)?.toInt() ?? 0,
       ));
     }
 
     return WeatherData(
-      timezone: json['timezone'] as String,
+      timezone: json['timezone'] as String? ?? 'UTC',
       hourly: hourlyData,
       fetchedAt: DateTime.now(),
     );
