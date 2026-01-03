@@ -42,19 +42,37 @@ class LocationService {
       );
     }
 
-    // Get position
-    final position = await Geolocator.getCurrentPosition(
-      locationSettings: const LocationSettings(
-        accuracy: LocationAccuracy.low,
-        timeLimit: Duration(seconds: 10),
-      ),
-    );
+    // Get position with timeout
+    try {
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.low,
+          timeLimit: Duration(seconds: 10),
+        ),
+      ).timeout(const Duration(seconds: 15));
 
-    return LocationData(
-      latitude: position.latitude,
-      longitude: position.longitude,
-      isGps: true,
-    );
+      return LocationData(
+        latitude: position.latitude,
+        longitude: position.longitude,
+        isGps: true,
+      );
+    } catch (e) {
+      // Fallback to last known position
+      final lastPosition = await Geolocator.getLastKnownPosition();
+      if (lastPosition != null) {
+        return LocationData(
+          latitude: lastPosition.latitude,
+          longitude: lastPosition.longitude,
+          isGps: true,
+        );
+      }
+      // Fallback to default location (Berlin) for testing
+      return LocationData(
+        latitude: 52.52,
+        longitude: 13.405,
+        isGps: false,
+      );
+    }
   }
 
   /// Get saved location from preferences.
