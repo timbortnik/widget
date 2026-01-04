@@ -1,7 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../l10n/app_localizations.dart';
 import '../models/weather_data.dart';
 import '../theme/app_theme.dart';
 
@@ -25,31 +24,52 @@ class MeteogramChart extends StatelessWidget {
     final colors = MeteogramColors.of(context);
     final now = DateTime.now();
     final locale = Localizations.localeOf(context).toString();
-    final l10n = AppLocalizations.of(context);
+
+    // Find "now" position for fade effect
+    // Add small offset to compensate for chart's internal margins
+    double nowFraction = 0;
+    for (var i = 0; i < data.length; i++) {
+      if (data[i].time.hour == now.hour && data[i].time.day == now.day) {
+        nowFraction = (i + 1) / data.length;  // +1 to extend fade zone
+        break;
+      }
+    }
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(compact ? 12 : 20),
       child: CustomPaint(
-        painter: _SkyGradientPainter(data: data, colors: colors),
-        child: Padding(
-          padding: EdgeInsets.only(
-            left: compact ? 4 : 8,
-            right: compact ? 4 : 8,
-            top: compact ? 4 : 8,
-            bottom: compact ? 4 : 8,
-          ),
-          child: Stack(
+        painter: _SkyGradientPainter(data: data, colors: colors, nowFraction: nowFraction),
+        child: Stack(
             children: [
-              // Precipitation bars (behind)
-              _buildPrecipitationBars(colors),
-              // Temperature line with gradient fill and now indicator
-              _buildTemperatureChart(colors, now, locale),
-              // Min/max temperature labels inside chart
-              _buildTempLabels(colors, now),
-              // Max precipitation label (top-right)
-              _buildPrecipLabel(colors, l10n),
+              // Chart content with fade effect for past
+              Positioned.fill(
+                child: ShaderMask(
+                  shaderCallback: (bounds) {
+                    return LinearGradient(
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                      colors: const [
+                        Color(0x00FFFFFF), // 0% opacity at left edge
+                        Color(0xFFFFFFFF), // 100% opacity at "now"
+                        Color(0xFFFFFFFF), // 100% opacity for future
+                      ],
+                      stops: [0.0, nowFraction, 1.0],
+                    ).createShader(bounds);
+                  },
+                  blendMode: BlendMode.dstIn,
+                  child: Stack(
+                    children: [
+                      // Precipitation bars (behind)
+                      _buildPrecipitationBars(colors),
+                      // Temperature line with gradient fill and now indicator
+                      _buildTemperatureChart(colors, now, locale),
+                    ],
+                  ),
+                ),
+              ),
+              // Min/max temperature labels (not faded)
+              _buildTempLabels(colors),
             ],
-          ),
         ),
       ),
     );
@@ -193,97 +213,56 @@ class MeteogramChart extends StatelessWidget {
     final maxPrecip = data.map((d) => d.precipitation).reduce((a, b) => a > b ? a : b);
     if (maxPrecip == 0) return const SizedBox();
 
-    final chartMax = maxPrecip * 1.5;
+    // Fixed scale 0-50 mm/h (heavy rain threshold)
+    const chartMax = 50.0;
 
-    // Constrain to top 2/3 of chart height
-    return Align(
-      alignment: Alignment.topCenter,
-      child: FractionallySizedBox(
-        heightFactor: 2 / 3,
-        child: Opacity(
-          opacity: 0.7,
-          child: BarChart(
-            BarChartData(
-              maxY: chartMax,
-              alignment: BarChartAlignment.spaceAround,
-              barGroups: data.asMap().entries.map((e) {
-                final hasPrecip = e.value.precipitation > 0;
-                // Bars hang from top (like rain falling from sky)
-                return BarChartGroupData(
-                  x: e.key,
-                  barRods: [
-                    BarChartRodData(
-                      fromY: chartMax, // Start from top
-                      toY: chartMax - e.value.precipitation, // Extend downward
-                      gradient: hasPrecip ? LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          colors.precipitationGradient,
-                          colors.precipitationBar,
-                        ],
-                      ) : null,
-                      color: hasPrecip ? null : Colors.transparent,
-                      width: compact ? 4 : 6,
-                      borderRadius: const BorderRadius.vertical(
-                        bottom: Radius.circular(3),
-                      ),
-                    ),
-                  ],
-                );
-              }).toList(),
-              gridData: const FlGridData(show: false),
-              titlesData: const FlTitlesData(show: false),
-              borderData: FlBorderData(show: false),
-              barTouchData: BarTouchData(enabled: false),
-            ),
-          ),
+    return Opacity(
+      opacity: 0.7,
+      child: BarChart(
+        BarChartData(
+          minY: 0,
+          maxY: chartMax,
+          alignment: BarChartAlignment.spaceAround,
+          barGroups: data.asMap().entries.map((e) {
+            final hasPrecip = e.value.precipitation > 0;
+            // Bars hang from top (like rain falling from sky)
+            return BarChartGroupData(
+              x: e.key,
+              barRods: [
+                BarChartRodData(
+                  fromY: chartMax, // Start from top
+                  toY: chartMax - e.value.precipitation, // Extend downward
+                  gradient: hasPrecip
+                      ? LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            colors.precipitationGradient,
+                            colors.precipitationBar,
+                          ],
+                        )
+                      : null,
+                  color: hasPrecip ? null : Colors.transparent,
+                  width: compact ? 4 : 6,
+                  borderRadius: const BorderRadius.vertical(
+                    bottom: Radius.circular(3),
+                  ),
+                ),
+              ],
+            );
+          }).toList(),
+          gridData: const FlGridData(show: false),
+          titlesData: const FlTitlesData(show: false),
+          borderData: FlBorderData(show: false),
+          barTouchData: BarTouchData(enabled: false),
         ),
       ),
     );
   }
 
-  Widget _buildPrecipLabel(MeteogramColors colors, AppLocalizations? l10n) {
-    final maxPrecip = data.map((d) => d.precipitation).reduce((a, b) => a > b ? a : b);
-    if (maxPrecip == 0) return const SizedBox();
-
-    // Format precipitation amount (show 1 decimal for small amounts)
-    final amount = maxPrecip >= 1
-        ? maxPrecip.round().toString()
-        : maxPrecip.toStringAsFixed(1);
-
-    // Use localized string
-    final precipStr = l10n?.precipitationRate(amount) ?? '$amount mm/h';
-
-    final fontSize = compact ? 20.0 : 24.0;
-
-    // Position at same height as min temperature label (bottom, above time axis)
-    return Positioned(
-      bottom: compact ? 28 : 36, // Same as min temp label
-      right: compact ? 4 : 8,
-      child: Text(
-        precipStr,
-        style: TextStyle(
-          color: colors.precipitationBar,
-          fontSize: fontSize,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTempLabels(MeteogramColors colors, DateTime now) {
+  Widget _buildTempLabels(MeteogramColors colors) {
     final minTemp = data.map((d) => d.temperature).reduce((a, b) => a < b ? a : b);
     final maxTemp = data.map((d) => d.temperature).reduce((a, b) => a > b ? a : b);
-
-    // Find current time position
-    double nowPosition = 0;
-    for (var i = 0; i < data.length; i++) {
-      if (data[i].time.hour == now.hour && data[i].time.day == now.day) {
-        nowPosition = i.toDouble();
-        break;
-      }
-    }
 
     // Use temperature line color for visual consistency
     final textStyle = TextStyle(
@@ -292,28 +271,22 @@ class MeteogramChart extends StatelessWidget {
       fontWeight: FontWeight.bold,
     );
 
-    // Position labels 2 hours after the "now" line
-    final fraction = (nowPosition + 2) / data.length;
-
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Account for chart padding
-        final chartPadding = compact ? 4.0 : 8.0;
-        final chartWidth = constraints.maxWidth - (chartPadding * 2);
-        final leftOffset = chartPadding + (chartWidth * fraction);
+        const leftOffset = 0.0;
         return Stack(
           children: [
             // Max temp at top
             Positioned(
               top: 0,
               left: leftOffset,
-              child: Text('${maxTemp.round()}°', style: textStyle),
+              child: Text('${maxTemp.round()}', style: textStyle),
             ),
             // Min temp at bottom (above time axis)
             Positioned(
               bottom: compact ? 28 : 36,
               left: leftOffset,
-              child: Text('${minTemp.round()}°', style: textStyle),
+              child: Text('${minTemp.round()}', style: textStyle),
             ),
           ],
         );
@@ -327,8 +300,13 @@ class MeteogramChart extends StatelessWidget {
 class _SkyGradientPainter extends CustomPainter {
   final List<HourlyData> data;
   final MeteogramColors colors;
+  final double nowFraction;
 
-  _SkyGradientPainter({required this.data, required this.colors});
+  _SkyGradientPainter({
+    required this.data,
+    required this.colors,
+    required this.nowFraction,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -336,13 +314,19 @@ class _SkyGradientPainter extends CustomPainter {
 
     final rect = Rect.fromLTWH(0, 0, size.width, size.height);
 
-    // Create smooth gradient across all data points
+    // Create smooth gradient across all data points with fade for past
     final gradientColors = <Color>[];
     final stops = <double>[];
 
     for (var i = 0; i < data.length; i++) {
-      gradientColors.add(colors.getSkyColor(data[i].cloudCover).withAlpha(60));
-      stops.add(i / (data.length - 1));
+      final stop = i / (data.length - 1);
+      // Fade past portion (before nowFraction)
+      final fadeFactor = stop < nowFraction
+          ? stop / nowFraction  // 0 at left edge, 1 at now
+          : 1.0;
+      final alpha = (60 * fadeFactor).round();
+      gradientColors.add(colors.getSkyColor(data[i].cloudCover).withAlpha(alpha));
+      stops.add(stop);
     }
 
     final gradient = LinearGradient(
