@@ -28,7 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String? _locationName;
   bool _loading = true;
   String? _error;
-  bool _isManualLocation = false;
+  LocationSource _locationSource = LocationSource.gps;
 
   @override
   void initState() {
@@ -44,7 +44,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
     try {
       final location = await _locationService.getLocation();
-      final isManual = !location.isGps;
       final weather = await _weatherService.fetchWeather(
         location.latitude,
         location.longitude,
@@ -53,7 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         _weatherData = weather;
         _locationName = location.city;
-        _isManualLocation = isManual;
+        _locationSource = location.source;
         _loading = false;
       });
 
@@ -225,7 +224,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Icon(
-                                    _isManualLocation ? Icons.edit_location_alt : Icons.location_on,
+                                    _getLocationIcon(),
                                     size: 14,
                                     color: colors.secondaryText,
                                   ),
@@ -235,6 +234,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                     style: TextStyle(
                                       color: colors.secondaryText,
                                       fontSize: 13,
+                                    ),
+                                  ),
+                                  Text(
+                                    ' · ${_getLocationSourceLabel()}',
+                                    style: TextStyle(
+                                      color: colors.secondaryText.withAlpha(150),
+                                      fontSize: 12,
                                     ),
                                   ),
                                   Icon(
@@ -435,12 +441,34 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 16),
                 // Use GPS option
                 ListTile(
-                  leading: Icon(Icons.my_location, color: colors.temperatureLine),
-                  title: Text('Use GPS', style: TextStyle(color: colors.primaryText)),
-                  subtitle: Text('Automatic location', style: TextStyle(color: colors.secondaryText, fontSize: 12)),
+                  leading: Icon(Icons.gps_fixed, color: colors.temperatureLine),
+                  title: Text('GPS', style: TextStyle(color: colors.primaryText)),
+                  subtitle: Text('Device location (most accurate)', style: TextStyle(color: colors.secondaryText, fontSize: 12)),
+                  trailing: _locationSource == LocationSource.gps
+                      ? Icon(Icons.check, color: colors.temperatureLine, size: 20)
+                      : null,
                   onTap: () async {
                     Navigator.pop(context);
                     await _locationService.useGpsLocation();
+                    _loadWeather();
+                  },
+                ),
+                // Use IP option
+                ListTile(
+                  leading: Icon(Icons.wifi, color: colors.precipitationBar),
+                  title: Text('IP Location', style: TextStyle(color: colors.primaryText)),
+                  subtitle: Text('Based on network (city-level)', style: TextStyle(color: colors.secondaryText, fontSize: 12)),
+                  trailing: _locationSource == LocationSource.ip
+                      ? Icon(Icons.check, color: colors.precipitationBar, size: 20)
+                      : null,
+                  onTap: () async {
+                    Navigator.pop(context);
+                    final location = await _locationService.getIpLocation();
+                    await _locationService.saveLocation(
+                      location.latitude,
+                      location.longitude,
+                      city: location.city,
+                    );
                     _loadWeather();
                   },
                 ),
@@ -469,9 +497,13 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildCityTile(String name, double lat, double lon, MeteogramColors colors) {
+    final isSelected = _locationSource == LocationSource.manual && _locationName == name;
     return ListTile(
       leading: Icon(Icons.location_city, color: colors.secondaryText),
       title: Text(name, style: TextStyle(color: colors.primaryText)),
+      trailing: isSelected
+          ? Icon(Icons.check, color: colors.nowIndicator, size: 20)
+          : null,
       onTap: () async {
         Navigator.pop(context);
         await _locationService.saveLocation(lat, lon, city: name);
@@ -488,6 +520,28 @@ class _HomeScreenState extends State<HomeScreen> {
       return l10n.justNow;
     }
     return l10n.minutesAgo(diff.inMinutes);
+  }
+
+  IconData _getLocationIcon() {
+    switch (_locationSource) {
+      case LocationSource.gps:
+        return Icons.gps_fixed;
+      case LocationSource.ip:
+        return Icons.wifi;
+      case LocationSource.manual:
+        return Icons.edit_location_alt;
+    }
+  }
+
+  String _getLocationSourceLabel() {
+    switch (_locationSource) {
+      case LocationSource.gps:
+        return 'GPS';
+      case LocationSource.ip:
+        return 'IP';
+      case LocationSource.manual:
+        return 'Manual';
+    }
   }
 
   Future<String?> _captureChart() async {

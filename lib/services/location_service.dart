@@ -74,7 +74,7 @@ class LocationService {
       return LocationData(
         latitude: position.latitude,
         longitude: position.longitude,
-        isGps: true,
+        source: LocationSource.gps,
         city: city,
       );
     } catch (e) {
@@ -96,7 +96,7 @@ class LocationService {
         return LocationData(
           latitude: lastPosition.latitude,
           longitude: lastPosition.longitude,
-          isGps: true,
+          source: LocationSource.gps,
           city: city,
         );
       }
@@ -109,7 +109,8 @@ class LocationService {
       return LocationData(
         latitude: 52.52,
         longitude: 13.405,
-        isGps: false,
+        source: LocationSource.manual,
+        city: 'Berlin',
       );
     }
   }
@@ -128,7 +129,7 @@ class LocationService {
     return LocationData(
       latitude: lat,
       longitude: lon,
-      isGps: false,
+      source: LocationSource.manual,
       city: city,
     );
   }
@@ -145,7 +146,7 @@ class LocationService {
     return LocationData(
       latitude: 52.52,
       longitude: 13.405,
-      isGps: false,
+      source: LocationSource.manual,
       city: 'Berlin',
     );
   }
@@ -163,7 +164,7 @@ class LocationService {
           return LocationData(
             latitude: (data['lat'] as num).toDouble(),
             longitude: (data['lon'] as num).toDouble(),
-            isGps: false,
+            source: LocationSource.ip,
             city: data['city'] as String?,
           );
         }
@@ -224,6 +225,17 @@ class LocationService {
     await prefs.setBool(_useGpsKey, true);
   }
 
+  /// Get location from IP (for explicit user selection).
+  Future<LocationData> getIpLocation() async {
+    final location = await _getIpLocation();
+    return location ?? LocationData(
+      latitude: 52.52,
+      longitude: 13.405,
+      source: LocationSource.ip,
+      city: 'Berlin',
+    );
+  }
+
   /// Check if using GPS.
   Future<bool> isUsingGps() async {
     final prefs = await SharedPreferences.getInstance();
@@ -231,19 +243,28 @@ class LocationService {
   }
 }
 
+/// How the location was determined.
+enum LocationSource {
+  gps,
+  ip,
+  manual,
+}
+
 /// Location data.
 class LocationData {
   final double latitude;
   final double longitude;
-  final bool isGps;
+  final LocationSource source;
   final String? city;
 
   LocationData({
     required this.latitude,
     required this.longitude,
-    required this.isGps,
+    required this.source,
     this.city,
   });
+
+  bool get isGps => source == LocationSource.gps;
 }
 
 /// Exception thrown when location cannot be determined.
