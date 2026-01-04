@@ -267,7 +267,8 @@ class LocationService {
   }
 
   /// Search for cities using Open-Meteo geocoding API.
-  Future<List<CitySearchResult>> searchCities(String query) async {
+  /// Pass [language] code (e.g., 'en', 'de', 'ja') for localized results.
+  Future<List<CitySearchResult>> searchCities(String query, {String language = 'en'}) async {
     if (query.trim().length < 2) return [];
 
     try {
@@ -276,7 +277,7 @@ class LocationService {
       ).replace(queryParameters: {
         'name': query,
         'count': '8',
-        'language': 'en',
+        'language': language,
         'format': 'json',
       });
 

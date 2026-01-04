@@ -407,6 +407,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _showLocationPicker() {
     final colors = MeteogramColors.of(context);
+    final locale = Localizations.localeOf(context);
 
     showModalBottomSheet(
       context: context,
@@ -420,6 +421,7 @@ class _HomeScreenState extends State<HomeScreen> {
         currentSource: _locationSource,
         currentLocationName: _locationName,
         colors: colors,
+        languageCode: locale.languageCode,
         onGpsSelected: () async {
           Navigator.pop(context);
           final hasPermission = await _locationService.requestGpsPermission();
@@ -522,6 +524,7 @@ class _LocationPickerSheet extends StatefulWidget {
   final LocationSource currentSource;
   final String? currentLocationName;
   final MeteogramColors colors;
+  final String languageCode;
   final VoidCallback onGpsSelected;
   final VoidCallback onIpSelected;
   final void Function(CitySearchResult) onCitySelected;
@@ -531,6 +534,7 @@ class _LocationPickerSheet extends StatefulWidget {
     required this.currentSource,
     required this.currentLocationName,
     required this.colors,
+    required this.languageCode,
     required this.onGpsSelected,
     required this.onIpSelected,
     required this.onCitySelected,
@@ -580,7 +584,10 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
     setState(() => _isSearching = true);
 
     _debounce = Timer(const Duration(milliseconds: 300), () async {
-      final results = await widget.locationService.searchCities(query);
+      final results = await widget.locationService.searchCities(
+        query,
+        language: widget.languageCode,
+      );
       if (mounted) {
         setState(() {
           _searchResults = results;
