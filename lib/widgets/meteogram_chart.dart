@@ -33,10 +33,10 @@ class MeteogramChart extends StatelessWidget {
         painter: _SkyGradientPainter(data: data, colors: colors),
         child: Padding(
           padding: EdgeInsets.only(
-            left: compact ? 8 : 16,
-            right: compact ? 8 : 16,
-            top: compact ? 8 : 16,
-            bottom: compact ? 20 : 32,
+            left: compact ? 4 : 8,
+            right: compact ? 4 : 8,
+            top: compact ? 4 : 8,
+            bottom: compact ? 4 : 8,
           ),
           child: Stack(
             children: [
@@ -64,12 +64,11 @@ class MeteogramChart extends StatelessWidget {
     // Labels are fontSize/2 from edge, roughly 5-6% of chart height
     final yPadding = tempRange * 0.06;
 
-    // Find current time position with minute precision
+    // Find current time position (aligned to hour for label alignment)
     double? nowPosition;
     for (var i = 0; i < data.length; i++) {
       if (data[i].time.hour == now.hour && data[i].time.day == now.day) {
-        // Add fractional offset for minutes (0-59 maps to 0.0-1.0)
-        nowPosition = i + (now.minute / 60.0);
+        nowPosition = i.toDouble();
         break;
       }
     }
@@ -96,7 +95,7 @@ class MeteogramChart extends StatelessWidget {
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
-              reservedSize: compact ? 20 : 28,
+              reservedSize: compact ? 28 : 36,
               interval: 1, // Check every hour, filter in callback
               getTitlesWidget: (value, meta) {
                 final index = value.toInt();
@@ -127,7 +126,7 @@ class MeteogramChart extends StatelessWidget {
                     timeStr,
                     style: TextStyle(
                       color: colors.labelText,
-                      fontSize: compact ? 10 : 12,
+                      fontSize: compact ? 18 : 21,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -260,7 +259,7 @@ class MeteogramChart extends StatelessWidget {
 
     // Position at same height as min temperature label (bottom, above time axis)
     return Positioned(
-      bottom: compact ? 20 : 28, // Same as min temp label
+      bottom: compact ? 28 : 36, // Same as min temp label
       right: compact ? 4 : 8,
       child: Text(
         precipStr,
@@ -298,8 +297,8 @@ class MeteogramChart extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Account for chart padding (16dp on each side)
-        final chartPadding = compact ? 8.0 : 16.0;
+        // Account for chart padding
+        final chartPadding = compact ? 4.0 : 8.0;
         final chartWidth = constraints.maxWidth - (chartPadding * 2);
         final leftOffset = chartPadding + (chartWidth * fraction);
         return Stack(
@@ -312,7 +311,7 @@ class MeteogramChart extends StatelessWidget {
             ),
             // Min temp at bottom (above time axis)
             Positioned(
-              bottom: compact ? 20 : 28,
+              bottom: compact ? 28 : 36,
               left: leftOffset,
               child: Text('${minTemp.round()}°', style: textStyle),
             ),
