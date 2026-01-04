@@ -52,6 +52,11 @@ class MeteogramChart extends StatelessWidget {
   Widget _buildTemperatureChart(MeteogramColors colors, DateTime now) {
     final minTemp = data.map((d) => d.temperature).reduce((a, b) => a < b ? a : b);
     final maxTemp = data.map((d) => d.temperature).reduce((a, b) => a > b ? a : b);
+    final tempRange = maxTemp - minTemp;
+
+    // Add Y padding so graph min/max align with center of temperature labels
+    // Labels are fontSize/2 from edge, roughly 5-6% of chart height
+    final yPadding = tempRange * 0.06;
 
     // Find current time index for vertical line
     int? nowIndex;
@@ -64,8 +69,8 @@ class MeteogramChart extends StatelessWidget {
 
     return LineChart(
       LineChartData(
-        minY: minTemp,
-        maxY: maxTemp,
+        minY: minTemp - yPadding,
+        maxY: maxTemp + yPadding,
         extraLinesData: ExtraLinesData(
           verticalLines: nowIndex != null
               ? [
@@ -233,7 +238,7 @@ class MeteogramChart extends StatelessWidget {
     // Position labels on left side, just after the "now" line
     return Stack(
       children: [
-        // Max temp at top-left (after now line)
+        // Max temp at top
         Positioned(
           top: 0,
           left: 0,
@@ -243,7 +248,7 @@ class MeteogramChart extends StatelessWidget {
             child: Text('${maxTemp.round()}°', style: textStyle),
           ),
         ),
-        // Min temp at bottom-left (after now line, above time axis)
+        // Min temp at bottom (above time axis)
         Positioned(
           bottom: compact ? 20 : 28,
           left: 0,
