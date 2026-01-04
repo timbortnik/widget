@@ -48,12 +48,12 @@ class WeatherData {
         },
       };
 
-  /// Get data for display range: 4h past to 44h future from now.
+  /// Get data for display range: 8h past to 44h future from now.
   List<HourlyData> getDisplayRange() {
     final now = DateTime.now();
     // Truncate to hour boundary for proper filtering of hourly data
     final currentHour = DateTime(now.year, now.month, now.day, now.hour);
-    final start = currentHour.subtract(const Duration(hours: 4));
+    final start = currentHour.subtract(const Duration(hours: 8));
     final end = currentHour.add(const Duration(hours: 45));
 
     return hourly

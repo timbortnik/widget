@@ -39,37 +39,49 @@ class MeteogramChart extends StatelessWidget {
       borderRadius: BorderRadius.circular(compact ? 12 : 20),
       child: CustomPaint(
         painter: _SkyGradientPainter(data: data, colors: colors, nowFraction: nowFraction),
-        child: Stack(
-            children: [
-              // Chart content with fade effect for past
-              Positioned.fill(
-                child: ShaderMask(
-                  shaderCallback: (bounds) {
-                    return LinearGradient(
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                      colors: const [
-                        Color(0x00FFFFFF), // 0% opacity at left edge
-                        Color(0xFFFFFFFF), // 100% opacity at "now"
-                        Color(0xFFFFFFFF), // 100% opacity for future
-                      ],
-                      stops: [0.0, nowFraction, 1.0],
-                    ).createShader(bounds);
-                  },
-                  blendMode: BlendMode.dstIn,
-                  child: Stack(
-                    children: [
-                      // Precipitation bars (behind)
-                      _buildPrecipitationBars(colors),
-                      // Temperature line with gradient fill and now indicator
-                      _buildTemperatureChart(colors, now, locale),
-                    ],
+        child: Column(
+          children: [
+            // Chart area
+            Expanded(
+              child: Stack(
+                children: [
+                  // Chart content with fade effect for past
+                  Positioned.fill(
+                    child: ShaderMask(
+                      shaderCallback: (bounds) {
+                        return LinearGradient(
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                          colors: const [
+                            Color(0x00FFFFFF), // 0% opacity at left edge
+                            Color(0xFFFFFFFF), // 100% opacity at "now"
+                            Color(0xFFFFFFFF), // 100% opacity for future
+                          ],
+                          stops: [0.0, nowFraction, 1.0],
+                        ).createShader(bounds);
+                      },
+                      blendMode: BlendMode.dstIn,
+                      child: Stack(
+                        children: [
+                          // Precipitation bars (behind)
+                          _buildPrecipitationBars(colors),
+                          // Temperature line with gradient fill and now indicator
+                          _buildTemperatureChart(colors, now, locale),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
+                  // Min/max temperature labels (not faded, centered in past area)
+                  _buildTempLabels(colors, nowFraction),
+                ],
               ),
-              // Min/max temperature labels (not faded)
-              _buildTempLabels(colors),
-            ],
+            ),
+            // Time labels below chart
+            SizedBox(
+              height: compact ? 24 : 28,
+              child: _buildTimeLabels(colors, now, locale),
+            ),
+          ],
         ),
       ),
     );
@@ -112,48 +124,7 @@ class MeteogramChart extends StatelessWidget {
         gridData: const FlGridData(show: false),
         titlesData: FlTitlesData(
           leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          bottomTitles: AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: true,
-              reservedSize: compact ? 28 : 36,
-              interval: 1, // Check every hour, filter in callback
-              getTitlesWidget: (value, meta) {
-                final index = value.toInt();
-                if (index < 0 || index >= data.length) return const SizedBox();
-
-                // Find "now" index
-                int nowIdx = 0;
-                for (var i = 0; i < data.length; i++) {
-                  if (data[i].time.hour == now.hour && data[i].time.day == now.day) {
-                    nowIdx = i;
-                    break;
-                  }
-                }
-
-                // Show labels at: now, now+12h, now+24h, etc.
-                // Skip if too close to start (past data) or end of chart
-                final offset = index - nowIdx;
-                if (offset < 0 || offset % 12 != 0) return const SizedBox();
-                if (index > data.length - 8) return const SizedBox(); // Skip last label
-
-                // Show hour from data (not calculated time)
-                final time = data[index].time;
-                // Use locale-aware hour format
-                final timeStr = DateFormat.j(locale).format(time);
-                return Padding(
-                  padding: const EdgeInsets.only(top: 4),
-                  child: Text(
-                    timeStr,
-                    style: TextStyle(
-                      color: colors.labelText,
-                      fontSize: compact ? 18 : 21,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
+          bottomTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
           topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
           rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
         ),
@@ -260,7 +231,7 @@ class MeteogramChart extends StatelessWidget {
     );
   }
 
-  Widget _buildTempLabels(MeteogramColors colors) {
+  Widget _buildTempLabels(MeteogramColors colors, double nowFraction) {
     final minTemp = data.map((d) => d.temperature).reduce((a, b) => a < b ? a : b);
     final maxTemp = data.map((d) => d.temperature).reduce((a, b) => a > b ? a : b);
 
@@ -273,23 +244,78 @@ class MeteogramChart extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        const leftOffset = 0.0;
+        // Center labels in the fading (past) area
+        final centerX = (nowFraction / 2) * constraints.maxWidth;
         return Stack(
           children: [
             // Max temp at top
             Positioned(
               top: 0,
-              left: leftOffset,
-              child: Text('${maxTemp.round()}', style: textStyle),
+              left: centerX,
+              child: FractionalTranslation(
+                translation: const Offset(-0.5, 0),
+                child: Text('${maxTemp.round()}', style: textStyle),
+              ),
             ),
-            // Min temp at bottom (above time axis)
+            // Min temp at bottom
             Positioned(
-              bottom: compact ? 28 : 36,
-              left: leftOffset,
-              child: Text('${minTemp.round()}', style: textStyle),
+              bottom: 0,
+              left: centerX,
+              child: FractionalTranslation(
+                translation: const Offset(-0.5, 0),
+                child: Text('${minTemp.round()}', style: textStyle),
+              ),
             ),
           ],
         );
+      },
+    );
+  }
+
+  Widget _buildTimeLabels(MeteogramColors colors, DateTime now, String locale) {
+    // Find "now" index
+    int nowIdx = 0;
+    for (var i = 0; i < data.length; i++) {
+      if (data[i].time.hour == now.hour && data[i].time.day == now.day) {
+        nowIdx = i;
+        break;
+      }
+    }
+
+    final textStyle = TextStyle(
+      color: colors.labelText,
+      fontSize: compact ? 18 : 21,
+      fontWeight: FontWeight.w500,
+    );
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final labels = <Widget>[];
+
+        for (var i = 0; i < data.length; i++) {
+          // Show labels at: now, now+12h, now+24h, etc.
+          final offset = i - nowIdx;
+          if (offset < 0 || offset % 12 != 0) continue;
+          if (i > data.length - 8) continue; // Skip last label
+
+          final time = data[i].time;
+          final timeStr = DateFormat.j(locale).format(time);
+          final xPos = (i / (data.length - 1)) * width;
+
+          labels.add(
+            Positioned(
+              left: xPos,
+              top: 0,
+              child: FractionalTranslation(
+                translation: const Offset(-0.5, 0),
+                child: Text(timeStr, style: textStyle),
+              ),
+            ),
+          );
+        }
+
+        return Stack(children: labels);
       },
     );
   }

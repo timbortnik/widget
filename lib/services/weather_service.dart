@@ -15,7 +15,7 @@ class WeatherService {
       'longitude': longitude.toString(),
       'hourly': 'temperature_2m,precipitation,cloud_cover',
       'timezone': 'auto',
-      'past_hours': '4',
+      'past_hours': '8',
       'forecast_days': '2',
     });
 
