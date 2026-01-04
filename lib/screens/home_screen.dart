@@ -357,23 +357,25 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
 
               // Meteogram chart
-              Container(
-                height: 280,
-                decoration: BoxDecoration(
-                  color: colors.cardBackground,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withAlpha(15),
-                      blurRadius: 20,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                clipBehavior: Clip.antiAlias,
-                child: RepaintBoundary(
-                  key: _chartKey,
-                  child: MeteogramChart(data: displayData, nowIndex: nowIndex),
+              AspectRatio(
+                aspectRatio: 245 / 115, // Match 4x2 widget min dimensions per Android docs
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: colors.cardBackground,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withAlpha(15),
+                        blurRadius: 20,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: RepaintBoundary(
+                    key: _chartKey,
+                    child: MeteogramChart(data: displayData, nowIndex: nowIndex),
+                  ),
                 ),
               ),
               const SizedBox(height: 20),

@@ -1,3 +1,6 @@
+/// Hours of past data to request from API.
+const int kPastHours = 6;
+
 /// Weather data model for Open-Meteo API response.
 class WeatherData {
   final String timezone;
@@ -48,20 +51,19 @@ class WeatherData {
         },
       };
 
-  /// Get data for display range: 8h past to ~44h future.
+  /// Get data for display range: past hours + ~46h future.
   /// Returns a slice of hourly data centered on "now".
-  /// Since we request past_hours=8, index 8 in the raw data is "now".
   List<HourlyData> getDisplayRange() {
-    // API returns: past_hours (8) + forecast_days (2) * 24 = 56 hours
-    // We want to show: 8h past + 44h future = 52 hours starting from index 0
-    final endIndex = (8 + 44).clamp(0, hourly.length);
+    // API returns: kPastHours + forecast_days (2) * 24 hours
+    // We show 52 hours total starting from index 0
+    final endIndex = (kPastHours + 46).clamp(0, hourly.length);
     return hourly.sublist(0, endIndex);
   }
 
   /// Get the index of "now" in the display data.
-  /// Since we request past_hours=8, the current hour is at index 8.
+  /// Since we request past_hours=kPastHours, the current hour is at that index.
   int getNowIndex() {
-    return 8.clamp(0, hourly.length - 1);
+    return kPastHours.clamp(0, hourly.length - 1);
   }
 
   /// Find the current hour's data.

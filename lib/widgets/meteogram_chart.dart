@@ -44,15 +44,22 @@ class MeteogramChart extends StatelessWidget {
                   Positioned.fill(
                     child: ShaderMask(
                       shaderCallback: (bounds) {
+                        // Non-linear fade: stays faded longer, then ramps up quickly
                         return LinearGradient(
                           begin: Alignment.centerLeft,
                           end: Alignment.centerRight,
                           colors: const [
-                            Color(0x00FFFFFF), // 0% opacity at left edge
-                            Color(0xFFFFFFFF), // 100% opacity at "now"
-                            Color(0xFFFFFFFF), // 100% opacity for future
+                            Color(0x1AFFFFFF), // 10% at left edge
+                            Color(0x40FFFFFF), // 25% at 3/4 of past
+                            Color(0xFFFFFFFF), // 100% at "now"
+                            Color(0xFFFFFFFF), // 100% for future
                           ],
-                          stops: [0.0, nowFraction, 1.0],
+                          stops: [
+                            0.0,
+                            nowFraction * 0.75,
+                            nowFraction,
+                            1.0,
+                          ],
                         ).createShader(bounds);
                       },
                       blendMode: BlendMode.dstIn,
@@ -73,7 +80,7 @@ class MeteogramChart extends StatelessWidget {
             ),
             // Time labels below chart
             SizedBox(
-              height: compact ? 24 : 28,
+              height: compact ? 18 : 22,
               child: _buildTimeLabels(colors, locale),
             ),
           ],
@@ -171,8 +178,8 @@ class MeteogramChart extends StatelessWidget {
     final maxPrecip = data.map((d) => d.precipitation).reduce((a, b) => a > b ? a : b);
     if (maxPrecip == 0) return const SizedBox();
 
-    // Fixed scale 0-50 mm/h (heavy rain threshold)
-    const chartMax = 50.0;
+    // Fixed scale 0-10 mm/h (heavy rain starts at ~8 mm/h)
+    const chartMax = 10.0;
 
     return Opacity(
       opacity: 0.7,
@@ -221,18 +228,19 @@ class MeteogramChart extends StatelessWidget {
   Widget _buildTempLabels(MeteogramColors colors, double nowFraction) {
     final minTemp = data.map((d) => d.temperature).reduce((a, b) => a < b ? a : b);
     final maxTemp = data.map((d) => d.temperature).reduce((a, b) => a > b ? a : b);
+    final midTemp = (minTemp + maxTemp) / 2;
 
     // Use temperature line color for visual consistency
     final textStyle = TextStyle(
       color: colors.temperatureLine,
-      fontSize: compact ? 20 : 24,
+      fontSize: compact ? 15 : 18,
       fontWeight: FontWeight.bold,
     );
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Center labels in the fading (past) area
-        final centerX = (nowFraction / 2) * constraints.maxWidth;
+        // Position labels in left portion of the past area
+        final centerX = (nowFraction / 2.5) * constraints.maxWidth;
         return Stack(
           children: [
             // Max temp at top
@@ -242,6 +250,18 @@ class MeteogramChart extends StatelessWidget {
               child: FractionalTranslation(
                 translation: const Offset(-0.5, 0),
                 child: Text('${maxTemp.round()}', style: textStyle),
+              ),
+            ),
+            // Mid temp in center
+            Positioned(
+              top: 0,
+              bottom: 0,
+              left: centerX,
+              child: FractionalTranslation(
+                translation: const Offset(-0.5, 0),
+                child: Center(
+                  child: Text('${midTemp.round()}', style: textStyle),
+                ),
               ),
             ),
             // Min temp at bottom
@@ -264,7 +284,7 @@ class MeteogramChart extends StatelessWidget {
 
     final textStyle = TextStyle(
       color: colors.labelText,
-      fontSize: compact ? 18 : 21,
+      fontSize: compact ? 14 : 16,
       fontWeight: FontWeight.w500,
     );
 
