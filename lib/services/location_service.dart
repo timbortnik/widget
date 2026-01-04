@@ -10,6 +10,7 @@ class LocationService {
   static const String _lonKey = 'saved_longitude';
   static const String _cityKey = 'saved_city';
   static const String _useGpsKey = 'use_gps';
+  static const String _sourceKey = 'location_source';
 
   /// Get the current location (GPS or saved).
   Future<LocationData> getLocation() async {
@@ -120,16 +121,23 @@ class LocationService {
     final lat = prefs.getDouble(_latKey);
     final lon = prefs.getDouble(_lonKey);
     final city = prefs.getString(_cityKey);
+    final sourceName = prefs.getString(_sourceKey);
 
     if (lat == null || lon == null) {
       // Fall back to GPS if no saved location
       return _getGpsLocation();
     }
 
+    // Parse saved source, default to manual
+    final source = LocationSource.values.firstWhere(
+      (s) => s.name == sourceName,
+      orElse: () => LocationSource.manual,
+    );
+
     return LocationData(
       latitude: lat,
       longitude: lon,
-      source: LocationSource.manual,
+      source: source,
       city: city,
     );
   }
@@ -208,14 +216,20 @@ class LocationService {
     return null;
   }
 
-  /// Save a manual location.
-  Future<void> saveLocation(double latitude, double longitude, {String? city}) async {
+  /// Save a location with its source.
+  Future<void> saveLocation(
+    double latitude,
+    double longitude, {
+    String? city,
+    LocationSource source = LocationSource.manual,
+  }) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setDouble(_latKey, latitude);
     await prefs.setDouble(_lonKey, longitude);
     if (city != null) {
       await prefs.setString(_cityKey, city);
     }
+    await prefs.setString(_sourceKey, source.name);
     await prefs.setBool(_useGpsKey, false);
   }
 

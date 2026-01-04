@@ -449,6 +449,7 @@ class _HomeScreenState extends State<HomeScreen> {
             location.latitude,
             location.longitude,
             city: location.city,
+            source: LocationSource.ip,
           );
           _loadWeather();
         },
