@@ -268,9 +268,84 @@ class LocationService {
 
   /// Search for cities using Open-Meteo geocoding API.
   /// Pass [language] code (e.g., 'en', 'de', 'ja') for localized results.
+  /// Automatically detects script (Cyrillic, CJK, etc.) for better matching.
   Future<List<CitySearchResult>> searchCities(String query, {String language = 'en'}) async {
     if (query.trim().length < 2) return [];
 
+    // Detect script and adjust language for better search results
+    final searchLanguage = _detectSearchLanguage(query, language);
+
+    try {
+      final uri = Uri.parse(
+        'https://geocoding-api.open-meteo.com/v1/search'
+      ).replace(queryParameters: {
+        'name': query,
+        'count': '8',
+        'language': searchLanguage,
+        'format': 'json',
+      });
+
+      final response = await http.get(uri).timeout(const Duration(seconds: 5));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final results = data['results'] as List<dynamic>?;
+        if (results == null || results.isEmpty) {
+          // If no results and we used a detected language, try with device locale
+          if (searchLanguage != language) {
+            return _searchWithLanguage(query, language);
+          }
+          return [];
+        }
+
+        return results.map((r) => CitySearchResult(
+          name: r['name'] as String,
+          country: r['country'] as String? ?? '',
+          admin1: r['admin1'] as String?,
+          latitude: (r['latitude'] as num).toDouble(),
+          longitude: (r['longitude'] as num).toDouble(),
+        )).toList();
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  /// Detect appropriate language based on script in query.
+  String _detectSearchLanguage(String query, String defaultLanguage) {
+    for (final char in query.runes) {
+      // Cyrillic: U+0400–U+04FF
+      if (char >= 0x0400 && char <= 0x04FF) {
+        // Check for Ukrainian specific letters: і, ї, є, ґ
+        if (query.contains('і') || query.contains('ї') ||
+            query.contains('є') || query.contains('ґ') ||
+            query.contains('І') || query.contains('Ї') ||
+            query.contains('Є') || query.contains('Ґ')) {
+          return 'uk';
+        }
+        return 'ru'; // Default Cyrillic to Russian
+      }
+      // Japanese Hiragana/Katakana: U+3040–U+30FF
+      if (char >= 0x3040 && char <= 0x30FF) return 'ja';
+      // CJK Unified Ideographs: U+4E00–U+9FFF
+      if (char >= 0x4E00 && char <= 0x9FFF) return 'zh';
+      // Korean Hangul: U+AC00–U+D7AF
+      if (char >= 0xAC00 && char <= 0xD7AF) return 'ko';
+      // Arabic: U+0600–U+06FF
+      if (char >= 0x0600 && char <= 0x06FF) return 'ar';
+      // Greek: U+0370–U+03FF
+      if (char >= 0x0370 && char <= 0x03FF) return 'el';
+      // Hebrew: U+0590–U+05FF
+      if (char >= 0x0590 && char <= 0x05FF) return 'he';
+      // Thai: U+0E00–U+0E7F
+      if (char >= 0x0E00 && char <= 0x0E7F) return 'th';
+    }
+    return defaultLanguage;
+  }
+
+  /// Helper to search with a specific language.
+  Future<List<CitySearchResult>> _searchWithLanguage(String query, String language) async {
     try {
       final uri = Uri.parse(
         'https://geocoding-api.open-meteo.com/v1/search'
