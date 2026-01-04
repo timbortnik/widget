@@ -38,10 +38,10 @@ class MeteogramChart extends StatelessWidget {
             children: [
               // Precipitation bars (behind)
               _buildPrecipitationBars(colors),
-              // Temperature line with gradient fill
+              // Temperature line with gradient fill and now indicator
               _buildTemperatureChart(colors, now),
-              // Current time indicator
-              _buildNowIndicator(colors, now),
+              // Min/max temperature labels inside chart
+              _buildTempLabels(colors),
             ],
           ),
         ),
@@ -52,46 +52,35 @@ class MeteogramChart extends StatelessWidget {
   Widget _buildTemperatureChart(MeteogramColors colors, DateTime now) {
     final minTemp = data.map((d) => d.temperature).reduce((a, b) => a < b ? a : b);
     final maxTemp = data.map((d) => d.temperature).reduce((a, b) => a > b ? a : b);
-    final tempRange = maxTemp - minTemp;
-    final padding = (tempRange * 0.15).clamp(2.0, 10.0);
+
+    // Find current time index for vertical line
+    int? nowIndex;
+    for (var i = 0; i < data.length; i++) {
+      if (data[i].time.hour == now.hour && data[i].time.day == now.day) {
+        nowIndex = i;
+        break;
+      }
+    }
 
     return LineChart(
       LineChartData(
-        minY: minTemp - padding,
-        maxY: maxTemp + padding,
-        gridData: FlGridData(
-          show: true,
-          drawVerticalLine: false,
-          horizontalInterval: _calculateInterval(tempRange),
-          getDrawingHorizontalLine: (value) => FlLine(
-            color: colors.gridLine,
-            strokeWidth: 1,
-            dashArray: [4, 4],
-          ),
-        ),
-        titlesData: FlTitlesData(
-          leftTitles: AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: !compact,
-              reservedSize: 36,
-              getTitlesWidget: (value, meta) {
-                if (value == meta.min || value == meta.max) {
-                  return const SizedBox();
-                }
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: Text(
-                    '${value.round()}°',
-                    style: TextStyle(
-                      color: colors.labelText,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                    ),
+        minY: minTemp,
+        maxY: maxTemp,
+        extraLinesData: ExtraLinesData(
+          verticalLines: nowIndex != null
+              ? [
+                  VerticalLine(
+                    x: nowIndex.toDouble(),
+                    color: colors.nowIndicator,
+                    strokeWidth: compact ? 2 : 3,
+                    dashArray: null,
                   ),
-                );
-              },
-            ),
-          ),
+                ]
+              : [],
+        ),
+        gridData: const FlGridData(show: false),
+        titlesData: FlTitlesData(
+          leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
@@ -132,19 +121,7 @@ class MeteogramChart extends StatelessWidget {
             color: colors.temperatureLine,
             barWidth: compact ? 2.5 : 3.5,
             isStrokeCapRound: true,
-            dotData: FlDotData(
-              show: !compact,
-              getDotPainter: (spot, percent, barData, index) {
-                final isNow = data[index].time.hour == now.hour &&
-                              data[index].time.day == now.day;
-                return FlDotCirclePainter(
-                  radius: isNow ? 5 : 0,
-                  color: colors.nowIndicator,
-                  strokeWidth: 2,
-                  strokeColor: Colors.white,
-                );
-              },
-            ),
+            dotData: const FlDotData(show: false),
             belowBarData: BarAreaData(
               show: true,
               gradient: LinearGradient(
@@ -228,55 +205,30 @@ class MeteogramChart extends StatelessWidget {
     );
   }
 
-  Widget _buildNowIndicator(MeteogramColors colors, DateTime now) {
-    int? nowIndex;
-    for (var i = 0; i < data.length; i++) {
-      if (data[i].time.hour == now.hour && data[i].time.day == now.day) {
-        nowIndex = i;
-        break;
-      }
-    }
+  Widget _buildTempLabels(MeteogramColors colors) {
+    final minTemp = data.map((d) => d.temperature).reduce((a, b) => a < b ? a : b);
+    final maxTemp = data.map((d) => d.temperature).reduce((a, b) => a > b ? a : b);
 
-    if (nowIndex == null || data.length <= 1) return const SizedBox();
-
-    final fraction = nowIndex / (data.length - 1);
-    final leftFlex = (fraction * 1000).round().clamp(1, 999);
-    final rightFlex = ((1 - fraction) * 1000).round().clamp(1, 999);
-
-    return Row(
-      children: [
-        Expanded(flex: leftFlex, child: const SizedBox()),
-        Container(
-          width: 2,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                colors.nowIndicator,
-                colors.nowIndicator.withAlpha(100),
-              ],
-            ),
-            borderRadius: BorderRadius.circular(1),
-            boxShadow: [
-              BoxShadow(
-                color: colors.nowIndicator.withAlpha(80),
-                blurRadius: 4,
-                spreadRadius: 1,
-              ),
-            ],
-          ),
-        ),
-        Expanded(flex: rightFlex, child: const SizedBox()),
-      ],
+    // Always use light text - works on both app (sky gradient) and widget (dark bg)
+    final textStyle = TextStyle(
+      color: const Color(0xFFF5F5F5),
+      fontSize: compact ? 20 : 24,
+      fontWeight: FontWeight.bold,
     );
-  }
 
-  double _calculateInterval(double range) {
-    if (range <= 5) return 1;
-    if (range <= 10) return 2;
-    if (range <= 20) return 5;
-    return 10;
+    return Padding(
+      padding: EdgeInsets.only(bottom: compact ? 20 : 28), // Account for bottom titles
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end, // Right side to avoid "now" line
+        children: [
+          // Max temp at top
+          Text('${maxTemp.round()}°', style: textStyle),
+          const Spacer(),
+          // Min temp at bottom
+          Text('${minTemp.round()}°', style: textStyle),
+        ],
+      ),
+    );
   }
 
   double _calculateTimeInterval() {
