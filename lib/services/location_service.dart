@@ -241,6 +241,30 @@ class LocationService {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getBool(_useGpsKey) ?? true;
   }
+
+  /// Request GPS permission explicitly.
+  /// Returns true if permission is granted.
+  Future<bool> requestGpsPermission() async {
+    // Check if location services are enabled
+    final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return false;
+    }
+
+    // Check and request permission
+    var permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+    }
+
+    return permission == LocationPermission.always ||
+           permission == LocationPermission.whileInUse;
+  }
+
+  /// Open device location settings.
+  Future<void> openLocationSettings() async {
+    await Geolocator.openLocationSettings();
+  }
 }
 
 /// How the location was determined.

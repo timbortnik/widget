@@ -449,8 +449,23 @@ class _HomeScreenState extends State<HomeScreen> {
                       : null,
                   onTap: () async {
                     Navigator.pop(context);
-                    await _locationService.useGpsLocation();
-                    _loadWeather();
+                    final hasPermission = await _locationService.requestGpsPermission();
+                    if (hasPermission) {
+                      await _locationService.useGpsLocation();
+                      _loadWeather();
+                    } else {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('GPS permission denied. Enable in device settings.'),
+                            action: SnackBarAction(
+                              label: 'Settings',
+                              onPressed: () => _locationService.openLocationSettings(),
+                            ),
+                          ),
+                        );
+                      }
+                    }
                   },
                 ),
                 // Use IP option
