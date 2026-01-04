@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
@@ -414,116 +415,52 @@ class _HomeScreenState extends State<HomeScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       isScrollControlled: true,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.5,
-        minChildSize: 0.3,
-        maxChildSize: 0.8,
-        expand: false,
-        builder: (context, scrollController) => SingleChildScrollView(
-          controller: scrollController,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Text(
-                    'Select Location',
-                    style: TextStyle(
-                      color: colors.primaryText,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    ),
+      builder: (context) => _LocationPickerSheet(
+        locationService: _locationService,
+        currentSource: _locationSource,
+        currentLocationName: _locationName,
+        colors: colors,
+        onGpsSelected: () async {
+          Navigator.pop(context);
+          final hasPermission = await _locationService.requestGpsPermission();
+          if (hasPermission) {
+            await _locationService.useGpsLocation();
+            _loadWeather();
+          } else {
+            if (mounted) {
+              ScaffoldMessenger.of(this.context).showSnackBar(
+                SnackBar(
+                  content: Text('GPS permission denied. Enable in device settings.'),
+                  action: SnackBarAction(
+                    label: 'Settings',
+                    onPressed: () => _locationService.openLocationSettings(),
                   ),
                 ),
-                const SizedBox(height: 16),
-                // Use GPS option
-                ListTile(
-                  leading: Icon(Icons.gps_fixed, color: colors.temperatureLine),
-                  title: Text('GPS', style: TextStyle(color: colors.primaryText)),
-                  subtitle: Text('Device location (most accurate)', style: TextStyle(color: colors.secondaryText, fontSize: 12)),
-                  trailing: _locationSource == LocationSource.gps
-                      ? Icon(Icons.check, color: colors.temperatureLine, size: 20)
-                      : null,
-                  onTap: () async {
-                    Navigator.pop(context);
-                    final hasPermission = await _locationService.requestGpsPermission();
-                    if (hasPermission) {
-                      await _locationService.useGpsLocation();
-                      _loadWeather();
-                    } else {
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('GPS permission denied. Enable in device settings.'),
-                            action: SnackBarAction(
-                              label: 'Settings',
-                              onPressed: () => _locationService.openLocationSettings(),
-                            ),
-                          ),
-                        );
-                      }
-                    }
-                  },
-                ),
-                // Use IP option
-                ListTile(
-                  leading: Icon(Icons.wifi, color: colors.precipitationBar),
-                  title: Text('IP Location', style: TextStyle(color: colors.primaryText)),
-                  subtitle: Text('Based on network (city-level)', style: TextStyle(color: colors.secondaryText, fontSize: 12)),
-                  trailing: _locationSource == LocationSource.ip
-                      ? Icon(Icons.check, color: colors.precipitationBar, size: 20)
-                      : null,
-                  onTap: () async {
-                    Navigator.pop(context);
-                    final location = await _locationService.getIpLocation();
-                    await _locationService.saveLocation(
-                      location.latitude,
-                      location.longitude,
-                      city: location.city,
-                    );
-                    _loadWeather();
-                  },
-                ),
-                Divider(color: colors.gridLine),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                  child: Text(
-                    'Or select a city:',
-                    style: TextStyle(color: colors.secondaryText, fontSize: 12),
-                  ),
-                ),
-                // Preset cities
-                _buildCityTile('Kyiv', 50.4501, 30.5234, colors),
-                _buildCityTile('Berlin', 52.52, 13.405, colors),
-                _buildCityTile('London', 51.5074, -0.1278, colors),
-                _buildCityTile('New York', 40.7128, -74.006, colors),
-                _buildCityTile('Tokyo', 35.6762, 139.6503, colors),
-                _buildCityTile('Paris', 48.8566, 2.3522, colors),
-                const SizedBox(height: 8),
-              ],
-            ),
-          ),
-        ),
+              );
+            }
+          }
+        },
+        onIpSelected: () async {
+          Navigator.pop(context);
+          final location = await _locationService.getIpLocation();
+          await _locationService.saveLocation(
+            location.latitude,
+            location.longitude,
+            city: location.city,
+          );
+          _loadWeather();
+        },
+        onCitySelected: (city) async {
+          Navigator.pop(context);
+          await _locationService.addRecentCity(city);
+          await _locationService.saveLocation(
+            city.latitude,
+            city.longitude,
+            city: city.name,
+          );
+          _loadWeather();
+        },
       ),
-    );
-  }
-
-  Widget _buildCityTile(String name, double lat, double lon, MeteogramColors colors) {
-    final isSelected = _locationSource == LocationSource.manual && _locationName == name;
-    return ListTile(
-      leading: Icon(Icons.location_city, color: colors.secondaryText),
-      title: Text(name, style: TextStyle(color: colors.primaryText)),
-      trailing: isSelected
-          ? Icon(Icons.check, color: colors.nowIndicator, size: 20)
-          : null,
-      onTap: () async {
-        Navigator.pop(context);
-        await _locationService.saveLocation(lat, lon, city: name);
-        _loadWeather();
-      },
     );
   }
 
@@ -576,5 +513,242 @@ class _HomeScreenState extends State<HomeScreen> {
       debugPrint('Error capturing chart: $e');
       return null;
     }
+  }
+}
+
+/// Location picker bottom sheet with search functionality.
+class _LocationPickerSheet extends StatefulWidget {
+  final LocationService locationService;
+  final LocationSource currentSource;
+  final String? currentLocationName;
+  final MeteogramColors colors;
+  final VoidCallback onGpsSelected;
+  final VoidCallback onIpSelected;
+  final void Function(CitySearchResult) onCitySelected;
+
+  const _LocationPickerSheet({
+    required this.locationService,
+    required this.currentSource,
+    required this.currentLocationName,
+    required this.colors,
+    required this.onGpsSelected,
+    required this.onIpSelected,
+    required this.onCitySelected,
+  });
+
+  @override
+  State<_LocationPickerSheet> createState() => _LocationPickerSheetState();
+}
+
+class _LocationPickerSheetState extends State<_LocationPickerSheet> {
+  final _searchController = TextEditingController();
+  List<CitySearchResult> _searchResults = [];
+  List<CitySearchResult> _recentCities = [];
+  bool _isSearching = false;
+  Timer? _debounce;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRecentCities();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _debounce?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _loadRecentCities() async {
+    final cities = await widget.locationService.getRecentCities();
+    if (mounted) {
+      setState(() => _recentCities = cities);
+    }
+  }
+
+  void _onSearchChanged(String query) {
+    _debounce?.cancel();
+    if (query.trim().length < 2) {
+      setState(() {
+        _searchResults = [];
+        _isSearching = false;
+      });
+      return;
+    }
+
+    setState(() => _isSearching = true);
+
+    _debounce = Timer(const Duration(milliseconds: 300), () async {
+      final results = await widget.locationService.searchCities(query);
+      if (mounted) {
+        setState(() {
+          _searchResults = results;
+          _isSearching = false;
+        });
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = widget.colors;
+
+    return DraggableScrollableSheet(
+      initialChildSize: 0.6,
+      minChildSize: 0.4,
+      maxChildSize: 0.9,
+      expand: false,
+      builder: (context, scrollController) => Column(
+        children: [
+          // Header and search (fixed)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Select Location',
+                  style: TextStyle(
+                    color: colors.primaryText,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // Search field
+                TextField(
+                  controller: _searchController,
+                  onChanged: _onSearchChanged,
+                  style: TextStyle(color: colors.primaryText),
+                  decoration: InputDecoration(
+                    hintText: 'Search city...',
+                    hintStyle: TextStyle(color: colors.secondaryText),
+                    prefixIcon: Icon(Icons.search, color: colors.secondaryText),
+                    suffixIcon: _searchController.text.isNotEmpty
+                        ? IconButton(
+                            icon: Icon(Icons.clear, color: colors.secondaryText),
+                            onPressed: () {
+                              _searchController.clear();
+                              _onSearchChanged('');
+                            },
+                          )
+                        : null,
+                    filled: true,
+                    fillColor: colors.background,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Content (scrollable)
+          Expanded(
+            child: ListView(
+              controller: scrollController,
+              padding: EdgeInsets.zero,
+              children: [
+                // Show search results if searching
+                if (_searchController.text.trim().length >= 2) ...[
+                  if (_isSearching)
+                    Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Center(
+                        child: SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: colors.temperatureLine,
+                          ),
+                        ),
+                      ),
+                    )
+                  else if (_searchResults.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Center(
+                        child: Text(
+                          'No cities found',
+                          style: TextStyle(color: colors.secondaryText),
+                        ),
+                      ),
+                    )
+                  else
+                    ..._searchResults.map((city) => _buildCityResultTile(city)),
+                ] else ...[
+                  // GPS option
+                  ListTile(
+                    leading: Icon(Icons.gps_fixed, color: colors.temperatureLine),
+                    title: Text('GPS', style: TextStyle(color: colors.primaryText)),
+                    subtitle: Text('Device location', style: TextStyle(color: colors.secondaryText, fontSize: 12)),
+                    trailing: widget.currentSource == LocationSource.gps
+                        ? Icon(Icons.check, color: colors.temperatureLine, size: 20)
+                        : null,
+                    onTap: widget.onGpsSelected,
+                  ),
+                  // IP option
+                  ListTile(
+                    leading: Icon(Icons.wifi, color: colors.precipitationBar),
+                    title: Text('IP Location', style: TextStyle(color: colors.primaryText)),
+                    subtitle: Text('Based on network', style: TextStyle(color: colors.secondaryText, fontSize: 12)),
+                    trailing: widget.currentSource == LocationSource.ip
+                        ? Icon(Icons.check, color: colors.precipitationBar, size: 20)
+                        : null,
+                    onTap: widget.onIpSelected,
+                  ),
+                  // Recent cities
+                  if (_recentCities.isNotEmpty) ...[
+                    Divider(color: colors.gridLine),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                      child: Text(
+                        'Recent',
+                        style: TextStyle(color: colors.secondaryText, fontSize: 12),
+                      ),
+                    ),
+                    ..._recentCities.map((city) => _buildRecentCityTile(city)),
+                  ],
+                ],
+                const SizedBox(height: 20),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCityResultTile(CitySearchResult city) {
+    return ListTile(
+      leading: Icon(Icons.location_city, color: widget.colors.secondaryText),
+      title: Text(city.name, style: TextStyle(color: widget.colors.primaryText)),
+      subtitle: Text(
+        city.displayName != city.name ? city.displayName : city.country,
+        style: TextStyle(color: widget.colors.secondaryText, fontSize: 12),
+      ),
+      onTap: () => widget.onCitySelected(city),
+    );
+  }
+
+  Widget _buildRecentCityTile(CitySearchResult city) {
+    final isSelected = widget.currentSource == LocationSource.manual &&
+        widget.currentLocationName == city.name;
+    return ListTile(
+      leading: Icon(Icons.history, color: widget.colors.secondaryText),
+      title: Text(city.name, style: TextStyle(color: widget.colors.primaryText)),
+      subtitle: Text(
+        city.country,
+        style: TextStyle(color: widget.colors.secondaryText, fontSize: 12),
+      ),
+      trailing: isSelected
+          ? Icon(Icons.check, color: widget.colors.nowIndicator, size: 20)
+          : null,
+      onTap: () => widget.onCitySelected(city),
+    );
   }
 }

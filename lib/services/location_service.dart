@@ -265,6 +265,72 @@ class LocationService {
   Future<void> openLocationSettings() async {
     await Geolocator.openLocationSettings();
   }
+
+  /// Search for cities using Open-Meteo geocoding API.
+  Future<List<CitySearchResult>> searchCities(String query) async {
+    if (query.trim().length < 2) return [];
+
+    try {
+      final uri = Uri.parse(
+        'https://geocoding-api.open-meteo.com/v1/search'
+      ).replace(queryParameters: {
+        'name': query,
+        'count': '8',
+        'language': 'en',
+        'format': 'json',
+      });
+
+      final response = await http.get(uri).timeout(const Duration(seconds: 5));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final results = data['results'] as List<dynamic>?;
+        if (results == null) return [];
+
+        return results.map((r) => CitySearchResult(
+          name: r['name'] as String,
+          country: r['country'] as String? ?? '',
+          admin1: r['admin1'] as String?,
+          latitude: (r['latitude'] as num).toDouble(),
+          longitude: (r['longitude'] as num).toDouble(),
+        )).toList();
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  /// Get recent cities from storage.
+  Future<List<CitySearchResult>> getRecentCities() async {
+    final prefs = await SharedPreferences.getInstance();
+    final citiesJson = prefs.getStringList(_recentCitiesKey) ?? [];
+    return citiesJson
+        .map((json) => CitySearchResult.fromJson(jsonDecode(json)))
+        .toList();
+  }
+
+  /// Add a city to recent cities.
+  Future<void> addRecentCity(CitySearchResult city) async {
+    final prefs = await SharedPreferences.getInstance();
+    final cities = await getRecentCities();
+
+    // Remove if already exists (to move to top)
+    cities.removeWhere((c) => c.latitude == city.latitude && c.longitude == city.longitude);
+
+    // Add to beginning
+    cities.insert(0, city);
+
+    // Keep only last 5
+    final trimmed = cities.take(5).toList();
+
+    await prefs.setStringList(
+      _recentCitiesKey,
+      trimmed.map((c) => jsonEncode(c.toJson())).toList(),
+    );
+  }
+
+  static const String _recentCitiesKey = 'recent_cities';
 }
 
 /// How the location was determined.
@@ -298,4 +364,49 @@ class LocationException implements Exception {
 
   @override
   String toString() => message;
+}
+
+/// City search result from geocoding API.
+class CitySearchResult {
+  final String name;
+  final String country;
+  final String? admin1; // State/region
+  final double latitude;
+  final double longitude;
+
+  CitySearchResult({
+    required this.name,
+    required this.country,
+    this.admin1,
+    required this.latitude,
+    required this.longitude,
+  });
+
+  /// Display name with country/region context.
+  String get displayName {
+    final parts = [name];
+    if (admin1 != null && admin1!.isNotEmpty && admin1 != name) {
+      parts.add(admin1!);
+    }
+    if (country.isNotEmpty) {
+      parts.add(country);
+    }
+    return parts.join(', ');
+  }
+
+  Map<String, dynamic> toJson() => {
+    'name': name,
+    'country': country,
+    'admin1': admin1,
+    'latitude': latitude,
+    'longitude': longitude,
+  };
+
+  factory CitySearchResult.fromJson(Map<String, dynamic> json) => CitySearchResult(
+    name: json['name'] as String,
+    country: json['country'] as String? ?? '',
+    admin1: json['admin1'] as String?,
+    latitude: (json['latitude'] as num).toDouble(),
+    longitude: (json['longitude'] as num).toDouble(),
+  );
 }
