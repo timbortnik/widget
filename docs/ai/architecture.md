@@ -88,15 +88,22 @@ Device location handling with multi-level fallback. Responsibilities:
 - Handle permissions gracefully (no exceptions thrown)
 - IP geolocation fallback via ip-api.com
 - Reverse geocoding for city name resolution
-- Manual location selection with preset cities
+- City search via Open-Meteo geocoding API
+- Recent cities storage (last 5 selections)
 - Persist location preference in SharedPreferences
-- Return `LocationData` with coordinates, city name, and isGps flag
+- Return `LocationData` with coordinates, city name, and source
 
 **Location Resolution Order:**
 1. GPS position → reverse geocode for city name
 2. Last known GPS position → reverse geocode
 3. IP geolocation (ip-api.com) → returns city name
 4. Final fallback: Berlin (52.52, 13.405)
+
+**City Search:**
+- Uses Open-Meteo geocoding API (free, no key)
+- Endpoint: `https://geocoding-api.open-meteo.com/v1/search`
+- Returns city name, country, region, coordinates
+- Debounced search (300ms) in UI
 
 ### WidgetService (`lib/services/widget_service.dart`)
 Home widget data management. Responsibilities:

@@ -19,7 +19,8 @@ A beautiful, modern weather widget for Android showing temperature forecasts as 
 - **Flexible location**:
   - GPS with reverse geocoding
   - IP geolocation fallback
-  - Manual city selection (preset cities)
+  - City search (any city worldwide)
+  - Recent cities remembered
 - **Light/dark theme** following system preference
 - **Multi-language** support (EN, DE, FR, ES, IT)
 - **No API key required** - uses free Open-Meteo API
@@ -99,8 +100,9 @@ android/
 
 ## API
 
-Uses [Open-Meteo](https://open-meteo.com/) free weather API:
+Uses [Open-Meteo](https://open-meteo.com/) free APIs (no API key required):
 
+### Weather Forecast
 ```
 GET https://api.open-meteo.com/v1/forecast
   ?latitude={lat}
@@ -111,10 +113,20 @@ GET https://api.open-meteo.com/v1/forecast
   &forecast_days=2
 ```
 
-No API key required. Returns hourly data for:
+Returns hourly data for:
 - `temperature_2m` - Temperature in Celsius
 - `precipitation` - Rain/snow in mm
 - `cloud_cover` - Cloud coverage percentage (0-100)
+
+### City Search (Geocoding)
+```
+GET https://geocoding-api.open-meteo.com/v1/search
+  ?name={query}
+  &count=8
+  &language=en
+```
+
+Returns matching cities with coordinates, country, and region.
 
 ## Widget Technical Details
 
