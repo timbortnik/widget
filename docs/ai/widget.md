@@ -2,7 +2,21 @@
 
 ## Overview
 
-Using the `home_widget` package to create cross-platform home screen widgets. The package renders Flutter UI to an image that native widgets display.
+Using the `home_widget` package with native Android widget provider. The chart is captured as a PNG image from Flutter and displayed in the native widget using `RemoteViews`.
+
+## Critical: RemoteViews Limitations
+
+Android `RemoteViews` only supports a limited set of views:
+- ✅ `TextView`
+- ✅ `ImageView`
+- ✅ `LinearLayout`
+- ✅ `RelativeLayout`
+- ✅ `FrameLayout`
+- ❌ `View` (not allowed)
+- ❌ `Space` (not allowed)
+- ❌ Custom views (not allowed)
+
+**If you get "Can't load widget" error, check for unsupported views in the layout XML.**
 
 ## Package Setup
 
@@ -10,221 +24,334 @@ Using the `home_widget` package to create cross-platform home screen widgets. Th
 ```yaml
 dependencies:
   home_widget: ^0.4.0
+  workmanager: ^0.5.0
+  path_provider: ^2.0.0
 ```
 
 ## Android Configuration
 
 ### AndroidManifest.xml
 ```xml
-<receiver android:name="MeteogramWidgetProvider"
+<receiver android:name=".MeteogramWidgetProvider"
           android:exported="true">
     <intent-filter>
         <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
     </intent-filter>
     <meta-data android:name="android.appwidget.provider"
-               android:resource="@xml/widget_info" />
+               android:resource="@xml/meteogram_widget_info" />
 </receiver>
 ```
 
-### res/xml/widget_info.xml
+### res/xml/meteogram_widget_info.xml
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:minWidth="250dp"
-    android:minHeight="110dp"
+    android:minHeight="150dp"
     android:updatePeriodMillis="1800000"
-    android:initialLayout="@layout/widget_layout"
+    android:initialLayout="@layout/meteogram_widget"
     android:resizeMode="horizontal|vertical"
-    android:widgetCategory="home_screen">
+    android:widgetCategory="home_screen"
+    android:previewImage="@mipmap/ic_launcher">
 </appwidget-provider>
 ```
 
-### Widget Size
-- **4x2 cells** (approximately 250dp x 110dp)
-- Resizable horizontally and vertically
-
-### Background Updates (WorkManager)
-```kotlin
-class WeatherWidgetWorker(context: Context, params: WorkerParameters)
-    : Worker(context, params) {
-
-    override fun doWork(): Result {
-        // Trigger Flutter background update
-        HomeWidgetBackgroundIntent.getBroadcast(
-            applicationContext,
-            Uri.parse("meteogramwidget://refresh")
-        )
-        return Result.success()
-    }
-}
-```
-
-## iOS Configuration
-
-### Info.plist (Widget Extension)
+### res/layout/meteogram_widget.xml
 ```xml
-<key>NSWidgetWantsLocation</key>
-<false/>
-<key>NSAppTransportSecurity</key>
-<dict>
-    <key>NSAllowsArbitraryLoads</key>
-    <true/>
-</dict>
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@drawable/widget_background">
+
+    <!-- Header: Temperature + Location using RelativeLayout for positioning -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView android:id="@+id/widget_temperature"
+            android:layout_alignParentStart="true"
+            android:textSize="42sp"
+            android:textColor="#FFFFFF" />
+
+        <TextView android:id="@+id/widget_location"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true" />
+    </RelativeLayout>
+
+    <!-- Chart container -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <ImageView android:id="@+id/widget_chart"
+            android:visibility="gone" />
+
+        <TextView android:id="@+id/widget_placeholder"
+            android:text="Tap to load forecast" />
+    </FrameLayout>
+</LinearLayout>
 ```
 
-### Widget Extension
-Create iOS widget extension via Xcode:
-1. File → New → Target → Widget Extension
-2. Name: `MeteogramWidget`
-3. Include Configuration Intent: No
+### res/drawable/widget_background.xml
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<shape android:shape="rectangle">
+    <gradient
+        android:startColor="#E81B2838"
+        android:endColor="#E80D1B2A"
+        android:angle="135" />
+    <corners android:radius="24dp" />
+</shape>
+```
 
-### TimelineProvider
-```swift
-struct Provider: TimelineProvider {
-    func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> Void) {
-        // Get data from shared UserDefaults (via home_widget)
-        let data = UserDefaults(suiteName: "group.com.example.meteogram")
+### Widget Provider (Kotlin)
+```kotlin
+package com.example.widget
 
-        // Create entries
-        let entry = MeteogramEntry(date: Date(), weatherData: data)
+import android.appwidget.AppWidgetManager
+import android.content.Context
+import android.content.SharedPreferences
+import android.graphics.BitmapFactory
+import android.view.View
+import android.widget.RemoteViews
+import android.app.PendingIntent
+import android.content.Intent
+import es.antonborri.home_widget.HomeWidgetProvider
 
-        // Refresh in 30 minutes
-        let nextUpdate = Calendar.current.date(byAdding: .minute, value: 30, to: Date())!
-        let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
+class MeteogramWidgetProvider : HomeWidgetProvider() {
+    override fun onUpdate(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        appWidgetIds: IntArray,
+        widgetData: SharedPreferences
+    ) {
+        for (appWidgetId in appWidgetIds) {
+            val views = RemoteViews(context.packageName, R.layout.meteogram_widget)
 
-        completion(timeline)
+            // Tap to open app
+            val intent = Intent(context, MainActivity::class.java)
+            val pendingIntent = PendingIntent.getActivity(
+                context, 0, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            views.setOnClickPendingIntent(R.id.widget_root, pendingIntent)
+
+            // Update temperature
+            val temperature = widgetData.getString("current_temperature", "--°")
+            views.setTextViewText(R.id.widget_temperature, temperature)
+
+            // Update location
+            val location = widgetData.getString("location_name", "")
+            views.setTextViewText(R.id.widget_location, location)
+
+            // Update chart image
+            val imagePath = widgetData.getString("meteogram_image", null)
+            if (imagePath != null) {
+                try {
+                    val bitmap = BitmapFactory.decodeFile(imagePath)
+                    if (bitmap != null) {
+                        views.setImageViewBitmap(R.id.widget_chart, bitmap)
+                        views.setViewVisibility(R.id.widget_chart, View.VISIBLE)
+                        views.setViewVisibility(R.id.widget_placeholder, View.GONE)
+                    }
+                } catch (e: Exception) {
+                    // Keep placeholder visible
+                }
+            }
+
+            appWidgetManager.updateAppWidget(appWidgetId, views)
+        }
     }
 }
 ```
-
-### Widget Size
-- **Medium** (systemMedium)
-- Approximately 329 x 155 points
 
 ## Flutter Integration
 
-### Rendering Widget UI
+### Widget Service
 ```dart
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:home_widget/home_widget.dart';
+import 'package:path_provider/path_provider.dart';
+import '../models/weather_data.dart';
 
 class WidgetService {
-  static const String appGroupId = 'group.com.example.meteogram';
-  static const String iOSWidgetName = 'MeteogramWidget';
-  static const String androidWidgetName = 'MeteogramWidgetProvider';
+  /// Save chart image to app documents folder
+  Future<String?> saveChartImage(Uint8List imageBytes) async {
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      final file = File('${directory.path}/meteogram_chart.png');
+      await file.writeAsBytes(imageBytes);
+      return file.path;
+    } catch (e) {
+      return null;
+    }
+  }
 
-  /// Update widget with new weather data
-  static Future<void> updateWidget(WeatherData data) async {
-    // Save data for native widget to read
-    await HomeWidget.saveWidgetData('weatherData', jsonEncode(data.toJson()));
-    await HomeWidget.saveWidgetData('lastUpdated', DateTime.now().toIso8601String());
+  /// Update widget with weather data and chart image
+  Future<void> updateWidget({
+    required WeatherData weatherData,
+    required String? locationName,
+    String? chartImagePath,
+  }) async {
+    final currentHour = weatherData.getCurrentHour();
+    final tempString = currentHour != null
+        ? '${currentHour.temperature.round()}°'
+        : '--°';
 
-    // Render Flutter widget to image
-    await HomeWidget.renderFlutterWidget(
-      const MeteogramWidgetView(),
-      key: 'meteogramImage',
-      logicalSize: const Size(400, 200),
-    );
+    await HomeWidget.saveWidgetData<String>('current_temperature', tempString);
+    await HomeWidget.saveWidgetData<String>('location_name', locationName ?? '');
 
-    // Trigger native widget update
+    if (chartImagePath != null) {
+      await HomeWidget.saveWidgetData<String>('meteogram_image', chartImagePath);
+    }
+
     await HomeWidget.updateWidget(
-      iOSName: iOSWidgetName,
-      androidName: androidWidgetName,
+      androidName: 'MeteogramWidgetProvider',
+      iOSName: 'MeteogramWidget',
     );
   }
 }
 ```
 
-### Widget View (Flutter)
+### Chart Capture (in HomeScreen)
 ```dart
-class MeteogramWidgetView extends StatelessWidget {
-  const MeteogramWidgetView({super.key});
+final _chartKey = GlobalKey();
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface.withOpacity(0.85),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      padding: const EdgeInsets.all(12),
-      child: const MeteogramChart(
-        compact: true,  // Widget-optimized layout
-      ),
-    );
+// In build method - wrap chart with RepaintBoundary
+RepaintBoundary(
+  key: _chartKey,
+  child: MeteogramChart(data: displayData),
+)
+
+// Capture method
+Future<String?> _captureChart() async {
+  try {
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    final boundary = _chartKey.currentContext?.findRenderObject()
+        as RenderRepaintBoundary?;
+    if (boundary == null) return null;
+
+    final image = await boundary.toImage(pixelRatio: 2.0);
+    final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+    if (byteData == null) return null;
+
+    return _widgetService.saveChartImage(byteData.buffer.asUint8List());
+  } catch (e) {
+    debugPrint('Error capturing chart: $e');
+    return null;
   }
 }
 ```
 
 ## Background Refresh
 
-### Flutter Background Handler
+### Background Service (Flutter)
 ```dart
+import 'package:workmanager/workmanager.dart';
+
 @pragma('vm:entry-point')
-void backgroundCallback(Uri? uri) async {
-  if (uri?.host == 'refresh') {
-    // Fetch new weather data
-    final weatherService = WeatherService();
-    final locationService = LocationService();
-
-    final location = await locationService.getSavedLocation();
-    final data = await weatherService.fetchWeather(location.lat, location.lon);
-
-    // Update widget
-    await WidgetService.updateWidget(data);
-  }
+void callbackDispatcher() {
+  Workmanager().executeTask((task, inputData) async {
+    try {
+      await _updateWeatherData();
+      return true;
+    } catch (e) {
+      return false;
+    }
+  });
 }
 
-// Register in main()
-HomeWidget.registerBackgroundCallback(backgroundCallback);
-```
+Future<void> _updateWeatherData() async {
+  final locationService = LocationService();
+  final weatherService = WeatherService();
+  final widgetService = WidgetService();
 
-## Theme Support
+  final location = await locationService.getLocation();
+  final weather = await weatherService.fetchWeather(
+    location.latitude,
+    location.longitude,
+  );
 
-Widget respects system theme:
+  await widgetService.updateWidget(
+    weatherData: weather,
+    locationName: location.isGps ? null : 'Berlin',
+    chartImagePath: null, // Background can't capture UI
+  );
+}
 
-```dart
-class MeteogramWidgetView extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final brightness = MediaQuery.platformBrightnessOf(context);
-    final isDark = brightness == Brightness.dark;
+class BackgroundService {
+  static Future<void> initialize() async {
+    await Workmanager().initialize(callbackDispatcher);
+  }
 
-    return Container(
-      color: isDark
-        ? Colors.black.withOpacity(0.85)
-        : Colors.white.withOpacity(0.85),
-      child: MeteogramChart(
-        colors: isDark ? darkChartColors : lightChartColors,
+  static Future<void> registerPeriodicTask() async {
+    await Workmanager().registerPeriodicTask(
+      'periodicWeatherTask',
+      'periodicWeatherTask',
+      frequency: const Duration(minutes: 30),
+      constraints: Constraints(
+        networkType: NetworkType.connected,
       ),
     );
   }
 }
 ```
 
-## Transparency
-
-Widget background uses semi-transparent color:
-- Light mode: `Colors.white.withOpacity(0.85)`
-- Dark mode: `Colors.black.withOpacity(0.85)`
-
-This allows the home screen wallpaper to show through slightly.
-
-## Tap Actions
-
-Handle widget taps to open app:
-
+### main.dart setup
 ```dart
-// In Flutter
-HomeWidget.setAppGroupId(appGroupId);
-HomeWidget.initiallyLaunchedFromHomeWidget().then((uri) {
-  if (uri != null) {
-    // App launched from widget tap
-    _handleWidgetAction(uri);
-  }
-});
-
-HomeWidget.widgetClicked.listen((uri) {
-  // Widget tapped while app running
-  _handleWidgetAction(uri);
-});
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await BackgroundService.initialize();
+  await BackgroundService.registerPeriodicTask();
+  runApp(const MyApp());
+}
 ```
+
+## Data Flow
+
+1. **App loads weather** from Open-Meteo API
+2. **Chart renders** in Flutter using fl_chart
+3. **Chart captured** via RepaintBoundary → toImage() → PNG bytes
+4. **Image saved** to app documents folder
+5. **Widget data saved** via HomeWidget.saveWidgetData → SharedPreferences
+6. **Native provider** reads SharedPreferences and loads bitmap
+7. **WorkManager** triggers refresh every 30 minutes
+
+## Debugging
+
+### Logcat Commands
+```bash
+# Widget errors
+adb logcat | grep -i "MeteogramWidget"
+
+# Layout inflation errors
+adb logcat | grep -i "Error inflating"
+
+# Home widget messages
+adb logcat | grep -i "HomeWidget"
+```
+
+### Common Issues
+
+| Issue | Cause | Solution |
+|-------|-------|----------|
+| "Can't load widget" | Unsupported view in layout | Remove View/Space elements |
+| Widget shows placeholder | Image path not saved | Check saveWidgetData call |
+| Temperature shows "--°" | No weather data | Check API call |
+| Widget not updating | WorkManager not registered | Call registerPeriodicTask |
+
+## iOS Widget (Not Implemented)
+
+iOS widget extension would require:
+1. Create WidgetKit extension in Xcode
+2. Add App Groups capability
+3. Implement TimelineProvider in Swift
+4. Share data via UserDefaults with shared app group
+
+The current implementation focuses on Android.

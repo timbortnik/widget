@@ -28,6 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String? _locationName;
   bool _loading = true;
   String? _error;
+  bool _isManualLocation = false;
 
   @override
   void initState() {
@@ -43,6 +44,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     try {
       final location = await _locationService.getLocation();
+      final isManual = !location.isGps;
       final weather = await _weatherService.fetchWeather(
         location.latitude,
         location.longitude,
@@ -50,7 +52,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
       setState(() {
         _weatherData = weather;
-        _locationName = location.isGps ? null : 'Berlin';
+        _locationName = location.city;
+        _isManualLocation = isManual;
         _loading = false;
       });
 
@@ -214,12 +217,43 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                         const SizedBox(height: 4),
-                        Text(
-                          l10n.updatedAt(_formatLastUpdated(l10n)),
-                          style: TextStyle(
-                            color: colors.secondaryText,
-                            fontSize: 13,
-                          ),
+                        Row(
+                          children: [
+                            GestureDetector(
+                              onTap: _showLocationPicker,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    _isManualLocation ? Icons.edit_location_alt : Icons.location_on,
+                                    size: 14,
+                                    color: colors.secondaryText,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    _locationName ?? 'Unknown',
+                                    style: TextStyle(
+                                      color: colors.secondaryText,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                  Icon(
+                                    Icons.arrow_drop_down,
+                                    size: 16,
+                                    color: colors.secondaryText,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              '· ${l10n.updatedAt(_formatLastUpdated(l10n))}',
+                              style: TextStyle(
+                                color: colors.secondaryText.withAlpha(150),
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -361,6 +395,88 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  void _showLocationPicker() {
+    final colors = MeteogramColors.of(context);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: colors.cardBackground,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      isScrollControlled: true,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.5,
+        minChildSize: 0.3,
+        maxChildSize: 0.8,
+        expand: false,
+        builder: (context, scrollController) => SingleChildScrollView(
+          controller: scrollController,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Text(
+                    'Select Location',
+                    style: TextStyle(
+                      color: colors.primaryText,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // Use GPS option
+                ListTile(
+                  leading: Icon(Icons.my_location, color: colors.temperatureLine),
+                  title: Text('Use GPS', style: TextStyle(color: colors.primaryText)),
+                  subtitle: Text('Automatic location', style: TextStyle(color: colors.secondaryText, fontSize: 12)),
+                  onTap: () async {
+                    Navigator.pop(context);
+                    await _locationService.useGpsLocation();
+                    _loadWeather();
+                  },
+                ),
+                Divider(color: colors.gridLine),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  child: Text(
+                    'Or select a city:',
+                    style: TextStyle(color: colors.secondaryText, fontSize: 12),
+                  ),
+                ),
+                // Preset cities
+                _buildCityTile('Kyiv', 50.4501, 30.5234, colors),
+                _buildCityTile('Berlin', 52.52, 13.405, colors),
+                _buildCityTile('London', 51.5074, -0.1278, colors),
+                _buildCityTile('New York', 40.7128, -74.006, colors),
+                _buildCityTile('Tokyo', 35.6762, 139.6503, colors),
+                _buildCityTile('Paris', 48.8566, 2.3522, colors),
+                const SizedBox(height: 8),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCityTile(String name, double lat, double lon, MeteogramColors colors) {
+    return ListTile(
+      leading: Icon(Icons.location_city, color: colors.secondaryText),
+      title: Text(name, style: TextStyle(color: colors.primaryText)),
+      onTap: () async {
+        Navigator.pop(context);
+        await _locationService.saveLocation(lat, lon, city: name);
+        _loadWeather();
+      },
     );
   }
 

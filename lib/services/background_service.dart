@@ -43,7 +43,7 @@ Future<void> _updateWeatherData() async {
         : '--°';
 
     await HomeWidget.saveWidgetData<String>('current_temperature', tempString);
-    await HomeWidget.saveWidgetData<String>('location_name', '');
+    await HomeWidget.saveWidgetData<String>('location_name', location.city ?? '');
 
     await HomeWidget.updateWidget(
       androidName: 'MeteogramWidgetProvider',

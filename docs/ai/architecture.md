@@ -9,82 +9,186 @@ The app follows a standard Flutter architecture with clear separation of concern
 │                    Presentation                      │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  │
 │  │   Screens   │  │   Widgets   │  │    Theme    │  │
+│  │ (setState)  │  │ MeteogramChart│ │MeteogramColors│
 │  └─────────────┘  └─────────────┘  └─────────────┘  │
 ├─────────────────────────────────────────────────────┤
 │                     Services                         │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  │
-│  │   Weather   │  │   Location  │  │    Units    │  │
-│  └─────────────┘  └─────────────┘  └─────────────┘  │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌─────────┐│
+│  │ Weather  │ │ Location │ │  Widget  │ │Background││
+│  │ Service  │ │ Service  │ │ Service  │ │ Service ││
+│  └──────────┘ └──────────┘ └──────────┘ └─────────┘│
 ├─────────────────────────────────────────────────────┤
 │                      Models                          │
 │  ┌─────────────────────────────────────────────────┐│
-│  │              WeatherData                         ││
+│  │              WeatherData / HourlyData           ││
 │  └─────────────────────────────────────────────────┘│
 └─────────────────────────────────────────────────────┘
 ```
 
 ## Data Flow
 
-1. **App Launch / Widget Refresh**
-   - Location service gets current coordinates (GPS or saved)
-   - Weather service fetches data from Open-Meteo
-   - Data is parsed into `WeatherData` model
-   - Units service converts values based on locale
-   - UI renders meteogram chart
+### App Launch
+1. Location service gets current coordinates (GPS or fallback)
+2. Weather service fetches data from Open-Meteo
+3. Data is parsed into `WeatherData` model
+4. UI renders meteogram chart
+5. Chart captured as PNG via RepaintBoundary
+6. Widget updated with data + image path
 
-2. **Widget Updates**
-   - Android: WorkManager triggers background update
-   - iOS: WidgetKit timeline requests refresh
-   - home_widget package bridges Flutter ↔ native
+### Widget Updates
+1. Android: WorkManager triggers background update every 30 minutes
+2. Background service fetches new weather data
+3. Widget data saved to SharedPreferences via home_widget
+4. Native `MeteogramWidgetProvider` reads data and updates widget
 
 ## State Management
 
-Using Provider/Riverpod for lightweight state:
+Using simple `setState` in StatefulWidget (no Provider/Riverpod):
 
 ```dart
-// Weather state
-class WeatherProvider extends ChangeNotifier {
-  WeatherData? _data;
-  bool _loading = false;
+class _HomeScreenState extends State<HomeScreen> {
+  WeatherData? _weatherData;
+  String? _locationName;
+  bool _loading = true;
   String? _error;
 
-  Future<void> refresh(double lat, double lon) async { ... }
+  Future<void> _loadWeather() async {
+    setState(() { _loading = true; _error = null; });
+    try {
+      // Fetch data...
+      setState(() { _weatherData = weather; _loading = false; });
+    } catch (e) {
+      setState(() { _error = e.toString(); _loading = false; });
+    }
+  }
 }
 ```
 
 ## Key Components
 
-### MeteogramChart
-The main visualization widget. Responsibilities:
-- Render temperature line (fl_chart LineChart)
-- Render precipitation bars (custom painter)
-- Render cloud cover background gradient
-- Show current time indicator
-- Handle theme (light/dark) colors
+### MeteogramChart (`lib/widgets/meteogram_chart.dart`)
+The main visualization widget using fl_chart. Responsibilities:
+- Render temperature line (LineChart with gradient fill)
+- Render precipitation bars (BarChart)
+- Render cloud cover background (CustomPainter)
+- Show current time indicator (vertical golden line)
+- Support compact mode for widget
+- Handle light/dark theme colors
 
-### WeatherService
+### WeatherService (`lib/services/weather_service.dart`)
 API client for Open-Meteo. Responsibilities:
 - Build API URL with parameters
-- Make HTTP request
-- Parse JSON response
-- Handle errors (network, API)
+- Make HTTP request with timeout
+- Parse JSON response into WeatherData
+- Handle errors (network, API, parsing)
 
-### UnitsService
-Locale-aware unit conversion. Responsibilities:
-- Detect device locale
-- Convert °C ↔ °F
-- Convert mm ↔ inches
-- Format values for display
+### LocationService (`lib/services/location_service.dart`)
+Device location handling with multi-level fallback. Responsibilities:
+- Get GPS coordinates via geolocator
+- Handle permissions gracefully (no exceptions thrown)
+- IP geolocation fallback via ip-api.com
+- Reverse geocoding for city name resolution
+- Manual location selection with preset cities
+- Persist location preference in SharedPreferences
+- Return `LocationData` with coordinates, city name, and isGps flag
+
+**Location Resolution Order:**
+1. GPS position → reverse geocode for city name
+2. Last known GPS position → reverse geocode
+3. IP geolocation (ip-api.com) → returns city name
+4. Final fallback: Berlin (52.52, 13.405)
+
+### WidgetService (`lib/services/widget_service.dart`)
+Home widget data management. Responsibilities:
+- Save chart image to app documents folder
+- Save widget data via HomeWidget.saveWidgetData
+- Trigger native widget update
+
+### BackgroundService (`lib/services/background_service.dart`)
+WorkManager integration. Responsibilities:
+- Initialize workmanager
+- Register periodic task (30 min)
+- Execute background weather fetch
+- Update widget without UI
+
+### MeteogramColors (`lib/theme/app_theme.dart`)
+Theme-aware color palette. Responsibilities:
+- Provide light/dark color variants
+- Color for temperature line, precipitation, now indicator
+- Sky gradient based on cloud cover
+- Card backgrounds and text colors
+
+## File Structure
+
+```
+lib/
+├── main.dart                    # App entry, BackgroundService init
+├── l10n/                        # Localization ARB files
+│   ├── app_en.arb
+│   ├── app_de.arb
+│   ├── app_fr.arb
+│   ├── app_es.arb
+│   └── app_it.arb
+├── models/
+│   └── weather_data.dart        # WeatherData, HourlyData models
+├── screens/
+│   └── home_screen.dart         # Main screen with chart capture
+├── services/
+│   ├── weather_service.dart     # Open-Meteo API client
+│   ├── location_service.dart    # GPS/fallback location
+│   ├── widget_service.dart      # Home widget updates
+│   └── background_service.dart  # WorkManager refresh
+├── theme/
+│   └── app_theme.dart           # Colors, light/dark themes
+└── widgets/
+    └── meteogram_chart.dart     # fl_chart meteogram
+```
 
 ## Platform-Specific
 
 ### Android Widget
-- `AppWidgetProvider` in Kotlin/Java
-- Layout defined in XML
-- WorkManager for background refresh
-- home_widget renders Flutter view to bitmap
+- `MeteogramWidgetProvider` extends `HomeWidgetProvider`
+- Layout in `res/layout/meteogram_widget.xml`
+- Uses RemoteViews (limited to TextView, ImageView, LinearLayout, RelativeLayout, FrameLayout)
+- Background in `res/drawable/widget_background.xml` (gradient + rounded corners)
+- Chart displayed as bitmap loaded from file
 
 ### iOS Widget
-- WidgetKit extension in Swift
-- Timeline provider for refresh scheduling
-- home_widget provides data to native widget
+Not yet implemented. Would require:
+- WidgetKit extension
+- TimelineProvider
+- App Groups for data sharing
+
+## Error Handling
+
+```dart
+// Location errors
+on LocationException catch (e) {
+  // e.message: "Location permission denied" / "Location timeout"
+}
+
+// Weather errors
+on WeatherException catch (e) {
+  // e.message: "Failed to fetch weather data"
+}
+
+// Generic errors shown to user
+catch (e) {
+  setState(() { _error = e.toString(); });
+}
+```
+
+## Dependencies
+
+| Package | Purpose |
+|---------|---------|
+| fl_chart | Temperature line + precipitation bars |
+| home_widget | Flutter ↔ native widget bridge |
+| workmanager | Background refresh scheduling |
+| geolocator | GPS location |
+| geocoding | Reverse geocoding (coordinates → city name) |
+| http | API requests (weather + IP geolocation) |
+| path_provider | App documents for chart image |
+| shared_preferences | Settings storage |
+| flutter_localizations | i18n framework |
+| intl | Date/number formatting |
