@@ -160,6 +160,7 @@ class LocationService {
   }
 
   /// Get approximate location from IP address using ip-api.com.
+  /// Uses reverse geocoding to get localized city name.
   Future<LocationData?> _getIpLocation() async {
     try {
       final response = await http
@@ -169,11 +170,19 @@ class LocationService {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['status'] == 'success') {
+          final lat = (data['lat'] as num).toDouble();
+          final lon = (data['lon'] as num).toDouble();
+
+          // Try to get localized city name via reverse geocoding
+          String? city = await _getCityFromCoordinates(lat, lon);
+          // Fall back to IP API city name (English)
+          city ??= data['city'] as String?;
+
           return LocationData(
-            latitude: (data['lat'] as num).toDouble(),
-            longitude: (data['lon'] as num).toDouble(),
+            latitude: lat,
+            longitude: lon,
             source: LocationSource.ip,
-            city: data['city'] as String?,
+            city: city,
           );
         }
       }

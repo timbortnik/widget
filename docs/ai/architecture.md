@@ -78,9 +78,12 @@ The main visualization widget using fl_chart. Responsibilities:
 ### WeatherService (`lib/services/weather_service.dart`)
 API client for Open-Meteo. Responsibilities:
 - Build API URL with parameters
+- Request 4 hours of past data + 2 days forecast
 - Make HTTP request with timeout
 - Parse JSON response into WeatherData
 - Handle errors (network, API, parsing)
+
+**Data Range:** 4 hours past + 48 hours future (~52 hours total)
 
 ### LocationService (`lib/services/location_service.dart`)
 Device location handling with multi-level fallback. Responsibilities:
@@ -94,10 +97,12 @@ Device location handling with multi-level fallback. Responsibilities:
 - Return `LocationData` with coordinates, city name, and source
 
 **Location Resolution Order:**
-1. GPS position → reverse geocode for city name
+1. GPS position → reverse geocode for localized city name
 2. Last known GPS position → reverse geocode
-3. IP geolocation (ip-api.com) → returns city name
+3. IP geolocation (ip-api.com) → reverse geocode for localized city name
 4. Final fallback: Berlin (52.52, 13.405)
+
+All city names are localized via reverse geocoding based on device locale.
 
 **City Search:**
 - Uses Open-Meteo geocoding API (free, no key)
@@ -131,11 +136,12 @@ Theme-aware color palette. Responsibilities:
 lib/
 ├── main.dart                    # App entry, BackgroundService init
 ├── l10n/                        # Localization ARB files
-│   ├── app_en.arb
-│   ├── app_de.arb
-│   ├── app_fr.arb
-│   ├── app_es.arb
-│   └── app_it.arb
+│   ├── app_en.arb               # English
+│   ├── app_de.arb               # German
+│   ├── app_fr.arb               # French
+│   ├── app_es.arb               # Spanish
+│   ├── app_it.arb               # Italian
+│   └── app_uk.arb               # Ukrainian
 ├── models/
 │   └── weather_data.dart        # WeatherData, HourlyData models
 ├── screens/

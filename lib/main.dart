@@ -36,13 +36,7 @@ class MeteogramApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      supportedLocales: const [
-        Locale('en'),
-        Locale('de'),
-        Locale('fr'),
-        Locale('es'),
-        Locale('it'),
-      ],
+      supportedLocales: AppLocalizations.supportedLocales,
 
       home: const HomeScreen(),
     );

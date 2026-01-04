@@ -48,14 +48,16 @@ class WeatherData {
         },
       };
 
-  /// Get data for display range: 2h past to 48h future from now.
+  /// Get data for display range: 4h past to 48h future from now.
   List<HourlyData> getDisplayRange() {
     final now = DateTime.now();
-    final start = now.subtract(const Duration(hours: 2));
-    final end = now.add(const Duration(hours: 48));
+    // Truncate to hour boundary for proper filtering of hourly data
+    final currentHour = DateTime(now.year, now.month, now.day, now.hour);
+    final start = currentHour.subtract(const Duration(hours: 4));
+    final end = currentHour.add(const Duration(hours: 49));
 
     return hourly
-        .where((h) => h.time.isAfter(start) && h.time.isBefore(end))
+        .where((h) => !h.time.isBefore(start) && h.time.isBefore(end))
         .toList();
   }
 
