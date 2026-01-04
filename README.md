@@ -8,7 +8,7 @@ A beautiful, modern weather widget for Android showing temperature forecasts as 
 
 ## Features
 
-- **44-hour forecast** with 4 hours of history
+- **46-hour forecast** with 6 hours of history
 - **Beautiful meteogram chart** with:
   - Temperature line with gradient fill
   - Precipitation bars
@@ -110,7 +110,7 @@ GET https://api.open-meteo.com/v1/forecast
   &longitude={lon}
   &hourly=temperature_2m,precipitation,cloud_cover
   &timezone=auto
-  &past_hours=4
+  &past_hours=6
   &forecast_days=2
 ```
 
@@ -173,8 +173,8 @@ Edit `android/app/src/main/res/drawable/widget_background.xml`:
 
 ```xml
 <gradient
-    android:startColor="#E81B2838"
-    android:endColor="#E80D1B2A"
+    android:startColor="#BA1B2838"
+    android:endColor="#BA0D1B2A"
     android:angle="135" />
 <corners android:radius="24dp" />
 ```

@@ -19,7 +19,7 @@ This file provides context for AI assistants working on this project.
 
 ## Key Design Decisions
 
-- **Time range:** 2h past + 48h future with current time marker
+- **Time range:** 6h past + 46h future with current time marker
 - **Data:** Temperature (line with gradient fill), precipitation (bars), cloudiness (sky gradient)
 - **Theme:** System light/dark mode with custom color palette
 - **Units:** Celsius (hardcoded for now)
@@ -87,7 +87,7 @@ GET https://api.open-meteo.com/v1/forecast
   &longitude={lon}
   &hourly=temperature_2m,precipitation,cloud_cover
   &timezone=auto
-  &past_hours=2
+  &past_hours=6
   &forecast_days=2
 ```
 
