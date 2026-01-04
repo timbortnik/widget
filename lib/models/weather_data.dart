@@ -48,29 +48,29 @@ class WeatherData {
         },
       };
 
-  /// Get data for display range: 8h past to 44h future from now.
+  /// Get data for display range: 8h past to ~44h future.
+  /// Returns a slice of hourly data centered on "now".
+  /// Since we request past_hours=8, index 8 in the raw data is "now".
   List<HourlyData> getDisplayRange() {
-    final now = DateTime.now();
-    // Truncate to hour boundary for proper filtering of hourly data
-    final currentHour = DateTime(now.year, now.month, now.day, now.hour);
-    final start = currentHour.subtract(const Duration(hours: 8));
-    final end = currentHour.add(const Duration(hours: 45));
+    // API returns: past_hours (8) + forecast_days (2) * 24 = 56 hours
+    // We want to show: 8h past + 44h future = 52 hours starting from index 0
+    final endIndex = (8 + 44).clamp(0, hourly.length);
+    return hourly.sublist(0, endIndex);
+  }
 
-    return hourly
-        .where((h) => !h.time.isBefore(start) && h.time.isBefore(end))
-        .toList();
+  /// Get the index of "now" in the display data.
+  /// Since we request past_hours=8, the current hour is at index 8.
+  int getNowIndex() {
+    return 8.clamp(0, hourly.length - 1);
   }
 
   /// Find the current hour's data.
   HourlyData? getCurrentHour() {
-    final now = DateTime.now();
-    try {
-      return hourly.firstWhere(
-        (h) => h.time.hour == now.hour && h.time.day == now.day,
-      );
-    } catch (_) {
-      return null;
+    final idx = getNowIndex();
+    if (idx >= 0 && idx < hourly.length) {
+      return hourly[idx];
     }
+    return null;
   }
 }
 

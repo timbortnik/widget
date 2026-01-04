@@ -189,6 +189,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     final displayData = _weatherData!.getDisplayRange();
+    final nowIndex = _weatherData!.getNowIndex();
     final currentHour = _weatherData!.getCurrentHour();
 
     return RefreshIndicator(
@@ -372,7 +373,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 clipBehavior: Clip.antiAlias,
                 child: RepaintBoundary(
                   key: _chartKey,
-                  child: MeteogramChart(data: displayData),
+                  child: MeteogramChart(data: displayData, nowIndex: nowIndex),
                 ),
               ),
               const SizedBox(height: 20),

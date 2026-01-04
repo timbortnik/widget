@@ -7,11 +7,13 @@ import '../theme/app_theme.dart';
 /// Modern meteogram chart with temperature line, precipitation bars, and sky gradient.
 class MeteogramChart extends StatelessWidget {
   final List<HourlyData> data;
+  final int nowIndex;
   final bool compact;
 
   const MeteogramChart({
     super.key,
     required this.data,
+    required this.nowIndex,
     this.compact = false,
   });
 
@@ -22,18 +24,11 @@ class MeteogramChart extends StatelessWidget {
     }
 
     final colors = MeteogramColors.of(context);
-    final now = DateTime.now();
     final locale = Localizations.localeOf(context).toString();
 
-    // Find "now" position for fade effect
-    // Add small offset to compensate for chart's internal margins
-    double nowFraction = 0;
-    for (var i = 0; i < data.length; i++) {
-      if (data[i].time.hour == now.hour && data[i].time.day == now.day) {
-        nowFraction = (i + 1) / data.length;  // +1 to extend fade zone
-        break;
-      }
-    }
+    // Calculate nowFraction from nowIndex
+    // +1 to extend fade zone slightly past the "now" line
+    final nowFraction = (nowIndex + 1) / data.length;
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(compact ? 12 : 20),
@@ -66,7 +61,7 @@ class MeteogramChart extends StatelessWidget {
                           // Precipitation bars (behind)
                           _buildPrecipitationBars(colors),
                           // Temperature line with gradient fill and now indicator
-                          _buildTemperatureChart(colors, now, locale),
+                          _buildTemperatureChart(colors, locale),
                         ],
                       ),
                     ),
@@ -79,7 +74,7 @@ class MeteogramChart extends StatelessWidget {
             // Time labels below chart
             SizedBox(
               height: compact ? 24 : 28,
-              child: _buildTimeLabels(colors, now, locale),
+              child: _buildTimeLabels(colors, locale),
             ),
           ],
         ),
@@ -87,7 +82,7 @@ class MeteogramChart extends StatelessWidget {
     );
   }
 
-  Widget _buildTemperatureChart(MeteogramColors colors, DateTime now, String locale) {
+  Widget _buildTemperatureChart(MeteogramColors colors, String locale) {
     final minTemp = data.map((d) => d.temperature).reduce((a, b) => a < b ? a : b);
     final maxTemp = data.map((d) => d.temperature).reduce((a, b) => a > b ? a : b);
     final tempRange = maxTemp - minTemp;
@@ -96,30 +91,22 @@ class MeteogramChart extends StatelessWidget {
     // Labels are fontSize/2 from edge, roughly 5-6% of chart height
     final yPadding = tempRange * 0.06;
 
-    // Find current time position (aligned to hour for label alignment)
-    double? nowPosition;
-    for (var i = 0; i < data.length; i++) {
-      if (data[i].time.hour == now.hour && data[i].time.day == now.day) {
-        nowPosition = i.toDouble();
-        break;
-      }
-    }
+    // Use nowIndex for the "now" line position
+    final nowPosition = nowIndex.toDouble();
 
     return LineChart(
       LineChartData(
         minY: minTemp - yPadding,
         maxY: maxTemp + yPadding,
         extraLinesData: ExtraLinesData(
-          verticalLines: nowPosition != null
-              ? [
-                  VerticalLine(
-                    x: nowPosition,
-                    color: colors.labelText,
-                    strokeWidth: compact ? 2 : 3,
-                    dashArray: null,
-                  ),
-                ]
-              : [],
+          verticalLines: [
+            VerticalLine(
+              x: nowPosition,
+              color: colors.labelText,
+              strokeWidth: compact ? 2 : 3,
+              dashArray: null,
+            ),
+          ],
         ),
         gridData: const FlGridData(show: false),
         titlesData: FlTitlesData(
@@ -272,15 +259,8 @@ class MeteogramChart extends StatelessWidget {
     );
   }
 
-  Widget _buildTimeLabels(MeteogramColors colors, DateTime now, String locale) {
-    // Find "now" index
-    int nowIdx = 0;
-    for (var i = 0; i < data.length; i++) {
-      if (data[i].time.hour == now.hour && data[i].time.day == now.day) {
-        nowIdx = i;
-        break;
-      }
-    }
+  Widget _buildTimeLabels(MeteogramColors colors, String locale) {
+    // Use nowIndex for label positioning
 
     final textStyle = TextStyle(
       color: colors.labelText,
@@ -295,7 +275,7 @@ class MeteogramChart extends StatelessWidget {
 
         for (var i = 0; i < data.length; i++) {
           // Show labels at: now, now+12h, now+24h, etc.
-          final offset = i - nowIdx;
+          final offset = i - nowIndex;
           if (offset < 0 || offset % 12 != 0) continue;
           if (i > data.length - 8) continue; // Skip last label
 
