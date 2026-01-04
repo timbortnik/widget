@@ -345,7 +345,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Padding(
                 padding: const EdgeInsets.only(left: 4, bottom: 12),
                 child: Text(
-                  '48-Hour Forecast',
+                  '44-Hour Forecast',
                   style: TextStyle(
                     color: colors.secondaryText,
                     fontSize: 13,

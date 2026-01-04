@@ -1,5 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import '../l10n/app_localizations.dart';
 import '../models/weather_data.dart';
 import '../theme/app_theme.dart';
 
@@ -22,6 +24,8 @@ class MeteogramChart extends StatelessWidget {
 
     final colors = MeteogramColors.of(context);
     final now = DateTime.now();
+    final locale = Localizations.localeOf(context).toString();
+    final l10n = AppLocalizations.of(context);
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(compact ? 12 : 20),
@@ -39,9 +43,11 @@ class MeteogramChart extends StatelessWidget {
               // Precipitation bars (behind)
               _buildPrecipitationBars(colors),
               // Temperature line with gradient fill and now indicator
-              _buildTemperatureChart(colors, now),
+              _buildTemperatureChart(colors, now, locale),
               // Min/max temperature labels inside chart
               _buildTempLabels(colors, now),
+              // Max precipitation label (top-right)
+              _buildPrecipLabel(colors, l10n),
             ],
           ),
         ),
@@ -49,7 +55,7 @@ class MeteogramChart extends StatelessWidget {
     );
   }
 
-  Widget _buildTemperatureChart(MeteogramColors colors, DateTime now) {
+  Widget _buildTemperatureChart(MeteogramColors colors, DateTime now, String locale) {
     final minTemp = data.map((d) => d.temperature).reduce((a, b) => a < b ? a : b);
     final maxTemp = data.map((d) => d.temperature).reduce((a, b) => a > b ? a : b);
     final tempRange = maxTemp - minTemp;
@@ -58,11 +64,12 @@ class MeteogramChart extends StatelessWidget {
     // Labels are fontSize/2 from edge, roughly 5-6% of chart height
     final yPadding = tempRange * 0.06;
 
-    // Find current time index for vertical line
-    int? nowIndex;
+    // Find current time position with minute precision
+    double? nowPosition;
     for (var i = 0; i < data.length; i++) {
       if (data[i].time.hour == now.hour && data[i].time.day == now.day) {
-        nowIndex = i;
+        // Add fractional offset for minutes (0-59 maps to 0.0-1.0)
+        nowPosition = i + (now.minute / 60.0);
         break;
       }
     }
@@ -72,11 +79,11 @@ class MeteogramChart extends StatelessWidget {
         minY: minTemp - yPadding,
         maxY: maxTemp + yPadding,
         extraLinesData: ExtraLinesData(
-          verticalLines: nowIndex != null
+          verticalLines: nowPosition != null
               ? [
                   VerticalLine(
-                    x: nowIndex.toDouble(),
-                    color: colors.nowIndicator,
+                    x: nowPosition,
+                    color: colors.labelText,
                     strokeWidth: compact ? 2 : 3,
                     dashArray: null,
                   ),
@@ -90,22 +97,38 @@ class MeteogramChart extends StatelessWidget {
             sideTitles: SideTitles(
               showTitles: true,
               reservedSize: compact ? 20 : 28,
-              interval: _calculateTimeInterval(),
+              interval: 1, // Check every hour, filter in callback
               getTitlesWidget: (value, meta) {
                 final index = value.toInt();
                 if (index < 0 || index >= data.length) return const SizedBox();
-                final hour = data[index].time.hour;
-                final isNow = data[index].time.hour == now.hour &&
-                              data[index].time.day == now.day;
+
+                // Find "now" index
+                int nowIdx = 0;
+                for (var i = 0; i < data.length; i++) {
+                  if (data[i].time.hour == now.hour && data[i].time.day == now.day) {
+                    nowIdx = i;
+                    break;
+                  }
+                }
+
+                // Show labels at: now, now+12h, now+24h, etc.
+                // Skip if too close to start (past data) or end of chart
+                final offset = index - nowIdx;
+                if (offset < 0 || offset % 12 != 0) return const SizedBox();
+                if (index > data.length - 8) return const SizedBox(); // Skip last label
+
+                // Show hour from data (not calculated time)
+                final time = data[index].time;
+                // Use locale-aware hour format
+                final timeStr = DateFormat.j(locale).format(time);
                 return Padding(
-                  padding: const EdgeInsets.only(top: 8),
+                  padding: const EdgeInsets.only(top: 4),
                   child: Text(
-                    hour == 0 ? '12am' : hour == 12 ? '12pm' :
-                    hour > 12 ? '${hour - 12}pm' : '${hour}am',
+                    timeStr,
                     style: TextStyle(
-                      color: isNow ? colors.nowIndicator : colors.labelText,
-                      fontSize: compact ? 9 : 11,
-                      fontWeight: isNow ? FontWeight.bold : FontWeight.w500,
+                      color: colors.labelText,
+                      fontSize: compact ? 10 : 12,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 );
@@ -171,40 +194,80 @@ class MeteogramChart extends StatelessWidget {
     final maxPrecip = data.map((d) => d.precipitation).reduce((a, b) => a > b ? a : b);
     if (maxPrecip == 0) return const SizedBox();
 
-    return Opacity(
-      opacity: 0.7,
-      child: BarChart(
-        BarChartData(
-          maxY: maxPrecip * 1.5,
-          alignment: BarChartAlignment.spaceAround,
-          barGroups: data.asMap().entries.map((e) {
-            final hasPrecip = e.value.precipitation > 0;
-            return BarChartGroupData(
-              x: e.key,
-              barRods: [
-                BarChartRodData(
-                  toY: e.value.precipitation,
-                  gradient: hasPrecip ? LinearGradient(
-                    begin: Alignment.bottomCenter,
-                    end: Alignment.topCenter,
-                    colors: [
-                      colors.precipitationBar,
-                      colors.precipitationGradient,
-                    ],
-                  ) : null,
-                  color: hasPrecip ? null : Colors.transparent,
-                  width: compact ? 4 : 6,
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(3),
-                  ),
-                ),
-              ],
-            );
-          }).toList(),
-          gridData: const FlGridData(show: false),
-          titlesData: const FlTitlesData(show: false),
-          borderData: FlBorderData(show: false),
-          barTouchData: BarTouchData(enabled: false),
+    final chartMax = maxPrecip * 1.5;
+
+    // Constrain to top 2/3 of chart height
+    return Align(
+      alignment: Alignment.topCenter,
+      child: FractionallySizedBox(
+        heightFactor: 2 / 3,
+        child: Opacity(
+          opacity: 0.7,
+          child: BarChart(
+            BarChartData(
+              maxY: chartMax,
+              alignment: BarChartAlignment.spaceAround,
+              barGroups: data.asMap().entries.map((e) {
+                final hasPrecip = e.value.precipitation > 0;
+                // Bars hang from top (like rain falling from sky)
+                return BarChartGroupData(
+                  x: e.key,
+                  barRods: [
+                    BarChartRodData(
+                      fromY: chartMax, // Start from top
+                      toY: chartMax - e.value.precipitation, // Extend downward
+                      gradient: hasPrecip ? LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          colors.precipitationGradient,
+                          colors.precipitationBar,
+                        ],
+                      ) : null,
+                      color: hasPrecip ? null : Colors.transparent,
+                      width: compact ? 4 : 6,
+                      borderRadius: const BorderRadius.vertical(
+                        bottom: Radius.circular(3),
+                      ),
+                    ),
+                  ],
+                );
+              }).toList(),
+              gridData: const FlGridData(show: false),
+              titlesData: const FlTitlesData(show: false),
+              borderData: FlBorderData(show: false),
+              barTouchData: BarTouchData(enabled: false),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPrecipLabel(MeteogramColors colors, AppLocalizations? l10n) {
+    final maxPrecip = data.map((d) => d.precipitation).reduce((a, b) => a > b ? a : b);
+    if (maxPrecip == 0) return const SizedBox();
+
+    // Format precipitation amount (show 1 decimal for small amounts)
+    final amount = maxPrecip >= 1
+        ? maxPrecip.round().toString()
+        : maxPrecip.toStringAsFixed(1);
+
+    // Use localized string
+    final precipStr = l10n?.precipitationRate(amount) ?? '$amount mm/h';
+
+    final fontSize = compact ? 20.0 : 24.0;
+
+    // Position at same height as min temperature label (bottom, above time axis)
+    return Positioned(
+      bottom: compact ? 20 : 28, // Same as min temp label
+      right: compact ? 4 : 8,
+      child: Text(
+        precipStr,
+        style: TextStyle(
+          color: colors.precipitationBar,
+          fontSize: fontSize,
+          fontWeight: FontWeight.bold,
         ),
       ),
     );
@@ -214,59 +277,51 @@ class MeteogramChart extends StatelessWidget {
     final minTemp = data.map((d) => d.temperature).reduce((a, b) => a < b ? a : b);
     final maxTemp = data.map((d) => d.temperature).reduce((a, b) => a > b ? a : b);
 
-    // Find current time index for positioning after the "now" line
-    int nowIndex = 0;
+    // Find current time position
+    double nowPosition = 0;
     for (var i = 0; i < data.length; i++) {
       if (data[i].time.hour == now.hour && data[i].time.day == now.day) {
-        nowIndex = i;
+        nowPosition = i.toDouble();
         break;
       }
     }
 
-    // Calculate left offset: position 1 hour after the "now" line
-    // nowIndex / data.length gives the fraction, +2 for 1 hour gap
-    final fraction = (nowIndex + 2) / data.length;
-    final leftPercent = (fraction * 100).clamp(10, 50);
-
-    // Always use light text - works on both app (sky gradient) and widget (dark bg)
+    // Use temperature line color for visual consistency
     final textStyle = TextStyle(
-      color: const Color(0xFFF5F5F5),
+      color: colors.temperatureLine,
       fontSize: compact ? 20 : 24,
       fontWeight: FontWeight.bold,
     );
 
-    // Position labels on left side, just after the "now" line
-    return Stack(
-      children: [
-        // Max temp at top
-        Positioned(
-          top: 0,
-          left: 0,
-          right: 0,
-          child: Padding(
-            padding: EdgeInsets.only(left: leftPercent * (compact ? 2.5 : 3)),
-            child: Text('${maxTemp.round()}°', style: textStyle),
-          ),
-        ),
-        // Min temp at bottom (above time axis)
-        Positioned(
-          bottom: compact ? 20 : 28,
-          left: 0,
-          right: 0,
-          child: Padding(
-            padding: EdgeInsets.only(left: leftPercent * (compact ? 2.5 : 3)),
-            child: Text('${minTemp.round()}°', style: textStyle),
-          ),
-        ),
-      ],
+    // Position labels 2 hours after the "now" line
+    final fraction = (nowPosition + 2) / data.length;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Account for chart padding (16dp on each side)
+        final chartPadding = compact ? 8.0 : 16.0;
+        final chartWidth = constraints.maxWidth - (chartPadding * 2);
+        final leftOffset = chartPadding + (chartWidth * fraction);
+        return Stack(
+          children: [
+            // Max temp at top
+            Positioned(
+              top: 0,
+              left: leftOffset,
+              child: Text('${maxTemp.round()}°', style: textStyle),
+            ),
+            // Min temp at bottom (above time axis)
+            Positioned(
+              bottom: compact ? 20 : 28,
+              left: leftOffset,
+              child: Text('${minTemp.round()}°', style: textStyle),
+            ),
+          ],
+        );
+      },
     );
   }
 
-  double _calculateTimeInterval() {
-    if (data.length <= 12) return 3;
-    if (data.length <= 24) return 6;
-    return 8;
-  }
 }
 
 /// Custom painter for smooth sky gradient background based on cloud cover.

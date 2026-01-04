@@ -17,5 +17,6 @@
   "errorNoConnection": "Keine Internetverbindung",
   "errorLocationUnavailable": "Standort nicht verfügbar",
   "errorLoadingData": "Wetterdaten konnten nicht geladen werden",
-  "retry": "Erneut versuchen"
+  "retry": "Erneut versuchen",
+  "precipitationRate": "{amount} mm/h"
 }

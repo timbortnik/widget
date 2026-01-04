@@ -207,6 +207,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Retry'**
   String get retry;
+
+  /// Precipitation rate shown on chart
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} mm/h'**
+  String precipitationRate(String amount);
 }
 
 class _AppLocalizationsDelegate

@@ -62,4 +62,9 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get retry => 'Réessayer';
+
+  @override
+  String precipitationRate(String amount) {
+    return '$amount mm/h';
+  }
 }

@@ -17,5 +17,6 @@
   "errorNoConnection": "Sin conexión a internet",
   "errorLocationUnavailable": "Ubicación no disponible",
   "errorLoadingData": "No se pudieron cargar los datos del tiempo",
-  "retry": "Reintentar"
+  "retry": "Reintentar",
+  "precipitationRate": "{amount} mm/h"
 }

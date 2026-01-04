@@ -8,12 +8,12 @@ A beautiful, modern weather widget for Android showing temperature forecasts as 
 
 ## Features
 
-- **48-hour forecast** with 2 hours of history
+- **44-hour forecast** with 4 hours of history
 - **Beautiful meteogram chart** with:
   - Temperature line with gradient fill
   - Precipitation bars
   - Cloud cover sky gradient background
-  - Current time indicator with glow effect
+  - Current time indicator
 - **Home screen widget** with live chart
 - **Auto-refresh** every 30 minutes
 - **Flexible location**:
@@ -22,7 +22,7 @@ A beautiful, modern weather widget for Android showing temperature forecasts as 
   - City search (any city worldwide)
   - Recent cities remembered
 - **Light/dark theme** following system preference
-- **Multi-language** support (EN, DE, FR, ES, IT)
+- **Multi-language** support (English, German, French, Spanish, Italian, Ukrainian)
 - **No API key required** - uses free Open-Meteo API
 
 ## Screenshots
@@ -31,7 +31,7 @@ The app features a modern, card-based design with:
 - Large temperature display
 - Pull-to-refresh
 - Smooth animations
-- Elegant color palette (coral red temp line, teal precipitation, golden now indicator)
+- Elegant color palette (coral red temp line, teal precipitation)
 
 ## Installation
 
@@ -72,7 +72,8 @@ lib/
 │   ├── app_de.arb           # German
 │   ├── app_fr.arb           # French
 │   ├── app_es.arb           # Spanish
-│   └── app_it.arb           # Italian
+│   ├── app_it.arb           # Italian
+│   └── app_uk.arb           # Ukrainian
 ├── models/
 │   └── weather_data.dart    # Weather data models
 ├── screens/
@@ -109,7 +110,7 @@ GET https://api.open-meteo.com/v1/forecast
   &longitude={lon}
   &hourly=temperature_2m,precipitation,cloud_cover
   &timezone=auto
-  &past_hours=2
+  &past_hours=4
   &forecast_days=2
 ```
 

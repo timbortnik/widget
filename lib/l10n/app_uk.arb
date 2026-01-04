@@ -96,5 +96,16 @@
   "retry": "Повторити",
   "@retry": {
     "description": "Button to retry failed operation"
+  },
+
+  "precipitationRate": "{amount} мм/год",
+  "@precipitationRate": {
+    "description": "Precipitation rate shown on chart",
+    "placeholders": {
+      "amount": {
+        "type": "String",
+        "example": "2.5"
+      }
+    }
   }
 }
