@@ -41,7 +41,7 @@ class MeteogramChart extends StatelessWidget {
               // Temperature line with gradient fill and now indicator
               _buildTemperatureChart(colors, now),
               // Min/max temperature labels inside chart
-              _buildTempLabels(colors),
+              _buildTempLabels(colors, now),
             ],
           ),
         ),
@@ -205,9 +205,23 @@ class MeteogramChart extends StatelessWidget {
     );
   }
 
-  Widget _buildTempLabels(MeteogramColors colors) {
+  Widget _buildTempLabels(MeteogramColors colors, DateTime now) {
     final minTemp = data.map((d) => d.temperature).reduce((a, b) => a < b ? a : b);
     final maxTemp = data.map((d) => d.temperature).reduce((a, b) => a > b ? a : b);
+
+    // Find current time index for positioning after the "now" line
+    int nowIndex = 0;
+    for (var i = 0; i < data.length; i++) {
+      if (data[i].time.hour == now.hour && data[i].time.day == now.day) {
+        nowIndex = i;
+        break;
+      }
+    }
+
+    // Calculate left offset: position 1 hour after the "now" line
+    // nowIndex / data.length gives the fraction, +2 for 1 hour gap
+    final fraction = (nowIndex + 2) / data.length;
+    final leftPercent = (fraction * 100).clamp(10, 50);
 
     // Always use light text - works on both app (sky gradient) and widget (dark bg)
     final textStyle = TextStyle(
@@ -216,18 +230,30 @@ class MeteogramChart extends StatelessWidget {
       fontWeight: FontWeight.bold,
     );
 
-    return Padding(
-      padding: EdgeInsets.only(bottom: compact ? 20 : 28), // Account for bottom titles
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end, // Right side to avoid "now" line
-        children: [
-          // Max temp at top
-          Text('${maxTemp.round()}°', style: textStyle),
-          const Spacer(),
-          // Min temp at bottom
-          Text('${minTemp.round()}°', style: textStyle),
-        ],
-      ),
+    // Position labels on left side, just after the "now" line
+    return Stack(
+      children: [
+        // Max temp at top-left (after now line)
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: Padding(
+            padding: EdgeInsets.only(left: leftPercent * (compact ? 2.5 : 3)),
+            child: Text('${maxTemp.round()}°', style: textStyle),
+          ),
+        ),
+        // Min temp at bottom-left (after now line, above time axis)
+        Positioned(
+          bottom: compact ? 20 : 28,
+          left: 0,
+          right: 0,
+          child: Padding(
+            padding: EdgeInsets.only(left: leftPercent * (compact ? 2.5 : 3)),
+            child: Text('${minTemp.round()}°', style: textStyle),
+          ),
+        ),
+      ],
     );
   }
 
