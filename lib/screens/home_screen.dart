@@ -364,85 +364,39 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Status banner
-              Container(
-                width: double.infinity,
-                margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: colors.cardBackground,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      _isShowingCachedData ? Icons.history : Icons.check_circle_outline,
-                      size: 16,
-                      color: colors.secondaryText,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      l10n.updatedAt(_formatLastUpdated(l10n)),
-                      style: TextStyle(
-                        color: colors.secondaryText,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // Header
+              // Location row with refresh
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  GestureDetector(
+                    onTap: _showLocationPicker,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
+                        Icon(
+                          _getLocationIcon(),
+                          size: 14,
+                          color: colors.secondaryText,
+                        ),
+                        const SizedBox(width: 4),
                         Text(
-                          l10n.appTitle,
+                          _locationName ?? 'Unknown',
                           style: TextStyle(
-                            color: colors.primaryText,
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
+                            color: colors.secondaryText,
+                            fontSize: 13,
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            GestureDetector(
-                              onTap: _showLocationPicker,
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    _getLocationIcon(),
-                                    size: 14,
-                                    color: colors.secondaryText,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    _locationName ?? 'Unknown',
-                                    style: TextStyle(
-                                      color: colors.secondaryText,
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                  Text(
-                                    ' · ${_getLocationSourceLabel(l10n)}',
-                                    style: TextStyle(
-                                      color: colors.secondaryText,
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                  Icon(
-                                    Icons.arrow_drop_down,
-                                    size: 16,
-                                    color: colors.secondaryText,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
+                        Text(
+                          ' · ${_getLocationSourceLabel(l10n)}',
+                          style: TextStyle(
+                            color: colors.secondaryText,
+                            fontSize: 13,
+                          ),
+                        ),
+                        Icon(
+                          Icons.arrow_drop_down,
+                          size: 16,
+                          color: colors.secondaryText,
                         ),
                       ],
                     ),
@@ -457,7 +411,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   ),
                 ],
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
 
               // Current weather card
               if (currentHour != null)
@@ -478,73 +432,39 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     children: [
                       // Temperature
                       Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '${currentHour.temperature.round()}°',
-                              style: TextStyle(
-                                color: colors.primaryText,
-                                fontSize: 64,
-                                fontWeight: FontWeight.w300,
-                                height: 1,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              l10n.now,
-                              style: TextStyle(
-                                color: colors.secondaryText,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
+                        child: Text(
+                          '${currentHour.temperature.round()}°',
+                          style: TextStyle(
+                            color: colors.primaryText,
+                            fontSize: 64,
+                            fontWeight: FontWeight.w300,
+                            height: 1,
+                          ),
                         ),
                       ),
-                      // Stats
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: colors.secondaryText.withAlpha(25),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            _buildStatRow(
-                              icon: Icons.wb_sunny_outlined,
-                              value: l10n.maxSunshine(maxSunshine),
-                              colors: colors,
-                              iconColor: colors.sunshineIcon,
-                            ),
-                            const SizedBox(height: 8),
-                            _buildStatRow(
-                              icon: Icons.water_drop_outlined,
-                              value: l10n.maxPrecipitation(_formatPrecipitation(maxPrecip, useImperial)),
-                              colors: colors,
-                              iconColor: colors.precipitationBar,
-                            ),
-                          ],
-                        ),
+                      // Stats (flat, no background)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          _buildStatRow(
+                            icon: Icons.wb_sunny_outlined,
+                            value: l10n.maxSunshine(maxSunshine),
+                            colors: colors,
+                            iconColor: colors.sunshineIcon,
+                          ),
+                          const SizedBox(height: 8),
+                          _buildStatRow(
+                            icon: Icons.water_drop_outlined,
+                            value: l10n.maxPrecipitation(_formatPrecipitation(maxPrecip, useImperial)),
+                            colors: colors,
+                            iconColor: colors.precipitationBar,
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ),
-              const SizedBox(height: 20),
-
-              // Forecast label
-              Padding(
-                padding: const EdgeInsets.only(left: 4, bottom: 12),
-                child: Text(
-                  l10n.forecastHours(kForecastHours),
-                  style: TextStyle(
-                    color: colors.secondaryText,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              ),
+              const SizedBox(height: 16),
 
               // Meteogram chart - aspect ratio matches home widget dimensions
               // Stack contains both themes; both painted for capture, current theme on top
