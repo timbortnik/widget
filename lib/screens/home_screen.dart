@@ -543,60 +543,73 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               // Stack contains both themes; both painted for capture, current theme on top
               AspectRatio(
                 aspectRatio: _chartAspectRatio,
-                child: Stack(
-                  children: [
-                    // First: chart for NON-current theme (painted for capture, but hidden below)
-                    // RepaintBoundary is inside Container so widget capture has transparent background
-                    Positioned.fill(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).brightness == Brightness.light
-                              ? MeteogramColors.dark.cardBackground
-                              : MeteogramColors.light.cardBackground,
-                        ),
-                        clipBehavior: Clip.antiAlias,
-                        child: RepaintBoundary(
-                          key: Theme.of(context).brightness == Brightness.light ? _chartKeyDark : _chartKeyLight,
-                          child: MeteogramChart(
-                            data: displayData,
-                            nowIndex: nowIndex,
-                            latitude: _weatherData!.latitude,
-                            staleText: _isShowingCachedData && _isCacheStale() ? l10n.offline : null,
-                            explicitColors: Theme.of(context).brightness == Brightness.light
-                                ? MeteogramColors.dark
-                                : MeteogramColors.light,
-                            explicitLocale: locale.toString(),
-                          ),
-                        ),
-                      ),
-                    ),
-                    // Second: chart for CURRENT theme (on top, visible to user)
-                    // RepaintBoundary is inside Container so widget capture has transparent background
-                    Positioned.fill(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: colors.cardBackground,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withAlpha(15),
-                              blurRadius: 20,
-                              offset: const Offset(0, 4),
+                child: Builder(
+                  builder: (context) {
+                    // Get Material You primary color for both theme variants
+                    final primary = Theme.of(context).colorScheme.primary;
+                    final isLight = Theme.of(context).brightness == Brightness.light;
+
+                    // Create colors for the opposite theme with dynamic primary
+                    final oppositeColors = (isLight ? MeteogramColors.dark : MeteogramColors.light).copyWith(
+                      temperatureLine: primary,
+                      temperatureGradientStart: primary.withAlpha(isLight ? 0x60 : 0x40),
+                      temperatureGradientEnd: primary.withAlpha(0x00),
+                    );
+
+                    return Stack(
+                      children: [
+                        // First: chart for NON-current theme (painted for capture, but hidden below)
+                        // RepaintBoundary is inside Container so widget capture has transparent background
+                        Positioned.fill(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: isLight
+                                  ? MeteogramColors.dark.cardBackground
+                                  : MeteogramColors.light.cardBackground,
                             ),
-                          ],
-                        ),
-                        clipBehavior: Clip.antiAlias,
-                        child: RepaintBoundary(
-                          key: Theme.of(context).brightness == Brightness.light ? _chartKeyLight : _chartKeyDark,
-                          child: MeteogramChart(
-                            data: displayData,
-                            nowIndex: nowIndex,
-                            latitude: _weatherData!.latitude,
-                            staleText: _isShowingCachedData && _isCacheStale() ? l10n.offline : null,
+                            clipBehavior: Clip.antiAlias,
+                            child: RepaintBoundary(
+                              key: isLight ? _chartKeyDark : _chartKeyLight,
+                              child: MeteogramChart(
+                                data: displayData,
+                                nowIndex: nowIndex,
+                                latitude: _weatherData!.latitude,
+                                staleText: _isShowingCachedData && _isCacheStale() ? l10n.offline : null,
+                                explicitColors: oppositeColors,
+                                explicitLocale: locale.toString(),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-                  ],
+                        // Second: chart for CURRENT theme (on top, visible to user)
+                        // RepaintBoundary is inside Container so widget capture has transparent background
+                        Positioned.fill(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: colors.cardBackground,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withAlpha(15),
+                                  blurRadius: 20,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            clipBehavior: Clip.antiAlias,
+                            child: RepaintBoundary(
+                              key: isLight ? _chartKeyLight : _chartKeyDark,
+                              child: MeteogramChart(
+                                data: displayData,
+                                nowIndex: nowIndex,
+                                latitude: _weatherData!.latitude,
+                                staleText: _isShowingCachedData && _isCacheStale() ? l10n.offline : null,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
                 ),
               ),
               const SizedBox(height: 20),

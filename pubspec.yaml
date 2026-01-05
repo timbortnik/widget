@@ -36,6 +36,7 @@ dependencies:
   # UI & Charts
   cupertino_icons: ^1.0.8
   fl_chart: ^0.69.0
+  dynamic_color: ^1.7.0
 
   # API & Data
   http: ^1.2.0

@@ -16,28 +16,38 @@ import 'package:flutter/material.dart';
 // =============================================================================
 
 /// App theme configuration with light and dark modes.
+/// Supports Material You dynamic colors when available.
 class AppTheme {
-  /// Light theme.
-  static ThemeData light = ThemeData(
-    useMaterial3: true,
-    brightness: Brightness.light,
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: const Color(0xFF5B8DEF),
-      brightness: Brightness.light,
-    ),
-    scaffoldBackgroundColor: const Color(0xFFF5F7FA),
-  );
+  // Fallback seed color when dynamic colors unavailable
+  static const _fallbackSeed = Color(0xFF5B8DEF);
 
-  /// Dark theme.
-  static ThemeData dark = ThemeData(
-    useMaterial3: true,
-    brightness: Brightness.dark,
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: const Color(0xFF5B8DEF),
+  /// Light theme - uses dynamic ColorScheme if provided.
+  static ThemeData light([ColorScheme? dynamicScheme]) {
+    final colorScheme = dynamicScheme ?? ColorScheme.fromSeed(
+      seedColor: _fallbackSeed,
+      brightness: Brightness.light,
+    );
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.light,
+      colorScheme: colorScheme,
+      scaffoldBackgroundColor: const Color(0xFFF5F7FA),
+    );
+  }
+
+  /// Dark theme - uses dynamic ColorScheme if provided.
+  static ThemeData dark([ColorScheme? dynamicScheme]) {
+    final colorScheme = dynamicScheme ?? ColorScheme.fromSeed(
+      seedColor: _fallbackSeed,
       brightness: Brightness.dark,
-    ),
-    scaffoldBackgroundColor: const Color(0xFF0D1B2A),
-  );
+    );
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.dark,
+      colorScheme: colorScheme,
+      scaffoldBackgroundColor: const Color(0xFF0D1B2A),
+    );
+  }
 }
 
 /// Modern color palette for the meteogram.
@@ -130,10 +140,48 @@ class MeteogramColors {
     sunshineIcon: Color(0xFFFFD93D),      // Bright yellow for dark backgrounds
   );
 
-  /// Get colors based on brightness.
+  /// Get colors based on theme, using Material You primary color for temperature.
   static MeteogramColors of(BuildContext context) {
-    final brightness = Theme.of(context).brightness;
-    return brightness == Brightness.dark ? dark : light;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final primary = theme.colorScheme.primary;
+
+    // Use Material You primary color for temperature line
+    final base = isDark ? dark : light;
+    return base.copyWith(
+      temperatureLine: primary,
+      temperatureGradientStart: primary.withAlpha(isDark ? 0x60 : 0x40),
+      temperatureGradientEnd: primary.withAlpha(0x00),
+    );
+  }
+
+  /// Create a copy with overridden values.
+  MeteogramColors copyWith({
+    Color? temperatureLine,
+    Color? temperatureGradientStart,
+    Color? temperatureGradientEnd,
+  }) {
+    return MeteogramColors(
+      background: background,
+      cardBackground: cardBackground,
+      temperatureLine: temperatureLine ?? this.temperatureLine,
+      temperatureGradientStart: temperatureGradientStart ?? this.temperatureGradientStart,
+      temperatureGradientEnd: temperatureGradientEnd ?? this.temperatureGradientEnd,
+      precipitationBar: precipitationBar,
+      precipitationGradient: precipitationGradient,
+      nowIndicator: nowIndicator,
+      gridLine: gridLine,
+      labelText: labelText,
+      primaryText: primaryText,
+      secondaryText: secondaryText,
+      clearSky: clearSky,
+      partlyCloudySky: partlyCloudySky,
+      overcastSky: overcastSky,
+      chartTempLabel: chartTempLabel,
+      sunshineBar: sunshineBar,
+      sunshineGradient: sunshineGradient,
+      sunshineIcon: sunshineIcon,
+    );
   }
 
   /// Get sky color based on cloud cover percentage with smooth gradient.
