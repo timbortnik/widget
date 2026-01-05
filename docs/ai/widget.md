@@ -447,6 +447,33 @@ More aggressive than irradiance-based formulas (like Kasten & Czeplak), better m
 
 Reference: ha-illuminance project https://github.com/pnbruckner/ha-illuminance
 
+### Precipitation Attenuation
+
+Based on extinction coefficient research relating meteorological optical range (MOR) to rainfall rate:
+
+```
+σ = a × R^b        (extinction coefficient)
+MOR = 3/σ          (Koschmieder's law)
+```
+
+Simplified to a divisor formula:
+
+```
+divisor = 1 + 0.5 × R^0.6
+```
+
+Where R is precipitation in mm/h.
+
+| Precipitation | Divisor | Light Factor |
+|---------------|---------|--------------|
+| 0 mm/h | 1.0 | 100% |
+| 1 mm/h (light) | 1.5 | 67% |
+| 5 mm/h (moderate) | 2.5 | 40% |
+| 10 mm/h (heavy) | 3.0 | 33% |
+| 20 mm/h (very heavy) | 3.9 | 26% |
+
+Reference: Rainfall-MOR relationship studies, e.g., https://doi.org/10.20937/ATM.53297
+
 ### Combined Formula
 
 ```dart
@@ -458,7 +485,12 @@ potential = clearSkyLux / 130000
 
 // Cloud attenuation (ha-illuminance logarithmic model)
 cloudDivisor = 10^(cloudCover / 100)
-linear = potential / cloudDivisor
+
+// Precipitation attenuation (extinction coefficient model)
+precipDivisor = 1 + 0.5 × R^0.6
+
+// Combined attenuation
+linear = potential / cloudDivisor / precipDivisor
 
 // Logarithmic scale for display (makes small values visible)
 logScaled = log(1 + linear × 99) / log(100)

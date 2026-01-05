@@ -304,7 +304,7 @@ class MeteogramChart extends StatelessWidget {
 
   /// Builds sunshine bars (yellow, behind precipitation).
   ///
-  /// Combines two models:
+  /// Combines three models:
   ///
   /// 1. **Clear-sky illuminance** - Atmospheric model based on solar elevation,
   ///    accounting for optical air mass and atmospheric extinction.
@@ -314,16 +314,22 @@ class MeteogramChart extends StatelessWidget {
   /// 2. **Cloud attenuation** - ha-illuminance logarithmic model:
   ///    ```
   ///    divisor = 10^(cloudCover/100)
-  ///    factor = 1/divisor
   ///    ```
   ///    At 50% clouds → 32% light, at 100% clouds → 10% light.
-  ///    More aggressive than irradiance-based formulas, better matches
-  ///    perceived brightness reduction from clouds.
+  ///
+  /// 3. **Precipitation attenuation** - Based on extinction coefficient research:
+  ///    ```
+  ///    divisor = 1 + 0.5 × R^0.6
+  ///    ```
+  ///    Where R is precipitation in mm/h. Derived from MOR-rain relationships
+  ///    (σ = aR^b) in atmospheric visibility studies.
+  ///    At 5mm/h → 40% light, at 10mm/h → 33% light.
   ///
   /// References:
   /// - Kasten, F. & Young, A.T. (1989). "Revised optical air mass tables and
   ///   approximation formula." Applied Optics, 28(22), 4735-4738.
   /// - ha-illuminance: https://github.com/pnbruckner/ha-illuminance
+  /// - Rainfall-MOR relationship: https://doi.org/10.20937/ATM.53297
   Widget _buildSunshineBars(MeteogramColors colors) {
     const chartMax = 10.0;
     const maxIlluminance = 130000.0; // Peak clear-sky illuminance in lux
@@ -372,7 +378,13 @@ class MeteogramChart extends StatelessWidget {
             // ha-illuminance cloud attenuation: divisor = 10^(cloud/100)
             // 0% → 1x, 50% → 3.16x, 100% → 10x reduction
             final cloudDivisor = math.pow(10, hourData.cloudCover / 100.0);
-            final linear = potential / cloudDivisor;
+
+            // Precipitation attenuation based on extinction coefficient research
+            // divisor = 1 + 0.5 × R^0.6 where R is mm/h
+            // 1mm/h → 1.5x, 5mm/h → 2.5x, 10mm/h → 3x reduction
+            final precipDivisor = 1 + 0.5 * math.pow(hourData.precipitation, 0.6);
+
+            final linear = potential / cloudDivisor / precipDivisor;
 
             // Logarithmic scale to make small values more visible
             // log(1 + x*99) / log(100) maps 0->0, 1->1 with log curve
