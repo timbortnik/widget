@@ -3,8 +3,9 @@
     android:id="@+id/widget_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="8dp"
-    android:background="@drawable/widget_background">
+    android:theme="@style/WidgetTheme"
+    android:background="?android:attr/colorBackground"
+    android:alpha="0.85">
 
     <!-- Chart image (fills entire widget)
          IMPORTANT: Do NOT use scaleType="centerCrop" or "fitXY" - cropping is forbidden,

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Widget theme - uses Material You dynamic colors on Android 12+ -->
+    <style name="WidgetTheme" parent="android:Theme.DeviceDefault.DayNight">
+        <!-- Dynamic colors from wallpaper are automatically applied -->
+    </style>
+</resources>

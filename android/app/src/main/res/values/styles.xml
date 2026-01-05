@@ -15,4 +15,9 @@
     <style name="NormalTheme" parent="@android:style/Theme.Light.NoTitleBar">
         <item name="android:windowBackground">?android:colorBackground</item>
     </style>
+
+    <!-- Widget theme - fallback for Android 11 and below -->
+    <style name="WidgetTheme" parent="android:Theme.DeviceDefault.DayNight">
+        <item name="android:colorBackground">#1B2838</item>
+    </style>
 </resources>
