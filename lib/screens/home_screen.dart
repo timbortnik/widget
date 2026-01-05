@@ -430,8 +430,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                   Text(
                                     ' · ${_getLocationSourceLabel(l10n)}',
                                     style: TextStyle(
-                                      color: colors.secondaryText.withAlpha(150),
-                                      fontSize: 12,
+                                      color: colors.secondaryText,
+                                      fontSize: 13,
                                     ),
                                   ),
                                   Icon(
