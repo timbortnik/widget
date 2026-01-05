@@ -510,7 +510,7 @@ class MeteogramChart extends StatelessWidget {
     // Use temperature line color for visual consistency
     final textStyle = TextStyle(
       color: colors.temperatureLine,
-      fontSize: compact ? 15 : 18,
+      fontSize: compact ? 11 : 13,
       fontWeight: FontWeight.bold,
     );
 
@@ -562,7 +562,7 @@ class MeteogramChart extends StatelessWidget {
     // Adaptive color - uses theme-aware labelText (dark on light bg, light on dark bg)
     final textStyle = TextStyle(
       color: colors.labelText,
-      fontSize: compact ? 14 : 16,
+      fontSize: compact ? 11 : 13,
       fontWeight: FontWeight.w600,
     );
 
