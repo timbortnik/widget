@@ -19,5 +19,7 @@
   "errorLoadingData": "No se pudieron cargar los datos del tiempo",
   "retry": "Reintentar",
   "offline": "SIN CONEXIÓN",
+  "forecastHours": "Pronóstico de {hours} horas",
+  "maxPrecipitation": "Máx {amount}",
   "precipitationRate": "{amount} mm/h"
 }

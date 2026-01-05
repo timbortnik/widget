@@ -214,6 +214,18 @@ abstract class AppLocalizations {
   /// **'OFFLINE'**
   String get offline;
 
+  /// Label showing forecast duration
+  ///
+  /// In en, this message translates to:
+  /// **'{hours}-Hour Forecast'**
+  String forecastHours(int hours);
+
+  /// Maximum precipitation in forecast
+  ///
+  /// In en, this message translates to:
+  /// **'Max {amount}'**
+  String maxPrecipitation(String amount);
+
   /// Precipitation rate shown on chart
   ///
   /// In en, this message translates to:

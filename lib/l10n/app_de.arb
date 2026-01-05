@@ -19,5 +19,7 @@
   "errorLoadingData": "Wetterdaten konnten nicht geladen werden",
   "retry": "Erneut versuchen",
   "offline": "OFFLINE",
+  "forecastHours": "{hours}-Stunden-Vorhersage",
+  "maxPrecipitation": "Max {amount}",
   "precipitationRate": "{amount} mm/h"
 }

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -19,7 +18,7 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   final _weatherService = WeatherService();
   final _locationService = LocationService();
   final _widgetService = WidgetService();
@@ -31,29 +30,65 @@ class _HomeScreenState extends State<HomeScreen> {
   String? _error;
   LocationSource _locationSource = LocationSource.gps;
   bool _isShowingCachedData = false;
+  double _chartAspectRatio = 2.0; // Default 2:1, updated from widget dimensions
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _loadWidgetDimensions();
     _checkAndSyncWidget();
     _loadWeather();
   }
 
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // App came to foreground - check if widget was resized
+      _checkAndSyncWidget();
+    }
+  }
+
+  /// Load widget dimensions and update chart aspect ratio.
+  Future<void> _loadWidgetDimensions() async {
+    final dimensions = await _widgetService.getWidgetDimensions();
+    if (dimensions != null && dimensions.widthPx > 0 && dimensions.heightPx > 0) {
+      setState(() {
+        _chartAspectRatio = dimensions.widthPx / dimensions.heightPx;
+      });
+      debugPrint('Chart aspect ratio updated to: $_chartAspectRatio');
+    }
+  }
+
   /// Quick check on startup to sync widget state with cache age.
-  /// Shows OFFLINE watermark if cache is stale before full refresh completes.
+  /// Also handles widget resize by re-rendering at new dimensions.
   Future<void> _checkAndSyncWidget() async {
+    // Check if widget was resized - if so, force re-render
+    final wasResized = await _widgetService.checkAndClearResizeFlag();
+
+    // Reload dimensions if resized
+    if (wasResized) {
+      await _loadWidgetDimensions();
+    }
+
     final isStale = await _weatherService.isCacheStale();
-    if (isStale) {
+    if (isStale || wasResized) {
       final cached = await _weatherService.getCachedWeather();
       final cachedCity = await _weatherService.getCachedCityName();
       if (cached != null) {
-        // Mark as showing cached data so chart renders with watermark
+        // Mark as showing cached data so chart renders with watermark (if stale)
         setState(() {
           _weatherData = cached;
           _locationName = cachedCity;
-          _isShowingCachedData = true;
+          _isShowingCachedData = isStale;
         });
-        // Update widget with watermark
+        // Update widget (with watermark if stale, or just re-render if resized)
         WidgetsBinding.instance.addPostFrameCallback((_) async {
           final imagePath = await _captureChart();
           await _widgetService.updateWidget(
@@ -266,6 +301,9 @@ class _HomeScreenState extends State<HomeScreen> {
     final displayData = _weatherData!.getDisplayRange();
     final nowIndex = _weatherData!.getNowIndex();
     final currentHour = _weatherData!.getCurrentHour();
+    final locale = Localizations.localeOf(context);
+    final useImperial = _useImperialUnits(locale);
+    final maxPrecip = _getMaxPrecipitation(displayData, nowIndex);
 
     return RefreshIndicator(
       onRefresh: () => _loadWeather(userTriggered: true),
@@ -405,7 +443,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Now',
+                              l10n.now,
                               style: TextStyle(
                                 color: colors.secondaryText,
                                 fontSize: 14,
@@ -420,7 +458,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: [
                           _buildStatRow(
                             icon: Icons.water_drop_outlined,
-                            value: '${currentHour.precipitation.toStringAsFixed(1)} mm',
+                            value: l10n.maxPrecipitation(_formatPrecipitation(maxPrecip, useImperial)),
                             colors: colors,
                           ),
                           const SizedBox(height: 12),
@@ -440,7 +478,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Padding(
                 padding: const EdgeInsets.only(left: 4, bottom: 12),
                 child: Text(
-                  '44-Hour Forecast',
+                  l10n.forecastHours(kForecastHours),
                   style: TextStyle(
                     color: colors.secondaryText,
                     fontSize: 13,
@@ -450,9 +488,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
 
-              // Meteogram chart
+              // Meteogram chart - aspect ratio matches home widget dimensions
               AspectRatio(
-                aspectRatio: 245 / 115, // Match 4x2 widget min dimensions per Android docs
+                aspectRatio: _chartAspectRatio,
                 child: Container(
                   decoration: BoxDecoration(
                     color: colors.cardBackground,
@@ -594,6 +632,26 @@ class _HomeScreenState extends State<HomeScreen> {
     return DateTime.now().difference(_weatherData!.fetchedAt) > const Duration(hours: 1);
   }
 
+  /// Get max precipitation from forecast data (from now onwards).
+  double _getMaxPrecipitation(List<HourlyData> data, int nowIndex) {
+    if (data.isEmpty || nowIndex >= data.length) return 0;
+    return data.skip(nowIndex).map((h) => h.precipitation).reduce((a, b) => a > b ? a : b);
+  }
+
+  /// Check if locale uses imperial units (US).
+  bool _useImperialUnits(Locale locale) {
+    return locale.countryCode == 'US';
+  }
+
+  /// Format precipitation with localized units.
+  String _formatPrecipitation(double mm, bool useImperial) {
+    if (useImperial) {
+      final inches = mm / 25.4;
+      return '${inches.toStringAsFixed(2)} in';
+    }
+    return '${mm.toStringAsFixed(1)} mm';
+  }
+
   IconData _getLocationIcon() {
     switch (_locationSource) {
       case LocationSource.gps:
@@ -618,13 +676,28 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<String?> _captureChart() async {
     try {
-      // Wait a bit for the chart to fully render
-      await Future.delayed(const Duration(milliseconds: 500));
+      // Wait for the chart to fully render
+      await Future.delayed(const Duration(milliseconds: 100));
 
       final boundary = _chartKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
       if (boundary == null) return null;
 
-      final image = await boundary.toImage(pixelRatio: 2.0);
+      // Get actual widget dimensions from native provider
+      final widgetDimensions = await _widgetService.getWidgetDimensions();
+
+      final double pixelRatio;
+      if (widgetDimensions != null && boundary.size.width > 0) {
+        // Calculate pixel ratio to render at exact widget size
+        pixelRatio = widgetDimensions.widthPx / boundary.size.width;
+        debugPrint('Rendering chart at ${widgetDimensions.widthPx}x${widgetDimensions.heightPx}px '
+            '(pixelRatio: ${pixelRatio.toStringAsFixed(2)})');
+      } else {
+        // Fallback to device pixel ratio if widget dimensions not available
+        pixelRatio = MediaQuery.of(context).devicePixelRatio;
+        debugPrint('Widget dimensions not available, using device ratio: $pixelRatio');
+      }
+
+      final image = await boundary.toImage(pixelRatio: pixelRatio);
       final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
       if (byteData == null) return null;
 

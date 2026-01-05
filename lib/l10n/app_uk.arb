@@ -103,6 +103,28 @@
     "description": "Watermark shown on chart when displaying cached data"
   },
 
+  "forecastHours": "Прогноз на {hours} год",
+  "@forecastHours": {
+    "description": "Label showing forecast duration",
+    "placeholders": {
+      "hours": {
+        "type": "int",
+        "example": "46"
+      }
+    }
+  },
+
+  "maxPrecipitation": "Макс {amount}",
+  "@maxPrecipitation": {
+    "description": "Maximum precipitation in forecast",
+    "placeholders": {
+      "amount": {
+        "type": "String",
+        "example": "2.5 мм"
+      }
+    }
+  },
+
   "precipitationRate": "{amount} мм/год",
   "@precipitationRate": {
     "description": "Precipitation rate shown on chart",

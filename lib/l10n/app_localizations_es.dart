@@ -67,6 +67,16 @@ class AppLocalizationsEs extends AppLocalizations {
   String get offline => 'SIN CONEXIÓN';
 
   @override
+  String forecastHours(int hours) {
+    return 'Pronóstico de $hours horas';
+  }
+
+  @override
+  String maxPrecipitation(String amount) {
+    return 'Máx $amount';
+  }
+
+  @override
   String precipitationRate(String amount) {
     return '$amount mm/h';
   }

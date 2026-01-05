@@ -1,9 +1,29 @@
 import 'dart:io';
 import 'dart:typed_data';
+import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:path_provider/path_provider.dart';
 import '../models/weather_data.dart';
+
+/// Widget dimensions in pixels as reported by the native widget provider.
+class WidgetDimensions {
+  final int widthPx;
+  final int heightPx;
+  final double density;
+
+  const WidgetDimensions({
+    required this.widthPx,
+    required this.heightPx,
+    required this.density,
+  });
+
+  /// Logical size for Flutter rendering.
+  Size get logicalSize => Size(widthPx / density, heightPx / density);
+
+  @override
+  String toString() => 'WidgetDimensions(${widthPx}x${heightPx}px, density: $density)';
+}
 
 /// Service for updating the home screen widget.
 class WidgetService {
@@ -60,5 +80,53 @@ class WidgetService {
   static Future<void> initialize() async {
     // Set app group ID for iOS
     await HomeWidget.setAppGroupId('group.com.meteogram.widget');
+  }
+
+  /// Check if widget was resized and clear the flag.
+  /// Returns true if widget needs re-rendering.
+  Future<bool> checkAndClearResizeFlag() async {
+    try {
+      final resized = await HomeWidget.getWidgetData<bool>('widget_resized');
+      if (resized == true) {
+        await HomeWidget.saveWidgetData<bool>('widget_resized', false);
+        debugPrint('Widget was resized, triggering re-render');
+        return true;
+      }
+      return false;
+    } catch (e) {
+      debugPrint('Error checking resize flag: $e');
+      return false;
+    }
+  }
+
+  /// Get widget dimensions from native widget provider.
+  /// Returns null if dimensions haven't been set (widget not yet placed).
+  Future<WidgetDimensions?> getWidgetDimensions() async {
+    try {
+      final widthPx = await HomeWidget.getWidgetData<int>('widget_width_px');
+      final heightPx = await HomeWidget.getWidgetData<int>('widget_height_px');
+      final density = await HomeWidget.getWidgetData<double>('widget_density');
+
+      if (widthPx == null || heightPx == null || density == null) {
+        debugPrint('Widget dimensions not available yet');
+        return null;
+      }
+
+      if (widthPx <= 0 || heightPx <= 0) {
+        debugPrint('Invalid widget dimensions: ${widthPx}x$heightPx');
+        return null;
+      }
+
+      final dimensions = WidgetDimensions(
+        widthPx: widthPx,
+        heightPx: heightPx,
+        density: density,
+      );
+      debugPrint('Widget dimensions: $dimensions');
+      return dimensions;
+    } catch (e) {
+      debugPrint('Error getting widget dimensions: $e');
+      return null;
+    }
   }
 }

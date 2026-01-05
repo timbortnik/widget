@@ -3,8 +3,10 @@ package com.meteogram.meteogram_widget
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.BitmapFactory
+import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.RemoteViews
@@ -14,6 +16,47 @@ import java.io.File
 class MeteogramWidgetProvider : HomeWidgetProvider() {
     companion object {
         private const val TAG = "MeteogramWidget"
+    }
+
+    override fun onAppWidgetOptionsChanged(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        appWidgetId: Int,
+        newOptions: Bundle
+    ) {
+        Log.d(TAG, "Widget resized")
+
+        // Save new dimensions
+        val minWidth = newOptions.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH)
+        val maxHeight = newOptions.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT)
+        val density = context.resources.displayMetrics.density
+        val widthPx = (minWidth * density).toInt()
+        val heightPx = (maxHeight * density).toInt()
+
+        Log.d(TAG, "New dimensions: ${minWidth}dp x ${maxHeight}dp = ${widthPx}px x ${heightPx}px")
+
+        // Update SharedPreferences with new dimensions
+        val prefs = context.getSharedPreferences("HomeWidgetPreferences", Context.MODE_PRIVATE)
+        prefs.edit()
+            .putInt("widget_width_px", widthPx)
+            .putInt("widget_height_px", heightPx)
+            .putFloat("widget_density", density)
+            .putBoolean("widget_resized", true)
+            .apply()
+
+        // Show refresh indicator on widget
+        val views = RemoteViews(context.packageName, R.layout.meteogram_widget)
+        views.setViewVisibility(R.id.widget_refresh_indicator, View.VISIBLE)
+
+        // Update all widgets with the indicator
+        val appWidgetManager = AppWidgetManager.getInstance(context)
+        val componentName = android.content.ComponentName(context, MeteogramWidgetProvider::class.java)
+        val widgetIds = appWidgetManager.getAppWidgetIds(componentName)
+        for (id in widgetIds) {
+            appWidgetManager.partiallyUpdateAppWidget(id, views)
+        }
+
+        Log.d(TAG, "Resize indicator shown - tap widget to update chart")
     }
 
     override fun onUpdate(
@@ -26,6 +69,25 @@ class MeteogramWidgetProvider : HomeWidgetProvider() {
 
         for (appWidgetId in appWidgetIds) {
             val views = RemoteViews(context.packageName, R.layout.meteogram_widget)
+
+            // Get widget dimensions and save to SharedPreferences for Flutter
+            val options = appWidgetManager.getAppWidgetOptions(appWidgetId)
+            val minWidth = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH)
+            val maxHeight = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT)
+            val density = context.resources.displayMetrics.density
+
+            // Convert dp to pixels
+            val widthPx = (minWidth * density).toInt()
+            val heightPx = (maxHeight * density).toInt()
+
+            Log.d(TAG, "Widget dimensions: ${minWidth}dp x ${maxHeight}dp = ${widthPx}px x ${heightPx}px (density: $density)")
+
+            // Save dimensions to SharedPreferences for Flutter to read
+            widgetData.edit()
+                .putInt("widget_width_px", widthPx)
+                .putInt("widget_height_px", heightPx)
+                .putFloat("widget_density", density)
+                .apply()
 
             // Set up tap to open app
             val intent = android.content.Intent(context, MainActivity::class.java).apply {
@@ -67,6 +129,9 @@ class MeteogramWidgetProvider : HomeWidgetProvider() {
                 views.setViewVisibility(R.id.widget_chart, View.GONE)
                 views.setViewVisibility(R.id.widget_placeholder, View.VISIBLE)
             }
+
+            // Hide refresh indicator (chart has been updated)
+            views.setViewVisibility(R.id.widget_refresh_indicator, View.GONE)
 
             appWidgetManager.updateAppWidget(appWidgetId, views)
             Log.d(TAG, "Updated widget $appWidgetId")

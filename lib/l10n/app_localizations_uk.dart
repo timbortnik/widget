@@ -67,6 +67,16 @@ class AppLocalizationsUk extends AppLocalizations {
   String get offline => 'ОФЛАЙН';
 
   @override
+  String forecastHours(int hours) {
+    return 'Прогноз на $hours год';
+  }
+
+  @override
+  String maxPrecipitation(String amount) {
+    return 'Макс $amount';
+  }
+
+  @override
   String precipitationRate(String amount) {
     return '$amount мм/год';
   }

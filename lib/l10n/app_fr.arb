@@ -19,5 +19,7 @@
   "errorLoadingData": "Impossible de charger les données météo",
   "retry": "Réessayer",
   "offline": "HORS LIGNE",
+  "forecastHours": "Prévisions {hours}h",
+  "maxPrecipitation": "Max {amount}",
   "precipitationRate": "{amount} mm/h"
 }

@@ -1,6 +1,12 @@
 /// Hours of past data to request from API.
 const int kPastHours = 6;
 
+/// Hours of future data to display on chart.
+const int kForecastHours = 46;
+
+/// Total display range in hours (past + forecast).
+const int kDisplayRangeHours = kPastHours + kForecastHours;
+
 /// Weather data model for Open-Meteo API response.
 class WeatherData {
   final String timezone;
@@ -53,12 +59,12 @@ class WeatherData {
         },
       };
 
-  /// Get data for display range: past hours + ~46h future.
+  /// Get data for display range: past hours + forecast hours.
   /// Returns a slice of hourly data centered on "now".
   List<HourlyData> getDisplayRange() {
     // API returns: kPastHours + forecast_days (2) * 24 hours
-    // We show 52 hours total starting from index 0
-    final endIndex = (kPastHours + 46).clamp(0, hourly.length);
+    // We show kDisplayRangeHours total starting from index 0
+    final endIndex = kDisplayRangeHours.clamp(0, hourly.length);
     return hourly.sublist(0, endIndex);
   }
 
