@@ -5,7 +5,6 @@
     android:layout_height="match_parent"
     android:theme="@style/WidgetTheme"
     android:background="?android:attr/colorBackground"
-    android:alpha="0.85"
     android:clipToOutline="false"
     android:outlineProvider="none">
 
