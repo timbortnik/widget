@@ -139,19 +139,35 @@ class MeteogramChart extends StatelessWidget {
     // Use nowIndex for the "now" line position
     final nowPosition = nowIndex.toDouble();
 
+    // Build vertical lines for time labels (12h intervals from now)
+    final verticalLines = <VerticalLine>[];
+    for (var i = nowIndex; i < data.length - 8; i++) {
+      final offset = i - nowIndex;
+      if (offset < 0 || offset % 12 != 0) continue;
+
+      if (i == nowIndex) {
+        // "Now" line - thicker
+        verticalLines.add(VerticalLine(
+          x: i.toDouble(),
+          color: colors.labelText,
+          strokeWidth: compact ? 2 : 3,
+        ));
+      } else {
+        // Time label lines - thin
+        verticalLines.add(VerticalLine(
+          x: i.toDouble(),
+          color: colors.labelText.withAlpha(100),
+          strokeWidth: 1,
+        ));
+      }
+    }
+
     return LineChart(
       LineChartData(
         minY: minTemp - yPadding,
         maxY: maxTemp + yPadding,
         extraLinesData: ExtraLinesData(
-          verticalLines: [
-            VerticalLine(
-              x: nowPosition,
-              color: colors.labelText,
-              strokeWidth: compact ? 2 : 3,
-              dashArray: null,
-            ),
-          ],
+          verticalLines: verticalLines,
         ),
         gridData: const FlGridData(show: false),
         titlesData: FlTitlesData(
