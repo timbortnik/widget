@@ -8,6 +8,13 @@ import '../theme/app_theme.dart';
 
 /// Calculate solar elevation angle in degrees.
 /// Returns negative values when sun is below horizon.
+///
+/// Formula based on standard astronomical calculations:
+/// - Solar declination: δ = 23.45° × sin(360/365 × (284 + dayOfYear))
+/// - Hour angle: h = 15° × (hour - 12)
+/// - Elevation: sin(α) = sin(lat)×sin(δ) + cos(lat)×cos(δ)×cos(h)
+///
+/// Reference: Meeus, J. (1991). Astronomical Algorithms. Willmann-Bell.
 double _solarElevation(double latitude, DateTime time) {
   final dayOfYear = time.difference(DateTime(time.year, 1, 1)).inDays + 1;
   final hour = time.hour + time.minute / 60.0;
@@ -29,6 +36,36 @@ double _solarElevation(double latitude, DateTime time) {
       math.cos(latRad) * math.cos(decRad) * math.cos(haRad);
 
   return math.asin(sinElevation.clamp(-1.0, 1.0)) * 180 / math.pi;
+}
+
+/// Calculate clear-sky illuminance in lux from solar elevation angle.
+///
+/// Uses atmospheric model accounting for optical path length.
+/// Returns ~400-800 lux at sunrise/sunset (0°), ~130,000 lux at zenith (90°).
+///
+/// Formula from ha-illuminance project, based on atmospheric physics:
+/// https://github.com/pnbruckner/ha-illuminance
+///
+/// Reference: Derived from Kasten & Young (1989) air mass formula
+/// and empirical illuminance measurements.
+double _clearSkyIlluminance(double elevation) {
+  if (elevation < -6) return 0; // Below civil twilight
+
+  final elevRad = elevation * math.pi / 180;
+  final u = math.sin(elevRad);
+
+  // Atmospheric refraction constant
+  const x = 753.66156;
+
+  // Calculate optical air mass
+  final s = math.asin((x * math.cos(elevRad) / (x + 1)).clamp(-1.0, 1.0));
+  final m = x * (math.cos(s) - u) + math.cos(s);
+
+  // Illuminance formula with atmospheric extinction
+  final factor = math.exp(-0.2 * m) * u +
+      0.0289 * math.exp(-0.042 * m) * (1 + (elevation + 90) * u / 57.29577951);
+
+  return 133775 * factor.clamp(0.0, double.infinity);
 }
 
 /// Modern meteogram chart with temperature line, precipitation bars, and sky gradient.
@@ -266,16 +303,37 @@ class MeteogramChart extends StatelessWidget {
   }
 
   /// Builds sunshine bars (yellow, behind precipitation).
-  /// Uses astronomical solar elevation combined with cloud cover.
+  ///
+  /// Combines two scientifically-grounded models:
+  ///
+  /// 1. **Clear-sky illuminance** - Atmospheric model based on solar elevation,
+  ///    accounting for optical air mass and atmospheric extinction.
+  ///    Returns ~400-800 lux at sunrise/sunset, ~130,000 lux at zenith.
+  ///    Based on ha-illuminance project and Kasten & Young (1989) air mass formula.
+  ///
+  /// 2. **Cloud attenuation** - Kasten & Czeplak (1980) formula:
+  ///    ```
+  ///    GHI/GHI_clear = 1 - 0.75 × (cloudCover)^3.4
+  ///    ```
+  ///    Derived from 10 years of hourly data from Hamburg, Germany.
+  ///    At 100% cloud cover, 25% of light still reaches surface as diffuse radiation.
+  ///
+  /// References:
+  /// - Kasten, F. & Czeplak, G. (1980). "Solar and terrestrial radiation dependent
+  ///   on the amount and type of cloud." Solar Energy, 24(2), 177-189.
+  ///   https://doi.org/10.1016/0038-092X(80)90391-6
+  /// - Kasten, F. & Young, A.T. (1989). "Revised optical air mass tables and
+  ///   approximation formula." Applied Optics, 28(22), 4735-4738.
+  /// - ha-illuminance: https://github.com/pnbruckner/ha-illuminance
   Widget _buildSunshineBars(MeteogramColors colors) {
     const chartMax = 10.0;
-    const maxElevation = 90.0; // Maximum possible solar elevation
+    const maxIlluminance = 130000.0; // Peak clear-sky illuminance in lux
 
-    // Check if there's any potential sunshine
+    // Check if there's any potential sunshine (including civil twilight)
     bool hasSunshine = false;
     for (final hourData in data) {
       final elevation = _solarElevation(latitude, hourData.time);
-      if (elevation > 0 && hourData.cloudCover < 100) {
+      if (elevation > -6) { // Civil twilight threshold
         hasSunshine = true;
         break;
       }
@@ -293,8 +351,9 @@ class MeteogramChart extends StatelessWidget {
             final hourData = e.value;
             final elevation = _solarElevation(latitude, hourData.time);
 
-            // Sun below horizon = no sunshine
-            if (elevation <= 0) {
+            // Get clear-sky illuminance (accounts for atmospheric path)
+            final clearSkyLux = _clearSkyIlluminance(elevation);
+            if (clearSkyLux <= 0) {
               return BarChartGroupData(
                 x: e.key,
                 barRods: [
@@ -308,12 +367,20 @@ class MeteogramChart extends StatelessWidget {
               );
             }
 
-            // Potential sunshine from sun elevation (0-90° maps to 0-1)
-            final potential = (elevation / maxElevation).clamp(0.0, 1.0);
+            // Normalize to 0-1 range
+            final potential = (clearSkyLux / maxIlluminance).clamp(0.0, 1.0);
 
-            // Actual sunshine reduced by cloud cover
-            final clearSkyFactor = (100 - hourData.cloudCover) / 100.0;
-            final sunshine = potential * clearSkyFactor * chartMax;
+            // Kasten & Czeplak (1980) cloud attenuation formula
+            // GHI/GHI_clear = 1 - 0.75 * (cloudCover)^3.4
+            // At 100% clouds, still 25% diffuse light gets through
+            final cloudFraction = hourData.cloudCover / 100.0;
+            final clearSkyFactor = 1.0 - 0.75 * math.pow(cloudFraction, 3.4);
+            final linear = potential * clearSkyFactor;
+
+            // Logarithmic scale to make small values more visible
+            // log(1 + x*99) / log(100) maps 0->0, 1->1 with log curve
+            final logScaled = math.log(1 + linear * 99) / math.log(100);
+            final sunshine = logScaled * chartMax;
 
             if (sunshine <= 0) {
               return BarChartGroupData(

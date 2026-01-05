@@ -376,6 +376,97 @@ class MeteogramColors {
 ### Trade-off
 Doubles storage (two PNG files instead of one), but enables instant theme switching without any app code running.
 
+## Sunshine Calculation
+
+The meteogram displays sunshine intensity as yellow bars, calculated using scientifically-grounded formulas.
+
+### Solar Elevation (Astronomical)
+
+Sun's angle above the horizon, based on latitude, time of day, and day of year:
+
+```
+δ = 23.45° × sin(360/365 × (284 + dayOfYear))   // Solar declination
+h = 15° × (hour - 12)                            // Hour angle
+sin(α) = sin(lat)×sin(δ) + cos(lat)×cos(δ)×cos(h)  // Elevation angle
+```
+
+- α < -6°: Below civil twilight (no visible light)
+- α = 0°: Sunrise/sunset (~400-800 lux)
+- α = 90°: Sun directly overhead (~130,000 lux)
+
+Reference: Meeus, J. (1991). *Astronomical Algorithms*. Willmann-Bell.
+
+### Clear-Sky Illuminance (Atmospheric Model)
+
+The simple `elevation / 90°` formula gives zero light at sunrise/sunset, which is incorrect. Instead, we use an atmospheric model that accounts for optical air mass:
+
+```dart
+// Atmospheric refraction constant
+x = 753.66156
+
+// Optical air mass calculation
+s = arcsin((x × cos(elevation)) / (x + 1))
+m = x × (cos(s) - sin(elevation)) + cos(s)
+
+// Illuminance with atmospheric extinction
+factor = exp(-0.2 × m) × sin(elevation) +
+         0.0289 × exp(-0.042 × m) × (1 + (elevation + 90) × sin(elevation) / 57.3)
+
+illuminance = 133775 × factor  // Result in lux
+```
+
+| Solar Elevation | Clear-Sky Illuminance |
+|-----------------|----------------------|
+| -6° (civil twilight) | 0 lux |
+| 0° (sunrise/sunset) | ~400-800 lux |
+| 30° | ~60,000 lux |
+| 60° | ~100,000 lux |
+| 90° (zenith) | ~130,000 lux |
+
+Reference: Kasten, F. & Young, A.T. (1989). "Revised optical air mass tables and approximation formula." *Applied Optics*, 28(22), 4735-4738.
+
+Implementation based on: ha-illuminance project https://github.com/pnbruckner/ha-illuminance
+
+### Cloud Attenuation (Kasten & Czeplak 1980)
+
+Empirical formula derived from 10 years of hourly measurements in Hamburg, Germany:
+
+```
+GHI/GHI_clear = 1 - 0.75 × (cloudCover)^3.4
+```
+
+| Cloud Cover | Light Factor |
+|-------------|--------------|
+| 0% | 100% |
+| 50% | 93% |
+| 75% | 72% |
+| 100% | 25% (diffuse) |
+
+Even at 100% cloud cover, 25% of light reaches the surface as diffuse radiation.
+
+Reference: Kasten, F. & Czeplak, G. (1980). "Solar and terrestrial radiation dependent on the amount and type of cloud." *Solar Energy*, 24(2), 177-189. https://doi.org/10.1016/0038-092X(80)90391-6
+
+### Combined Formula
+
+```dart
+// Clear-sky illuminance from atmospheric model (0 to ~130,000 lux)
+clearSkyLux = _clearSkyIlluminance(solarElevation)
+
+// Normalize to 0-1 range
+potential = clearSkyLux / 130000
+
+// Cloud attenuation (Kasten & Czeplak)
+clearSkyFactor = 1 - 0.75 × cloudCover^3.4
+
+// Linear sunshine intensity
+linear = potential × clearSkyFactor
+
+// Logarithmic scale for display (makes small values visible)
+logScaled = log(1 + linear × 99) / log(100)
+```
+
+The logarithmic scaling ensures winter/overcast conditions still show visible bars rather than being imperceptibly small.
+
 ## Debugging
 
 ### Logcat Commands
