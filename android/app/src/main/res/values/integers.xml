@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Visibility: 0=visible, 1=invisible, 2=gone -->
+    <integer name="chart_light_visibility">0</integer>
+    <integer name="chart_dark_visibility">2</integer>
+</resources>

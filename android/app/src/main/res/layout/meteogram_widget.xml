@@ -7,15 +7,23 @@
     android:background="?android:attr/colorBackground"
     android:alpha="0.85">
 
-    <!-- Chart image (fills entire widget)
+    <!-- Chart images - two versions for automatic theme switching.
+         When launcher re-inflates layout on theme change, correct one becomes visible.
          IMPORTANT: Do NOT use scaleType="centerCrop" or "fitXY" - cropping is forbidden,
          and fitXY causes blurry scaling. Use fitCenter to preserve full image quality. -->
     <ImageView
-        android:id="@+id/widget_chart"
+        android:id="@+id/widget_chart_light"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scaleType="fitCenter"
-        android:visibility="gone"
+        android:visibility="@integer/chart_light_visibility"
+        android:contentDescription="Weather forecast chart" />
+    <ImageView
+        android:id="@+id/widget_chart_dark"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="fitCenter"
+        android:visibility="@integer/chart_dark_visibility"
         android:contentDescription="Weather forecast chart" />
 
     <!-- Placeholder -->
@@ -29,7 +37,7 @@
         android:textColor="#66FFFFFF"
         android:fontFamily="sans-serif" />
 
-    <!-- Refresh indicator (shown after resize) -->
+    <!-- Refresh indicator (shown after resize or theme change) -->
     <TextView
         android:id="@+id/widget_refresh_indicator"
         android:layout_width="wrap_content"
@@ -37,7 +45,11 @@
         android:layout_gravity="center"
         android:text="↻"
         android:textSize="64sp"
-        android:textColor="#CCFFFFFF"
+        android:textColor="?android:attr/textColorPrimary"
+        android:shadowColor="#80000000"
+        android:shadowDx="2"
+        android:shadowDy="2"
+        android:shadowRadius="4"
         android:visibility="gone" />
 
 </FrameLayout>

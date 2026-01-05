@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Visibility: 0=visible, 1=invisible, 2=gone -->
+    <!-- Night mode: show dark chart, hide light chart -->
+    <integer name="chart_light_visibility">2</integer>
+    <integer name="chart_dark_visibility">0</integer>
+</resources>

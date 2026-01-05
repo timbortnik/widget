@@ -22,7 +22,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   final _weatherService = WeatherService();
   final _locationService = LocationService();
   final _widgetService = WidgetService();
-  final _chartKey = GlobalKey();
+  final _chartKeyLight = GlobalKey();
+  final _chartKeyDark = GlobalKey();
 
   WeatherData? _weatherData;
   String? _locationName;
@@ -126,11 +127,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         });
         // Update widget (with watermark if stale, or just re-render if resized)
         WidgetsBinding.instance.addPostFrameCallback((_) async {
-          final imagePath = await _captureChart();
+          final paths = await _captureCharts();
           await _widgetService.updateWidget(
             weatherData: cached,
             locationName: cachedCity,
-            chartImagePath: imagePath,
+            lightChartPath: paths.light,
+            darkChartPath: paths.dark,
           );
         });
       }
@@ -163,11 +165,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
       // Capture chart after frame is rendered
       WidgetsBinding.instance.addPostFrameCallback((_) async {
-        final imagePath = await _captureChart();
+        final paths = await _captureCharts();
         await _widgetService.updateWidget(
           weatherData: weather,
           locationName: _locationName,
-          chartImagePath: imagePath,
+          lightChartPath: paths.light,
+          darkChartPath: paths.dark,
         );
       });
     } catch (e) {
@@ -191,11 +194,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
         // Update widget with cached data (includes OFFLINE watermark)
         WidgetsBinding.instance.addPostFrameCallback((_) async {
-          final imagePath = await _captureChart();
+          final paths = await _captureCharts();
           await _widgetService.updateWidget(
             weatherData: cached,
             locationName: cachedCity,
-            chartImagePath: imagePath,
+            lightChartPath: paths.light,
+            darkChartPath: paths.dark,
           );
         });
 
@@ -525,29 +529,61 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               ),
 
               // Meteogram chart - aspect ratio matches home widget dimensions
+              // Stack contains both themes; both painted for capture, current theme on top
               AspectRatio(
                 aspectRatio: _chartAspectRatio,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: colors.cardBackground,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withAlpha(15),
-                        blurRadius: 20,
-                        offset: const Offset(0, 4),
+                child: Stack(
+                  children: [
+                    // First: chart for NON-current theme (painted for capture, but hidden below)
+                    Positioned.fill(
+                      child: RepaintBoundary(
+                        key: Theme.of(context).brightness == Brightness.light ? _chartKeyDark : _chartKeyLight,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).brightness == Brightness.light
+                                ? MeteogramColors.dark.cardBackground
+                                : MeteogramColors.light.cardBackground,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          clipBehavior: Clip.antiAlias,
+                          child: MeteogramChart(
+                            data: displayData,
+                            nowIndex: nowIndex,
+                            staleText: _isShowingCachedData && _isCacheStale() ? l10n.offline : null,
+                            explicitColors: Theme.of(context).brightness == Brightness.light
+                                ? MeteogramColors.dark
+                                : MeteogramColors.light,
+                            explicitLocale: locale.toString(),
+                          ),
+                        ),
                       ),
-                    ],
-                  ),
-                  clipBehavior: Clip.antiAlias,
-                  child: RepaintBoundary(
-                    key: _chartKey,
-                    child: MeteogramChart(
-                      data: displayData,
-                      nowIndex: nowIndex,
-                      staleText: _isShowingCachedData && _isCacheStale() ? l10n.offline : null,
                     ),
-                  ),
+                    // Second: chart for CURRENT theme (on top, visible to user)
+                    Positioned.fill(
+                      child: RepaintBoundary(
+                        key: Theme.of(context).brightness == Brightness.light ? _chartKeyLight : _chartKeyDark,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: colors.cardBackground,
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withAlpha(15),
+                                blurRadius: 20,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          clipBehavior: Clip.antiAlias,
+                          child: MeteogramChart(
+                            data: displayData,
+                            nowIndex: nowIndex,
+                            staleText: _isShowingCachedData && _isCacheStale() ? l10n.offline : null,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 20),
@@ -710,44 +746,58 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
   }
 
-  Future<String?> _captureChart() async {
+  /// Capture both light and dark theme charts, return their paths.
+  Future<({String? light, String? dark})> _captureCharts() async {
     try {
-      // Wait for the chart to fully render
+      // Wait for both charts to fully render
       await Future.delayed(const Duration(milliseconds: 100));
-
-      final boundary = _chartKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
-      if (boundary == null) return null;
 
       // Get actual widget dimensions from native provider
       final widgetDimensions = await _widgetService.getWidgetDimensions();
-
       final double pixelRatio;
-      if (widgetDimensions != null && boundary.size.width > 0) {
-        // Calculate pixel ratio to render at exact widget size
-        pixelRatio = widgetDimensions.widthPx / boundary.size.width;
-        debugPrint('Rendering chart at ${widgetDimensions.widthPx}x${widgetDimensions.heightPx}px '
-            '(pixelRatio: ${pixelRatio.toStringAsFixed(2)})');
+      if (widgetDimensions != null) {
+        final boundaryLight = _chartKeyLight.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+        if (boundaryLight != null && boundaryLight.size.width > 0) {
+          pixelRatio = widgetDimensions.widthPx / boundaryLight.size.width;
+        } else {
+          pixelRatio = MediaQuery.of(context).devicePixelRatio;
+        }
+        debugPrint('Rendering charts at ${widgetDimensions.widthPx}x${widgetDimensions.heightPx}px');
       } else {
-        // Fallback to device pixel ratio if widget dimensions not available
         pixelRatio = MediaQuery.of(context).devicePixelRatio;
         debugPrint('Widget dimensions not available, using device ratio: $pixelRatio');
       }
 
-      final image = await boundary.toImage(pixelRatio: pixelRatio);
-      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-      if (byteData == null) return null;
+      String? lightPath;
+      String? darkPath;
 
-      // Track brightness used for this render
+      // Capture light theme chart
+      final boundaryLight = _chartKeyLight.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+      if (boundaryLight != null) {
+        final image = await boundaryLight.toImage(pixelRatio: pixelRatio);
+        final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+        if (byteData != null) {
+          lightPath = await _widgetService.saveChartImage(byteData.buffer.asUint8List(), isDark: false);
+          debugPrint('Light chart captured');
+        }
+      }
+
+      // Capture dark theme chart
+      final boundaryDark = _chartKeyDark.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+      if (boundaryDark != null) {
+        final image = await boundaryDark.toImage(pixelRatio: pixelRatio);
+        final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+        if (byteData != null) {
+          darkPath = await _widgetService.saveChartImage(byteData.buffer.asUint8List(), isDark: true);
+          debugPrint('Dark chart captured');
+        }
+      }
+
       _lastRenderedBrightness = WidgetsBinding.instance.platformDispatcher.platformBrightness;
-      debugPrint('Chart rendered with brightness: $_lastRenderedBrightness');
-
-      // Save rendered theme to SharedPreferences for native widget to check
-      await _widgetService.saveRenderedTheme(_lastRenderedBrightness == Brightness.dark);
-
-      return _widgetService.saveChartImage(byteData.buffer.asUint8List());
+      return (light: lightPath, dark: darkPath);
     } catch (e) {
-      debugPrint('Error capturing chart: $e');
-      return null;
+      debugPrint('Error capturing charts: $e');
+      return (light: null, dark: null);
     }
   }
 }

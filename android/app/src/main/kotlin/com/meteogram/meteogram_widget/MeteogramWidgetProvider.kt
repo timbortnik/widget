@@ -136,50 +136,56 @@ class MeteogramWidgetProvider : HomeWidgetProvider() {
             )
             views.setOnClickPendingIntent(R.id.widget_root, pendingIntent)
 
-            // Get chart image
-            val imagePath = widgetData.getString("meteogram_image", null)
-            Log.d(TAG, "Image path from data: $imagePath")
+            // Get chart images (light and dark versions)
+            val lightImagePath = widgetData.getString("meteogram_image_light", null)
+            val darkImagePath = widgetData.getString("meteogram_image_dark", null)
+            Log.d(TAG, "Image paths - light: $lightImagePath, dark: $darkImagePath")
 
-            if (imagePath != null) {
-                val imageFile = File(imagePath)
+            var hasChart = false
+
+            // Load light theme chart
+            if (lightImagePath != null) {
+                val imageFile = File(lightImagePath)
                 if (imageFile.exists()) {
                     try {
                         val bitmap = BitmapFactory.decodeFile(imageFile.absolutePath)
                         if (bitmap != null) {
-                            views.setImageViewBitmap(R.id.widget_chart, bitmap)
-                            views.setViewVisibility(R.id.widget_chart, View.VISIBLE)
-                            views.setViewVisibility(R.id.widget_placeholder, View.GONE)
-                            Log.d(TAG, "Chart image loaded successfully")
+                            views.setImageViewBitmap(R.id.widget_chart_light, bitmap)
+                            hasChart = true
+                            Log.d(TAG, "Light chart image loaded")
                         }
                     } catch (e: Exception) {
-                        Log.e(TAG, "Error loading chart image: ${e.message}")
+                        Log.e(TAG, "Error loading light chart: ${e.message}")
                     }
-                } else {
-                    Log.d(TAG, "Image file does not exist: $imagePath")
                 }
             }
 
-            // Show placeholder if no chart
-            if (imagePath == null) {
-                views.setViewVisibility(R.id.widget_chart, View.GONE)
+            // Load dark theme chart
+            if (darkImagePath != null) {
+                val imageFile = File(darkImagePath)
+                if (imageFile.exists()) {
+                    try {
+                        val bitmap = BitmapFactory.decodeFile(imageFile.absolutePath)
+                        if (bitmap != null) {
+                            views.setImageViewBitmap(R.id.widget_chart_dark, bitmap)
+                            hasChart = true
+                            Log.d(TAG, "Dark chart image loaded")
+                        }
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error loading dark chart: ${e.message}")
+                    }
+                }
+            }
+
+            // Show placeholder if no charts available
+            if (!hasChart) {
                 views.setViewVisibility(R.id.widget_placeholder, View.VISIBLE)
-            }
-
-            // Check if current theme matches rendered theme
-            val currentNightMode = context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
-            val isCurrentlyDark = currentNightMode == Configuration.UI_MODE_NIGHT_YES
-            val renderedDark = widgetData.getBoolean("rendered_dark_mode", false)
-            val themeMismatch = imagePath != null && isCurrentlyDark != renderedDark
-            Log.d(TAG, "Theme check: current=$isCurrentlyDark, rendered=$renderedDark, mismatch=$themeMismatch")
-
-            if (themeMismatch) {
-                // Theme changed since last render - show refresh indicator
-                views.setViewVisibility(R.id.widget_refresh_indicator, View.VISIBLE)
-                Log.d(TAG, "Theme mismatch: current=$isCurrentlyDark, rendered=$renderedDark - showing refresh indicator")
             } else {
-                // Theme matches - hide refresh indicator
-                views.setViewVisibility(R.id.widget_refresh_indicator, View.GONE)
+                views.setViewVisibility(R.id.widget_placeholder, View.GONE)
             }
+
+            // Hide refresh indicator - with dual charts, theme switching is automatic
+            views.setViewVisibility(R.id.widget_refresh_indicator, View.GONE)
 
             appWidgetManager.updateAppWidget(appWidgetId, views)
             Log.d(TAG, "Updated widget $appWidgetId")

@@ -10,6 +10,10 @@ class MeteogramChart extends StatelessWidget {
   final int nowIndex;
   final bool compact;
   final String? staleText;
+  /// Optional explicit colors (for offscreen rendering with specific theme).
+  final MeteogramColors? explicitColors;
+  /// Optional explicit locale (for offscreen rendering).
+  final String? explicitLocale;
 
   const MeteogramChart({
     super.key,
@@ -17,6 +21,8 @@ class MeteogramChart extends StatelessWidget {
     required this.nowIndex,
     this.compact = false,
     this.staleText,
+    this.explicitColors,
+    this.explicitLocale,
   });
 
   @override
@@ -25,8 +31,8 @@ class MeteogramChart extends StatelessWidget {
       return const Center(child: Text('No data'));
     }
 
-    final colors = MeteogramColors.of(context);
-    final locale = Localizations.localeOf(context).toString();
+    final colors = explicitColors ?? MeteogramColors.of(context);
+    final locale = explicitLocale ?? Localizations.localeOf(context).toString();
 
     // Calculate nowFraction from nowIndex
     // +1 to extend fade zone slightly past the "now" line

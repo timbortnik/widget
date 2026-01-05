@@ -34,7 +34,8 @@ class WidgetService {
   Future<void> updateWidget({
     required WeatherData weatherData,
     required String? locationName,
-    String? chartImagePath,
+    String? lightChartPath,
+    String? darkChartPath,
   }) async {
     try {
       final currentHour = weatherData.getCurrentHour();
@@ -48,9 +49,12 @@ class WidgetService {
       // Save location name
       await HomeWidget.saveWidgetData<String>('location_name', locationName ?? '');
 
-      // Save chart image path
-      if (chartImagePath != null) {
-        await HomeWidget.saveWidgetData<String>('meteogram_image', chartImagePath);
+      // Save chart image paths (both themes)
+      if (lightChartPath != null) {
+        await HomeWidget.saveWidgetData<String>('meteogram_image_light', lightChartPath);
+      }
+      if (darkChartPath != null) {
+        await HomeWidget.saveWidgetData<String>('meteogram_image_dark', darkChartPath);
       }
 
       // Trigger widget update
@@ -63,11 +67,12 @@ class WidgetService {
     }
   }
 
-  /// Save chart image and return file path.
-  Future<String?> saveChartImage(Uint8List imageBytes) async {
+  /// Save chart image for a specific theme and return file path.
+  Future<String?> saveChartImage(Uint8List imageBytes, {required bool isDark}) async {
     try {
       final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/meteogram_chart.png');
+      final suffix = isDark ? 'dark' : 'light';
+      final file = File('${directory.path}/meteogram_chart_$suffix.png');
       await file.writeAsBytes(imageBytes);
       return file.path;
     } catch (e) {
