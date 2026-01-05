@@ -204,9 +204,8 @@ class MeteogramChart extends StatelessWidget {
     final maxTemp = data.map((d) => d.temperature).reduce((a, b) => a > b ? a : b);
     final tempRange = maxTemp - minTemp;
 
-    // Add Y padding so graph min/max align with center of temperature labels
-    // Labels are fontSize/2 from edge, roughly 5-6% of chart height
-    final yPadding = tempRange * 0.06;
+    // Add 10% Y padding so temperature line doesn't hit top/bottom edges
+    final yPadding = tempRange * 0.10;
 
     // Use nowIndex for the "now" line position
     final nowPosition = nowIndex.toDouble();
@@ -512,18 +511,26 @@ class MeteogramChart extends StatelessWidget {
       fontWeight: FontWeight.bold,
     );
 
+    // Padding fraction matches yPadding in _buildTemperatureChart (10% of range)
+    // Total range = tempRange + 2*padding = tempRange * 1.2
+    // So actual temps are at 10%/120% = 8.33% from edges
+    const paddingFraction = 0.10 / 1.20;
+
     return LayoutBuilder(
       builder: (context, constraints) {
         // Position labels in left portion of the past area
         final centerX = (nowFraction / 2.5) * constraints.maxWidth;
+        final topOffset = constraints.maxHeight * paddingFraction;
+        final bottomOffset = constraints.maxHeight * paddingFraction;
+
         return Stack(
           children: [
-            // Max temp at top
+            // Max temp at top (offset by padding)
             Positioned(
-              top: 0,
+              top: topOffset,
               left: centerX,
               child: FractionalTranslation(
-                translation: const Offset(-0.5, 0),
+                translation: const Offset(-0.5, -0.5),
                 child: Text('${maxTemp.round()}', style: textStyle),
               ),
             ),
@@ -539,12 +546,12 @@ class MeteogramChart extends StatelessWidget {
                 ),
               ),
             ),
-            // Min temp at bottom
+            // Min temp at bottom (offset by padding)
             Positioned(
-              bottom: 0,
+              bottom: bottomOffset,
               left: centerX,
               child: FractionalTranslation(
-                translation: const Offset(-0.5, 0),
+                translation: const Offset(-0.5, 0.5),
                 child: Text('${minTemp.round()}', style: textStyle),
               ),
             ),
