@@ -36,7 +36,9 @@ class WeatherData {
     return WeatherData(
       timezone: json['timezone'] as String? ?? 'UTC',
       hourly: hourlyData,
-      fetchedAt: DateTime.now(),
+      fetchedAt: json['fetchedAt'] != null
+          ? DateTime.parse(json['fetchedAt'] as String)
+          : DateTime.now(),
     );
   }
 
@@ -61,9 +63,11 @@ class WeatherData {
   }
 
   /// Get the index of "now" in the display data.
-  /// Since we request past_hours=kPastHours, the current hour is at that index.
+  /// Accounts for data age - if data is X hours old, shifts index forward by X.
   int getNowIndex() {
-    return kPastHours.clamp(0, hourly.length - 1);
+    final hoursOld = DateTime.now().difference(fetchedAt).inHours;
+    final adjustedIndex = kPastHours + hoursOld;
+    return adjustedIndex.clamp(0, hourly.length - 1);
   }
 
   /// Find the current hour's data.

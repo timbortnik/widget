@@ -18,5 +18,6 @@
   "errorLocationUnavailable": "Position non disponible",
   "errorLoadingData": "Impossible de charger les données météo",
   "retry": "Réessayer",
+  "offline": "HORS LIGNE",
   "precipitationRate": "{amount} mm/h"
 }

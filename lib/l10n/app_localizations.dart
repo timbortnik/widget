@@ -208,6 +208,12 @@ abstract class AppLocalizations {
   /// **'Retry'**
   String get retry;
 
+  /// Watermark shown on chart when displaying cached data
+  ///
+  /// In en, this message translates to:
+  /// **'OFFLINE'**
+  String get offline;
+
   /// Precipitation rate shown on chart
   ///
   /// In en, this message translates to:

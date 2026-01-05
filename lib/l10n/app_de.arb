@@ -18,5 +18,6 @@
   "errorLocationUnavailable": "Standort nicht verfügbar",
   "errorLoadingData": "Wetterdaten konnten nicht geladen werden",
   "retry": "Erneut versuchen",
+  "offline": "OFFLINE",
   "precipitationRate": "{amount} mm/h"
 }

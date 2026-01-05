@@ -98,6 +98,11 @@
     "description": "Button to retry failed operation"
   },
 
+  "offline": "ОФЛАЙН",
+  "@offline": {
+    "description": "Watermark shown on chart when displaying cached data"
+  },
+
   "precipitationRate": "{amount} мм/год",
   "@precipitationRate": {
     "description": "Precipitation rate shown on chart",

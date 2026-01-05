@@ -23,6 +23,11 @@ A beautiful, modern weather widget for Android showing temperature forecasts as 
   - Recent cities remembered
 - **Light/dark theme** following system preference
 - **Multi-language** support (English, German, French, Spanish, Italian, Ukrainian)
+- **Offline support** with smart caching:
+  - Automatic cache fallback when offline
+  - Fibonacci retry backoff (1, 2, 3, 5, 8 min) for background refresh
+  - Visual "OFFLINE" watermark on stale data (>1 hour old)
+  - Cached location and city name preserved
 - **No API key required** - uses free Open-Meteo API
 
 ## Screenshots

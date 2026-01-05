@@ -30,14 +30,43 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _loading = true;
   String? _error;
   LocationSource _locationSource = LocationSource.gps;
+  bool _isShowingCachedData = false;
 
   @override
   void initState() {
     super.initState();
+    _checkAndSyncWidget();
     _loadWeather();
   }
 
-  Future<void> _loadWeather() async {
+  /// Quick check on startup to sync widget state with cache age.
+  /// Shows OFFLINE watermark if cache is stale before full refresh completes.
+  Future<void> _checkAndSyncWidget() async {
+    final isStale = await _weatherService.isCacheStale();
+    if (isStale) {
+      final cached = await _weatherService.getCachedWeather();
+      final cachedCity = await _weatherService.getCachedCityName();
+      if (cached != null) {
+        // Mark as showing cached data so chart renders with watermark
+        setState(() {
+          _weatherData = cached;
+          _locationName = cachedCity;
+          _isShowingCachedData = true;
+        });
+        // Update widget with watermark
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          final imagePath = await _captureChart();
+          await _widgetService.updateWidget(
+            weatherData: cached,
+            locationName: cachedCity,
+            chartImagePath: imagePath,
+          );
+        });
+      }
+    }
+  }
+
+  Future<void> _loadWeather({bool userTriggered = false}) async {
     setState(() {
       _loading = true;
       _error = null;
@@ -55,7 +84,11 @@ class _HomeScreenState extends State<HomeScreen> {
         _locationName = location.city;
         _locationSource = location.source;
         _loading = false;
+        _isShowingCachedData = false;
       });
+
+      // Cache location info for offline use
+      await _weatherService.cacheLocationInfo(location.city, _locationSource.name);
 
       // Capture chart after frame is rendered
       WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -66,22 +99,64 @@ class _HomeScreenState extends State<HomeScreen> {
           chartImagePath: imagePath,
         );
       });
-    } on LocationException catch (e) {
-      setState(() {
-        _error = e.message;
-        _loading = false;
-      });
-    } on WeatherException catch (e) {
-      setState(() {
-        _error = e.message;
-        _loading = false;
-      });
     } catch (e) {
+      // Try to use cached weather data on any failure
+      final cached = await _weatherService.getCachedWeather();
+      if (cached != null) {
+        final cachedCity = await _weatherService.getCachedCityName();
+        final cachedSource = await _weatherService.getCachedLocationSource();
+        setState(() {
+          _weatherData = cached;
+          _locationName = cachedCity;
+          if (cachedSource != null) {
+            _locationSource = LocationSource.values.firstWhere(
+              (s) => s.name == cachedSource,
+              orElse: () => LocationSource.gps,
+            );
+          }
+          _loading = false;
+          _isShowingCachedData = true;
+        });
+
+        // Update widget with cached data (includes OFFLINE watermark)
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          final imagePath = await _captureChart();
+          await _widgetService.updateWidget(
+            weatherData: cached,
+            locationName: cachedCity,
+            chartImagePath: imagePath,
+          );
+        });
+
+        // Notify user if they triggered the refresh
+        if (userTriggered && mounted) {
+          _showOfflineSnackbar();
+        }
+        return;
+      }
+
+      // No cache available, show error
       setState(() {
-        _error = e.toString();
+        if (e is LocationException) {
+          _error = e.message;
+        } else if (e is WeatherException) {
+          _error = e.message;
+        } else {
+          _error = e.toString();
+        }
         _loading = false;
       });
     }
+  }
+
+  void _showOfflineSnackbar() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('Unable to refresh - showing cached data'),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 3),
+      ),
+    );
   }
 
   @override
@@ -163,7 +238,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 32),
               FilledButton.icon(
-                onPressed: _loadWeather,
+                onPressed: () => _loadWeather(userTriggered: true),
                 icon: const Icon(Icons.refresh_rounded),
                 label: Text(l10n.retry),
                 style: FilledButton.styleFrom(
@@ -193,7 +268,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final currentHour = _weatherData!.getCurrentHour();
 
     return RefreshIndicator(
-      onRefresh: _loadWeather,
+      onRefresh: () => _loadWeather(userTriggered: true),
       color: colors.temperatureLine,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -202,6 +277,33 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Status banner
+              Container(
+                width: double.infinity,
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: colors.secondaryText.withAlpha(25),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      _isShowingCachedData ? Icons.history : Icons.check_circle_outline,
+                      size: 16,
+                      color: colors.secondaryText,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      l10n.updatedAt(_formatLastUpdated(l10n)),
+                      style: TextStyle(
+                        color: colors.secondaryText,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
               // Header
               Row(
                 children: [
@@ -253,21 +355,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ],
                               ),
                             ),
-                            const SizedBox(width: 8),
-                            Text(
-                              '· ${l10n.updatedAt(_formatLastUpdated(l10n))}',
-                              style: TextStyle(
-                                color: colors.secondaryText.withAlpha(150),
-                                fontSize: 12,
-                              ),
-                            ),
                           ],
                         ),
                       ],
                     ),
                   ),
                   IconButton(
-                    onPressed: _loading ? null : _loadWeather,
+                    onPressed: _loading ? null : () => _loadWeather(userTriggered: true),
                     icon: Icon(
                       Icons.refresh_rounded,
                       color: colors.secondaryText,
@@ -374,7 +468,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   clipBehavior: Clip.antiAlias,
                   child: RepaintBoundary(
                     key: _chartKey,
-                    child: MeteogramChart(data: displayData, nowIndex: nowIndex),
+                    child: MeteogramChart(
+                      data: displayData,
+                      nowIndex: nowIndex,
+                      staleText: _isShowingCachedData && _isCacheStale() ? l10n.offline : null,
+                    ),
                   ),
                 ),
               ),
@@ -430,7 +528,7 @@ class _HomeScreenState extends State<HomeScreen> {
           final hasPermission = await _locationService.requestGpsPermission();
           if (hasPermission) {
             await _locationService.useGpsLocation();
-            _loadWeather();
+            _loadWeather(userTriggered: true);
           } else {
             if (mounted) {
               ScaffoldMessenger.of(this.context).showSnackBar(
@@ -454,7 +552,7 @@ class _HomeScreenState extends State<HomeScreen> {
             city: location.city,
             source: LocationSource.ip,
           );
-          _loadWeather();
+          _loadWeather(userTriggered: true);
         },
         onCitySelected: (city) async {
           Navigator.pop(context);
@@ -464,7 +562,17 @@ class _HomeScreenState extends State<HomeScreen> {
             city.longitude,
             city: city.name,
           );
-          _loadWeather();
+          _loadWeather(userTriggered: true);
+        },
+        onSearchError: () {
+          Navigator.pop(context); // Close bottom sheet first
+          ScaffoldMessenger.of(this.context).showSnackBar(
+            const SnackBar(
+              content: Text('Unable to search - check your connection'),
+              behavior: SnackBarBehavior.floating,
+              duration: Duration(seconds: 3),
+            ),
+          );
         },
       ),
     );
@@ -478,6 +586,12 @@ class _HomeScreenState extends State<HomeScreen> {
       return l10n.justNow;
     }
     return l10n.minutesAgo(diff.inMinutes);
+  }
+
+  /// Check if current weather data is stale (older than 1 hour).
+  bool _isCacheStale() {
+    if (_weatherData == null) return false;
+    return DateTime.now().difference(_weatherData!.fetchedAt) > const Duration(hours: 1);
   }
 
   IconData _getLocationIcon() {
@@ -532,6 +646,7 @@ class _LocationPickerSheet extends StatefulWidget {
   final VoidCallback onGpsSelected;
   final VoidCallback onIpSelected;
   final void Function(CitySearchResult) onCitySelected;
+  final VoidCallback onSearchError;
 
   const _LocationPickerSheet({
     required this.locationService,
@@ -542,6 +657,7 @@ class _LocationPickerSheet extends StatefulWidget {
     required this.onGpsSelected,
     required this.onIpSelected,
     required this.onCitySelected,
+    required this.onSearchError,
   });
 
   @override
@@ -588,15 +704,25 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
     setState(() => _isSearching = true);
 
     _debounce = Timer(const Duration(milliseconds: 300), () async {
-      final results = await widget.locationService.searchCities(
-        query,
-        language: widget.languageCode,
-      );
-      if (mounted) {
-        setState(() {
-          _searchResults = results;
-          _isSearching = false;
-        });
+      try {
+        final results = await widget.locationService.searchCities(
+          query,
+          language: widget.languageCode,
+        );
+        if (mounted) {
+          setState(() {
+            _searchResults = results;
+            _isSearching = false;
+          });
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() {
+            _searchResults = [];
+            _isSearching = false;
+          });
+          widget.onSearchError();
+        }
       }
     });
   }

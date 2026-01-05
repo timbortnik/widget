@@ -64,6 +64,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get retry => 'Retry';
 
   @override
+  String get offline => 'OFFLINE';
+
+  @override
   String precipitationRate(String amount) {
     return '$amount mm/h';
   }

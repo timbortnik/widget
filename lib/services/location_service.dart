@@ -292,47 +292,44 @@ class LocationService {
   /// Search for cities using Open-Meteo geocoding API.
   /// Pass [language] code (e.g., 'en', 'de', 'ja') for localized results.
   /// Automatically detects script (Cyrillic, CJK, etc.) for better matching.
+  /// Throws on network errors to allow caller to show appropriate UI.
   Future<List<CitySearchResult>> searchCities(String query, {String language = 'en'}) async {
     if (query.trim().length < 2) return [];
 
     // Detect script and adjust language for better search results
     final searchLanguage = _detectSearchLanguage(query, language);
 
-    try {
-      final uri = Uri.parse(
-        'https://geocoding-api.open-meteo.com/v1/search'
-      ).replace(queryParameters: {
-        'name': query,
-        'count': '8',
-        'language': searchLanguage,
-        'format': 'json',
-      });
+    final uri = Uri.parse(
+      'https://geocoding-api.open-meteo.com/v1/search'
+    ).replace(queryParameters: {
+      'name': query,
+      'count': '8',
+      'language': searchLanguage,
+      'format': 'json',
+    });
 
-      final response = await http.get(uri).timeout(const Duration(seconds: 5));
+    final response = await http.get(uri).timeout(const Duration(seconds: 5));
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final results = data['results'] as List<dynamic>?;
-        if (results == null || results.isEmpty) {
-          // If no results and we used a detected language, try with device locale
-          if (searchLanguage != language) {
-            return _searchWithLanguage(query, language);
-          }
-          return [];
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      final results = data['results'] as List<dynamic>?;
+      if (results == null || results.isEmpty) {
+        // If no results and we used a detected language, try with device locale
+        if (searchLanguage != language) {
+          return _searchWithLanguage(query, language);
         }
-
-        return results.map((r) => CitySearchResult(
-          name: r['name'] as String,
-          country: r['country'] as String? ?? '',
-          admin1: r['admin1'] as String?,
-          latitude: (r['latitude'] as num).toDouble(),
-          longitude: (r['longitude'] as num).toDouble(),
-        )).toList();
+        return [];
       }
-      return [];
-    } catch (e) {
-      return [];
+
+      return results.map((r) => CitySearchResult(
+        name: r['name'] as String,
+        country: r['country'] as String? ?? '',
+        admin1: r['admin1'] as String?,
+        latitude: (r['latitude'] as num).toDouble(),
+        longitude: (r['longitude'] as num).toDouble(),
+      )).toList();
     }
+    return [];
   }
 
   /// Detect appropriate language based on script in query.
@@ -369,35 +366,31 @@ class LocationService {
 
   /// Helper to search with a specific language.
   Future<List<CitySearchResult>> _searchWithLanguage(String query, String language) async {
-    try {
-      final uri = Uri.parse(
-        'https://geocoding-api.open-meteo.com/v1/search'
-      ).replace(queryParameters: {
-        'name': query,
-        'count': '8',
-        'language': language,
-        'format': 'json',
-      });
+    final uri = Uri.parse(
+      'https://geocoding-api.open-meteo.com/v1/search'
+    ).replace(queryParameters: {
+      'name': query,
+      'count': '8',
+      'language': language,
+      'format': 'json',
+    });
 
-      final response = await http.get(uri).timeout(const Duration(seconds: 5));
+    final response = await http.get(uri).timeout(const Duration(seconds: 5));
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final results = data['results'] as List<dynamic>?;
-        if (results == null) return [];
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      final results = data['results'] as List<dynamic>?;
+      if (results == null) return [];
 
-        return results.map((r) => CitySearchResult(
-          name: r['name'] as String,
-          country: r['country'] as String? ?? '',
-          admin1: r['admin1'] as String?,
-          latitude: (r['latitude'] as num).toDouble(),
-          longitude: (r['longitude'] as num).toDouble(),
-        )).toList();
-      }
-      return [];
-    } catch (e) {
-      return [];
+      return results.map((r) => CitySearchResult(
+        name: r['name'] as String,
+        country: r['country'] as String? ?? '',
+        admin1: r['admin1'] as String?,
+        latitude: (r['latitude'] as num).toDouble(),
+        longitude: (r['longitude'] as num).toDouble(),
+      )).toList();
     }
+    return [];
   }
 
   /// Get recent cities from storage.

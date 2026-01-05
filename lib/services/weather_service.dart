@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/weather_data.dart';
@@ -10,6 +11,8 @@ class WeatherService {
   static const String _baseUrl = 'https://api.open-meteo.com/v1/forecast';
   static const String _cacheKey = 'cached_weather_data';
   static const String _cacheLocationKey = 'cached_weather_location';
+  static const String _cacheCityNameKey = 'cached_city_name';
+  static const String _cacheLocationSourceKey = 'cached_location_source';
 
   /// Fibonacci backoff delays in minutes: 1, 2, 3, 5, 8
   static const List<int> _retryDelaysMinutes = [1, 2, 3, 5, 8];
@@ -92,17 +95,23 @@ class WeatherService {
       'forecast_days': '2',
     });
 
-    final response = await http.get(uri).timeout(const Duration(seconds: 5));
+    try {
+      final response = await http.get(uri).timeout(const Duration(seconds: 5));
 
-    if (response.statusCode == 200) {
-      final json = jsonDecode(response.body) as Map<String, dynamic>;
-      return WeatherData.fromJson(json);
-    } else if (response.statusCode == 429) {
-      throw WeatherException('Rate limited. Please try again later.');
-    } else {
-      throw WeatherException(
-        'Failed to load weather data: ${response.statusCode}',
-      );
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body) as Map<String, dynamic>;
+        return WeatherData.fromJson(json);
+      } else if (response.statusCode == 429) {
+        throw WeatherException('Rate limited. Please try again later.');
+      } else {
+        throw WeatherException(
+          'Failed to load weather data: ${response.statusCode}',
+        );
+      }
+    } on SocketException {
+      throw WeatherException('No internet connection');
+    } on TimeoutException {
+      throw WeatherException('Connection timed out');
     }
   }
 
@@ -111,6 +120,29 @@ class WeatherService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_cacheKey, jsonEncode(data.toJson()));
     await prefs.setString(_cacheLocationKey, locationKey);
+  }
+
+  /// Cache location info separately (called from UI after successful load).
+  Future<void> cacheLocationInfo(String? cityName, String? locationSource) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (cityName != null) {
+      await prefs.setString(_cacheCityNameKey, cityName);
+    }
+    if (locationSource != null) {
+      await prefs.setString(_cacheLocationSourceKey, locationSource);
+    }
+  }
+
+  /// Get cached city name.
+  Future<String?> getCachedCityName() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_cacheCityNameKey);
+  }
+
+  /// Get cached location source.
+  Future<String?> getCachedLocationSource() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_cacheLocationSourceKey);
   }
 
   /// Get cached weather data if available and for the same location.

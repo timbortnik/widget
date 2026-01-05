@@ -9,12 +9,14 @@ class MeteogramChart extends StatelessWidget {
   final List<HourlyData> data;
   final int nowIndex;
   final bool compact;
+  final String? staleText;
 
   const MeteogramChart({
     super.key,
     required this.data,
     required this.nowIndex,
     this.compact = false,
+    this.staleText,
   });
 
   @override
@@ -30,62 +32,98 @@ class MeteogramChart extends StatelessWidget {
     // +1 to extend fade zone slightly past the "now" line
     final nowFraction = (nowIndex + 1) / data.length;
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(compact ? 12 : 20),
-      child: CustomPaint(
-        painter: _SkyGradientPainter(data: data, colors: colors, nowFraction: nowFraction),
-        child: Column(
-          children: [
-            // Chart area
-            Expanded(
-              child: Stack(
-                children: [
-                  // Chart content with fade effect for past
-                  Positioned.fill(
-                    child: ShaderMask(
-                      shaderCallback: (bounds) {
-                        // Non-linear fade: stays faded longer, then ramps up quickly
-                        return LinearGradient(
-                          begin: Alignment.centerLeft,
-                          end: Alignment.centerRight,
-                          colors: const [
-                            Color(0x1AFFFFFF), // 10% at left edge
-                            Color(0x40FFFFFF), // 25% at 3/4 of past
-                            Color(0xFFFFFFFF), // 100% at "now"
-                            Color(0xFFFFFFFF), // 100% for future
-                          ],
-                          stops: [
-                            0.0,
-                            nowFraction * 0.75,
-                            nowFraction,
-                            1.0,
-                          ],
-                        ).createShader(bounds);
-                      },
-                      blendMode: BlendMode.dstIn,
-                      child: Stack(
-                        children: [
-                          // Precipitation bars (behind)
-                          _buildPrecipitationBars(colors),
-                          // Temperature line with gradient fill and now indicator
-                          _buildTemperatureChart(colors, locale),
-                        ],
+    return Stack(
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(compact ? 12 : 20),
+          child: CustomPaint(
+            painter: _SkyGradientPainter(data: data, colors: colors, nowFraction: nowFraction),
+            child: Column(
+              children: [
+                // Chart area
+                Expanded(
+                  child: Stack(
+                    children: [
+                      // Chart content with fade effect for past
+                      Positioned.fill(
+                        child: ShaderMask(
+                          shaderCallback: (bounds) {
+                            // Non-linear fade: stays faded longer, then ramps up quickly
+                            return LinearGradient(
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
+                              colors: const [
+                                Color(0x1AFFFFFF), // 10% at left edge
+                                Color(0x40FFFFFF), // 25% at 3/4 of past
+                                Color(0xFFFFFFFF), // 100% at "now"
+                                Color(0xFFFFFFFF), // 100% for future
+                              ],
+                              stops: [
+                                0.0,
+                                nowFraction * 0.75,
+                                nowFraction,
+                                1.0,
+                              ],
+                            ).createShader(bounds);
+                          },
+                          blendMode: BlendMode.dstIn,
+                          child: Stack(
+                            children: [
+                              // Precipitation bars (behind)
+                              _buildPrecipitationBars(colors),
+                              // Temperature line with gradient fill and now indicator
+                              _buildTemperatureChart(colors, locale),
+                            ],
+                          ),
+                        ),
+                      ),
+                      // Min/max temperature labels (not faded, centered in past area)
+                      _buildTempLabels(colors, nowFraction),
+                    ],
+                  ),
+                ),
+                // Time labels below chart
+                SizedBox(
+                  height: compact ? 18 : 22,
+                  child: _buildTimeLabels(colors, locale),
+                ),
+              ],
+            ),
+          ),
+        ),
+        // Stale data watermark (aligned with "now" line)
+        if (staleText != null)
+          Positioned.fill(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final leftPadding = constraints.maxWidth * nowFraction;
+                return Padding(
+                  padding: EdgeInsets.only(left: leftPadding),
+                  child: Center(
+                    child: Transform.rotate(
+                      angle: -0.2, // Slight tilt
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Text(
+                            staleText!,
+                            style: TextStyle(
+                              color: colors.primaryText.withAlpha(40),
+                              fontSize: compact ? 32 : 48,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 4,
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                  // Min/max temperature labels (not faded, centered in past area)
-                  _buildTempLabels(colors, nowFraction),
-                ],
-              ),
+                );
+              },
             ),
-            // Time labels below chart
-            SizedBox(
-              height: compact ? 18 : 22,
-              child: _buildTimeLabels(colors, locale),
-            ),
-          ],
-        ),
-      ),
+          ),
+      ],
     );
   }
 

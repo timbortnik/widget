@@ -18,5 +18,6 @@
   "errorLocationUnavailable": "Ubicación no disponible",
   "errorLoadingData": "No se pudieron cargar los datos del tiempo",
   "retry": "Reintentar",
+  "offline": "SIN CONEXIÓN",
   "precipitationRate": "{amount} mm/h"
 }
