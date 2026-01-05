@@ -45,6 +45,7 @@ class MeteogramColors {
   final Color chartTempLabel;
   final Color sunshineBar;
   final Color sunshineGradient;
+  final Color sunshineIcon;
 
   const MeteogramColors({
     required this.background,
@@ -65,6 +66,7 @@ class MeteogramColors {
     required this.chartTempLabel,
     required this.sunshineBar,
     required this.sunshineGradient,
+    required this.sunshineIcon,
   });
 
   /// Light mode - clean, airy design
@@ -87,6 +89,7 @@ class MeteogramColors {
     chartTempLabel: Color(0xFF1A1A2E),
     sunshineBar: Color(0xFFFFE477),
     sunshineGradient: Color(0xFFFFB54D),
+    sunshineIcon: Color(0xFFD49A00), // Darker amber for light backgrounds
   );
 
   /// Dark mode - rich, elegant design
@@ -109,6 +112,7 @@ class MeteogramColors {
     chartTempLabel: Color(0xFFF0F0F0),
     sunshineBar: Color(0xFFFFE477),
     sunshineGradient: Color(0xFFFFAF4D),
+    sunshineIcon: Color(0xFFFFD93D), // Bright yellow for dark backgrounds
   );
 
   /// Get colors based on brightness.

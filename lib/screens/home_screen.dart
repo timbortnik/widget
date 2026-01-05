@@ -508,7 +508,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               icon: Icons.wb_sunny_outlined,
                               value: l10n.maxSunshine(maxSunshine),
                               colors: colors,
-                              iconColor: colors.sunshineBar,
+                              iconColor: colors.sunshineIcon,
                             ),
                             const SizedBox(height: 8),
                             _buildStatRow(
