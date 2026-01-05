@@ -43,6 +43,8 @@ class MeteogramColors {
   final Color partlyCloudySky;
   final Color overcastSky;
   final Color chartTempLabel;
+  final Color sunshineBar;
+  final Color sunshineGradient;
 
   const MeteogramColors({
     required this.background,
@@ -61,6 +63,8 @@ class MeteogramColors {
     required this.partlyCloudySky,
     required this.overcastSky,
     required this.chartTempLabel,
+    required this.sunshineBar,
+    required this.sunshineGradient,
   });
 
   /// Light mode - clean, airy design
@@ -81,6 +85,8 @@ class MeteogramColors {
     partlyCloudySky: Color(0xFFA0C4E8),
     overcastSky: Color(0xFFB2BEC3),
     chartTempLabel: Color(0xFF1A1A2E),
+    sunshineBar: Color(0xFFFFD93D),
+    sunshineGradient: Color(0xFFFF9500),
   );
 
   /// Dark mode - rich, elegant design
@@ -101,6 +107,8 @@ class MeteogramColors {
     partlyCloudySky: Color(0xFF3D6B8C),
     overcastSky: Color(0xFF4A5568),
     chartTempLabel: Color(0xFFF0F0F0),
+    sunshineBar: Color(0xFFFFD93D),
+    sunshineGradient: Color(0xFFFF8C00),
   );
 
   /// Get colors based on brightness.

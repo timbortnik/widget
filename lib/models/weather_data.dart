@@ -10,11 +10,15 @@ const int kDisplayRangeHours = kPastHours + kForecastHours;
 /// Weather data model for Open-Meteo API response.
 class WeatherData {
   final String timezone;
+  final double latitude;
+  final double longitude;
   final List<HourlyData> hourly;
   final DateTime fetchedAt;
 
   WeatherData({
     required this.timezone,
+    required this.latitude,
+    required this.longitude,
     required this.hourly,
     required this.fetchedAt,
   });
@@ -25,7 +29,6 @@ class WeatherData {
     final temperatures = (hourlyJson['temperature_2m'] as List);
     final precipitation = (hourlyJson['precipitation'] as List);
     final cloudCover = (hourlyJson['cloud_cover'] as List);
-
     final hourlyData = <HourlyData>[];
     for (var i = 0; i < times.length; i++) {
       // Skip entries with null values
@@ -41,6 +44,8 @@ class WeatherData {
 
     return WeatherData(
       timezone: json['timezone'] as String? ?? 'UTC',
+      latitude: (json['latitude'] as num?)?.toDouble() ?? 0.0,
+      longitude: (json['longitude'] as num?)?.toDouble() ?? 0.0,
       hourly: hourlyData,
       fetchedAt: json['fetchedAt'] != null
           ? DateTime.parse(json['fetchedAt'] as String)
@@ -50,6 +55,8 @@ class WeatherData {
 
   Map<String, dynamic> toJson() => {
         'timezone': timezone,
+        'latitude': latitude,
+        'longitude': longitude,
         'fetchedAt': fetchedAt.toIso8601String(),
         'hourly': {
           'time': hourly.map((h) => h.time.toIso8601String()).toList(),

@@ -549,6 +549,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                           child: MeteogramChart(
                             data: displayData,
                             nowIndex: nowIndex,
+                            latitude: _weatherData!.latitude,
                             staleText: _isShowingCachedData && _isCacheStale() ? l10n.offline : null,
                             explicitColors: Theme.of(context).brightness == Brightness.light
                                 ? MeteogramColors.dark
@@ -578,6 +579,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                           child: MeteogramChart(
                             data: displayData,
                             nowIndex: nowIndex,
+                            latitude: _weatherData!.latitude,
                             staleText: _isShowingCachedData && _isCacheStale() ? l10n.offline : null,
                           ),
                         ),

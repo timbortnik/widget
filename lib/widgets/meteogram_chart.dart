@@ -1,13 +1,41 @@
+import 'dart:math' as math;
+
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/weather_data.dart';
 import '../theme/app_theme.dart';
 
+/// Calculate solar elevation angle in degrees.
+/// Returns negative values when sun is below horizon.
+double _solarElevation(double latitude, DateTime time) {
+  final dayOfYear = time.difference(DateTime(time.year, 1, 1)).inDays + 1;
+  final hour = time.hour + time.minute / 60.0;
+
+  // Solar declination (angle of sun relative to equator)
+  final declination = 23.45 * math.sin(2 * math.pi / 365 * (284 + dayOfYear));
+
+  // Hour angle (sun's position in daily rotation, 0 at solar noon)
+  // Simplified: assumes local time ≈ solar time (ignores longitude offset within timezone)
+  final hourAngle = 15.0 * (hour - 12);
+
+  // Convert to radians
+  final latRad = latitude * math.pi / 180;
+  final decRad = declination * math.pi / 180;
+  final haRad = hourAngle * math.pi / 180;
+
+  // Solar elevation formula
+  final sinElevation = math.sin(latRad) * math.sin(decRad) +
+      math.cos(latRad) * math.cos(decRad) * math.cos(haRad);
+
+  return math.asin(sinElevation.clamp(-1.0, 1.0)) * 180 / math.pi;
+}
+
 /// Modern meteogram chart with temperature line, precipitation bars, and sky gradient.
 class MeteogramChart extends StatelessWidget {
   final List<HourlyData> data;
   final int nowIndex;
+  final double latitude;
   final bool compact;
   final String? staleText;
   /// Optional explicit colors (for offscreen rendering with specific theme).
@@ -19,6 +47,7 @@ class MeteogramChart extends StatelessWidget {
     super.key,
     required this.data,
     required this.nowIndex,
+    required this.latitude,
     this.compact = false,
     this.staleText,
     this.explicitColors,
@@ -75,7 +104,9 @@ class MeteogramChart extends StatelessWidget {
                           blendMode: BlendMode.dstIn,
                           child: Stack(
                             children: [
-                              // Precipitation bars (behind)
+                              // Sunshine bars (behind)
+                              _buildSunshineBars(colors),
+                              // Precipitation bars (in front of sunshine)
                               _buildPrecipitationBars(colors),
                               // Temperature line with gradient fill and now indicator
                               _buildTemperatureChart(colors, locale),
@@ -234,11 +265,106 @@ class MeteogramChart extends StatelessWidget {
     );
   }
 
+  /// Builds sunshine bars (yellow, behind precipitation).
+  /// Uses astronomical solar elevation combined with cloud cover.
+  Widget _buildSunshineBars(MeteogramColors colors) {
+    const chartMax = 10.0;
+    const maxElevation = 90.0; // Maximum possible solar elevation
+
+    // Check if there's any potential sunshine
+    bool hasSunshine = false;
+    for (final hourData in data) {
+      final elevation = _solarElevation(latitude, hourData.time);
+      if (elevation > 0 && hourData.cloudCover < 100) {
+        hasSunshine = true;
+        break;
+      }
+    }
+    if (!hasSunshine) return const SizedBox();
+
+    return Opacity(
+      opacity: 0.7,
+      child: BarChart(
+        BarChartData(
+          minY: 0,
+          maxY: chartMax,
+          alignment: BarChartAlignment.spaceAround,
+          barGroups: data.asMap().entries.map((e) {
+            final hourData = e.value;
+            final elevation = _solarElevation(latitude, hourData.time);
+
+            // Sun below horizon = no sunshine
+            if (elevation <= 0) {
+              return BarChartGroupData(
+                x: e.key,
+                barRods: [
+                  BarChartRodData(
+                    fromY: chartMax,
+                    toY: chartMax,
+                    color: Colors.transparent,
+                    width: compact ? 4 : 6,
+                  ),
+                ],
+              );
+            }
+
+            // Potential sunshine from sun elevation (0-90° maps to 0-1)
+            final potential = (elevation / maxElevation).clamp(0.0, 1.0);
+
+            // Actual sunshine reduced by cloud cover
+            final clearSkyFactor = (100 - hourData.cloudCover) / 100.0;
+            final sunshine = potential * clearSkyFactor * chartMax;
+
+            if (sunshine <= 0) {
+              return BarChartGroupData(
+                x: e.key,
+                barRods: [
+                  BarChartRodData(
+                    fromY: chartMax,
+                    toY: chartMax,
+                    color: Colors.transparent,
+                    width: compact ? 4 : 6,
+                  ),
+                ],
+              );
+            }
+
+            return BarChartGroupData(
+              x: e.key,
+              barRods: [
+                BarChartRodData(
+                  fromY: chartMax,
+                  toY: chartMax - sunshine,
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      colors.sunshineGradient,
+                      colors.sunshineBar,
+                    ],
+                  ),
+                  width: compact ? 4 : 6,
+                  borderRadius: const BorderRadius.vertical(
+                    bottom: Radius.circular(3),
+                  ),
+                ),
+              ],
+            );
+          }).toList(),
+          gridData: const FlGridData(show: false),
+          titlesData: const FlTitlesData(show: false),
+          borderData: FlBorderData(show: false),
+          barTouchData: BarTouchData(enabled: false),
+        ),
+      ),
+    );
+  }
+
+  /// Builds precipitation bars (teal, in front of sunshine).
   Widget _buildPrecipitationBars(MeteogramColors colors) {
     final maxPrecip = data.map((d) => d.precipitation).reduce((a, b) => a > b ? a : b);
     if (maxPrecip == 0) return const SizedBox();
 
-    // Fixed scale 0-10 mm/h (heavy rain starts at ~8 mm/h)
     const chartMax = 10.0;
 
     return Opacity(
@@ -249,25 +375,34 @@ class MeteogramChart extends StatelessWidget {
           maxY: chartMax,
           alignment: BarChartAlignment.spaceAround,
           barGroups: data.asMap().entries.map((e) {
-            final hasPrecip = e.value.precipitation > 0;
-            // Bars hang from top (like rain falling from sky)
+            final precip = e.value.precipitation;
+            if (precip <= 0) {
+              return BarChartGroupData(
+                x: e.key,
+                barRods: [
+                  BarChartRodData(
+                    fromY: chartMax,
+                    toY: chartMax,
+                    color: Colors.transparent,
+                    width: compact ? 4 : 6,
+                  ),
+                ],
+              );
+            }
             return BarChartGroupData(
               x: e.key,
               barRods: [
                 BarChartRodData(
-                  fromY: chartMax, // Start from top
-                  toY: chartMax - e.value.precipitation, // Extend downward
-                  gradient: hasPrecip
-                      ? LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            colors.precipitationGradient,
-                            colors.precipitationBar,
-                          ],
-                        )
-                      : null,
-                  color: hasPrecip ? null : Colors.transparent,
+                  fromY: chartMax,
+                  toY: chartMax - precip,
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      colors.precipitationGradient,
+                      colors.precipitationBar,
+                    ],
+                  ),
                   width: compact ? 4 : 6,
                   borderRadius: const BorderRadius.vertical(
                     bottom: Radius.circular(3),
