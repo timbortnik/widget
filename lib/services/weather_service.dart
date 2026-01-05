@@ -19,7 +19,7 @@ class WeatherService {
       'forecast_days': '2',
     });
 
-    final response = await http.get(uri);
+    final response = await http.get(uri).timeout(const Duration(seconds: 5));
 
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body) as Map<String, dynamic>;
