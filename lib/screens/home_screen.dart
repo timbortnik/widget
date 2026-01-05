@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -344,6 +345,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final locale = Localizations.localeOf(context);
     final useImperial = _useImperialUnits(locale);
     final maxPrecip = _getMaxPrecipitation(displayData, nowIndex);
+    final maxSunshine = _getMaxSunshine(displayData, nowIndex, _weatherData!.latitude);
 
     return RefreshIndicator(
       onRefresh: () => _loadWeather(userTriggered: true),
@@ -497,15 +499,17 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           _buildStatRow(
-                            icon: Icons.water_drop_outlined,
-                            value: l10n.maxPrecipitation(_formatPrecipitation(maxPrecip, useImperial)),
+                            icon: Icons.wb_sunny_outlined,
+                            value: '$maxSunshine%',
                             colors: colors,
+                            iconColor: colors.sunshineBar,
                           ),
                           const SizedBox(height: 12),
                           _buildStatRow(
-                            icon: Icons.cloud_outlined,
-                            value: '${currentHour.cloudCover}%',
+                            icon: Icons.water_drop_outlined,
+                            value: l10n.maxPrecipitation(_formatPrecipitation(maxPrecip, useImperial)),
                             colors: colors,
+                            iconColor: colors.precipitationBar,
                           ),
                         ],
                       ),
@@ -600,11 +604,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     required IconData icon,
     required String value,
     required MeteogramColors colors,
+    Color? iconColor,
   }) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 18, color: colors.secondaryText),
+        Icon(icon, size: 18, color: iconColor ?? colors.secondaryText),
         const SizedBox(width: 8),
         Text(
           value,
@@ -724,6 +729,66 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       return '${inches.toStringAsFixed(2)} in';
     }
     return '${mm.toStringAsFixed(1)} mm';
+  }
+
+  /// Get max sunshine percentage from forecast data (from now onwards).
+  /// Uses same calculation as meteogram chart.
+  int _getMaxSunshine(List<HourlyData> data, int nowIndex, double latitude) {
+    if (data.isEmpty || nowIndex >= data.length) return 0;
+
+    double maxSunshine = 0;
+    for (final hour in data.skip(nowIndex)) {
+      final elevation = _solarElevation(latitude, hour.time);
+      final clearSkyLux = _clearSkyIlluminance(elevation);
+      if (clearSkyLux <= 0) continue;
+
+      const maxIlluminance = 130000.0;
+      final potential = (clearSkyLux / maxIlluminance).clamp(0.0, 1.0);
+
+      // Cloud attenuation
+      final cloudDivisor = math.pow(10, hour.cloudCover / 100.0);
+      // Precipitation attenuation
+      final precipDivisor = 1 + 0.5 * math.pow(hour.precipitation, 0.6);
+
+      final sunshine = potential / cloudDivisor / precipDivisor;
+      if (sunshine > maxSunshine) maxSunshine = sunshine;
+    }
+    return (maxSunshine * 100).round();
+  }
+
+  /// Calculate solar elevation angle in degrees.
+  double _solarElevation(double latitude, DateTime time) {
+    final dayOfYear = time.difference(DateTime(time.year, 1, 1)).inDays + 1;
+    final hour = time.hour + time.minute / 60.0;
+
+    final declination = 23.45 * math.sin(2 * math.pi / 365 * (284 + dayOfYear));
+    final hourAngle = 15.0 * (hour - 12);
+
+    final latRad = latitude * math.pi / 180;
+    final decRad = declination * math.pi / 180;
+    final haRad = hourAngle * math.pi / 180;
+
+    final sinElevation = math.sin(latRad) * math.sin(decRad) +
+        math.cos(latRad) * math.cos(decRad) * math.cos(haRad);
+
+    return math.asin(sinElevation.clamp(-1.0, 1.0)) * 180 / math.pi;
+  }
+
+  /// Calculate clear-sky illuminance in lux from solar elevation angle.
+  double _clearSkyIlluminance(double elevation) {
+    if (elevation < -6) return 0;
+
+    final elevRad = elevation * math.pi / 180;
+    final u = math.sin(elevRad);
+
+    const x = 753.66156;
+    final s = math.asin((x * math.cos(elevRad) / (x + 1)).clamp(-1.0, 1.0));
+    final m = x * (math.cos(s) - u) + math.cos(s);
+
+    final factor = math.exp(-0.2 * m) * u +
+        0.0289 * math.exp(-0.042 * m) * (1 + (elevation + 90) * u / 57.29577951);
+
+    return 133775 * factor.clamp(0.0, double.infinity);
   }
 
   IconData _getLocationIcon() {
