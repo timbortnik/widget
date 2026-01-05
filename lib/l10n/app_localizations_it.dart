@@ -85,4 +85,13 @@ class AppLocalizationsIt extends AppLocalizations {
   String precipitationRate(String amount) {
     return '$amount mm/h';
   }
+
+  @override
+  String get locationSourceGps => 'GPS';
+
+  @override
+  String get locationSourceIp => 'Posizione IP';
+
+  @override
+  String get locationSourceManual => 'Manuale';
 }

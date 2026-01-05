@@ -145,5 +145,20 @@
         "example": "2.5"
       }
     }
+  },
+
+  "locationSourceGps": "GPS",
+  "@locationSourceGps": {
+    "description": "Short label for GPS location source"
+  },
+
+  "locationSourceIp": "IP Location",
+  "@locationSourceIp": {
+    "description": "Short label for IP-based location source"
+  },
+
+  "locationSourceManual": "Manual",
+  "@locationSourceManual": {
+    "description": "Short label for manually set location"
   }
 }

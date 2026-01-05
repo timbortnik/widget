@@ -22,5 +22,8 @@
   "forecastHours": "{hours}-Stunden-Vorhersage",
   "maxPrecipitation": "Max {amount}",
   "maxSunshine": "Max {percent}%",
-  "precipitationRate": "{amount} mm/h"
+  "precipitationRate": "{amount} mm/h",
+  "locationSourceGps": "GPS",
+  "locationSourceIp": "IP-Standort",
+  "locationSourceManual": "Manuell"
 }

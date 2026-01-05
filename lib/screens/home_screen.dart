@@ -428,7 +428,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                     ),
                                   ),
                                   Text(
-                                    ' · ${_getLocationSourceLabel()}',
+                                    ' · ${_getLocationSourceLabel(l10n)}',
                                     style: TextStyle(
                                       color: colors.secondaryText.withAlpha(150),
                                       fontSize: 12,
@@ -845,14 +845,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
   }
 
-  String _getLocationSourceLabel() {
+  String _getLocationSourceLabel(AppLocalizations l10n) {
     switch (_locationSource) {
       case LocationSource.gps:
-        return 'GPS';
+        return l10n.locationSourceGps;
       case LocationSource.ip:
-        return 'IP';
+        return l10n.locationSourceIp;
       case LocationSource.manual:
-        return 'Manual';
+        return l10n.locationSourceManual;
     }
   }
 

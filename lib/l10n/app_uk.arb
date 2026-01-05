@@ -145,5 +145,9 @@
         "example": "2.5"
       }
     }
-  }
+  },
+
+  "locationSourceGps": "GPS",
+  "locationSourceIp": "За IP",
+  "locationSourceManual": "Вручну"
 }

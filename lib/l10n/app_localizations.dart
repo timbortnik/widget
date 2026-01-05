@@ -237,6 +237,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{amount} mm/h'**
   String precipitationRate(String amount);
+
+  /// Short label for GPS location source
+  ///
+  /// In en, this message translates to:
+  /// **'GPS'**
+  String get locationSourceGps;
+
+  /// Short label for IP-based location source
+  ///
+  /// In en, this message translates to:
+  /// **'IP Location'**
+  String get locationSourceIp;
+
+  /// Short label for manually set location
+  ///
+  /// In en, this message translates to:
+  /// **'Manual'**
+  String get locationSourceManual;
 }
 
 class _AppLocalizationsDelegate
