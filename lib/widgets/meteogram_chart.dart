@@ -304,24 +304,23 @@ class MeteogramChart extends StatelessWidget {
 
   /// Builds sunshine bars (yellow, behind precipitation).
   ///
-  /// Combines two scientifically-grounded models:
+  /// Combines two models:
   ///
   /// 1. **Clear-sky illuminance** - Atmospheric model based on solar elevation,
   ///    accounting for optical air mass and atmospheric extinction.
   ///    Returns ~400-800 lux at sunrise/sunset, ~130,000 lux at zenith.
-  ///    Based on ha-illuminance project and Kasten & Young (1989) air mass formula.
+  ///    Based on Kasten & Young (1989) air mass formula.
   ///
-  /// 2. **Cloud attenuation** - Kasten & Czeplak (1980) formula:
+  /// 2. **Cloud attenuation** - ha-illuminance logarithmic model:
   ///    ```
-  ///    GHI/GHI_clear = 1 - 0.75 × (cloudCover)^3.4
+  ///    divisor = 10^(cloudCover/100)
+  ///    factor = 1/divisor
   ///    ```
-  ///    Derived from 10 years of hourly data from Hamburg, Germany.
-  ///    At 100% cloud cover, 25% of light still reaches surface as diffuse radiation.
+  ///    At 50% clouds → 32% light, at 100% clouds → 10% light.
+  ///    More aggressive than irradiance-based formulas, better matches
+  ///    perceived brightness reduction from clouds.
   ///
   /// References:
-  /// - Kasten, F. & Czeplak, G. (1980). "Solar and terrestrial radiation dependent
-  ///   on the amount and type of cloud." Solar Energy, 24(2), 177-189.
-  ///   https://doi.org/10.1016/0038-092X(80)90391-6
   /// - Kasten, F. & Young, A.T. (1989). "Revised optical air mass tables and
   ///   approximation formula." Applied Optics, 28(22), 4735-4738.
   /// - ha-illuminance: https://github.com/pnbruckner/ha-illuminance
@@ -370,12 +369,10 @@ class MeteogramChart extends StatelessWidget {
             // Normalize to 0-1 range
             final potential = (clearSkyLux / maxIlluminance).clamp(0.0, 1.0);
 
-            // Kasten & Czeplak (1980) cloud attenuation formula
-            // GHI/GHI_clear = 1 - 0.75 * (cloudCover)^3.4
-            // At 100% clouds, still 25% diffuse light gets through
-            final cloudFraction = hourData.cloudCover / 100.0;
-            final clearSkyFactor = 1.0 - 0.75 * math.pow(cloudFraction, 3.4);
-            final linear = potential * clearSkyFactor;
+            // ha-illuminance cloud attenuation: divisor = 10^(cloud/100)
+            // 0% → 1x, 50% → 3.16x, 100% → 10x reduction
+            final cloudDivisor = math.pow(10, hourData.cloudCover / 100.0);
+            final linear = potential / cloudDivisor;
 
             // Logarithmic scale to make small values more visible
             // log(1 + x*99) / log(100) maps 0->0, 1->1 with log curve

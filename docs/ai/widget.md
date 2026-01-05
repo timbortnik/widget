@@ -427,24 +427,25 @@ Reference: Kasten, F. & Young, A.T. (1989). "Revised optical air mass tables and
 
 Implementation based on: ha-illuminance project https://github.com/pnbruckner/ha-illuminance
 
-### Cloud Attenuation (Kasten & Czeplak 1980)
+### Cloud Attenuation (ha-illuminance model)
 
-Empirical formula derived from 10 years of hourly measurements in Hamburg, Germany:
+Logarithmic model from the ha-illuminance project, designed for perceived brightness rather than solar irradiance:
 
 ```
-GHI/GHI_clear = 1 - 0.75 × (cloudCover)^3.4
+divisor = 10^(cloudCover / 100)
+factor = 1 / divisor
 ```
 
 | Cloud Cover | Light Factor |
 |-------------|--------------|
 | 0% | 100% |
-| 50% | 93% |
-| 75% | 72% |
-| 100% | 25% (diffuse) |
+| 50% | 32% |
+| 75% | 18% |
+| 100% | 10% |
 
-Even at 100% cloud cover, 25% of light reaches the surface as diffuse radiation.
+More aggressive than irradiance-based formulas (like Kasten & Czeplak), better matching perceived brightness reduction from cloud cover.
 
-Reference: Kasten, F. & Czeplak, G. (1980). "Solar and terrestrial radiation dependent on the amount and type of cloud." *Solar Energy*, 24(2), 177-189. https://doi.org/10.1016/0038-092X(80)90391-6
+Reference: ha-illuminance project https://github.com/pnbruckner/ha-illuminance
 
 ### Combined Formula
 
@@ -455,11 +456,9 @@ clearSkyLux = _clearSkyIlluminance(solarElevation)
 // Normalize to 0-1 range
 potential = clearSkyLux / 130000
 
-// Cloud attenuation (Kasten & Czeplak)
-clearSkyFactor = 1 - 0.75 × cloudCover^3.4
-
-// Linear sunshine intensity
-linear = potential × clearSkyFactor
+// Cloud attenuation (ha-illuminance logarithmic model)
+cloudDivisor = 10^(cloudCover / 100)
+linear = potential / cloudDivisor
 
 // Logarithmic scale for display (makes small values visible)
 logScaled = log(1 + linear × 99) / log(100)
