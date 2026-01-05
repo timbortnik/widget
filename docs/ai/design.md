@@ -7,6 +7,9 @@ This document captures the design philosophy guiding the Meteogram app UI.
 > "Simplicity is not the absence of clutter... it's about bringing order to complexity."
 > — Jony Ive
 
+> "People think focus means saying yes to the thing you've got to focus on. But that's not what it means at all. It means saying no to the hundred other good ideas."
+> — Steve Jobs
+
 The app follows minimalist design principles: every element must earn its place, content should speak for itself, and we trust the user's intelligence.
 
 ## Guiding Principles
@@ -21,65 +24,86 @@ If something can be understood without being stated, don't state it.
 | "Now" label under temperature | Current temp is obviously "now" |
 | "Updated X min ago" banner | Secondary metadata competing for attention |
 | "46-Hour Forecast" label | The chart speaks for itself |
+| Refresh button | Pull-to-refresh exists; trust the platform |
+| "Max 8%" / "Max 2.7mm" stats | Redundant with chart; replaced with simple legend |
 
 ### 2. Visual Hierarchy Through Content
 
 The most important information should be the most prominent. Not through decoration, but through space and scale.
 
 **Hierarchy (top to bottom):**
-1. Location (functional, tappable)
-2. Temperature (hero, large)
-3. Chart (the core value)
+1. Location (functional, tappable, small)
+2. Temperature (hero, large, colored)
+3. Legend (unobtrusive, explains chart)
+4. Chart (the core value, fills space)
 
-### 3. Flatten Visual Nesting
+### 3. Unify Related Data
 
-Avoid card-within-card patterns. Each level of visual nesting adds cognitive load.
+Data that belongs together should feel like one element. Avoid artificial separation.
 
 ```
 Before:                          After:
 ┌─────────────────────┐         ┌─────────────────────┐
-│  1°                 │         │  1°                 │
+│  1°     ☀️💧       │         │  1°        ☀️ 💧   │
 │  Now                │         │                     │
-│  ┌───────────────┐  │         │  ☀ Max 8%          │
-│  │ ☀ Max 8%     │  │   →     │  💧 Max 2.7 mm     │
-│  │ 💧 Max 2.7mm │  │         │                     │
-│  └───────────────┘  │         │                     │
+└─────────────────────┘         │  ╭────────────╮     │
+                                │  │   CHART    │     │
+┌─────────────────────┐    →    │  ╰────────────╯     │
+│     [CHART]         │         │                     │
 └─────────────────────┘         └─────────────────────┘
+   Two separate cards              One unified card
 ```
 
-### 4. Consistent Visual Language
+### 4. Color as Data Connection
+
+Use color purposefully to connect related information:
+
+- **Temperature text** uses the same color as the **temperature line** on the chart
+- **Legend icons** use the same colors as their **chart elements** (yellow sun = daylight bars, teal drop = precipitation bars)
+
+This creates intuitive visual links without explanation.
+
+### 5. Consistent Visual Language
 
 - One corner radius throughout (20dp for cards)
-- Consistent spacing rhythm
+- Consistent spacing rhythm (16dp between elements)
 - Color from theme, not hardcoded
+- Single card contains all weather data
 
-### 5. Trust the Platform
+### 6. Trust the Platform
 
-- Use pull-to-refresh (expected on mobile)
+- Use pull-to-refresh (expected on mobile, no button needed)
 - Use system colors (Material You)
 - Let system handle dark/light theming
+- Widget background uses `?android:attr/colorBackground`
 
-### 6. Information on Demand
+### 7. Legend for Occasional Users
 
-Not everything needs to be visible at once. Secondary information can be:
-- Revealed on tap
-- Shown in context
-- Omitted entirely if derivable
+The widget is viewed daily; the app is opened occasionally. When users open the app, they may have forgotten what the colors mean.
+
+Keep the legend (Daylight, Precipitation) but make it unobtrusive:
+- Small text, secondary visual weight
+- Positioned near the chart it describes
+- Icons colored to match chart elements
 
 ## Layout Structure
 
 ```
 ┌────────────────────────────────────┐
-│  📍 Location · Source ▼    🔄     │  ← Functional row
+│  📍 Location · Source ▼            │  ← Tappable, opens picker
 │                                    │
 │  ┌────────────────────────────────┐│
-│  │       1°                       ││  ← Hero content
-│  │  ☀ Max 8%    💧 Max 2.7 mm    ││  ← Supporting stats
+│  │  12°        ☀️ Daylight       ││  ← Temp + legend
+│  │             💧 Precipitation   ││
+│  │                                ││
+│  │  ╭────────────────────────╮   ││
+│  │  │                        │   ││  ← Chart
+│  │  │    [METEOGRAM]         │   ││
+│  │  │                        │   ││
+│  │  ╰────────────────────────╯   ││
 │  └────────────────────────────────┘│
 │                                    │
-│  ┌────────────────────────────────┐│
-│  │     [METEOGRAM CHART]          ││  ← Core value
-│  └────────────────────────────────┘│
+│  (space for attribution/footer)    │
 └────────────────────────────────────┘
 ```
 
@@ -89,6 +113,7 @@ Not everything needs to be visible at once. Secondary information can be:
 - **System background** - Widget uses `?android:attr/colorBackground`
 - **Transparent chart PNG** - Renders on system background
 - **Theme-aware** - Different palettes for light/dark, automatically applied
+- **Semantic color** - Temperature text matches temperature line
 
 See `lib/theme/app_theme.dart` for implementation.
 
@@ -101,6 +126,7 @@ Before adding a UI element, ask:
 3. **Can it be simpler?** Is there a more minimal way?
 4. **Does it follow hierarchy?** Is prominence proportional to importance?
 5. **Is it consistent?** Does it match existing patterns?
+6. **Can it be unified?** Should it merge with an existing element?
 
 ## References
 
