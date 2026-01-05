@@ -68,6 +68,24 @@ double _clearSkyIlluminance(double elevation) {
   return 133775 * factor.clamp(0.0, double.infinity);
 }
 
+/// Calculate sunshine percentage (0-100) for a given hour.
+/// Uses the same model as the sunshine bars.
+int _calculateSunshinePercent(HourlyData hourData, double latitude) {
+  const maxIlluminance = 130000.0;
+
+  final elevation = _solarElevation(latitude, hourData.time);
+  final clearSkyLux = _clearSkyIlluminance(elevation);
+
+  if (clearSkyLux <= 0) return 0;
+
+  final potential = (clearSkyLux / maxIlluminance).clamp(0.0, 1.0);
+  final cloudDivisor = math.pow(10, hourData.cloudCover / 100.0);
+  final precipDivisor = 1 + 0.5 * math.pow(hourData.precipitation, 0.6);
+
+  final linear = potential / cloudDivisor / precipDivisor;
+  return (linear * 100).round();
+}
+
 /// Modern meteogram chart with temperature line, precipitation bars, and sky gradient.
 class MeteogramChart extends StatelessWidget {
   final List<HourlyData> data;
@@ -283,8 +301,25 @@ class MeteogramChart extends StatelessWidget {
                 final hour = hourData.time.hour;
                 final timeStr = hour == 0 ? '12am' : hour == 12 ? '12pm' :
                                hour > 12 ? '${hour - 12}pm' : '${hour}am';
+                final sunshinePercent = _calculateSunshinePercent(hourData, latitude);
+                final precipStr = hourData.precipitation > 0
+                    ? '${hourData.precipitation.toStringAsFixed(1)}mm'
+                    : '';
+
+                // Build tooltip text with all relevant data
+                final lines = <String>[
+                  '${hourData.temperature.round()}°',
+                  timeStr,
+                ];
+                if (sunshinePercent > 0) {
+                  lines.add('☀ $sunshinePercent%');
+                }
+                if (precipStr.isNotEmpty) {
+                  lines.add('💧 $precipStr');
+                }
+
                 return LineTooltipItem(
-                  '${hourData.temperature.round()}°\n$timeStr',
+                  lines.join('\n'),
                   TextStyle(
                     color: colors.primaryText,
                     fontWeight: FontWeight.w600,
