@@ -435,7 +435,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                         child: Text(
                           '${currentHour.temperature.round()}°',
                           style: TextStyle(
-                            color: colors.primaryText,
+                            color: colors.temperatureLine,
                             fontSize: 64,
                             fontWeight: FontWeight.w300,
                             height: 1,
