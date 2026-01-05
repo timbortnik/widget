@@ -107,7 +107,7 @@ class MeteogramChart extends StatelessWidget {
     return Stack(
       children: [
         ClipRRect(
-          borderRadius: BorderRadius.circular(compact ? 12 : 20),
+          borderRadius: BorderRadius.zero,
           child: CustomPaint(
             painter: _SkyGradientPainter(data: data, colors: colors, nowFraction: nowFraction),
             child: Column(

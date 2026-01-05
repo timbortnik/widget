@@ -554,7 +554,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             color: Theme.of(context).brightness == Brightness.light
                                 ? MeteogramColors.dark.cardBackground
                                 : MeteogramColors.light.cardBackground,
-                            borderRadius: BorderRadius.circular(20),
                           ),
                           clipBehavior: Clip.antiAlias,
                           child: MeteogramChart(
@@ -577,7 +576,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                         child: Container(
                           decoration: BoxDecoration(
                             color: colors.cardBackground,
-                            borderRadius: BorderRadius.circular(20),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withAlpha(15),
