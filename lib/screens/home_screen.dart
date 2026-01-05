@@ -546,16 +546,17 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 child: Stack(
                   children: [
                     // First: chart for NON-current theme (painted for capture, but hidden below)
+                    // RepaintBoundary is inside Container so widget capture has transparent background
                     Positioned.fill(
-                      child: RepaintBoundary(
-                        key: Theme.of(context).brightness == Brightness.light ? _chartKeyDark : _chartKeyLight,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).brightness == Brightness.light
-                                ? MeteogramColors.dark.cardBackground
-                                : MeteogramColors.light.cardBackground,
-                          ),
-                          clipBehavior: Clip.antiAlias,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).brightness == Brightness.light
+                              ? MeteogramColors.dark.cardBackground
+                              : MeteogramColors.light.cardBackground,
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: RepaintBoundary(
+                          key: Theme.of(context).brightness == Brightness.light ? _chartKeyDark : _chartKeyLight,
                           child: MeteogramChart(
                             data: displayData,
                             nowIndex: nowIndex,
@@ -570,21 +571,22 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                       ),
                     ),
                     // Second: chart for CURRENT theme (on top, visible to user)
+                    // RepaintBoundary is inside Container so widget capture has transparent background
                     Positioned.fill(
-                      child: RepaintBoundary(
-                        key: Theme.of(context).brightness == Brightness.light ? _chartKeyLight : _chartKeyDark,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: colors.cardBackground,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withAlpha(15),
-                                blurRadius: 20,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          clipBehavior: Clip.antiAlias,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: colors.cardBackground,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withAlpha(15),
+                              blurRadius: 20,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: RepaintBoundary(
+                          key: Theme.of(context).brightness == Brightness.light ? _chartKeyLight : _chartKeyDark,
                           child: MeteogramChart(
                             data: displayData,
                             nowIndex: nowIndex,

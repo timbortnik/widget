@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  IMPORTANT: NO HARDCODED COLORS
+
+  All widget colors MUST be defined here and in values/colors.xml.
+  These colors MUST stay in sync with Flutter theme in lib/theme/app_theme.dart:
+    - Light: AppTheme.light.scaffoldBackgroundColor = 0xFFF5F7FA
+    - Dark: AppTheme.dark.scaffoldBackgroundColor = 0xFF0D1B2A
+
+  NEVER hardcode color values directly in layout XML files.
+  Always reference colors using @color/color_name.
+-->
+<resources>
+    <!-- Widget surface - fallback for Android < 12. On Android 12+ (values-night-v31),
+         this is overridden with @android:color/system_neutral1_* (Material You). -->
+    <color name="widget_surface">@android:color/background_dark</color>
+
+    <!-- Placeholder text - subtle hint text -->
+    <color name="widget_placeholder_text">#66FFFFFF</color>
+
+    <!-- Shadow color for overlay elements -->
+    <color name="widget_shadow">#80000000</color>
+</resources>

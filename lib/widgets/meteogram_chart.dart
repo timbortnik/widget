@@ -108,9 +108,8 @@ class MeteogramChart extends StatelessWidget {
       children: [
         ClipRRect(
           borderRadius: BorderRadius.zero,
-          child: CustomPaint(
-            painter: _SkyGradientPainter(data: data, colors: colors, nowFraction: nowFraction),
-            child: Column(
+          // Sky gradient removed - widget uses system background color
+          child: Column(
               children: [
                 // Chart area
                 Expanded(
@@ -164,7 +163,6 @@ class MeteogramChart extends StatelessWidget {
               ],
             ),
           ),
-        ),
         // Stale data watermark (aligned with "now" line)
         if (staleText != null)
           Positioned.fill(
@@ -598,59 +596,4 @@ class MeteogramChart extends StatelessWidget {
     );
   }
 
-}
-
-/// Custom painter for smooth sky gradient background based on cloud cover.
-class _SkyGradientPainter extends CustomPainter {
-  final List<HourlyData> data;
-  final MeteogramColors colors;
-  final double nowFraction;
-
-  _SkyGradientPainter({
-    required this.data,
-    required this.colors,
-    required this.nowFraction,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (data.isEmpty) return;
-
-    final rect = Rect.fromLTWH(0, 0, size.width, size.height);
-
-    // Create smooth gradient across all data points with fade for past
-    final gradientColors = <Color>[];
-    final stops = <double>[];
-
-    for (var i = 0; i < data.length; i++) {
-      final stop = i / (data.length - 1);
-      // Fade past portion (before nowFraction)
-      final fadeFactor = stop < nowFraction
-          ? stop / nowFraction  // 0 at left edge, 1 at now
-          : 1.0;
-      final alpha = (60 * fadeFactor).round();
-      gradientColors.add(colors.getSkyColor(data[i].cloudCover).withAlpha(alpha));
-      stops.add(stop);
-    }
-
-    final gradient = LinearGradient(
-      begin: Alignment.centerLeft,
-      end: Alignment.centerRight,
-      colors: gradientColors,
-      stops: stops,
-    );
-
-    final paint = Paint()
-      ..shader = gradient.createShader(rect)
-      ..style = PaintingStyle.fill;
-
-    // Draw with rounded corners
-    final rrect = RRect.fromRectAndRadius(rect, const Radius.circular(20));
-    canvas.drawRRect(rrect, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant _SkyGradientPainter oldDelegate) {
-    return oldDelegate.data != data;
-  }
 }

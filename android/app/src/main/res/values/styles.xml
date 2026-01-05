@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- IMPORTANT: NO HARDCODED COLORS - use @color/color_name references only. -->
 <resources>
     <!-- Theme applied to the Android Window while the process is starting when the OS's Dark Mode setting is off -->
     <style name="LaunchTheme" parent="@android:style/Theme.Light.NoTitleBar">
@@ -16,8 +17,8 @@
         <item name="android:windowBackground">?android:colorBackground</item>
     </style>
 
-    <!-- Widget theme - fallback for Android 11 and below -->
+    <!-- Widget theme - inherits system colors, no overrides -->
     <style name="WidgetTheme" parent="android:Theme.DeviceDefault.DayNight">
-        <item name="android:colorBackground">#1B2838</item>
+        <!-- No colorBackground override - uses system's actual background color -->
     </style>
 </resources>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 12+ (API 31+): Use Material You dynamic colors from wallpaper -->
+<resources>
+    <!-- Widget surface color - system_neutral2 for surface containers -->
+    <color name="widget_surface">@android:color/system_neutral2_10</color>
+</resources>

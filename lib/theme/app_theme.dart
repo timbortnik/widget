@@ -1,5 +1,20 @@
 import 'package:flutter/material.dart';
 
+// =============================================================================
+// IMPORTANT: NO HARDCODED COLORS
+// =============================================================================
+// All colors in this app MUST be defined in this theme file and accessed via:
+//   - Theme.of(context) for standard Material colors
+//   - MeteogramColors.of(context) for chart-specific colors
+//
+// NEVER hardcode color values directly in widgets or screens.
+// This ensures consistent theming across light/dark modes.
+//
+// For the Android home screen widget:
+//   - Background uses ?android:attr/colorBackground (system color, not hardcoded)
+//   - UI element colors are in android/app/src/main/res/values[-night]/colors.xml
+// =============================================================================
+
 /// App theme configuration with light and dark modes.
 class AppTheme {
   /// Light theme.

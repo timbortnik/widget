@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- IMPORTANT: NO HARDCODED COLORS - use @color/color_name references only.
+     Colors are defined in values/colors.xml and values-night/colors.xml. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/widget_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:theme="@style/WidgetTheme"
-    android:background="@android:color/transparent"
+    android:background="@color/widget_surface"
     android:clipToOutline="false"
     android:outlineProvider="none">
 
@@ -35,7 +37,7 @@
         android:gravity="center"
         android:text="Tap to load forecast"
         android:textSize="13sp"
-        android:textColor="#66FFFFFF"
+        android:textColor="@color/widget_placeholder_text"
         android:fontFamily="sans-serif" />
 
     <!-- Refresh indicator (shown after resize or theme change) -->
@@ -47,7 +49,7 @@
         android:text="↻"
         android:textSize="64sp"
         android:textColor="?android:attr/textColorPrimary"
-        android:shadowColor="#80000000"
+        android:shadowColor="@color/widget_shadow"
         android:shadowDx="2"
         android:shadowDy="2"
         android:shadowRadius="4"
