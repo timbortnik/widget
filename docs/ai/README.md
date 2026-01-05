@@ -8,6 +8,7 @@ This folder contains detailed documentation intended for AI assistants working o
 |------|-------------|
 | [architecture.md](architecture.md) | System architecture, data flow, component responsibilities |
 | [api.md](api.md) | Open-Meteo API integration, request/response formats |
+| [design.md](design.md) | UI design principles, visual hierarchy, minimalism |
 | [i18n.md](i18n.md) | Localization setup, ARB format, adding languages |
 | [widget.md](widget.md) | Home screen widget implementation (Android/iOS) |
 
@@ -21,5 +22,6 @@ This folder contains detailed documentation intended for AI assistants working o
 
 - **architecture.md** - Understanding data flow, adding new services
 - **api.md** - Modifying API calls, adding weather parameters
+- **design.md** - UI decisions, adding features, visual consistency
 - **i18n.md** - Adding translations, new strings, formatting
 - **widget.md** - Widget bugs, refresh issues, platform-specific code
