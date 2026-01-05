@@ -495,23 +495,30 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                         ),
                       ),
                       // Stats
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          _buildStatRow(
-                            icon: Icons.wb_sunny_outlined,
-                            value: l10n.maxSunshine(maxSunshine),
-                            colors: colors,
-                            iconColor: colors.sunshineBar,
-                          ),
-                          const SizedBox(height: 12),
-                          _buildStatRow(
-                            icon: Icons.water_drop_outlined,
-                            value: l10n.maxPrecipitation(_formatPrecipitation(maxPrecip, useImperial)),
-                            colors: colors,
-                            iconColor: colors.precipitationBar,
-                          ),
-                        ],
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: colors.secondaryText.withAlpha(25),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            _buildStatRow(
+                              icon: Icons.wb_sunny_outlined,
+                              value: l10n.maxSunshine(maxSunshine),
+                              colors: colors,
+                              iconColor: colors.sunshineBar,
+                            ),
+                            const SizedBox(height: 8),
+                            _buildStatRow(
+                              icon: Icons.water_drop_outlined,
+                              value: l10n.maxPrecipitation(_formatPrecipitation(maxPrecip, useImperial)),
+                              colors: colors,
+                              iconColor: colors.precipitationBar,
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
