@@ -32,7 +32,7 @@ Future<void> _updateWeatherData() async {
 
   try {
     final location = await locationService.getLocation();
-    final weather = await weatherService.fetchWeather(
+    final weather = await weatherService.fetchWeatherWithRetry(
       location.latitude,
       location.longitude,
     );
