@@ -3,7 +3,7 @@
 A beautiful, modern weather widget for Android showing temperature forecasts as a meteogram chart.
 
 ![Flutter](https://img.shields.io/badge/Flutter-3.x-blue.svg)
-![License](https://img.shields.io/badge/License-MIT-green.svg)
+![License](https://img.shields.io/badge/License-BSL_1.1-blue.svg)
 ![Platform](https://img.shields.io/badge/Platform-Android-brightgreen.svg)
 
 ## Features
@@ -207,7 +207,11 @@ Edit `android/app/src/main/res/drawable/widget_background.xml`:
 
 ## License
 
-MIT License - see [LICENSE](LICENSE)
+Business Source License 1.1 - see [LICENSE](LICENSE)
+
+- Free for non-commercial and personal use
+- Commercial use requires a license
+- Converts to MIT on 2029-01-01
 
 ## Contributing
 

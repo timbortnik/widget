@@ -15,7 +15,7 @@ This file provides context for AI assistants working on this project.
 | Charting | fl_chart |
 | Widget package | home_widget + workmanager |
 | i18n | flutter_localizations + intl (ARB files) |
-| License | MIT |
+| License | BSL 1.1 (converts to MIT 2029) |
 
 ## Key Design Decisions
 
