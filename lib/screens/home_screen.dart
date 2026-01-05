@@ -364,59 +364,46 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Location row with refresh
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  GestureDetector(
-                    onTap: _showLocationPicker,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          _getLocationIcon(),
-                          size: 14,
-                          color: colors.secondaryText,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          _locationName ?? 'Unknown',
-                          style: TextStyle(
-                            color: colors.secondaryText,
-                            fontSize: 13,
-                          ),
-                        ),
-                        Text(
-                          ' · ${_getLocationSourceLabel(l10n)}',
-                          style: TextStyle(
-                            color: colors.secondaryText,
-                            fontSize: 13,
-                          ),
-                        ),
-                        Icon(
-                          Icons.arrow_drop_down,
-                          size: 16,
-                          color: colors.secondaryText,
-                        ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: _loading ? null : () => _loadWeather(userTriggered: true),
-                    icon: Icon(
-                      Icons.refresh_rounded,
+              // Location row
+              GestureDetector(
+                onTap: _showLocationPicker,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      _getLocationIcon(),
+                      size: 14,
                       color: colors.secondaryText,
                     ),
-                    tooltip: l10n.refresh,
-                  ),
-                ],
+                    const SizedBox(width: 4),
+                    Text(
+                      _locationName ?? 'Unknown',
+                      style: TextStyle(
+                        color: colors.secondaryText,
+                        fontSize: 13,
+                      ),
+                    ),
+                    Text(
+                      ' · ${_getLocationSourceLabel(l10n)}',
+                      style: TextStyle(
+                        color: colors.secondaryText,
+                        fontSize: 13,
+                      ),
+                    ),
+                    Icon(
+                      Icons.arrow_drop_down,
+                      size: 16,
+                      color: colors.secondaryText,
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 16),
 
-              // Current weather card
+              // Unified weather card: temperature + legend + chart
               if (currentHour != null)
                 Container(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: colors.cardBackground,
                     borderRadius: BorderRadius.circular(20),
@@ -428,45 +415,46 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                       ),
                     ],
                   ),
-                  child: Row(
+                  child: Column(
                     children: [
-                      // Temperature
-                      Expanded(
-                        child: Text(
-                          '${currentHour.temperature.round()}°',
-                          style: TextStyle(
-                            color: colors.temperatureLine,
-                            fontSize: 64,
-                            fontWeight: FontWeight.w300,
-                            height: 1,
-                          ),
-                        ),
-                      ),
-                      // Chart legend
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
+                      // Temperature row with legend
+                      Row(
                         children: [
-                          _buildStatRow(
-                            icon: Icons.wb_sunny_outlined,
-                            value: l10n.daylight,
-                            colors: colors,
-                            iconColor: colors.sunshineIcon,
+                          // Temperature
+                          Expanded(
+                            child: Text(
+                              '${currentHour.temperature.round()}°',
+                              style: TextStyle(
+                                color: colors.temperatureLine,
+                                fontSize: 64,
+                                fontWeight: FontWeight.w300,
+                                height: 1,
+                              ),
+                            ),
                           ),
-                          const SizedBox(height: 8),
-                          _buildStatRow(
-                            icon: Icons.water_drop_outlined,
-                            value: l10n.precipitation,
-                            colors: colors,
-                            iconColor: colors.precipitationBar,
+                          // Chart legend
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              _buildStatRow(
+                                icon: Icons.wb_sunny_outlined,
+                                value: l10n.daylight,
+                                colors: colors,
+                                iconColor: colors.sunshineIcon,
+                              ),
+                              const SizedBox(height: 8),
+                              _buildStatRow(
+                                icon: Icons.water_drop_outlined,
+                                value: l10n.precipitation,
+                                colors: colors,
+                                iconColor: colors.precipitationBar,
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                    ],
-                  ),
-                ),
-              const SizedBox(height: 16),
-
-              // Meteogram chart - aspect ratio matches home widget dimensions
+                      const SizedBox(height: 16),
+                      // Meteogram chart - aspect ratio matches home widget dimensions
               // Stack contains both themes; both painted for capture, current theme on top
               AspectRatio(
                 aspectRatio: _chartAspectRatio,
@@ -555,7 +543,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   },
                 ),
               ),
-              const SizedBox(height: 20),
+                    ],
+                  ),
+                ),
             ],
           ),
         ),
