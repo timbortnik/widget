@@ -106,6 +106,17 @@ class WidgetService {
     }
   }
 
+  /// Get the theme used for the last render.
+  /// Returns null if no render has happened yet.
+  Future<bool?> getRenderedTheme() async {
+    try {
+      return await HomeWidget.getWidgetData<bool>('rendered_dark_mode');
+    } catch (e) {
+      debugPrint('Error getting rendered theme: $e');
+      return null;
+    }
+  }
+
   /// Check if widget was resized and clear the flag.
   /// Returns true if widget needs re-rendering.
   Future<bool> checkAndClearResizeFlag() async {
