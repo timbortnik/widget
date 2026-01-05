@@ -370,7 +370,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 margin: const EdgeInsets.only(bottom: 12),
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
-                  color: colors.secondaryText.withAlpha(25),
+                  color: colors.cardBackground,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
