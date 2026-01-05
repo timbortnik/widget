@@ -293,6 +293,8 @@ class MeteogramChart extends StatelessWidget {
         lineTouchData: LineTouchData(
           enabled: !compact,
           touchTooltipData: LineTouchTooltipData(
+            fitInsideHorizontally: true,
+            fitInsideVertically: true,
             tooltipRoundedRadius: 12,
             tooltipPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             getTooltipItems: (touchedSpots) {
