@@ -86,6 +86,15 @@ Keep the legend (Daylight, Precipitation) but make it unobtrusive:
 - Positioned near the chart it describes
 - Icons colored to match chart elements
 
+### 8. Chart Tooltip Above, Not Under Finger
+
+When tapping the chart to see details, the tooltip appears **above the chart** in a fixed position:
+- User's finger doesn't obscure the information
+- Tooltip is outside the ShaderMask fade effect (always fully visible)
+- Shows: time, temperature, daylight %, precipitation
+- Icons colored (☀ yellow, 💧 blue), text uniform color
+- All values localized (time format, units)
+
 ## Layout Structure
 
 ```
@@ -96,6 +105,7 @@ Keep the legend (Daylight, Precipitation) but make it unobtrusive:
 │  │  12°        ☀️ Daylight       ││  ← Temp + legend
 │  │             💧 Precipitation   ││
 │  │                                ││
+│  │  3 PM  5°  ☀ 42%  💧 1.2 mm/h ││  ← Tooltip (on tap)
 │  │  ╭────────────────────────╮   ││
 │  │  │                        │   ││  ← Chart
 │  │  │    [METEOGRAM]         │   ││

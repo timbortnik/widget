@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 import '../models/weather_data.dart';
 import '../theme/app_theme.dart';
@@ -87,7 +88,7 @@ int _calculateSunshinePercent(HourlyData hourData, double latitude) {
 }
 
 /// Modern meteogram chart with temperature line, precipitation bars, and sky gradient.
-class MeteogramChart extends StatelessWidget {
+class MeteogramChart extends StatefulWidget {
   final List<HourlyData> data;
   final int nowIndex;
   final double latitude;
@@ -110,13 +111,27 @@ class MeteogramChart extends StatelessWidget {
   });
 
   @override
+  State<MeteogramChart> createState() => _MeteogramChartState();
+}
+
+class _MeteogramChartState extends State<MeteogramChart> {
+  int? _touchedIndex;
+
+  // Forward widget properties for easier access
+  List<HourlyData> get data => widget.data;
+  int get nowIndex => widget.nowIndex;
+  double get latitude => widget.latitude;
+  bool get compact => widget.compact;
+  String? get staleText => widget.staleText;
+
+  @override
   Widget build(BuildContext context) {
     if (data.isEmpty) {
       return const Center(child: Text('No data'));
     }
 
-    final colors = explicitColors ?? MeteogramColors.of(context);
-    final locale = explicitLocale ?? Localizations.localeOf(context).toString();
+    final colors = widget.explicitColors ?? MeteogramColors.of(context);
+    final locale = widget.explicitLocale ?? Localizations.localeOf(context).toString();
 
     // Calculate nowFraction from nowIndex
     // +1 to extend fade zone slightly past the "now" line
@@ -129,23 +144,25 @@ class MeteogramChart extends StatelessWidget {
           // Sky gradient removed - widget uses system background color
           child: Column(
               children: [
+                // Tooltip row (fixed position above chart, outside shader mask)
+                if (!compact && _touchedIndex != null)
+                  _buildFixedTooltip(context, colors, locale),
                 // Chart area
                 Expanded(
                   child: Stack(
                     children: [
-                      // Chart content with fade effect for past
+                      // Chart content with past time fade
                       Positioned.fill(
                         child: ShaderMask(
                           shaderCallback: (bounds) {
-                            // Non-linear fade: stays faded longer, then ramps up quickly
                             return LinearGradient(
                               begin: Alignment.centerLeft,
                               end: Alignment.centerRight,
-                              colors: const [
-                                Color(0x1AFFFFFF), // 10% at left edge
-                                Color(0x40FFFFFF), // 25% at 3/4 of past
-                                Color(0xFFFFFFFF), // 100% at "now"
-                                Color(0xFFFFFFFF), // 100% for future
+                              colors: [
+                                Colors.white.withAlpha(40),  // 15% at left edge
+                                Colors.white.withAlpha(80),  // 30% at 3/4 through past
+                                Colors.white,                // 100% at "now"
+                                Colors.white,                // 100% for future
                               ],
                               stops: [
                                 0.0,
@@ -155,7 +172,7 @@ class MeteogramChart extends StatelessWidget {
                               ],
                             ).createShader(bounds);
                           },
-                          blendMode: BlendMode.dstIn,
+                          blendMode: BlendMode.modulate,
                           child: Stack(
                             children: [
                               // Sunshine bars (behind)
@@ -168,7 +185,7 @@ class MeteogramChart extends StatelessWidget {
                           ),
                         ),
                       ),
-                      // Min/max temperature labels (not faded, centered in past area)
+                      // Min/max temperature labels (centered in past area)
                       _buildTempLabels(colors, nowFraction),
                     ],
                   ),
@@ -292,46 +309,63 @@ class MeteogramChart extends StatelessWidget {
         ],
         lineTouchData: LineTouchData(
           enabled: !compact,
+          handleBuiltInTouches: true,
           touchTooltipData: LineTouchTooltipData(
-            fitInsideHorizontally: true,
-            fitInsideVertically: true,
-            tooltipRoundedRadius: 12,
-            tooltipPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            getTooltipItems: (touchedSpots) {
-              return touchedSpots.map((spot) {
-                final hourData = data[spot.x.toInt()];
-                final hour = hourData.time.hour;
-                final timeStr = hour == 0 ? '12am' : hour == 12 ? '12pm' :
-                               hour > 12 ? '${hour - 12}pm' : '${hour}am';
-                final sunshinePercent = _calculateSunshinePercent(hourData, latitude);
-                final precipStr = hourData.precipitation > 0
-                    ? '${hourData.precipitation.toStringAsFixed(1)}mm'
-                    : '';
-
-                // Build tooltip text with all relevant data
-                final lines = <String>[
-                  '${hourData.temperature.round()}°',
-                  timeStr,
-                ];
-                if (sunshinePercent > 0) {
-                  lines.add('☀ $sunshinePercent%');
-                }
-                if (precipStr.isNotEmpty) {
-                  lines.add('💧 $precipStr');
-                }
-
-                return LineTooltipItem(
-                  lines.join('\n'),
-                  TextStyle(
-                    color: colors.primaryText,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 13,
-                  ),
-                );
-              }).toList();
-            },
+            // Hide built-in tooltip (we show fixed tooltip below chart)
+            getTooltipColor: (_) => Colors.transparent,
+            getTooltipItems: (_) => [const LineTooltipItem('', TextStyle())],
           ),
+          touchCallback: (event, response) {
+            if (compact) return;
+            if (event is FlTapUpEvent || event is FlPanEndEvent || event is FlLongPressEnd) {
+              setState(() => _touchedIndex = null);
+            } else if (response?.lineBarSpots?.isNotEmpty == true) {
+              final index = response!.lineBarSpots!.first.x.toInt();
+              if (index != _touchedIndex) {
+                setState(() => _touchedIndex = index);
+              }
+            }
+          },
         ),
+      ),
+    );
+  }
+
+  /// Fixed tooltip row shown above chart (outside shader mask).
+  Widget _buildFixedTooltip(BuildContext context, MeteogramColors colors, String locale) {
+    final index = _touchedIndex;
+    if (index == null || index < 0 || index >= data.length) {
+      return const SizedBox.shrink();
+    }
+
+    final l10n = AppLocalizations.of(context)!;
+    final hourData = data[index];
+    final timeStr = DateFormat.j(locale).format(hourData.time);
+    final sunshinePercent = _calculateSunshinePercent(hourData, latitude);
+
+    final textStyle = TextStyle(
+      color: colors.primaryText,
+      fontSize: 13,
+      fontWeight: FontWeight.w600,
+    );
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text('$timeStr  ${hourData.temperature.round()}°', style: textStyle),
+          if (sunshinePercent > 0) ...[
+            const SizedBox(width: 12),
+            Text('☀', style: TextStyle(color: colors.sunshineBar, fontSize: 13)),
+            Text(' $sunshinePercent%', style: textStyle),
+          ],
+          if (hourData.precipitation > 0) ...[
+            const SizedBox(width: 12),
+            Text('💧', style: TextStyle(color: colors.precipitationBar, fontSize: 13)),
+            Text(' ${l10n.precipitationRate(hourData.precipitation.toStringAsFixed(1))}', style: textStyle),
+          ],
+        ],
       ),
     );
   }
