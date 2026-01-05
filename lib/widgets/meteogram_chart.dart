@@ -386,10 +386,10 @@ class MeteogramChart extends StatelessWidget {
 
             final linear = potential / cloudDivisor / precipDivisor;
 
-            // Logarithmic scale to make small values more visible
-            // log(1 + x*99) / log(100) maps 0->0, 1->1 with log curve
-            final logScaled = math.log(1 + linear * 99) / math.log(100);
-            final sunshine = logScaled * chartMax;
+            // Square root scale to make small values more visible
+            // sqrt(x) maps 0->0, 1->1 with gentle curve
+            final scaled = math.sqrt(linear);
+            final sunshine = scaled * chartMax;
 
             if (sunshine <= 0) {
               return BarChartGroupData(

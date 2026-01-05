@@ -492,11 +492,11 @@ precipDivisor = 1 + 0.5 × R^0.6
 // Combined attenuation
 linear = potential / cloudDivisor / precipDivisor
 
-// Logarithmic scale for display (makes small values visible)
-logScaled = log(1 + linear × 99) / log(100)
+// Square root scale for display (makes small values visible)
+scaled = sqrt(linear)
 ```
 
-The logarithmic scaling ensures winter/overcast conditions still show visible bars rather than being imperceptibly small.
+The square root scaling provides a gentle boost to small values so winter/overcast conditions remain visible.
 
 ## Debugging
 
