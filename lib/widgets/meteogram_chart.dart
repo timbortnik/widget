@@ -217,17 +217,17 @@ class MeteogramChart extends StatelessWidget {
       if (offset < 0 || offset % 12 != 0) continue;
 
       if (i == nowIndex) {
-        // "Now" line - thicker
+        // "Now" line - thicker, uses Material You tertiary color
         verticalLines.add(VerticalLine(
           x: i.toDouble(),
-          color: colors.labelText,
+          color: colors.timeLabel,
           strokeWidth: compact ? 2 : 3,
         ));
       } else {
-        // Time label lines - thin
+        // Time label lines - thin, uses Material You tertiary color
         verticalLines.add(VerticalLine(
           x: i.toDouble(),
-          color: colors.labelText.withAlpha(100),
+          color: colors.timeLabel.withAlpha(100),
           strokeWidth: 1,
         ));
       }
@@ -564,9 +564,9 @@ class MeteogramChart extends StatelessWidget {
   Widget _buildTimeLabels(MeteogramColors colors, String locale) {
     // Use nowIndex for label positioning
 
-    // Adaptive color - uses theme-aware labelText (dark on light bg, light on dark bg)
+    // Use Material You tertiary color for time labels (distinct from temperature)
     final textStyle = TextStyle(
-      color: colors.labelText,
+      color: colors.timeLabel,
       fontSize: compact ? 11 : 13,
       fontWeight: FontWeight.w600,
     );

@@ -42,7 +42,11 @@ class MeteogramApp extends StatelessWidget {
           ],
           supportedLocales: AppLocalizations.supportedLocales,
 
-          home: const HomeScreen(),
+          // Pass both color schemes for widget rendering
+          home: HomeScreen(
+            lightColorScheme: lightDynamic,
+            darkColorScheme: darkDynamic,
+          ),
         );
       },
     );

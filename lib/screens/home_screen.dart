@@ -13,7 +13,14 @@ import '../widgets/meteogram_chart.dart';
 
 /// Main home screen displaying the meteogram.
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final ColorScheme? lightColorScheme;
+  final ColorScheme? darkColorScheme;
+
+  const HomeScreen({
+    super.key,
+    this.lightColorScheme,
+    this.darkColorScheme,
+  });
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -545,16 +552,32 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 aspectRatio: _chartAspectRatio,
                 child: Builder(
                   builder: (context) {
-                    // Get Material You primary color for both theme variants
-                    final primary = Theme.of(context).colorScheme.primary;
                     final isLight = Theme.of(context).brightness == Brightness.light;
 
-                    // Create colors for the opposite theme with dynamic primary
-                    final oppositeColors = (isLight ? MeteogramColors.dark : MeteogramColors.light).copyWith(
-                      temperatureLine: primary,
-                      temperatureGradientStart: primary.withAlpha(isLight ? 0x60 : 0x40),
-                      temperatureGradientEnd: primary.withAlpha(0x00),
-                    );
+                    // Use the ACTUAL color scheme for each theme (not current theme's colors)
+                    // This ensures widget images look correct in both modes
+                    final lightScheme = widget.lightColorScheme ?? Theme.of(context).colorScheme;
+                    final darkScheme = widget.darkColorScheme ?? Theme.of(context).colorScheme;
+
+                    // Light theme: onPrimaryContainer for better contrast
+                    // Dark theme: primary for brightness
+                    final lightTempColor = lightScheme.onPrimaryContainer;
+                    final darkTempColor = darkScheme.primary;
+
+                    // Colors for the opposite theme (hidden chart for widget capture)
+                    final oppositeColors = isLight
+                        ? MeteogramColors.dark.copyWith(
+                            temperatureLine: darkTempColor,
+                            temperatureGradientStart: darkTempColor.withAlpha(0x60),
+                            temperatureGradientEnd: darkTempColor.withAlpha(0x00),
+                            timeLabel: darkScheme.tertiary,
+                          )
+                        : MeteogramColors.light.copyWith(
+                            temperatureLine: lightTempColor,
+                            temperatureGradientStart: lightTempColor.withAlpha(0x40),
+                            temperatureGradientEnd: lightTempColor.withAlpha(0x00),
+                            timeLabel: lightScheme.tertiary,
+                          );
 
                     return Stack(
                       children: [

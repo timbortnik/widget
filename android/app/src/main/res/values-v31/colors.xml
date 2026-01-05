@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Android 12+ (API 31+): Use Material You dynamic colors from wallpaper -->
+<!--
+  Android 12+ (API 31+): Material You colors.
+
+  NOTE: Widget background uses ?android:attr/colorBackground directly in the layout,
+  not these color resources. This ensures automatic matching with system widgets.
+-->
 <resources>
-    <!-- Widget surface color - system_neutral2 for surface containers -->
-    <color name="widget_surface">@android:color/system_neutral2_10</color>
+    <!-- Legacy widget surface color - kept for backwards compatibility -->
+    <color name="widget_surface">@android:color/system_accent2_100</color>
 </resources>

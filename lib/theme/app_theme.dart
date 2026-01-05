@@ -31,7 +31,7 @@ class AppTheme {
       useMaterial3: true,
       brightness: Brightness.light,
       colorScheme: colorScheme,
-      scaffoldBackgroundColor: const Color(0xFFF5F7FA),
+      // No explicit scaffoldBackgroundColor - Material 3 uses colorScheme automatically
     );
   }
 
@@ -45,7 +45,7 @@ class AppTheme {
       useMaterial3: true,
       brightness: Brightness.dark,
       colorScheme: colorScheme,
-      scaffoldBackgroundColor: const Color(0xFF0D1B2A),
+      // No explicit scaffoldBackgroundColor - Material 3 uses colorScheme automatically
     );
   }
 }
@@ -71,6 +71,7 @@ class MeteogramColors {
   final Color sunshineBar;
   final Color sunshineGradient;
   final Color sunshineIcon;
+  final Color timeLabel;
 
   const MeteogramColors({
     required this.background,
@@ -92,6 +93,7 @@ class MeteogramColors {
     required this.sunshineBar,
     required this.sunshineGradient,
     required this.sunshineIcon,
+    required this.timeLabel,
   });
 
   /// Light mode - clean, airy design
@@ -115,6 +117,7 @@ class MeteogramColors {
     sunshineBar: Color(0xFFFFF0AA),      // Light pastel yellow
     sunshineGradient: Color(0xFFFFD580),  // Light pastel orange
     sunshineIcon: Color(0xFFD49A00),      // Darker amber for light backgrounds
+    timeLabel: Color(0xFF4A5568),         // Fallback - overridden by Material You tertiary
   );
 
   /// Dark mode - rich, elegant design
@@ -138,31 +141,40 @@ class MeteogramColors {
     sunshineBar: Color(0xFFFFF0AA),      // Light pastel yellow
     sunshineGradient: Color(0xFFFFD080),  // Light pastel orange
     sunshineIcon: Color(0xFFFFD93D),      // Bright yellow for dark backgrounds
+    timeLabel: Color(0xFFE0E0E0),         // Fallback - overridden by Material You tertiary
   );
 
-  /// Get colors based on theme, using Material You primary color for temperature.
+  /// Get colors based on theme, using Material You colors.
   static MeteogramColors of(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final primary = theme.colorScheme.primary;
+    final colorScheme = theme.colorScheme;
 
-    // Use Material You primary color for temperature line
+    // Use Material You colors with appropriate contrast for each theme:
+    // - Light mode: onPrimaryContainer (darker, better contrast on light bg)
+    // - Dark mode: primary (brighter, better contrast on dark bg)
+    final tempColor = isDark ? colorScheme.primary : colorScheme.onPrimaryContainer;
+
     final base = isDark ? dark : light;
     return base.copyWith(
-      temperatureLine: primary,
-      temperatureGradientStart: primary.withAlpha(isDark ? 0x60 : 0x40),
-      temperatureGradientEnd: primary.withAlpha(0x00),
+      background: colorScheme.surface,
+      temperatureLine: tempColor,
+      temperatureGradientStart: tempColor.withAlpha(isDark ? 0x60 : 0x40),
+      temperatureGradientEnd: tempColor.withAlpha(0x00),
+      timeLabel: colorScheme.tertiary,
     );
   }
 
   /// Create a copy with overridden values.
   MeteogramColors copyWith({
+    Color? background,
     Color? temperatureLine,
     Color? temperatureGradientStart,
     Color? temperatureGradientEnd,
+    Color? timeLabel,
   }) {
     return MeteogramColors(
-      background: background,
+      background: background ?? this.background,
       cardBackground: cardBackground,
       temperatureLine: temperatureLine ?? this.temperatureLine,
       temperatureGradientStart: temperatureGradientStart ?? this.temperatureGradientStart,
@@ -181,6 +193,7 @@ class MeteogramColors {
       sunshineBar: sunshineBar,
       sunshineGradient: sunshineGradient,
       sunshineIcon: sunshineIcon,
+      timeLabel: timeLabel ?? this.timeLabel,
     );
   }
 
