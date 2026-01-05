@@ -59,41 +59,63 @@ dependencies:
 ### res/layout/meteogram_widget.xml
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout android:id="@+id/widget_root"
+<FrameLayout android:id="@+id/widget_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp"
-    android:background="@drawable/widget_background">
+    android:theme="@style/WidgetTheme"
+    android:background="?android:attr/colorBackground"
+    android:alpha="0.85">
 
-    <!-- Header: Temperature + Location using RelativeLayout for positioning -->
-    <RelativeLayout
+    <!-- Two chart ImageViews for automatic theme switching -->
+    <ImageView android:id="@+id/widget_chart_light"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <TextView android:id="@+id/widget_temperature"
-            android:layout_alignParentStart="true"
-            android:textSize="42sp"
-            android:textColor="#FFFFFF" />
-
-        <TextView android:id="@+id/widget_location"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true" />
-    </RelativeLayout>
-
-    <!-- Chart container -->
-    <FrameLayout
+        android:layout_height="match_parent"
+        android:scaleType="fitCenter"
+        android:visibility="@integer/chart_light_visibility" />
+    <ImageView android:id="@+id/widget_chart_dark"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1">
+        android:layout_height="match_parent"
+        android:scaleType="fitCenter"
+        android:visibility="@integer/chart_dark_visibility" />
 
-        <ImageView android:id="@+id/widget_chart"
-            android:visibility="gone" />
+    <!-- Placeholder when no chart available -->
+    <TextView android:id="@+id/widget_placeholder"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:text="Tap to load forecast"
+        android:visibility="gone" />
 
-        <TextView android:id="@+id/widget_placeholder"
-            android:text="Tap to load forecast" />
-    </FrameLayout>
-</LinearLayout>
+    <!-- Refresh indicator for resize -->
+    <TextView android:id="@+id/widget_refresh_indicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="↻"
+        android:textSize="64sp"
+        android:textColor="?android:attr/textColorPrimary"
+        android:visibility="gone" />
+</FrameLayout>
+```
+
+### res/values/integers.xml (Light Mode)
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Visibility: 0=visible, 1=invisible, 2=gone -->
+    <integer name="chart_light_visibility">0</integer>
+    <integer name="chart_dark_visibility">2</integer>
+</resources>
+```
+
+### res/values-night/integers.xml (Dark Mode)
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Visibility: 0=visible, 1=invisible, 2=gone -->
+    <integer name="chart_light_visibility">2</integer>
+    <integer name="chart_dark_visibility">0</integer>
+</resources>
 ```
 
 ### res/drawable/widget_background.xml
@@ -316,12 +338,43 @@ void main() async {
 ## Data Flow
 
 1. **App loads weather** from Open-Meteo API
-2. **Chart renders** in Flutter using fl_chart
-3. **Chart captured** via RepaintBoundary → toImage() → PNG bytes
-4. **Image saved** to app documents folder
+2. **Chart renders** in Flutter using fl_chart (both light AND dark themes)
+3. **Charts captured** via RepaintBoundary → toImage() → PNG bytes (2 images)
+4. **Images saved** to app documents folder (`meteogram_chart_light.png`, `meteogram_chart_dark.png`)
 5. **Widget data saved** via HomeWidget.saveWidgetData → SharedPreferences
-6. **Native provider** reads SharedPreferences and loads bitmap
-7. **WorkManager** triggers refresh every 30 minutes
+6. **Native provider** loads both bitmaps into respective ImageViews
+7. **Theme switching** handled automatically by Android resource system
+
+## Automatic Theme Switching
+
+Android widgets cannot receive `ACTION_CONFIGURATION_CHANGED` when the app is not running. Solution: dual bitmaps with night-qualified resources.
+
+### How It Works
+1. **Flutter renders both themes** - Light and dark charts are captured on every update
+2. **Widget has two ImageViews** - One for light (`widget_chart_light`), one for dark (`widget_chart_dark`)
+3. **Visibility via resources** - `values/integers.xml` shows light, `values-night/integers.xml` shows dark
+4. **Launcher handles switching** - When system theme changes, launcher re-inflates widget with new visibility values
+
+### Color System
+```dart
+// lib/theme/app_theme.dart
+class MeteogramColors {
+  static const light = MeteogramColors(
+    temperatureLine: Color(0xFFFF6B6B),
+    precipitationBar: Color(0xFF4ECDC4),
+    // ... full palette for light theme
+  );
+
+  static const dark = MeteogramColors(
+    temperatureLine: Color(0xFFFF7675),
+    precipitationBar: Color(0xFF00CEC9),
+    // ... full palette for dark theme
+  );
+}
+```
+
+### Trade-off
+Doubles storage (two PNG files instead of one), but enables instant theme switching without any app code running.
 
 ## Debugging
 
