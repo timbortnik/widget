@@ -437,11 +437,13 @@ class MeteogramChart extends StatelessWidget {
   }
 
   /// Builds precipitation bars (teal, in front of sunshine).
+  /// Uses square root scaling to make light rain visible.
   Widget _buildPrecipitationBars(MeteogramColors colors) {
     final maxPrecip = data.map((d) => d.precipitation).reduce((a, b) => a > b ? a : b);
     if (maxPrecip == 0) return const SizedBox();
 
     const chartMax = 10.0;
+    const maxPrecipReference = 10.0; // 10mm/h = heavy rain = full scale
 
     return Opacity(
       opacity: 0.7,
@@ -465,12 +467,16 @@ class MeteogramChart extends StatelessWidget {
                 ],
               );
             }
+            // Normalize and apply square root scale (same as sunshine)
+            final normalized = (precip / maxPrecipReference).clamp(0.0, 1.0);
+            final scaled = math.sqrt(normalized) * chartMax;
+
             return BarChartGroupData(
               x: e.key,
               barRods: [
                 BarChartRodData(
                   fromY: chartMax,
-                  toY: chartMax - precip,
+                  toY: chartMax - scaled,
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
