@@ -87,9 +87,9 @@ class MeteogramColors {
     partlyCloudySky: Color(0xFFA0C4E8),
     overcastSky: Color(0xFFB2BEC3),
     chartTempLabel: Color(0xFF1A1A2E),
-    sunshineBar: Color(0xFFFFE477),
-    sunshineGradient: Color(0xFFFFB54D),
-    sunshineIcon: Color(0xFFD49A00), // Darker amber for light backgrounds
+    sunshineBar: Color(0xFFFFF0AA),      // Light pastel yellow
+    sunshineGradient: Color(0xFFFFD580),  // Light pastel orange
+    sunshineIcon: Color(0xFFD49A00),      // Darker amber for light backgrounds
   );
 
   /// Dark mode - rich, elegant design
@@ -110,9 +110,9 @@ class MeteogramColors {
     partlyCloudySky: Color(0xFF3D6B8C),
     overcastSky: Color(0xFF4A5568),
     chartTempLabel: Color(0xFFF0F0F0),
-    sunshineBar: Color(0xFFFFE477),
-    sunshineGradient: Color(0xFFFFAF4D),
-    sunshineIcon: Color(0xFFFFD93D), // Bright yellow for dark backgrounds
+    sunshineBar: Color(0xFFFFF0AA),      // Light pastel yellow
+    sunshineGradient: Color(0xFFFFD080),  // Light pastel orange
+    sunshineIcon: Color(0xFFFFD93D),      // Bright yellow for dark backgrounds
   );
 
   /// Get colors based on brightness.
