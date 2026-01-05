@@ -226,6 +226,12 @@ abstract class AppLocalizations {
   /// **'Max {amount}'**
   String maxPrecipitation(String amount);
 
+  /// Maximum sunshine in forecast
+  ///
+  /// In en, this message translates to:
+  /// **'Max {percent}%'**
+  String maxSunshine(int percent);
+
   /// Precipitation rate shown on chart
   ///
   /// In en, this message translates to:

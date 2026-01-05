@@ -21,5 +21,6 @@
   "offline": "HORS LIGNE",
   "forecastHours": "Prévisions {hours}h",
   "maxPrecipitation": "Max {amount}",
+  "maxSunshine": "Max {percent}%",
   "precipitationRate": "{amount} mm/h"
 }

@@ -125,6 +125,17 @@
     }
   },
 
+  "maxSunshine": "Макс {percent}%",
+  "@maxSunshine": {
+    "description": "Maximum sunshine in forecast",
+    "placeholders": {
+      "percent": {
+        "type": "int",
+        "example": "75"
+      }
+    }
+  },
+
   "precipitationRate": "{amount} мм/год",
   "@precipitationRate": {
     "description": "Precipitation rate shown on chart",

@@ -21,5 +21,6 @@
   "offline": "OFFLINE",
   "forecastHours": "{hours}-Stunden-Vorhersage",
   "maxPrecipitation": "Max {amount}",
+  "maxSunshine": "Max {percent}%",
   "precipitationRate": "{amount} mm/h"
 }

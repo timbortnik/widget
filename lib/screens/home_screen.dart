@@ -500,7 +500,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                         children: [
                           _buildStatRow(
                             icon: Icons.wb_sunny_outlined,
-                            value: '$maxSunshine%',
+                            value: l10n.maxSunshine(maxSunshine),
                             colors: colors,
                             iconColor: colors.sunshineBar,
                           ),

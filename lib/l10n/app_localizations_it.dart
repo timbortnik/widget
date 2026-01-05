@@ -77,6 +77,11 @@ class AppLocalizationsIt extends AppLocalizations {
   }
 
   @override
+  String maxSunshine(int percent) {
+    return 'Max $percent%';
+  }
+
+  @override
   String precipitationRate(String amount) {
     return '$amount mm/h';
   }
