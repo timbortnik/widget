@@ -31,6 +31,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   LocationSource _locationSource = LocationSource.gps;
   bool _isShowingCachedData = false;
   double _chartAspectRatio = 2.0; // Default 2:1, updated from widget dimensions
+  Brightness? _lastRenderedBrightness; // Track theme for re-render on change
 
   @override
   void initState() {
@@ -55,6 +56,20 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
   }
 
+  @override
+  void didChangePlatformBrightness() {
+    super.didChangePlatformBrightness();
+    // Theme changed while app is running - trigger native widget update to show indicator
+    debugPrint('Platform brightness changed - triggering widget update');
+    _widgetService.triggerWidgetUpdate();
+    // Then re-render after short delay
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (mounted) {
+        _checkAndSyncWidget();
+      }
+    });
+  }
+
   /// Load widget dimensions and update chart aspect ratio.
   Future<void> _loadWidgetDimensions() async {
     final dimensions = await _widgetService.getWidgetDimensions();
@@ -67,7 +82,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   /// Quick check on startup to sync widget state with cache age.
-  /// Also handles widget resize by re-rendering at new dimensions.
+  /// Also handles widget resize and theme changes by re-rendering.
   Future<void> _checkAndSyncWidget() async {
     // Check if widget was resized - if so, force re-render
     final wasResized = await _widgetService.checkAndClearResizeFlag();
@@ -77,8 +92,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       await _loadWidgetDimensions();
     }
 
+    // Check if theme changed since last render
+    final currentBrightness = WidgetsBinding.instance.platformDispatcher.platformBrightness;
+    final themeChanged = _lastRenderedBrightness != null && _lastRenderedBrightness != currentBrightness;
+    if (themeChanged) {
+      debugPrint('Theme changed since last render: $_lastRenderedBrightness -> $currentBrightness');
+    }
+
     final isStale = await _weatherService.isCacheStale();
-    if (isStale || wasResized) {
+    if (isStale || wasResized || themeChanged) {
       final cached = await _weatherService.getCachedWeather();
       final cachedCity = await _weatherService.getCachedCityName();
       if (cached != null) {
@@ -700,6 +722,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       final image = await boundary.toImage(pixelRatio: pixelRatio);
       final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
       if (byteData == null) return null;
+
+      // Track brightness used for this render
+      _lastRenderedBrightness = WidgetsBinding.instance.platformDispatcher.platformBrightness;
+      debugPrint('Chart rendered with brightness: $_lastRenderedBrightness');
+
+      // Save rendered theme to SharedPreferences for native widget to check
+      await _widgetService.saveRenderedTheme(_lastRenderedBrightness == Brightness.dark);
 
       return _widgetService.saveChartImage(byteData.buffer.asUint8List());
     } catch (e) {

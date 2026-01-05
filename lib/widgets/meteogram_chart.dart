@@ -336,10 +336,11 @@ class MeteogramChart extends StatelessWidget {
   Widget _buildTimeLabels(MeteogramColors colors, String locale) {
     // Use nowIndex for label positioning
 
+    // Adaptive color - uses theme-aware labelText (dark on light bg, light on dark bg)
     final textStyle = TextStyle(
       color: colors.labelText,
       fontSize: compact ? 14 : 16,
-      fontWeight: FontWeight.w500,
+      fontWeight: FontWeight.w600,
     );
 
     return LayoutBuilder(

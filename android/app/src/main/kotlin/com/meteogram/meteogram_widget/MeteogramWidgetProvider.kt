@@ -5,6 +5,7 @@ import android.appwidget.AppWidgetManager
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.res.Configuration
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Log
@@ -16,6 +17,40 @@ import java.io.File
 class MeteogramWidgetProvider : HomeWidgetProvider() {
     companion object {
         private const val TAG = "MeteogramWidget"
+    }
+
+    override fun onReceive(context: Context, intent: Intent) {
+        super.onReceive(context, intent)
+
+        // Handle configuration changes (including theme changes)
+        if (intent.action == Intent.ACTION_CONFIGURATION_CHANGED) {
+            Log.d(TAG, "Configuration changed - checking theme mismatch")
+            checkThemeMismatchAndShowIndicator(context)
+        }
+    }
+
+    private fun checkThemeMismatchAndShowIndicator(context: Context) {
+        val prefs = context.getSharedPreferences("HomeWidgetPreferences", Context.MODE_PRIVATE)
+        val imagePath = prefs.getString("meteogram_image", null)
+        if (imagePath == null) return
+
+        val currentNightMode = context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+        val isCurrentlyDark = currentNightMode == Configuration.UI_MODE_NIGHT_YES
+        val renderedDark = prefs.getBoolean("rendered_dark_mode", false)
+
+        if (isCurrentlyDark != renderedDark) {
+            Log.d(TAG, "Theme mismatch detected: current=$isCurrentlyDark, rendered=$renderedDark")
+            val views = RemoteViews(context.packageName, R.layout.meteogram_widget)
+            views.setViewVisibility(R.id.widget_refresh_indicator, View.VISIBLE)
+
+            val appWidgetManager = AppWidgetManager.getInstance(context)
+            val componentName = android.content.ComponentName(context, MeteogramWidgetProvider::class.java)
+            val widgetIds = appWidgetManager.getAppWidgetIds(componentName)
+            for (id in widgetIds) {
+                appWidgetManager.partiallyUpdateAppWidget(id, views)
+            }
+            Log.d(TAG, "Theme mismatch indicator shown")
+        }
     }
 
     override fun onAppWidgetOptionsChanged(
@@ -130,8 +165,21 @@ class MeteogramWidgetProvider : HomeWidgetProvider() {
                 views.setViewVisibility(R.id.widget_placeholder, View.VISIBLE)
             }
 
-            // Hide refresh indicator (chart has been updated)
-            views.setViewVisibility(R.id.widget_refresh_indicator, View.GONE)
+            // Check if current theme matches rendered theme
+            val currentNightMode = context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+            val isCurrentlyDark = currentNightMode == Configuration.UI_MODE_NIGHT_YES
+            val renderedDark = widgetData.getBoolean("rendered_dark_mode", false)
+            val themeMismatch = imagePath != null && isCurrentlyDark != renderedDark
+            Log.d(TAG, "Theme check: current=$isCurrentlyDark, rendered=$renderedDark, mismatch=$themeMismatch")
+
+            if (themeMismatch) {
+                // Theme changed since last render - show refresh indicator
+                views.setViewVisibility(R.id.widget_refresh_indicator, View.VISIBLE)
+                Log.d(TAG, "Theme mismatch: current=$isCurrentlyDark, rendered=$renderedDark - showing refresh indicator")
+            } else {
+                // Theme matches - hide refresh indicator
+                views.setViewVisibility(R.id.widget_refresh_indicator, View.GONE)
+            }
 
             appWidgetManager.updateAppWidget(appWidgetId, views)
             Log.d(TAG, "Updated widget $appWidgetId")

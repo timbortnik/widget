@@ -82,6 +82,30 @@ class WidgetService {
     await HomeWidget.setAppGroupId('group.com.meteogram.widget');
   }
 
+  /// Trigger a native widget update (to check theme mismatch and show indicator).
+  Future<void> triggerWidgetUpdate() async {
+    try {
+      await HomeWidget.updateWidget(
+        androidName: _androidWidgetName,
+        iOSName: _iosWidgetName,
+      );
+      debugPrint('Triggered widget update for theme check');
+    } catch (e) {
+      debugPrint('Error triggering widget update: $e');
+    }
+  }
+
+  /// Save the theme (dark/light) used for the last render.
+  /// Native widget uses this to show refresh indicator on theme mismatch.
+  Future<void> saveRenderedTheme(bool isDark) async {
+    try {
+      await HomeWidget.saveWidgetData<bool>('rendered_dark_mode', isDark);
+      debugPrint('Saved rendered theme: ${isDark ? "dark" : "light"}');
+    } catch (e) {
+      debugPrint('Error saving rendered theme: $e');
+    }
+  }
+
   /// Check if widget was resized and clear the flag.
   /// Returns true if widget needs re-rendering.
   Future<bool> checkAndClearResizeFlag() async {
