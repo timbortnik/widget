@@ -25,5 +25,6 @@
   "precipitationRate": "{amount} mm/h",
   "locationSourceGps": "GPS",
   "locationSourceIp": "Posizione IP",
-  "locationSourceManual": "Manuale"
+  "locationSourceManual": "Manuale",
+  "daylight": "Luce diurna"
 }

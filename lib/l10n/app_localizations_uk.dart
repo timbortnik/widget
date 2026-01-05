@@ -94,4 +94,7 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get locationSourceManual => 'Вручну';
+
+  @override
+  String get daylight => 'Денне світло';
 }

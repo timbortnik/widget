@@ -160,5 +160,10 @@
   "locationSourceManual": "Manual",
   "@locationSourceManual": {
     "description": "Short label for manually set location"
+  },
+
+  "daylight": "Daylight",
+  "@daylight": {
+    "description": "Legend label for sunshine/daylight bars on chart"
   }
 }

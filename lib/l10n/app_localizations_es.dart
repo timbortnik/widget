@@ -94,4 +94,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get locationSourceManual => 'Manual';
+
+  @override
+  String get daylight => 'Luz diurna';
 }

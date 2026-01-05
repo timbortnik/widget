@@ -149,5 +149,6 @@
 
   "locationSourceGps": "GPS",
   "locationSourceIp": "За IP",
-  "locationSourceManual": "Вручну"
+  "locationSourceManual": "Вручну",
+  "daylight": "Денне світло"
 }

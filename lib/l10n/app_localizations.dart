@@ -255,6 +255,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Manual'**
   String get locationSourceManual;
+
+  /// Legend label for sunshine/daylight bars on chart
+  ///
+  /// In en, this message translates to:
+  /// **'Daylight'**
+  String get daylight;
 }
 
 class _AppLocalizationsDelegate

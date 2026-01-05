@@ -442,20 +442,20 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                           ),
                         ),
                       ),
-                      // Stats (flat, no background)
+                      // Chart legend
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           _buildStatRow(
                             icon: Icons.wb_sunny_outlined,
-                            value: l10n.maxSunshine(maxSunshine),
+                            value: l10n.daylight,
                             colors: colors,
                             iconColor: colors.sunshineIcon,
                           ),
                           const SizedBox(height: 8),
                           _buildStatRow(
                             icon: Icons.water_drop_outlined,
-                            value: l10n.maxPrecipitation(_formatPrecipitation(maxPrecip, useImperial)),
+                            value: l10n.precipitation,
                             colors: colors,
                             iconColor: colors.precipitationBar,
                           ),
