@@ -11,8 +11,8 @@ class WeatherService {
   static const String _cacheKey = 'cached_weather_data';
   static const String _cacheLocationKey = 'cached_weather_location';
 
-  /// Fibonacci backoff delays in minutes: 1, 2, 3, 5
-  static const List<int> _retryDelaysMinutes = [1, 2, 3, 5];
+  /// Fibonacci backoff delays in minutes: 1, 2, 3, 5, 8
+  static const List<int> _retryDelaysMinutes = [1, 2, 3, 5, 8];
 
   /// Fetch weather data for foreground use.
   /// Tries once, falls back to cache on failure. Does not block with retries.
