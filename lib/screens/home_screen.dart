@@ -550,16 +550,25 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
               // Attribution (CC BY 4.0 requirement)
               const SizedBox(height: 16),
-              Center(
-                child: GestureDetector(
-                  onTap: () => launchUrl(Uri.parse('https://open-meteo.com')),
-                  child: Text(
-                    '${l10n.weatherDataBy('Open-Meteo.com')} · ${l10n.daylightDerived}',
-                    style: TextStyle(
-                      color: colors.secondaryText,
-                      fontSize: 11,
+              GestureDetector(
+                onTap: () => launchUrl(Uri.parse('https://open-meteo.com')),
+                child: Column(
+                  children: [
+                    Text(
+                      l10n.weatherDataBy('Open-Meteo.com'),
+                      style: TextStyle(
+                        color: colors.secondaryText,
+                        fontSize: 11,
+                      ),
                     ),
-                  ),
+                    Text(
+                      l10n.daylightDerived,
+                      style: TextStyle(
+                        color: colors.secondaryText,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
