@@ -86,6 +86,34 @@ Flutter's bitmap image quality degradation is a **known issue** documented in mu
 
 ---
 
+## SVG Font Sizing
+
+Font sizes in the SVG are **relative to chart dimensions** to ensure consistent appearance across different device resolutions and widget sizes.
+
+| Element | Formula | Example (669px height) |
+|---------|---------|------------------------|
+| Temperature labels | chartHeight × 8.4% | ~50px |
+| Time labels | totalHeight × 6.3% | ~42px |
+| Time label area | totalHeight × 10.5% | ~70px reserved |
+
+```dart
+// Temperature labels - relative to chart area height
+final fontSize = (chartHeight * 0.084).round();
+
+// Time labels - relative to total SVG height
+final fontSize = (height * 0.063).round();
+
+// Chart area excludes time label space
+final chartHeight = height * 0.895;  // 89.5% for chart, 10.5% for labels
+```
+
+**Why relative sizing:**
+- Widget and app render at different pixel dimensions
+- Device pixel ratios vary (2x, 3x, 4x)
+- SVG is generated at device pixels, so fixed px values would appear different sizes
+
+---
+
 ## Overview
 
 This document describes the architecture that enables **exact visual matching** between the in-app meteogram chart and the Android home screen widget. Both use the same SVG generation and native rendering pipeline, ensuring pixel-perfect consistency regardless of display context or size.
