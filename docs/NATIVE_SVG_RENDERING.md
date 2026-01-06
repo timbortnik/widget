@@ -57,6 +57,33 @@ AndroidView(viewType: 'svg_chart_view', ...)
 imageView.setImageBitmap(bitmap)  // 1:1 pixel display
 ```
 
+### Known Flutter Issues (This Is Not a New Bug)
+
+Flutter's bitmap image quality degradation is a **known issue** documented in multiple GitHub reports:
+
+| Issue | Description |
+|-------|-------------|
+| [#98953](https://github.com/flutter/flutter/issues/98953) | `PictureRecorder` → `Image.memory()` loses quality - thin lines disappear, text not sharp |
+| [#109637](https://github.com/flutter/flutter/issues/109637) | `FilterQuality` not working as expected for hi-res images |
+| [#127174](https://github.com/flutter/flutter/issues/127174) | Impeller renders images blurry even with `FilterQuality.high` |
+| [#73714](https://github.com/flutter/flutter/issues/73714) | Request for higher quality filter than `FilterQuality.high` |
+| [#76737](https://github.com/flutter/flutter/issues/76737) | Need better image filter quality controls |
+
+**Key insight from [Flutter Engine PR #24582](https://github.com/flutter/engine/pull/24582):**
+> "The algorithm used for `FilterQuality.high` is frequently *worse* than `medium` when scaling down. Only when scaling images *up* do you get increased quality as you go none → low → medium → high."
+
+**What Flutter handles well:**
+- Text, icons, vector shapes (rendered directly via Skia/Impeller)
+- `CustomPainter` drawing operations
+- `flutter_svg` vector rendering
+
+**What has quality issues:**
+- Bitmap images via `Image.memory()`, `Image.network()`, etc.
+- Images passing through the compositor with scaling/transforms
+- `PictureRecorder` capture → display pipeline
+
+**Our solution:** Use `AndroidView` (PlatformView) to embed a native `ImageView` that displays the bitmap directly, bypassing Flutter's compositor entirely.
+
 ---
 
 ## Overview
