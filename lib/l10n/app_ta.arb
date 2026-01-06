@@ -24,7 +24,6 @@
   "maxSunshine": "அதிகபட்சம் {percent}%",
   "precipitationRate": "{amount} மிமீ/மணி",
   "locationSourceGps": "GPS",
-  "locationSourceIp": "IP இடம்",
   "locationSourceManual": "கைமுறை",
   "daylight": "பகல் ஒளி",
   "weatherDataBy": "{provider} வானிலை தரவு (CC BY 4.0)",

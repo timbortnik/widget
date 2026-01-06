@@ -90,9 +90,6 @@ class AppLocalizationsDa extends AppLocalizations {
   String get locationSourceGps => 'GPS';
 
   @override
-  String get locationSourceIp => 'IP-placering';
-
-  @override
   String get locationSourceManual => 'Manuel';
 
   @override

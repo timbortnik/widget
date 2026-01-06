@@ -90,9 +90,6 @@ class AppLocalizationsKa extends AppLocalizations {
   String get locationSourceGps => 'GPS';
 
   @override
-  String get locationSourceIp => 'IP მდებარეობა';
-
-  @override
   String get locationSourceManual => 'ხელით';
 
   @override

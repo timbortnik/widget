@@ -639,17 +639,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             }
           }
         },
-        onIpSelected: () async {
-          Navigator.pop(context);
-          final location = await _locationService.getIpLocation();
-          await _locationService.saveLocation(
-            location.latitude,
-            location.longitude,
-            city: location.city,
-            source: LocationSource.ip,
-          );
-          _loadWeather(userTriggered: true);
-        },
         onCitySelected: (city) async {
           Navigator.pop(context);
           await _locationService.addRecentCity(city);
@@ -774,8 +763,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     switch (_locationSource) {
       case LocationSource.gps:
         return Icons.gps_fixed;
-      case LocationSource.ip:
-        return Icons.wifi;
       case LocationSource.manual:
         return Icons.edit_location_alt;
     }
@@ -785,8 +772,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     switch (_locationSource) {
       case LocationSource.gps:
         return l10n.locationSourceGps;
-      case LocationSource.ip:
-        return l10n.locationSourceIp;
       case LocationSource.manual:
         return l10n.locationSourceManual;
     }
@@ -856,7 +841,6 @@ class _LocationPickerSheet extends StatefulWidget {
   final MeteogramColors colors;
   final String languageCode;
   final VoidCallback onGpsSelected;
-  final VoidCallback onIpSelected;
   final void Function(CitySearchResult) onCitySelected;
   final VoidCallback onSearchError;
 
@@ -867,7 +851,6 @@ class _LocationPickerSheet extends StatefulWidget {
     required this.colors,
     required this.languageCode,
     required this.onGpsSelected,
-    required this.onIpSelected,
     required this.onCitySelected,
     required this.onSearchError,
   });
@@ -1039,16 +1022,6 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
                         ? Icon(Icons.check, color: colors.temperatureLine, size: 20)
                         : null,
                     onTap: widget.onGpsSelected,
-                  ),
-                  // IP option
-                  ListTile(
-                    leading: Icon(Icons.wifi, color: colors.precipitationBar),
-                    title: Text('IP Location', style: TextStyle(color: colors.primaryText)),
-                    subtitle: Text('Based on network', style: TextStyle(color: colors.secondaryText, fontSize: 12)),
-                    trailing: widget.currentSource == LocationSource.ip
-                        ? Icon(Icons.check, color: colors.precipitationBar, size: 20)
-                        : null,
-                    onTap: widget.onIpSelected,
                   ),
                   // Recent cities
                   if (_recentCities.isNotEmpty) ...[

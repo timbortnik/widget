@@ -90,9 +90,6 @@ class AppLocalizationsUk extends AppLocalizations {
   String get locationSourceGps => 'GPS';
 
   @override
-  String get locationSourceIp => 'За IP';
-
-  @override
   String get locationSourceManual => 'Вручну';
 
   @override

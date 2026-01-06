@@ -24,7 +24,6 @@
   "maxSunshine": "Max {percent}%",
   "precipitationRate": "{amount} mm/tim",
   "locationSourceGps": "GPS",
-  "locationSourceIp": "IP-plats",
   "locationSourceManual": "Manuell",
   "daylight": "Dagsljus",
   "weatherDataBy": "Väderdata från {provider} (CC BY 4.0)",

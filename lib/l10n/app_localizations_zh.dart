@@ -90,9 +90,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get locationSourceGps => 'GPS';
 
   @override
-  String get locationSourceIp => 'IP定位';
-
-  @override
   String get locationSourceManual => '手动';
 
   @override

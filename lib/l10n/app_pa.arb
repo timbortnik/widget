@@ -24,7 +24,6 @@
   "maxSunshine": "ਵੱਧ {percent}%",
   "precipitationRate": "{amount} ਮਿਮੀ/ਘੰਟਾ",
   "locationSourceGps": "GPS",
-  "locationSourceIp": "IP ਸਥਾਨ",
   "locationSourceManual": "ਹੱਥੀਂ",
   "daylight": "ਦਿਨ ਦੀ ਰੌਸ਼ਨੀ",
   "weatherDataBy": "{provider} ਤੋਂ ਮੌਸਮ ਡਾਟਾ (CC BY 4.0)",

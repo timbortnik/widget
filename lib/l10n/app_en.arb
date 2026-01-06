@@ -152,7 +152,6 @@
     "description": "Short label for GPS location source"
   },
 
-  "locationSourceIp": "IP Location",
   "@locationSourceIp": {
     "description": "Short label for IP-based location source"
   },

@@ -24,7 +24,6 @@
   "maxSunshine": "მაქს {percent}%",
   "precipitationRate": "{amount} მმ/სთ",
   "locationSourceGps": "GPS",
-  "locationSourceIp": "IP მდებარეობა",
   "locationSourceManual": "ხელით",
   "daylight": "დღის სინათლე",
   "weatherDataBy": "ამინდის მონაცემები {provider}-დან (CC BY 4.0)",

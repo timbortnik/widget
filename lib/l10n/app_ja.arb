@@ -24,7 +24,6 @@
   "maxSunshine": "最大 {percent}%",
   "precipitationRate": "{amount} mm/時",
   "locationSourceGps": "GPS",
-  "locationSourceIp": "IP位置情報",
   "locationSourceManual": "手動",
   "daylight": "日光",
   "weatherDataBy": "{provider}の気象データ (CC BY 4.0)",

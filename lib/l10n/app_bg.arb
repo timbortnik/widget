@@ -24,7 +24,6 @@
   "maxSunshine": "Макс {percent}%",
   "precipitationRate": "{amount} мм/ч",
   "locationSourceGps": "GPS",
-  "locationSourceIp": "IP местоположение",
   "locationSourceManual": "Ръчно",
   "daylight": "Дневна светлина",
   "weatherDataBy": "Метео данни от {provider} (CC BY 4.0)",

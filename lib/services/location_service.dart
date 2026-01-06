@@ -57,16 +57,11 @@ class LocationService {
         ),
       ).timeout(const Duration(seconds: 15));
 
-      // Get city name via reverse geocoding, fall back to IP geolocation for city
+      // Get city name via reverse geocoding
       String? city = await _getCityFromCoordinates(
         position.latitude,
         position.longitude,
       );
-      if (city == null || city.isEmpty) {
-        // Try IP geolocation just for city name
-        final ipLocation = await _getIpLocation();
-        city = ipLocation?.city;
-      }
       // Fallback: derive city name from coordinates for known test locations
       if (city == null || city.isEmpty) {
         city = _getTestCityName(position.latitude, position.longitude);
@@ -88,10 +83,6 @@ class LocationService {
           lastPosition.longitude,
         );
         if (city == null || city.isEmpty) {
-          final ipLocation = await _getIpLocation();
-          city = ipLocation?.city;
-        }
-        if (city == null || city.isEmpty) {
           city = _getTestCityName(lastPosition.latitude, lastPosition.longitude);
         }
         return LocationData(
@@ -100,11 +91,6 @@ class LocationService {
           source: LocationSource.gps,
           city: city,
         );
-      }
-      // Fallback to IP geolocation
-      final ipLocation = await _getIpLocation();
-      if (ipLocation != null) {
-        return ipLocation;
       }
       // Final fallback to default location (Berlin)
       return LocationData(
@@ -143,53 +129,14 @@ class LocationService {
   }
 
   /// Get fallback location when GPS is unavailable.
-  /// Tries IP geolocation first, then falls back to Berlin.
+  /// Falls back to Berlin as default location.
   Future<LocationData> _getFallbackLocation() async {
-    // Try IP geolocation
-    final ipLocation = await _getIpLocation();
-    if (ipLocation != null) {
-      return ipLocation;
-    }
-    // Final fallback to Berlin
     return LocationData(
       latitude: 52.52,
       longitude: 13.405,
       source: LocationSource.manual,
       city: 'Berlin',
     );
-  }
-
-  /// Get approximate location from IP address using ip-api.com.
-  /// Uses reverse geocoding to get localized city name.
-  Future<LocationData?> _getIpLocation() async {
-    try {
-      final response = await http
-          .get(Uri.parse('http://ip-api.com/json/?fields=status,lat,lon,city'))
-          .timeout(const Duration(seconds: 5));
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data['status'] == 'success') {
-          final lat = (data['lat'] as num).toDouble();
-          final lon = (data['lon'] as num).toDouble();
-
-          // Try to get localized city name via reverse geocoding
-          String? city = await _getCityFromCoordinates(lat, lon);
-          // Fall back to IP API city name (English)
-          city ??= data['city'] as String?;
-
-          return LocationData(
-            latitude: lat,
-            longitude: lon,
-            source: LocationSource.ip,
-            city: city,
-          );
-        }
-      }
-      return null;
-    } catch (e) {
-      return null;
-    }
   }
 
   /// Get city name from coordinates via reverse geocoding.
@@ -246,17 +193,6 @@ class LocationService {
   Future<void> useGpsLocation() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_useGpsKey, true);
-  }
-
-  /// Get location from IP (for explicit user selection).
-  Future<LocationData> getIpLocation() async {
-    final location = await _getIpLocation();
-    return location ?? LocationData(
-      latitude: 52.52,
-      longitude: 13.405,
-      source: LocationSource.ip,
-      city: 'Berlin',
-    );
   }
 
   /// Check if using GPS.
@@ -428,7 +364,6 @@ class LocationService {
 /// How the location was determined.
 enum LocationSource {
   gps,
-  ip,
   manual,
 }
 

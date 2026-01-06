@@ -24,7 +24,6 @@
   "maxSunshine": "Maks {percent}%",
   "precipitationRate": "{amount} mm/sa",
   "locationSourceGps": "GPS",
-  "locationSourceIp": "IP Konumu",
   "locationSourceManual": "Manuel",
   "daylight": "Gün ışığı",
   "weatherDataBy": "{provider} hava durumu verileri (CC BY 4.0)",

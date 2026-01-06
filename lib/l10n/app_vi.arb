@@ -24,7 +24,6 @@
   "maxSunshine": "Tối đa {percent}%",
   "precipitationRate": "{amount} mm/giờ",
   "locationSourceGps": "GPS",
-  "locationSourceIp": "Vị trí IP",
   "locationSourceManual": "Thủ công",
   "daylight": "Ánh sáng ban ngày",
   "weatherDataBy": "Dữ liệu thời tiết từ {provider} (CC BY 4.0)",

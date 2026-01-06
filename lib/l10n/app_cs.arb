@@ -24,7 +24,6 @@
   "maxSunshine": "Max {percent}%",
   "precipitationRate": "{amount} mm/hod",
   "locationSourceGps": "GPS",
-  "locationSourceIp": "IP poloha",
   "locationSourceManual": "Ručně",
   "daylight": "Denní světlo",
   "weatherDataBy": "Data o počasí od {provider} (CC BY 4.0)",

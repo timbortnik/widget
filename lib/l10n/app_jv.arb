@@ -24,7 +24,6 @@
   "maxSunshine": "Maks {percent}%",
   "precipitationRate": "{amount} mm/jam",
   "locationSourceGps": "GPS",
-  "locationSourceIp": "Lokasi IP",
   "locationSourceManual": "Manual",
   "daylight": "Cahya awan",
   "weatherDataBy": "Data cuaca saka {provider} (CC BY 4.0)",

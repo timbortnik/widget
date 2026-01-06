@@ -90,9 +90,6 @@ class AppLocalizationsEl extends AppLocalizations {
   String get locationSourceGps => 'GPS';
 
   @override
-  String get locationSourceIp => 'Τοποθεσία IP';
-
-  @override
   String get locationSourceManual => 'Χειροκίνητα';
 
   @override

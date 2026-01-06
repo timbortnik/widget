@@ -90,9 +90,6 @@ class AppLocalizationsCs extends AppLocalizations {
   String get locationSourceGps => 'GPS';
 
   @override
-  String get locationSourceIp => 'IP poloha';
-
-  @override
   String get locationSourceManual => 'Ručně';
 
   @override

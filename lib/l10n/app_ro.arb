@@ -24,7 +24,6 @@
   "maxSunshine": "Max {percent}%",
   "precipitationRate": "{amount} mm/h",
   "locationSourceGps": "GPS",
-  "locationSourceIp": "Locație IP",
   "locationSourceManual": "Manual",
   "daylight": "Lumina zilei",
   "weatherDataBy": "Date meteo de la {provider} (CC BY 4.0)",

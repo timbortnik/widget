@@ -24,7 +24,6 @@
   "maxSunshine": "최대 {percent}%",
   "precipitationRate": "{amount} mm/시",
   "locationSourceGps": "GPS",
-  "locationSourceIp": "IP 위치",
   "locationSourceManual": "수동",
   "daylight": "일광",
   "weatherDataBy": "{provider} 날씨 데이터 (CC BY 4.0)",

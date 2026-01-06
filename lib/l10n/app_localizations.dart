@@ -304,12 +304,6 @@ abstract class AppLocalizations {
   /// **'GPS'**
   String get locationSourceGps;
 
-  /// Short label for IP-based location source
-  ///
-  /// In en, this message translates to:
-  /// **'IP Location'**
-  String get locationSourceIp;
-
   /// Short label for manually set location
   ///
   /// In en, this message translates to:

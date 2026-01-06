@@ -90,9 +90,6 @@ class AppLocalizationsFi extends AppLocalizations {
   String get locationSourceGps => 'GPS';
 
   @override
-  String get locationSourceIp => 'IP-sijainti';
-
-  @override
   String get locationSourceManual => 'Manuaalinen';
 
   @override

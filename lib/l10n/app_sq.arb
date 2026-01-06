@@ -24,7 +24,6 @@
   "maxSunshine": "Maks {percent}%",
   "precipitationRate": "{amount} mm/orë",
   "locationSourceGps": "GPS",
-  "locationSourceIp": "Vendndodhja IP",
   "locationSourceManual": "Manual",
   "daylight": "Drita e ditës",
   "weatherDataBy": "Të dhënat e motit nga {provider} (CC BY 4.0)",

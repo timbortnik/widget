@@ -24,7 +24,6 @@
   "maxSunshine": "Μέγ. {percent}%",
   "precipitationRate": "{amount} mm/ώρα",
   "locationSourceGps": "GPS",
-  "locationSourceIp": "Τοποθεσία IP",
   "locationSourceManual": "Χειροκίνητα",
   "daylight": "Φως ημέρας",
   "weatherDataBy": "Δεδομένα καιρού από {provider} (CC BY 4.0)",

@@ -90,9 +90,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get locationSourceGps => 'GPS';
 
   @override
-  String get locationSourceIp => 'Vị trí IP';
-
-  @override
   String get locationSourceManual => 'Thủ công';
 
   @override

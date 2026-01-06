@@ -24,7 +24,6 @@
   "maxSunshine": "الحد الأقصى {percent}%",
   "precipitationRate": "{amount} مم/ساعة",
   "locationSourceGps": "GPS",
-  "locationSourceIp": "موقع IP",
   "locationSourceManual": "يدوي",
   "daylight": "ضوء النهار",
   "weatherDataBy": "بيانات الطقس من {provider} (CC BY 4.0)",

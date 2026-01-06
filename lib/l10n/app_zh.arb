@@ -24,7 +24,6 @@
   "maxSunshine": "最大 {percent}%",
   "precipitationRate": "{amount} 毫米/小时",
   "locationSourceGps": "GPS",
-  "locationSourceIp": "IP定位",
   "locationSourceManual": "手动",
   "daylight": "日光",
   "weatherDataBy": "天气数据由 {provider} 提供 (CC BY 4.0)",

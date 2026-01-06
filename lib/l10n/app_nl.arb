@@ -24,7 +24,6 @@
   "maxSunshine": "Max {percent}%",
   "precipitationRate": "{amount} mm/u",
   "locationSourceGps": "GPS",
-  "locationSourceIp": "IP-locatie",
   "locationSourceManual": "Handmatig",
   "daylight": "Daglicht",
   "weatherDataBy": "Weergegevens van {provider} (CC BY 4.0)",

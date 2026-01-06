@@ -90,9 +90,6 @@ class AppLocalizationsBn extends AppLocalizations {
   String get locationSourceGps => 'GPS';
 
   @override
-  String get locationSourceIp => 'IP অবস্থান';
-
-  @override
   String get locationSourceManual => 'ম্যানুয়াল';
 
   @override

@@ -24,7 +24,6 @@
   "maxSunshine": "Hám {percent}%",
   "precipitationRate": "{amount} mm/klst",
   "locationSourceGps": "GPS",
-  "locationSourceIp": "IP staðsetning",
   "locationSourceManual": "Handvirkt",
   "daylight": "Dagsbirta",
   "weatherDataBy": "Veðurgögn frá {provider} (CC BY 4.0)",

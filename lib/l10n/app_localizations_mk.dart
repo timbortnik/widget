@@ -91,9 +91,6 @@ class AppLocalizationsMk extends AppLocalizations {
   String get locationSourceGps => 'GPS';
 
   @override
-  String get locationSourceIp => 'IP локација';
-
-  @override
   String get locationSourceManual => 'Рачно';
 
   @override

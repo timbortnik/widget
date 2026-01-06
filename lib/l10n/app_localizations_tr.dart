@@ -90,9 +90,6 @@ class AppLocalizationsTr extends AppLocalizations {
   String get locationSourceGps => 'GPS';
 
   @override
-  String get locationSourceIp => 'IP Konumu';
-
-  @override
   String get locationSourceManual => 'Manuel';
 
   @override

@@ -24,7 +24,6 @@
   "maxSunshine": "সর্বোচ্চ {percent}%",
   "precipitationRate": "{amount} মিমি/ঘণ্টা",
   "locationSourceGps": "GPS",
-  "locationSourceIp": "IP অবস্থান",
   "locationSourceManual": "ম্যানুয়াল",
   "daylight": "দিনের আলো",
   "weatherDataBy": "{provider} থেকে আবহাওয়া ডেটা (CC BY 4.0)",

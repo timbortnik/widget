@@ -90,9 +90,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get locationSourceGps => 'GPS';
 
   @override
-  String get locationSourceIp => 'IP 위치';
-
-  @override
   String get locationSourceManual => '수동';
 
   @override
