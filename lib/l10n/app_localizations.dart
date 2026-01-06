@@ -262,10 +262,10 @@ abstract class AppLocalizations {
   /// **'Daylight'**
   String get daylight;
 
-  /// Attribution text for weather data provider (CC BY 4.0)
+  /// Attribution text for weather data provider with license
   ///
   /// In en, this message translates to:
-  /// **'Weather data by {provider}'**
+  /// **'Weather data by {provider} (CC BY 4.0)'**
   String weatherDataBy(String provider);
 
   /// Note indicating daylight values are calculated from cloud data (CC BY 4.0 modification disclosure)

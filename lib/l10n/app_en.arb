@@ -167,9 +167,9 @@
     "description": "Legend label for sunshine/daylight bars on chart"
   },
 
-  "weatherDataBy": "Weather data by {provider}",
+  "weatherDataBy": "Weather data by {provider} (CC BY 4.0)",
   "@weatherDataBy": {
-    "description": "Attribution text for weather data provider (CC BY 4.0)",
+    "description": "Attribution text for weather data provider with license",
     "placeholders": {
       "provider": {
         "type": "String",

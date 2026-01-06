@@ -100,7 +100,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String weatherDataBy(String provider) {
-    return 'Weather data by $provider';
+    return 'Weather data by $provider (CC BY 4.0)';
   }
 
   @override

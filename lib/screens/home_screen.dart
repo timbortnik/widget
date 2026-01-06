@@ -553,6 +553,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               GestureDetector(
                 onTap: () => launchUrl(Uri.parse('https://open-meteo.com')),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       l10n.weatherDataBy('Open-Meteo.com'),
