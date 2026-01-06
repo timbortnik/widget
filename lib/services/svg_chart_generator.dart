@@ -75,8 +75,17 @@ class SvgChartColors {
 
 /// Generates SVG meteogram charts for background widget updates.
 class SvgChartGenerator {
-  /// Format number as integer for flutter_svg compatibility.
+  /// Format number as integer for compatibility.
   String _n(double v) => v.round().toString();
+
+  /// Scale factor for font sizes and stroke widths.
+  late double _scale;
+
+  /// Scaled font size.
+  String _fontSize(double baseSize) => _n(baseSize * _scale);
+
+  /// Scaled stroke width.
+  String _strokeWidth(double baseWidth) => (baseWidth * _scale).toStringAsFixed(1);
 
   String generate({
     required List<HourlyData> data,
@@ -85,46 +94,57 @@ class SvgChartGenerator {
     required SvgChartColors colors,
     required double width,
     required double height,
-    bool useMask = true,
+    bool usePastFade = true,
+    double scale = 1.0,
   }) {
+    _scale = scale;
     if (data.isEmpty) {
       return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${_n(width)} ${_n(height)}"><rect width="100%" height="100%" fill="${colors.cardBackground.toHex()}"/></svg>';
     }
 
     final svg = StringBuffer();
-    final chartHeight = height - 22;
+    final chartHeight = height - 22 * scale; // Scale time label area
     final nowFraction = (nowIndex + 1) / data.length;
 
     svg.write('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${_n(width)} ${_n(height)}">');
 
+    // Gradient definitions
+    svg.write('<defs>');
+    _writeGradientDefs(svg, colors, nowFraction, usePastFade);
+    svg.write('</defs>');
+
     // Background
     svg.write('<rect width="100%" height="100%" fill="${colors.cardBackground.toHex()}"/>');
 
-    // Chart group
-    svg.write('<g>');
+    // Chart group with optional past-time fade mask
+    if (usePastFade) {
+      svg.write('<g mask="url(#pastFadeMask)">');
+    } else {
+      svg.write('<g>');
+    }
 
-    // Sunshine bars
+    // Sunshine bars (with gradient)
     _writeSunshineBars(svg, data, latitude, colors, width, chartHeight);
 
-    // Precipitation bars
+    // Precipitation bars (with gradient)
     _writePrecipitationBars(svg, data, colors, width, chartHeight);
 
-    // Temperature line
+    // Temperature line (with gradient fill)
     _writeTemperatureLine(svg, data, colors, width, chartHeight);
 
     // Now indicator
     final nowX = (nowIndex / (data.length - 1)) * width;
-    svg.write('<line x1="${_n(nowX)}" y1="0" x2="${_n(nowX)}" y2="${_n(chartHeight)}" stroke="${colors.nowIndicator.toHex()}" stroke-width="3"/>');
+    svg.write('<line x1="${_n(nowX)}" y1="0" x2="${_n(nowX)}" y2="${_n(chartHeight)}" stroke="${colors.nowIndicator.toHex()}" stroke-width="${_strokeWidth(3)}"/>');
 
-    // Grid lines
+    // Grid lines at 12h intervals
     for (var i = nowIndex + 12; i < data.length - 8; i += 12) {
       final x = (i / (data.length - 1)) * width;
-      svg.write('<line x1="${_n(x)}" y1="0" x2="${_n(x)}" y2="${_n(chartHeight)}" stroke="${colors.timeLabel.toHex()}" stroke-width="1" opacity="0.4"/>');
+      svg.write('<line x1="${_n(x)}" y1="0" x2="${_n(x)}" y2="${_n(chartHeight)}" stroke="${colors.timeLabel.toHex()}" stroke-width="${_strokeWidth(1)}" opacity="0.3"/>');
     }
 
     svg.write('</g>');
 
-    // Temperature labels
+    // Temperature labels (outside mask for full opacity)
     _writeTempLabels(svg, data, colors, width, chartHeight, nowFraction);
 
     // Time labels
@@ -134,12 +154,46 @@ class SvgChartGenerator {
     return svg.toString();
   }
 
+  /// Write gradient definitions to SVG <defs> section.
+  void _writeGradientDefs(StringBuffer svg, SvgChartColors colors, double nowFraction, bool usePastFade) {
+    // Temperature area gradient (vertical: line color fading to transparent)
+    svg.write('<linearGradient id="tempGradient" x1="0" y1="0" x2="0" y2="1">');
+    svg.write('<stop offset="0%" stop-color="${colors.temperatureLine.toHex()}" stop-opacity="${colors.temperatureGradientStart.opacity.toStringAsFixed(2)}"/>');
+    svg.write('<stop offset="100%" stop-color="${colors.temperatureLine.toHex()}" stop-opacity="${colors.temperatureGradientEnd.opacity.toStringAsFixed(2)}"/>');
+    svg.write('</linearGradient>');
+
+    // Sunshine bar gradient (vertical: orange at top to yellow at bottom)
+    svg.write('<linearGradient id="sunshineGradient" x1="0" y1="0" x2="0" y2="1">');
+    svg.write('<stop offset="0%" stop-color="${colors.sunshineGradient.toHex()}"/>');
+    svg.write('<stop offset="100%" stop-color="${colors.sunshineBar.toHex()}"/>');
+    svg.write('</linearGradient>');
+
+    // Precipitation bar gradient (vertical: semi-transparent at top to solid at bottom)
+    svg.write('<linearGradient id="precipGradient" x1="0" y1="0" x2="0" y2="1">');
+    svg.write('<stop offset="0%" stop-color="${colors.precipitationBar.toHex()}" stop-opacity="${colors.precipitationGradient.opacity.toStringAsFixed(2)}"/>');
+    svg.write('<stop offset="100%" stop-color="${colors.precipitationBar.toHex()}" stop-opacity="1"/>');
+    svg.write('</linearGradient>');
+
+    // Past-time fade mask (horizontal gradient: faded on left, full opacity at now line)
+    if (usePastFade) {
+      final fadeStop1 = (nowFraction * 0.75 * 100).round();
+      final fadeStop2 = (nowFraction * 100).round();
+      svg.write('<linearGradient id="pastFadeGradient" x1="0" y1="0" x2="1" y2="0">');
+      svg.write('<stop offset="0%" stop-color="white" stop-opacity="0.15"/>');
+      svg.write('<stop offset="$fadeStop1%" stop-color="white" stop-opacity="0.35"/>');
+      svg.write('<stop offset="$fadeStop2%" stop-color="white" stop-opacity="1"/>');
+      svg.write('<stop offset="100%" stop-color="white" stop-opacity="1"/>');
+      svg.write('</linearGradient>');
+      svg.write('<mask id="pastFadeMask"><rect width="100%" height="100%" fill="url(#pastFadeGradient)"/></mask>');
+    }
+  }
+
   void _writeSunshineBars(StringBuffer svg, List<HourlyData> data,
       double latitude, SvgChartColors colors, double width, double chartHeight) {
     final slotWidth = width / data.length;
     final barWidth = slotWidth * 0.7;
 
-    svg.write('<g opacity="0.7">');
+    svg.write('<g opacity="0.8">');
     for (var i = 0; i < data.length; i++) {
       final sunshine = _calculateSunshine(data[i], latitude);
       if (sunshine <= 0) continue;
@@ -147,7 +201,8 @@ class SvgChartGenerator {
       final barHeight = sunshine * chartHeight;
       final x = i * slotWidth + (slotWidth - barWidth) / 2;
 
-      svg.write('<rect x="${_n(x)}" y="0" width="${_n(barWidth)}" height="${_n(barHeight)}" fill="${colors.sunshineBar.toHex()}" rx="3"/>');
+      // Use gradient fill for sunshine bars
+      svg.write('<rect x="${_n(x)}" y="0" width="${_n(barWidth)}" height="${_n(barHeight)}" fill="url(#sunshineGradient)" rx="${_strokeWidth(2)}"/>');
     }
     svg.write('</g>');
   }
@@ -160,7 +215,7 @@ class SvgChartGenerator {
     final slotWidth = width / data.length;
     final barWidth = slotWidth * 0.7;
 
-    svg.write('<g opacity="0.7">');
+    svg.write('<g opacity="0.85">');
     for (var i = 0; i < data.length; i++) {
       final precip = data[i].precipitation;
       if (precip <= 0) continue;
@@ -169,7 +224,8 @@ class SvgChartGenerator {
       final barHeight = math.sqrt(normalized) * chartHeight;
       final x = i * slotWidth + (slotWidth - barWidth) / 2;
 
-      svg.write('<rect x="${_n(x)}" y="0" width="${_n(barWidth)}" height="${_n(barHeight)}" fill="${colors.precipitationBar.toHex()}" rx="3"/>');
+      // Use gradient fill for precipitation bars
+      svg.write('<rect x="${_n(x)}" y="0" width="${_n(barWidth)}" height="${_n(barHeight)}" fill="url(#precipGradient)" rx="${_strokeWidth(2)}"/>');
     }
     svg.write('</g>');
   }
@@ -190,7 +246,7 @@ class SvgChartGenerator {
       points.add([x, y]);
     }
 
-    // Build path
+    // Build smooth cubic bezier path
     final path = StringBuffer('M ${_n(points[0][0])} ${_n(points[0][1])}');
     for (var i = 1; i < points.length; i++) {
       final p0 = points[i - 1];
@@ -201,12 +257,12 @@ class SvgChartGenerator {
       path.write(' C ${_n(cp1x)} ${_n(p0[1])} ${_n(cp2x)} ${_n(p1[1])} ${_n(p1[0])} ${_n(p1[1])}');
     }
 
-    // Area fill
+    // Area fill with gradient
     final areaPath = '$path L ${_n(width)} ${_n(chartHeight)} L 0 ${_n(chartHeight)} Z';
-    svg.write('<path d="$areaPath" fill="${colors.temperatureGradientStart.toHex()}" fill-opacity="${colors.temperatureGradientStart.opacity.toStringAsFixed(2)}" stroke="none"/>');
+    svg.write('<path d="$areaPath" fill="url(#tempGradient)" stroke="none"/>');
 
-    // Line
-    svg.write('<path d="$path" fill="none" stroke="${colors.temperatureLine.toHex()}" stroke-width="3" stroke-linecap="round"/>');
+    // Temperature line
+    svg.write('<path d="$path" fill="none" stroke="${colors.temperatureLine.toHex()}" stroke-width="${_strokeWidth(3)}" stroke-linecap="round" stroke-linejoin="round"/>');
   }
 
   void _writeTempLabels(StringBuffer svg, List<HourlyData> data,
@@ -221,7 +277,7 @@ class SvgChartGenerator {
     final midY = chartHeight / 2;
     final bottomY = chartHeight * 0.917 - 4;
 
-    final style = 'fill="${colors.temperatureLine.toHex()}" font-size="13" font-weight="bold" font-family="sans-serif" text-anchor="middle"';
+    final style = 'fill="${colors.temperatureLine.toHex()}" font-size="${_fontSize(13)}" font-weight="bold" font-family="sans-serif" text-anchor="middle"';
 
     svg.write('<text x="${_n(centerX)}" y="${_n(topY)}" $style>${maxTemp.round()}</text>');
     svg.write('<text x="${_n(centerX)}" y="${_n(midY)}" $style dominant-baseline="middle">${midTemp.round()}</text>');
@@ -230,8 +286,8 @@ class SvgChartGenerator {
 
   void _writeTimeLabels(StringBuffer svg, List<HourlyData> data, int nowIndex,
       SvgChartColors colors, double width, double height) {
-    final labelY = height - 6;
-    final style = 'fill="${colors.timeLabel.toHex()}" font-size="13" font-weight="600" font-family="sans-serif" text-anchor="middle"';
+    final labelY = height - 6 * _scale;
+    final style = 'fill="${colors.timeLabel.toHex()}" font-size="${_fontSize(13)}" font-weight="600" font-family="sans-serif" text-anchor="middle"';
 
     for (var i = nowIndex; i < data.length - 8; i++) {
       final offset = i - nowIndex;

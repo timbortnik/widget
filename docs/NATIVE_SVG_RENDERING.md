@@ -1,5 +1,64 @@
 # Native SVG Rendering Architecture
 
+## ⚠️ Critical Rule: SVG Dimensions Must Match Render Dimensions
+
+**To achieve native-quality rendering, the SVG must be generated at the exact pixel dimensions it will be rendered at. No scaling.**
+
+```
+CORRECT (native quality):
+  SVG at 1140×669 device pixels → Render bitmap at 1140×669 → Display 1:1
+
+WRONG (quality loss):
+  SVG at 274×161 logical → Scale up to 1140×669 → Different rendering
+  SVG at 1140×669 → Flutter Image widget → Compositor degrades quality
+```
+
+### Why This Matters
+
+| Approach | Result |
+|----------|--------|
+| SVG dimensions = render dimensions | AndroidSVG renders at native resolution, no scaling artifacts |
+| SVG dimensions ≠ render dimensions | AndroidSVG scales during render, subtle quality differences |
+| Flutter Image widget | Compositor pipeline degrades bitmap quality regardless of resolution |
+
+### Implementation
+
+```dart
+// CORRECT: Generate SVG at device pixel dimensions
+final dpr = MediaQuery.of(context).devicePixelRatio;
+final deviceWidth = logicalWidth * dpr;
+final deviceHeight = logicalHeight * dpr;
+
+generator.generate(
+  width: deviceWidth,   // e.g., 1140
+  height: deviceHeight, // e.g., 669
+  // NO scale parameter
+);
+// Native view renders at same 1140×669
+
+// WRONG: Generate at logical pixels with scale
+generator.generate(
+  width: logicalWidth,  // 274
+  height: logicalHeight, // 161
+  scale: dpr, // Scales fonts/strokes but SVG is still 274×161
+);
+// Native renders 274×161 SVG to 1140×669 bitmap = scaling occurs
+```
+
+### PlatformView Required
+
+Flutter's `Image.memory()` degrades quality even with `MemoryImage(scale: dpr)`. Use `AndroidView` with native `ImageView` to bypass Flutter's compositor:
+
+```dart
+// Flutter side: AndroidView embeds native ImageView
+AndroidView(viewType: 'svg_chart_view', ...)
+
+// Native side: ImageView displays bitmap directly
+imageView.setImageBitmap(bitmap)  // 1:1 pixel display
+```
+
+---
+
 ## Overview
 
 This document describes the architecture that enables **exact visual matching** between the in-app meteogram chart and the Android home screen widget. Both use the same SVG generation and native rendering pipeline, ensuring pixel-perfect consistency regardless of display context or size.

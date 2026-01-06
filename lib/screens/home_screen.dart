@@ -1,9 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
-import 'dart:typed_data';
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../l10n/app_localizations.dart';
 import '../models/weather_data.dart';
@@ -11,9 +8,9 @@ import '../services/weather_service.dart';
 import '../services/location_service.dart';
 import '../services/widget_service.dart';
 import '../services/svg_chart_generator.dart';
-import '../services/native_svg_renderer.dart';
 import '../theme/app_theme.dart';
 import '../widgets/meteogram_chart.dart';
+import '../widgets/native_svg_chart_view.dart';
 
 /// Main home screen displaying the meteogram.
 class HomeScreen extends StatefulWidget {
@@ -34,8 +31,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   final _weatherService = WeatherService();
   final _locationService = LocationService();
   final _widgetService = WidgetService();
-  final _chartKeyLight = GlobalKey();
-  final _chartKeyDark = GlobalKey();
 
   WeatherData? _weatherData;
   String? _locationName;
@@ -476,24 +471,33 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                         ],
                       ),
                       const SizedBox(height: 16),
-                      // Meteogram chart - Native SVG rendering for exact widget match
+                      // Meteogram chart - Native PlatformView for exact widget match
               AspectRatio(
                 aspectRatio: _chartAspectRatio,
                 child: LayoutBuilder(
                   builder: (context, constraints) {
                     final isLight = Theme.of(context).brightness == Brightness.light;
-                    final width = constraints.maxWidth.round();
-                    final height = constraints.maxHeight.round();
+                    final dpr = MediaQuery.of(context).devicePixelRatio;
 
-                    return _NativeSvgChart(
+                    // Generate SVG at device pixel dimensions - same as widget approach
+                    final deviceWidth = constraints.maxWidth * dpr;
+                    final deviceHeight = constraints.maxHeight * dpr;
+
+                    final generator = SvgChartGenerator();
+                    final svgString = generator.generate(
                       data: displayData,
                       nowIndex: nowIndex,
                       latitude: _weatherData!.latitude,
-                      width: width,
-                      height: height,
-                      isLight: isLight,
-                      lightKey: _chartKeyLight,
-                      darkKey: _chartKeyDark,
+                      colors: isLight ? SvgChartColors.light : SvgChartColors.dark,
+                      width: deviceWidth,
+                      height: deviceHeight,
+                      // NO scale - SVG dimensions match render dimensions
+                    );
+
+                    return NativeSvgChartView(
+                      svgString: svgString,
+                      width: deviceWidth,
+                      height: deviceHeight,
                     );
                   },
                 ),
@@ -731,59 +735,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
   }
 
-  /// Capture both light and dark theme charts, return their paths.
+  /// Chart capture is no longer needed - widget uses SVG files directly.
+  /// This method is kept for API compatibility but returns null.
   Future<({String? light, String? dark})> _captureCharts() async {
-    try {
-      // Wait for both charts to fully render
-      await Future.delayed(const Duration(milliseconds: 100));
-
-      // Get actual widget dimensions from native provider
-      final widgetDimensions = await _widgetService.getWidgetDimensions();
-      final double pixelRatio;
-      if (widgetDimensions != null) {
-        final boundaryLight = _chartKeyLight.currentContext?.findRenderObject() as RenderRepaintBoundary?;
-        if (boundaryLight != null && boundaryLight.size.width > 0) {
-          pixelRatio = widgetDimensions.widthPx / boundaryLight.size.width;
-        } else {
-          pixelRatio = MediaQuery.of(context).devicePixelRatio;
-        }
-        debugPrint('Rendering charts at ${widgetDimensions.widthPx}x${widgetDimensions.heightPx}px');
-      } else {
-        pixelRatio = MediaQuery.of(context).devicePixelRatio;
-        debugPrint('Widget dimensions not available, using device ratio: $pixelRatio');
-      }
-
-      String? lightPath;
-      String? darkPath;
-
-      // Capture light theme chart
-      final boundaryLight = _chartKeyLight.currentContext?.findRenderObject() as RenderRepaintBoundary?;
-      if (boundaryLight != null) {
-        final image = await boundaryLight.toImage(pixelRatio: pixelRatio);
-        final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-        if (byteData != null) {
-          lightPath = await _widgetService.saveChartImage(byteData.buffer.asUint8List(), isDark: false);
-          debugPrint('Light chart captured');
-        }
-      }
-
-      // Capture dark theme chart
-      final boundaryDark = _chartKeyDark.currentContext?.findRenderObject() as RenderRepaintBoundary?;
-      if (boundaryDark != null) {
-        final image = await boundaryDark.toImage(pixelRatio: pixelRatio);
-        final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-        if (byteData != null) {
-          darkPath = await _widgetService.saveChartImage(byteData.buffer.asUint8List(), isDark: true);
-          debugPrint('Dark chart captured');
-        }
-      }
-
-      _lastRenderedBrightness = WidgetsBinding.instance.platformDispatcher.platformBrightness;
-      return (light: lightPath, dark: darkPath);
-    } catch (e) {
-      debugPrint('Error capturing charts: $e');
-      return (light: null, dark: null);
-    }
+    _lastRenderedBrightness = WidgetsBinding.instance.platformDispatcher.platformBrightness;
+    return (light: null, dark: null);
   }
 }
 
@@ -1025,153 +981,6 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
           ? Icon(Icons.check, color: widget.colors.nowIndicator, size: 20)
           : null,
       onTap: () => widget.onCitySelected(city),
-    );
-  }
-}
-
-/// Chart widget using native SVG rendering for exact match with home screen widget.
-class _NativeSvgChart extends StatefulWidget {
-  final List<HourlyData> data;
-  final int nowIndex;
-  final double latitude;
-  final int width;
-  final int height;
-  final bool isLight;
-  final GlobalKey lightKey;
-  final GlobalKey darkKey;
-
-  const _NativeSvgChart({
-    required this.data,
-    required this.nowIndex,
-    required this.latitude,
-    required this.width,
-    required this.height,
-    required this.isLight,
-    required this.lightKey,
-    required this.darkKey,
-  });
-
-  @override
-  State<_NativeSvgChart> createState() => _NativeSvgChartState();
-}
-
-class _NativeSvgChartState extends State<_NativeSvgChart> {
-  Uint8List? _lightPng;
-  Uint8List? _darkPng;
-  bool _isRendering = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _renderCharts();
-  }
-
-  @override
-  void didUpdateWidget(_NativeSvgChart oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    // Re-render if data or dimensions changed
-    if (oldWidget.width != widget.width ||
-        oldWidget.height != widget.height ||
-        oldWidget.nowIndex != widget.nowIndex ||
-        oldWidget.data.length != widget.data.length) {
-      _renderCharts();
-    }
-  }
-
-  Future<void> _renderCharts() async {
-    if (_isRendering || widget.width <= 0 || widget.height <= 0) return;
-    _isRendering = true;
-
-    final generator = SvgChartGenerator();
-
-    // Generate SVG for both themes
-    final svgLight = generator.generate(
-      data: widget.data,
-      nowIndex: widget.nowIndex,
-      latitude: widget.latitude,
-      colors: SvgChartColors.light,
-      width: widget.width.toDouble(),
-      height: widget.height.toDouble(),
-    );
-
-    final svgDark = generator.generate(
-      data: widget.data,
-      nowIndex: widget.nowIndex,
-      latitude: widget.latitude,
-      colors: SvgChartColors.dark,
-      width: widget.width.toDouble(),
-      height: widget.height.toDouble(),
-    );
-
-    // Render using native AndroidSVG
-    final lightPng = await NativeSvgRenderer.renderSvgToPng(
-      svgString: svgLight,
-      width: widget.width,
-      height: widget.height,
-    );
-
-    final darkPng = await NativeSvgRenderer.renderSvgToPng(
-      svgString: svgDark,
-      width: widget.width,
-      height: widget.height,
-    );
-
-    _isRendering = false;
-    if (mounted) {
-      setState(() {
-        _lightPng = lightPng;
-        _darkPng = darkPng;
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final currentPng = widget.isLight ? _lightPng : _darkPng;
-    final otherPng = widget.isLight ? _darkPng : _lightPng;
-
-    return Stack(
-      children: [
-        // Hidden chart for opposite theme (for widget capture)
-        if (otherPng != null)
-          Positioned.fill(
-            child: Opacity(
-              opacity: 0,
-              child: RepaintBoundary(
-                key: widget.isLight ? widget.darkKey : widget.lightKey,
-                child: Image.memory(
-                  otherPng,
-                  fit: BoxFit.fill,
-                  gaplessPlayback: true,
-                ),
-              ),
-            ),
-          ),
-        // Visible chart for current theme
-        RepaintBoundary(
-          key: widget.isLight ? widget.lightKey : widget.darkKey,
-          child: currentPng != null
-              ? Image.memory(
-                  currentPng,
-                  fit: BoxFit.fill,
-                  width: widget.width.toDouble(),
-                  height: widget.height.toDouble(),
-                  gaplessPlayback: true,
-                )
-              : Container(
-                  color: Theme.of(context).brightness == Brightness.light
-                      ? const Color(0xFFFFFFFF)
-                      : const Color(0xFF1B2838),
-                  child: const Center(
-                    child: SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                  ),
-                ),
-        ),
-      ],
     );
   }
 }

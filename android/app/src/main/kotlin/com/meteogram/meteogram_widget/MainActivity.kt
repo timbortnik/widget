@@ -15,6 +15,12 @@ class MainActivity : FlutterActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
 
+        // Register PlatformView for native SVG chart rendering
+        flutterEngine.platformViewsController.registry.registerViewFactory(
+            "svg_chart_view",
+            SvgChartViewFactory(flutterEngine.dartExecutor.binaryMessenger)
+        )
+
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
                 "renderSvg" -> {
