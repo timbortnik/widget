@@ -554,7 +554,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 child: GestureDetector(
                   onTap: () => launchUrl(Uri.parse('https://open-meteo.com')),
                   child: Text(
-                    l10n.weatherDataBy('Open-Meteo.com'),
+                    '${l10n.weatherDataBy('Open-Meteo.com')} · ${l10n.daylightDerived}',
                     style: TextStyle(
                       color: colors.secondaryText,
                       fontSize: 11,

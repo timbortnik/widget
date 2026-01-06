@@ -151,5 +151,6 @@
   "locationSourceIp": "За IP",
   "locationSourceManual": "Вручну",
   "daylight": "Денне світло",
-  "weatherDataBy": "Дані погоди від {provider}"
+  "weatherDataBy": "Дані погоди від {provider}",
+  "daylightDerived": "Денне світло розраховано"
 }

@@ -102,4 +102,7 @@ class AppLocalizationsUk extends AppLocalizations {
   String weatherDataBy(String provider) {
     return 'Дані погоди від $provider';
   }
+
+  @override
+  String get daylightDerived => 'Денне світло розраховано';
 }

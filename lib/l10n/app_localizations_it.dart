@@ -102,4 +102,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String weatherDataBy(String provider) {
     return 'Dati meteo da $provider';
   }
+
+  @override
+  String get daylightDerived => 'Luce diurna calcolata';
 }

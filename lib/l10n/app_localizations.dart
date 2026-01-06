@@ -267,6 +267,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Weather data by {provider}'**
   String weatherDataBy(String provider);
+
+  /// Note indicating daylight values are calculated from cloud data (CC BY 4.0 modification disclosure)
+  ///
+  /// In en, this message translates to:
+  /// **'Daylight derived'**
+  String get daylightDerived;
 }
 
 class _AppLocalizationsDelegate

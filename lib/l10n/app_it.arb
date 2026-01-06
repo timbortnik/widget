@@ -27,5 +27,6 @@
   "locationSourceIp": "Posizione IP",
   "locationSourceManual": "Manuale",
   "daylight": "Luce diurna",
-  "weatherDataBy": "Dati meteo da {provider}"
+  "weatherDataBy": "Dati meteo da {provider}",
+  "daylightDerived": "Luce diurna calcolata"
 }

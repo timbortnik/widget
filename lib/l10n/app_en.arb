@@ -176,5 +176,10 @@
         "example": "Open-Meteo.com"
       }
     }
+  },
+
+  "daylightDerived": "Daylight derived",
+  "@daylightDerived": {
+    "description": "Note indicating daylight values are calculated from cloud data (CC BY 4.0 modification disclosure)"
   }
 }
