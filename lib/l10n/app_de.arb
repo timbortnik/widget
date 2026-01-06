@@ -26,5 +26,6 @@
   "locationSourceGps": "GPS",
   "locationSourceIp": "IP-Standort",
   "locationSourceManual": "Manuell",
-  "daylight": "Tageslicht"
+  "daylight": "Tageslicht",
+  "weatherDataBy": "Wetterdaten von {provider}"
 }

@@ -97,4 +97,9 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get daylight => 'Lumière du jour';
+
+  @override
+  String weatherDataBy(String provider) {
+    return 'Données météo de $provider';
+  }
 }

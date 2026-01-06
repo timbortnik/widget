@@ -261,6 +261,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Daylight'**
   String get daylight;
+
+  /// Attribution text for weather data provider (CC BY 4.0)
+  ///
+  /// In en, this message translates to:
+  /// **'Weather data by {provider}'**
+  String weatherDataBy(String provider);
 }
 
 class _AppLocalizationsDelegate

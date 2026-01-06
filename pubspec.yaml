@@ -54,6 +54,9 @@ dependencies:
   # Internationalization
   intl: ^0.20.2
 
+  # URL handling
+  url_launcher: ^6.3.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

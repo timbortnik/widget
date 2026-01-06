@@ -165,5 +165,16 @@
   "daylight": "Daylight",
   "@daylight": {
     "description": "Legend label for sunshine/daylight bars on chart"
+  },
+
+  "weatherDataBy": "Weather data by {provider}",
+  "@weatherDataBy": {
+    "description": "Attribution text for weather data provider (CC BY 4.0)",
+    "placeholders": {
+      "provider": {
+        "type": "String",
+        "example": "Open-Meteo.com"
+      }
+    }
   }
 }

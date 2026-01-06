@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../l10n/app_localizations.dart';
 import '../models/weather_data.dart';
 import '../services/weather_service.dart';
@@ -546,6 +547,21 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     ],
                   ),
                 ),
+
+              // Attribution (CC BY 4.0 requirement)
+              const SizedBox(height: 16),
+              Center(
+                child: GestureDetector(
+                  onTap: () => launchUrl(Uri.parse('https://open-meteo.com')),
+                  child: Text(
+                    l10n.weatherDataBy('Open-Meteo.com'),
+                    style: TextStyle(
+                      color: colors.secondaryText,
+                      fontSize: 11,
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
