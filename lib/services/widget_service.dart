@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:path_provider/path_provider.dart';
 import '../models/weather_data.dart';
+import 'svg_chart_generator.dart';
 
 /// Widget dimensions in pixels as reported by the native widget provider.
 class WidgetDimensions {
@@ -78,6 +79,58 @@ class WidgetService {
     } catch (e) {
       debugPrint('Error saving chart image: $e');
       return null;
+    }
+  }
+
+  /// Generate and save SVG charts for the widget.
+  /// This runs in the main isolate and complements PNG generation.
+  Future<void> generateAndSaveSvgCharts({
+    required List<HourlyData> displayData,
+    required int nowIndex,
+    required double latitude,
+  }) async {
+    try {
+      final generator = SvgChartGenerator();
+
+      // Get widget dimensions
+      final dimensions = await getWidgetDimensions();
+      final widthPx = dimensions?.widthPx ?? 400;
+      final heightPx = dimensions?.heightPx ?? 200;
+
+      // Generate light and dark SVGs
+      final svgLight = generator.generate(
+        data: displayData,
+        nowIndex: nowIndex,
+        latitude: latitude,
+        colors: SvgChartColors.light,
+        width: widthPx.toDouble(),
+        height: heightPx.toDouble(),
+      );
+
+      final svgDark = generator.generate(
+        data: displayData,
+        nowIndex: nowIndex,
+        latitude: latitude,
+        colors: SvgChartColors.dark,
+        width: widthPx.toDouble(),
+        height: heightPx.toDouble(),
+      );
+
+      // Save SVG files
+      final docsDir = await getApplicationDocumentsDirectory();
+      final lightPath = '${docsDir.path}/meteogram_light.svg';
+      final darkPath = '${docsDir.path}/meteogram_dark.svg';
+
+      await File(lightPath).writeAsString(svgLight);
+      await File(darkPath).writeAsString(svgDark);
+
+      // Save paths for native widget
+      await HomeWidget.saveWidgetData<String>('svg_path_light', lightPath);
+      await HomeWidget.saveWidgetData<String>('svg_path_dark', darkPath);
+
+      debugPrint('SVG charts generated: $lightPath, $darkPath');
+    } catch (e) {
+      debugPrint('Error generating SVG charts: $e');
     }
   }
 

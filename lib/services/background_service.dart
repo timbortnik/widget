@@ -1,7 +1,10 @@
+import 'dart:io';
 import 'package:workmanager/workmanager.dart';
 import 'package:home_widget/home_widget.dart';
+import 'package:path_provider/path_provider.dart';
 import 'weather_service.dart';
 import 'location_service.dart';
+import 'svg_chart_generator.dart';
 
 const String weatherUpdateTask = 'weatherUpdateTask';
 const String periodicWeatherTask = 'periodicWeatherTask';
@@ -45,12 +48,61 @@ Future<void> _updateWeatherData() async {
     await HomeWidget.saveWidgetData<String>('current_temperature', tempString);
     await HomeWidget.saveWidgetData<String>('location_name', location.city ?? '');
 
+    // Generate SVG charts for widget display
+    await _generateSvgCharts(weather, location.latitude);
+
     await HomeWidget.updateWidget(
       androidName: 'MeteogramWidgetProvider',
       iOSName: 'MeteogramWidget',
     );
   } catch (e) {
     // Silently fail in background
+  }
+}
+
+/// Generate SVG chart images for the widget.
+Future<void> _generateSvgCharts(dynamic weather, double latitude) async {
+  try {
+    final generator = SvgChartGenerator();
+    final displayData = weather.getDisplayRange();
+    final nowIndex = weather.getNowIndex();
+
+    // Get widget dimensions (saved by native side, with defaults)
+    final widthPx = await HomeWidget.getWidgetData<int>('widget_width_px') ?? 400;
+    final heightPx = await HomeWidget.getWidgetData<int>('widget_height_px') ?? 200;
+
+    // Generate light and dark theme SVGs
+    final svgLight = generator.generate(
+      data: displayData,
+      nowIndex: nowIndex,
+      latitude: latitude,
+      colors: SvgChartColors.light,
+      width: widthPx.toDouble(),
+      height: heightPx.toDouble(),
+    );
+
+    final svgDark = generator.generate(
+      data: displayData,
+      nowIndex: nowIndex,
+      latitude: latitude,
+      colors: SvgChartColors.dark,
+      width: widthPx.toDouble(),
+      height: heightPx.toDouble(),
+    );
+
+    // Save SVG files to app documents directory
+    final docsDir = await getApplicationDocumentsDirectory();
+    final lightPath = '${docsDir.path}/meteogram_light.svg';
+    final darkPath = '${docsDir.path}/meteogram_dark.svg';
+
+    await File(lightPath).writeAsString(svgLight);
+    await File(darkPath).writeAsString(svgDark);
+
+    // Store paths for native widget to read
+    await HomeWidget.saveWidgetData<String>('svg_path_light', lightPath);
+    await HomeWidget.saveWidgetData<String>('svg_path_dark', darkPath);
+  } catch (e) {
+    // SVG generation failed - widget will use previous chart or fallback
   }
 }
 

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -9,6 +10,8 @@ import '../models/weather_data.dart';
 import '../services/weather_service.dart';
 import '../services/location_service.dart';
 import '../services/widget_service.dart';
+import '../services/svg_chart_generator.dart';
+import '../services/native_svg_renderer.dart';
 import '../theme/app_theme.dart';
 import '../widgets/meteogram_chart.dart';
 
@@ -143,6 +146,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             lightChartPath: paths.light,
             darkChartPath: paths.dark,
           );
+          // Also generate SVG charts for background widget updates
+          await _widgetService.generateAndSaveSvgCharts(
+            displayData: cached.getDisplayRange(),
+            nowIndex: cached.getNowIndex(),
+            latitude: cached.latitude,
+          );
         });
       }
     }
@@ -181,6 +190,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           lightChartPath: paths.light,
           darkChartPath: paths.dark,
         );
+        // Also generate SVG charts for background widget updates
+        await _widgetService.generateAndSaveSvgCharts(
+          displayData: weather.getDisplayRange(),
+          nowIndex: weather.getNowIndex(),
+          latitude: location.latitude,
+        );
       });
     } catch (e) {
       // Try to use cached weather data on any failure
@@ -209,6 +224,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             locationName: cachedCity,
             lightChartPath: paths.light,
             darkChartPath: paths.dark,
+          );
+          // Also generate SVG charts for background widget updates
+          await _widgetService.generateAndSaveSvgCharts(
+            displayData: cached.getDisplayRange(),
+            nowIndex: cached.getNowIndex(),
+            latitude: cached.latitude,
           );
         });
 
@@ -455,91 +476,24 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                         ],
                       ),
                       const SizedBox(height: 16),
-                      // Meteogram chart - aspect ratio matches home widget dimensions
-              // Stack contains both themes; both painted for capture, current theme on top
+                      // Meteogram chart - Native SVG rendering for exact widget match
               AspectRatio(
                 aspectRatio: _chartAspectRatio,
-                child: Builder(
-                  builder: (context) {
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
                     final isLight = Theme.of(context).brightness == Brightness.light;
+                    final width = constraints.maxWidth.round();
+                    final height = constraints.maxHeight.round();
 
-                    // Use the ACTUAL color scheme for each theme (not current theme's colors)
-                    // This ensures widget images look correct in both modes
-                    final lightScheme = widget.lightColorScheme ?? Theme.of(context).colorScheme;
-                    final darkScheme = widget.darkColorScheme ?? Theme.of(context).colorScheme;
-
-                    // Light theme: onPrimaryContainer for better contrast
-                    // Dark theme: primary for brightness
-                    final lightTempColor = lightScheme.onPrimaryContainer;
-                    final darkTempColor = darkScheme.primary;
-
-                    // Colors for the opposite theme (hidden chart for widget capture)
-                    final oppositeColors = isLight
-                        ? MeteogramColors.dark.copyWith(
-                            temperatureLine: darkTempColor,
-                            temperatureGradientStart: darkTempColor.withAlpha(0x60),
-                            temperatureGradientEnd: darkTempColor.withAlpha(0x00),
-                            timeLabel: darkScheme.tertiary,
-                          )
-                        : MeteogramColors.light.copyWith(
-                            temperatureLine: lightTempColor,
-                            temperatureGradientStart: lightTempColor.withAlpha(0x40),
-                            temperatureGradientEnd: lightTempColor.withAlpha(0x00),
-                            timeLabel: lightScheme.tertiary,
-                          );
-
-                    return Stack(
-                      children: [
-                        // First: chart for NON-current theme (painted for capture, but hidden below)
-                        // RepaintBoundary is inside Container so widget capture has transparent background
-                        Positioned.fill(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: isLight
-                                  ? MeteogramColors.dark.cardBackground
-                                  : MeteogramColors.light.cardBackground,
-                            ),
-                            clipBehavior: Clip.antiAlias,
-                            child: RepaintBoundary(
-                              key: isLight ? _chartKeyDark : _chartKeyLight,
-                              child: MeteogramChart(
-                                data: displayData,
-                                nowIndex: nowIndex,
-                                latitude: _weatherData!.latitude,
-                                staleText: _isShowingCachedData && _isCacheStale() ? l10n.offline : null,
-                                explicitColors: oppositeColors,
-                                explicitLocale: locale.toString(),
-                              ),
-                            ),
-                          ),
-                        ),
-                        // Second: chart for CURRENT theme (on top, visible to user)
-                        // RepaintBoundary is inside Container so widget capture has transparent background
-                        Positioned.fill(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: colors.cardBackground,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withAlpha(15),
-                                  blurRadius: 20,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            clipBehavior: Clip.antiAlias,
-                            child: RepaintBoundary(
-                              key: isLight ? _chartKeyLight : _chartKeyDark,
-                              child: MeteogramChart(
-                                data: displayData,
-                                nowIndex: nowIndex,
-                                latitude: _weatherData!.latitude,
-                                staleText: _isShowingCachedData && _isCacheStale() ? l10n.offline : null,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
+                    return _NativeSvgChart(
+                      data: displayData,
+                      nowIndex: nowIndex,
+                      latitude: _weatherData!.latitude,
+                      width: width,
+                      height: height,
+                      isLight: isLight,
+                      lightKey: _chartKeyLight,
+                      darkKey: _chartKeyDark,
                     );
                   },
                 ),
@@ -1071,6 +1025,153 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
           ? Icon(Icons.check, color: widget.colors.nowIndicator, size: 20)
           : null,
       onTap: () => widget.onCitySelected(city),
+    );
+  }
+}
+
+/// Chart widget using native SVG rendering for exact match with home screen widget.
+class _NativeSvgChart extends StatefulWidget {
+  final List<HourlyData> data;
+  final int nowIndex;
+  final double latitude;
+  final int width;
+  final int height;
+  final bool isLight;
+  final GlobalKey lightKey;
+  final GlobalKey darkKey;
+
+  const _NativeSvgChart({
+    required this.data,
+    required this.nowIndex,
+    required this.latitude,
+    required this.width,
+    required this.height,
+    required this.isLight,
+    required this.lightKey,
+    required this.darkKey,
+  });
+
+  @override
+  State<_NativeSvgChart> createState() => _NativeSvgChartState();
+}
+
+class _NativeSvgChartState extends State<_NativeSvgChart> {
+  Uint8List? _lightPng;
+  Uint8List? _darkPng;
+  bool _isRendering = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _renderCharts();
+  }
+
+  @override
+  void didUpdateWidget(_NativeSvgChart oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Re-render if data or dimensions changed
+    if (oldWidget.width != widget.width ||
+        oldWidget.height != widget.height ||
+        oldWidget.nowIndex != widget.nowIndex ||
+        oldWidget.data.length != widget.data.length) {
+      _renderCharts();
+    }
+  }
+
+  Future<void> _renderCharts() async {
+    if (_isRendering || widget.width <= 0 || widget.height <= 0) return;
+    _isRendering = true;
+
+    final generator = SvgChartGenerator();
+
+    // Generate SVG for both themes
+    final svgLight = generator.generate(
+      data: widget.data,
+      nowIndex: widget.nowIndex,
+      latitude: widget.latitude,
+      colors: SvgChartColors.light,
+      width: widget.width.toDouble(),
+      height: widget.height.toDouble(),
+    );
+
+    final svgDark = generator.generate(
+      data: widget.data,
+      nowIndex: widget.nowIndex,
+      latitude: widget.latitude,
+      colors: SvgChartColors.dark,
+      width: widget.width.toDouble(),
+      height: widget.height.toDouble(),
+    );
+
+    // Render using native AndroidSVG
+    final lightPng = await NativeSvgRenderer.renderSvgToPng(
+      svgString: svgLight,
+      width: widget.width,
+      height: widget.height,
+    );
+
+    final darkPng = await NativeSvgRenderer.renderSvgToPng(
+      svgString: svgDark,
+      width: widget.width,
+      height: widget.height,
+    );
+
+    _isRendering = false;
+    if (mounted) {
+      setState(() {
+        _lightPng = lightPng;
+        _darkPng = darkPng;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final currentPng = widget.isLight ? _lightPng : _darkPng;
+    final otherPng = widget.isLight ? _darkPng : _lightPng;
+
+    return Stack(
+      children: [
+        // Hidden chart for opposite theme (for widget capture)
+        if (otherPng != null)
+          Positioned.fill(
+            child: Opacity(
+              opacity: 0,
+              child: RepaintBoundary(
+                key: widget.isLight ? widget.darkKey : widget.lightKey,
+                child: Image.memory(
+                  otherPng,
+                  fit: BoxFit.fill,
+                  gaplessPlayback: true,
+                ),
+              ),
+            ),
+          ),
+        // Visible chart for current theme
+        RepaintBoundary(
+          key: widget.isLight ? widget.lightKey : widget.darkKey,
+          child: currentPng != null
+              ? Image.memory(
+                  currentPng,
+                  fit: BoxFit.fill,
+                  width: widget.width.toDouble(),
+                  height: widget.height.toDouble(),
+                  gaplessPlayback: true,
+                )
+              : Container(
+                  color: Theme.of(context).brightness == Brightness.light
+                      ? const Color(0xFFFFFFFF)
+                      : const Color(0xFF1B2838),
+                  child: const Center(
+                    child: SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  ),
+                ),
+        ),
+      ],
     );
   }
 }

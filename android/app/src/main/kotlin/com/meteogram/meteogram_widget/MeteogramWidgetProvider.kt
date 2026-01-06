@@ -6,17 +6,90 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.res.Configuration
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.RemoteViews
+import com.caverock.androidsvg.SVG
 import es.antonborri.home_widget.HomeWidgetProvider
 import java.io.File
+import java.io.FileInputStream
 
 class MeteogramWidgetProvider : HomeWidgetProvider() {
     companion object {
         private const val TAG = "MeteogramWidget"
+    }
+
+    /**
+     * Render an SVG file to a Bitmap.
+     * @param svgPath Path to the SVG file
+     * @param width Target width in pixels
+     * @param height Target height in pixels
+     * @return Bitmap or null if rendering fails
+     */
+    private fun renderSvgToBitmap(svgPath: String, width: Int, height: Int): Bitmap? {
+        return try {
+            val svg = SVG.getFromInputStream(FileInputStream(svgPath))
+
+            // Set document dimensions to scale SVG
+            svg.documentWidth = width.toFloat()
+            svg.documentHeight = height.toFloat()
+
+            // Create bitmap and canvas
+            val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(bitmap)
+
+            // Render SVG to canvas
+            svg.renderToCanvas(canvas)
+
+            bitmap
+        } catch (e: Exception) {
+            Log.e(TAG, "Error rendering SVG: ${e.message}")
+            null
+        }
+    }
+
+    /**
+     * Load chart bitmap, preferring SVG over PNG.
+     * @param svgPath Optional path to SVG file
+     * @param pngPath Optional path to PNG file
+     * @param width Target width in pixels
+     * @param height Target height in pixels
+     * @return Bitmap or null if no chart available
+     */
+    private fun loadChartBitmap(svgPath: String?, pngPath: String?, width: Int, height: Int): Bitmap? {
+        // Try SVG first
+        if (svgPath != null) {
+            val svgFile = File(svgPath)
+            if (svgFile.exists()) {
+                val bitmap = renderSvgToBitmap(svgPath, width, height)
+                if (bitmap != null) {
+                    Log.d(TAG, "Loaded chart from SVG: $svgPath")
+                    return bitmap
+                }
+            }
+        }
+
+        // Fall back to PNG
+        if (pngPath != null) {
+            val pngFile = File(pngPath)
+            if (pngFile.exists()) {
+                try {
+                    val bitmap = BitmapFactory.decodeFile(pngFile.absolutePath)
+                    if (bitmap != null) {
+                        Log.d(TAG, "Loaded chart from PNG: $pngPath")
+                        return bitmap
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error loading PNG: ${e.message}")
+                }
+            }
+        }
+
+        return null
     }
 
     override fun onReceive(context: Context, intent: Intent) {
@@ -136,45 +209,30 @@ class MeteogramWidgetProvider : HomeWidgetProvider() {
             )
             views.setOnClickPendingIntent(R.id.widget_root, pendingIntent)
 
-            // Get chart images (light and dark versions)
-            val lightImagePath = widgetData.getString("meteogram_image_light", null)
-            val darkImagePath = widgetData.getString("meteogram_image_dark", null)
-            Log.d(TAG, "Image paths - light: $lightImagePath, dark: $darkImagePath")
+            // Get chart sources - prefer SVG, fall back to PNG
+            val svgLightPath = widgetData.getString("svg_path_light", null)
+            val svgDarkPath = widgetData.getString("svg_path_dark", null)
+            val pngLightPath = widgetData.getString("meteogram_image_light", null)
+            val pngDarkPath = widgetData.getString("meteogram_image_dark", null)
+            Log.d(TAG, "SVG paths - light: $svgLightPath, dark: $svgDarkPath")
+            Log.d(TAG, "PNG paths - light: $pngLightPath, dark: $pngDarkPath")
 
             var hasChart = false
 
-            // Load light theme chart
-            if (lightImagePath != null) {
-                val imageFile = File(lightImagePath)
-                if (imageFile.exists()) {
-                    try {
-                        val bitmap = BitmapFactory.decodeFile(imageFile.absolutePath)
-                        if (bitmap != null) {
-                            views.setImageViewBitmap(R.id.widget_chart_light, bitmap)
-                            hasChart = true
-                            Log.d(TAG, "Light chart image loaded")
-                        }
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Error loading light chart: ${e.message}")
-                    }
-                }
+            // Load light theme chart (prefer SVG)
+            val lightBitmap = loadChartBitmap(svgLightPath, pngLightPath, widthPx, heightPx)
+            if (lightBitmap != null) {
+                views.setImageViewBitmap(R.id.widget_chart_light, lightBitmap)
+                hasChart = true
+                Log.d(TAG, "Light chart loaded")
             }
 
-            // Load dark theme chart
-            if (darkImagePath != null) {
-                val imageFile = File(darkImagePath)
-                if (imageFile.exists()) {
-                    try {
-                        val bitmap = BitmapFactory.decodeFile(imageFile.absolutePath)
-                        if (bitmap != null) {
-                            views.setImageViewBitmap(R.id.widget_chart_dark, bitmap)
-                            hasChart = true
-                            Log.d(TAG, "Dark chart image loaded")
-                        }
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Error loading dark chart: ${e.message}")
-                    }
-                }
+            // Load dark theme chart (prefer SVG)
+            val darkBitmap = loadChartBitmap(svgDarkPath, pngDarkPath, widthPx, heightPx)
+            if (darkBitmap != null) {
+                views.setImageViewBitmap(R.id.widget_chart_dark, darkBitmap)
+                hasChart = true
+                Log.d(TAG, "Dark chart loaded")
             }
 
             // Show placeholder if no charts available
