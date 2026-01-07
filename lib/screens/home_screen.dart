@@ -63,6 +63,35 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     if (state == AppLifecycleState.resumed) {
       // App came to foreground - check if widget was resized
       _checkAndSyncWidget();
+    } else if (state == AppLifecycleState.paused) {
+      // App going to background - update widget with fresh chart
+      _updateWidgetOnBackground();
+    }
+  }
+
+  /// Update widget when app goes to background.
+  /// Regenerates SVG with current time position.
+  Future<void> _updateWidgetOnBackground() async {
+    if (_weatherData == null) return;
+
+    try {
+      // Generate fresh SVG charts with current time
+      await _widgetService.generateAndSaveSvgCharts(
+        displayData: _weatherData!.getDisplayRange(),
+        nowIndex: _weatherData!.getNowIndex(),
+        latitude: _weatherData!.latitude,
+        locale: _locale,
+      );
+
+      // Trigger widget update to load new SVGs
+      await _widgetService.updateWidget(
+        weatherData: _weatherData!,
+        locationName: _locationName,
+      );
+
+      debugPrint('Widget updated on app background');
+    } catch (e) {
+      debugPrint('Error updating widget on background: $e');
     }
   }
 
