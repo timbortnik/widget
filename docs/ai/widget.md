@@ -2,7 +2,9 @@
 
 ## Overview
 
-Using the `home_widget` package with native Android widget provider. The chart is captured as a PNG image from Flutter and displayed in the native widget using `RemoteViews`.
+Using the `home_widget` package with native Android widget provider. The chart is rendered as SVG in Dart, then rendered natively using AndroidSVG library on the Android side. Both the widget and the in-app chart use the same SVG → AndroidSVG → Bitmap pipeline for pixel-perfect consistency.
+
+See `docs/NATIVE_SVG_RENDERING.md` for detailed architecture.
 
 ## Critical: RemoteViews Limitations
 
@@ -193,80 +195,80 @@ class MeteogramWidgetProvider : HomeWidgetProvider() {
 
 ## Flutter Integration
 
-### Widget Service
+### SVG Chart Generator (`lib/services/svg_chart_generator.dart`)
+Pure Dart SVG generation - no Flutter UI dependencies, works in background isolates:
 ```dart
-import 'dart:io';
-import 'dart:typed_data';
-import 'package:home_widget/home_widget.dart';
-import 'package:path_provider/path_provider.dart';
-import '../models/weather_data.dart';
-
-class WidgetService {
-  /// Save chart image to app documents folder
-  Future<String?> saveChartImage(Uint8List imageBytes) async {
-    try {
-      final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/meteogram_chart.png');
-      await file.writeAsBytes(imageBytes);
-      return file.path;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  /// Update widget with weather data and chart image
-  Future<void> updateWidget({
-    required WeatherData weatherData,
-    required String? locationName,
-    String? chartImagePath,
-  }) async {
-    final currentHour = weatherData.getCurrentHour();
-    final tempString = currentHour != null
-        ? '${currentHour.temperature.round()}°'
-        : '--°';
-
-    await HomeWidget.saveWidgetData<String>('current_temperature', tempString);
-    await HomeWidget.saveWidgetData<String>('location_name', locationName ?? '');
-
-    if (chartImagePath != null) {
-      await HomeWidget.saveWidgetData<String>('meteogram_image', chartImagePath);
-    }
-
-    await HomeWidget.updateWidget(
-      androidName: 'MeteogramWidgetProvider',
-      iOSName: 'MeteogramWidget',
-    );
+class SvgChartGenerator {
+  String generate({
+    required List<HourlyData> data,
+    required int nowIndex,
+    required double latitude,
+    required SvgChartColors colors,
+    required double width,
+    required double height,
+    String locale = 'en',
+  }) {
+    // Generates complete SVG string with:
+    // - Sky gradient background based on solar elevation
+    // - Temperature line with gradient fill
+    // - Precipitation bars
+    // - Daylight intensity bars
+    // - Temperature labels (min/mid/max)
+    // - Time labels (locale-aware via DateFormat.j())
   }
 }
 ```
 
-### Chart Capture (in HomeScreen)
+### Widget Service (`lib/services/widget_service.dart`)
 ```dart
-final _chartKey = GlobalKey();
+Future<void> generateAndSaveSvgCharts({
+  required List<HourlyData> displayData,
+  required int nowIndex,
+  required double latitude,
+  String locale = 'en',
+}) async {
+  final generator = SvgChartGenerator();
+  final dimensions = await getWidgetDimensions();
 
-// In build method - wrap chart with RepaintBoundary
-RepaintBoundary(
-  key: _chartKey,
-  child: MeteogramChart(data: displayData),
-)
+  // Generate both light and dark theme SVGs
+  final svgLight = generator.generate(
+    data: displayData,
+    colors: SvgChartColors.light,
+    width: dimensions.widthPx,
+    height: dimensions.heightPx,
+    locale: locale,
+  );
 
-// Capture method
-Future<String?> _captureChart() async {
-  try {
-    await Future.delayed(const Duration(milliseconds: 500));
+  final svgDark = generator.generate(
+    data: displayData,
+    colors: SvgChartColors.dark,
+    // ... same dimensions
+  );
 
-    final boundary = _chartKey.currentContext?.findRenderObject()
-        as RenderRepaintBoundary?;
-    if (boundary == null) return null;
+  // Save SVG files
+  await File(lightPath).writeAsString(svgLight);
+  await File(darkPath).writeAsString(svgDark);
 
-    final image = await boundary.toImage(pixelRatio: 2.0);
-    final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-    if (byteData == null) return null;
+  // Store paths for native widget
+  await HomeWidget.saveWidgetData<String>('svg_path_light', lightPath);
+  await HomeWidget.saveWidgetData<String>('svg_path_dark', darkPath);
+}
+```
 
-    return _widgetService.saveChartImage(byteData.buffer.asUint8List());
-  } catch (e) {
-    debugPrint('Error capturing chart: $e');
-    return null;
+### In-App Chart Display (`lib/widgets/native_svg_chart_view.dart`)
+Uses PlatformView to embed native ImageView, bypassing Flutter's compositor:
+```dart
+class NativeSvgChartView extends StatefulWidget {
+  final String svgString;
+  final double width;
+  final double height;
+
+  @override
+  Widget build(BuildContext context) {
+    return AndroidView(
+      viewType: 'svg_chart_view',
+      creationParams: {'svg': svgString, 'width': width, 'height': height},
+    );
   }
 }
 ```
@@ -290,21 +292,30 @@ void callbackDispatcher() {
 }
 
 Future<void> _updateWeatherData() async {
-  final locationService = LocationService();
-  final weatherService = WeatherService();
-  final widgetService = WidgetService();
-
   final location = await locationService.getLocation();
   final weather = await weatherService.fetchWeather(
     location.latitude,
     location.longitude,
   );
 
-  await widgetService.updateWidget(
-    weatherData: weather,
-    locationName: location.isGps ? null : 'Berlin',
-    chartImagePath: null, // Background can't capture UI
+  // Generate SVG charts (works in background - no UI needed!)
+  await _generateSvgCharts(weather, location.latitude);
+
+  await HomeWidget.updateWidget(androidName: 'MeteogramWidgetProvider');
+}
+
+Future<void> _generateSvgCharts(dynamic weather, double latitude) async {
+  final generator = SvgChartGenerator();
+  final locale = await HomeWidget.getWidgetData<String>('locale') ?? 'en';
+
+  // Generate light and dark SVGs at widget dimensions
+  final svgLight = generator.generate(
+    data: weather.getDisplayRange(),
+    colors: SvgChartColors.light,
+    locale: locale,
+    // ...
   );
+  // Save to files, update widget data paths
 }
 
 class BackgroundService {
@@ -338,12 +349,14 @@ void main() async {
 ## Data Flow
 
 1. **App loads weather** from Open-Meteo API
-2. **Chart renders** in Flutter using fl_chart (both light AND dark themes)
-3. **Charts captured** via RepaintBoundary → toImage() → PNG bytes (2 images)
-4. **Images saved** to app documents folder (`meteogram_chart_light.png`, `meteogram_chart_dark.png`)
-5. **Widget data saved** via HomeWidget.saveWidgetData → SharedPreferences
-6. **Native provider** loads both bitmaps into respective ImageViews
+2. **SVG generated** in Dart via `SvgChartGenerator` (both light AND dark themes)
+3. **SVG files saved** to app documents folder (`meteogram_light.svg`, `meteogram_dark.svg`)
+4. **Widget data saved** via HomeWidget.saveWidgetData → SharedPreferences (SVG paths)
+5. **Native provider** reads SVG, renders via AndroidSVG → Bitmap → ImageView
+6. **In-app display** uses same pipeline via PlatformView (AndroidView)
 7. **Theme switching** handled automatically by Android resource system
+
+**Key benefit:** SVG generation works in background isolates (no Flutter UI required), enabling true background updates.
 
 ## Automatic Theme Switching
 

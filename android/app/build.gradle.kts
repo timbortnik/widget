@@ -42,3 +42,8 @@ android {
 flutter {
     source = "../.."
 }
+
+dependencies {
+    // AndroidSVG for rendering SVG charts in the widget
+    implementation("com.caverock:androidsvg-aar:1.4")
+}

@@ -17,6 +17,9 @@ The app follows a standard Flutter architecture with clear separation of concern
 │  │ Weather  │ │ Location │ │  Widget  │ │Background││
 │  │ Service  │ │ Service  │ │ Service  │ │ Service ││
 │  └──────────┘ └──────────┘ └──────────┘ └─────────┘│
+│  ┌─────────────────────────────────────────────────┐│
+│  │           SvgChartGenerator (pure Dart)        ││
+│  └─────────────────────────────────────────────────┘│
 ├─────────────────────────────────────────────────────┤
 │                      Models                          │
 │  ┌─────────────────────────────────────────────────┐│
@@ -31,15 +34,16 @@ The app follows a standard Flutter architecture with clear separation of concern
 1. Location service gets current coordinates (GPS or fallback)
 2. Weather service fetches data from Open-Meteo
 3. Data is parsed into `WeatherData` model
-4. UI renders meteogram chart
-5. Chart captured as PNG via RepaintBoundary
-6. Widget updated with data + image path
+4. SVG chart generated via `SvgChartGenerator`
+5. In-app: SVG rendered via PlatformView (AndroidView → native ImageView)
+6. Widget: SVG saved to file, native provider renders via AndroidSVG
 
 ### Widget Updates
 1. Android: WorkManager triggers background update every 30 minutes
 2. Background service fetches new weather data
-3. Widget data saved to SharedPreferences via home_widget
-4. Native `MeteogramWidgetProvider` reads data and updates widget
+3. SVG charts generated via `SvgChartGenerator` (works in isolate - no UI needed)
+4. SVG files saved, paths stored via home_widget
+5. Native `MeteogramWidgetProvider` reads SVG, renders via AndroidSVG
 
 ## State Management
 
@@ -66,14 +70,33 @@ class _HomeScreenState extends State<HomeScreen> {
 
 ## Key Components
 
+### SvgChartGenerator (`lib/services/svg_chart_generator.dart`)
+Pure Dart SVG generation - no Flutter UI dependencies. Responsibilities:
+- Generate complete SVG string for meteogram
+- Sky gradient background based on solar elevation
+- Temperature line with gradient fill
+- Precipitation bars
+- Daylight intensity bars
+- Temperature labels (min/mid/max) with proper alignment
+- Time labels with locale-aware formatting (DateFormat.j)
+- Width-based font sizing for consistent proportions
+
+**Key benefit:** Works in background isolates without dart:ui
+
+### NativeSvgChartView (`lib/widgets/native_svg_chart_view.dart`)
+PlatformView wrapper for in-app SVG display. Responsibilities:
+- Embed native Android ImageView via AndroidView
+- Pass SVG string to native side via MethodChannel
+- Bypass Flutter's image compositor for 1:1 pixel rendering
+
 ### MeteogramChart (`lib/widgets/meteogram_chart.dart`)
-The main visualization widget using fl_chart. Responsibilities:
+Flutter-based chart using fl_chart (legacy, kept for reference):
 - Render temperature line (LineChart with gradient fill)
 - Render precipitation bars (BarChart)
 - Render cloud cover background (CustomPainter)
 - Show current time indicator (vertical golden line)
-- Support compact mode for widget
-- Handle light/dark theme colors
+
+**Note:** In-app display now uses NativeSvgChartView for pixel-perfect match with widget.
 
 ### WeatherService (`lib/services/weather_service.dart`)
 API client for Open-Meteo. Responsibilities:
@@ -135,26 +158,32 @@ Theme-aware color palette. Responsibilities:
 ```
 lib/
 ├── main.dart                    # App entry, BackgroundService init
-├── l10n/                        # Localization ARB files
+├── l10n/                        # Localization ARB files (30+ languages)
 │   ├── app_en.arb               # English
 │   ├── app_de.arb               # German
-│   ├── app_fr.arb               # French
-│   ├── app_es.arb               # Spanish
-│   ├── app_it.arb               # Italian
-│   └── app_uk.arb               # Ukrainian
+│   ├── app_ar.arb               # Arabic
+│   └── ...                      # 30+ locales
 ├── models/
 │   └── weather_data.dart        # WeatherData, HourlyData models
 ├── screens/
-│   └── home_screen.dart         # Main screen with chart capture
+│   └── home_screen.dart         # Main screen with NativeSvgChartView
 ├── services/
 │   ├── weather_service.dart     # Open-Meteo API client
 │   ├── location_service.dart    # GPS/fallback location
 │   ├── widget_service.dart      # Home widget updates
-│   └── background_service.dart  # WorkManager refresh
+│   ├── background_service.dart  # WorkManager refresh
+│   └── svg_chart_generator.dart # Pure Dart SVG generation
 ├── theme/
 │   └── app_theme.dart           # Colors, light/dark themes
 └── widgets/
-    └── meteogram_chart.dart     # fl_chart meteogram
+    ├── meteogram_chart.dart     # fl_chart meteogram (legacy)
+    └── native_svg_chart_view.dart # PlatformView SVG display
+
+android/app/src/main/kotlin/.../
+├── MainActivity.kt              # Registers PlatformView factory
+├── SvgChartViewFactory.kt       # Creates PlatformView instances
+├── SvgChartPlatformView.kt      # Native ImageView + AndroidSVG rendering
+└── MeteogramWidgetProvider.kt   # Home screen widget provider
 ```
 
 ## Platform-Specific
@@ -164,7 +193,14 @@ lib/
 - Layout in `res/layout/meteogram_widget.xml`
 - Uses RemoteViews (limited to TextView, ImageView, LinearLayout, RelativeLayout, FrameLayout)
 - Background in `res/drawable/widget_background.xml` (gradient + rounded corners)
-- Chart displayed as bitmap loaded from file
+- Chart: reads SVG file → AndroidSVG → Bitmap → ImageView
+
+### Android In-App (PlatformView)
+- `SvgChartViewFactory` registered in MainActivity
+- `SvgChartPlatformView` embeds native ImageView
+- Receives SVG string via MethodChannel
+- Renders via AndroidSVG → Bitmap → ImageView
+- Bypasses Flutter's image compositor for 1:1 pixel rendering
 
 ### iOS Widget
 Not yet implemented. Would require:
@@ -193,15 +229,23 @@ catch (e) {
 
 ## Dependencies
 
+### Flutter/Dart
 | Package | Purpose |
 |---------|---------|
-| fl_chart | Temperature line + precipitation bars |
 | home_widget | Flutter ↔ native widget bridge |
 | workmanager | Background refresh scheduling |
 | geolocator | GPS location |
 | geocoding | Reverse geocoding (coordinates → city name) |
 | http | API requests (weather + IP geolocation) |
-| path_provider | App documents for chart image |
+| path_provider | App documents for SVG files |
 | shared_preferences | Settings storage |
 | flutter_localizations | i18n framework |
-| intl | Date/number formatting |
+| intl | Locale-aware time formatting (DateFormat.j) |
+| fl_chart | Legacy chart (kept for reference) |
+
+### Android Native
+| Library | Purpose |
+|---------|---------|
+| com.caverock:androidsvg-aar | SVG parsing and rendering |
+
+See `docs/NATIVE_SVG_RENDERING.md` for detailed rendering architecture.

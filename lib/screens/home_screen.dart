@@ -1,16 +1,17 @@
 import 'dart:async';
 import 'dart:math' as math;
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
+import 'package:home_widget/home_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../l10n/app_localizations.dart';
 import '../models/weather_data.dart';
 import '../services/weather_service.dart';
 import '../services/location_service.dart';
 import '../services/widget_service.dart';
+import '../services/svg_chart_generator.dart';
 import '../theme/app_theme.dart';
 import '../widgets/meteogram_chart.dart';
+import '../widgets/native_svg_chart_view.dart';
 
 /// Main home screen displaying the meteogram.
 class HomeScreen extends StatefulWidget {
@@ -31,8 +32,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   final _weatherService = WeatherService();
   final _locationService = LocationService();
   final _widgetService = WidgetService();
-  final _chartKeyLight = GlobalKey();
-  final _chartKeyDark = GlobalKey();
 
   WeatherData? _weatherData;
   String? _locationName;
@@ -42,6 +41,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   bool _isShowingCachedData = false;
   double _chartAspectRatio = 2.0; // Default 2:1, updated from widget dimensions
   Brightness? _lastRenderedBrightness; // Track theme for re-render on change
+  String _locale = 'en'; // Cached locale for widget generation
+
+  // Cached Material You colors for widget SVG generation
+  SvgChartColors? _materialYouLightColors;
+  SvgChartColors? _materialYouDarkColors;
 
   @override
   void initState() {
@@ -63,6 +67,37 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     if (state == AppLifecycleState.resumed) {
       // App came to foreground - check if widget was resized
       _checkAndSyncWidget();
+    } else if (state == AppLifecycleState.paused) {
+      // App going to background - update widget with fresh chart
+      _updateWidgetOnBackground();
+    }
+  }
+
+  /// Update widget when app goes to background.
+  /// Regenerates SVG with current time position.
+  Future<void> _updateWidgetOnBackground() async {
+    if (_weatherData == null) return;
+
+    try {
+      // Generate fresh SVG charts with current time and Material You colors
+      await _widgetService.generateAndSaveSvgCharts(
+        displayData: _weatherData!.getDisplayRange(),
+        nowIndex: _weatherData!.getNowIndex(),
+        latitude: _weatherData!.latitude,
+        locale: _locale,
+        lightColors: _materialYouLightColors,
+        darkColors: _materialYouDarkColors,
+      );
+
+      // Trigger widget update to load new SVGs
+      await _widgetService.updateWidget(
+        weatherData: _weatherData!,
+        locationName: _locationName,
+      );
+
+      debugPrint('Widget updated on app background');
+    } catch (e) {
+      debugPrint('Error updating widget on background: $e');
     }
   }
 
@@ -89,6 +124,41 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       });
       debugPrint('Chart aspect ratio updated to: $_chartAspectRatio');
     }
+  }
+
+  /// Update cached Material You colors for widget SVG generation.
+  /// Called from build() when context is available.
+  void _updateMaterialYouColors(BuildContext context) {
+    // Get dynamic colors from Material You color schemes (if available)
+    // Fall back to static colors if no dynamic colors
+    final lightMeteogram = widget.lightColorScheme != null
+        ? MeteogramColors.fromColorScheme(widget.lightColorScheme!, isDark: false)
+        : MeteogramColors.light;
+    final darkMeteogram = widget.darkColorScheme != null
+        ? MeteogramColors.fromColorScheme(widget.darkColorScheme!, isDark: true)
+        : MeteogramColors.dark;
+
+    // Get ARGB values for persistence
+    final lightTempColor = lightMeteogram.temperatureLine.toARGB32();
+    final lightTimeColor = lightMeteogram.timeLabel.toARGB32();
+    final darkTempColor = darkMeteogram.temperatureLine.toARGB32();
+    final darkTimeColor = darkMeteogram.timeLabel.toARGB32();
+
+    // Apply dynamic colors to SVG chart colors
+    _materialYouLightColors = SvgChartColors.light.withDynamicColors(
+      temperatureLine: SvgColor.fromArgb(lightTempColor),
+      timeLabel: SvgColor.fromArgb(lightTimeColor),
+    );
+    _materialYouDarkColors = SvgChartColors.dark.withDynamicColors(
+      temperatureLine: SvgColor.fromArgb(darkTempColor),
+      timeLabel: SvgColor.fromArgb(darkTimeColor),
+    );
+
+    // Persist colors for background service (async, fire-and-forget)
+    HomeWidget.saveWidgetData<int>('material_you_light_temp', lightTempColor);
+    HomeWidget.saveWidgetData<int>('material_you_light_time', lightTimeColor);
+    HomeWidget.saveWidgetData<int>('material_you_dark_temp', darkTempColor);
+    HomeWidget.saveWidgetData<int>('material_you_dark_time', darkTimeColor);
   }
 
   /// Quick check on startup to sync widget state with cache age.
@@ -143,6 +213,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             lightChartPath: paths.light,
             darkChartPath: paths.dark,
           );
+          // Also generate SVG charts for background widget updates
+          await _widgetService.generateAndSaveSvgCharts(
+            displayData: cached.getDisplayRange(),
+            nowIndex: cached.getNowIndex(),
+            latitude: cached.latitude,
+            locale: _locale,
+            lightColors: _materialYouLightColors,
+            darkColors: _materialYouDarkColors,
+          );
         });
       }
     }
@@ -181,6 +260,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           lightChartPath: paths.light,
           darkChartPath: paths.dark,
         );
+        // Also generate SVG charts for background widget updates
+        await _widgetService.generateAndSaveSvgCharts(
+          displayData: weather.getDisplayRange(),
+          nowIndex: weather.getNowIndex(),
+          latitude: location.latitude,
+          locale: _locale,
+          lightColors: _materialYouLightColors,
+          darkColors: _materialYouDarkColors,
+        );
       });
     } catch (e) {
       // Try to use cached weather data on any failure
@@ -209,6 +297,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             locationName: cachedCity,
             lightChartPath: paths.light,
             darkChartPath: paths.dark,
+          );
+          // Also generate SVG charts for background widget updates
+          await _widgetService.generateAndSaveSvgCharts(
+            displayData: cached.getDisplayRange(),
+            nowIndex: cached.getNowIndex(),
+            latitude: cached.latitude,
+            locale: _locale,
+            lightColors: _materialYouLightColors,
+            darkColors: _materialYouDarkColors,
           );
         });
 
@@ -247,6 +344,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = MeteogramColors.of(context);
+
+    // Update cached Material You colors for widget SVG generation
+    _updateMaterialYouColors(context);
 
     return Scaffold(
       backgroundColor: colors.background,
@@ -455,91 +555,47 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                         ],
                       ),
                       const SizedBox(height: 16),
-                      // Meteogram chart - aspect ratio matches home widget dimensions
-              // Stack contains both themes; both painted for capture, current theme on top
+                      // Meteogram chart - Native PlatformView for exact widget match
               AspectRatio(
                 aspectRatio: _chartAspectRatio,
-                child: Builder(
-                  builder: (context) {
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
                     final isLight = Theme.of(context).brightness == Brightness.light;
+                    final mediaQuery = MediaQuery.of(context);
+                    final dpr = mediaQuery.devicePixelRatio;
+                    // Get locale for time formatting
+                    final locale = Localizations.localeOf(context).toString();
+                    _locale = locale;
+                    // Save for background service
+                    HomeWidget.saveWidgetData<String>('locale', locale);
 
-                    // Use the ACTUAL color scheme for each theme (not current theme's colors)
-                    // This ensures widget images look correct in both modes
-                    final lightScheme = widget.lightColorScheme ?? Theme.of(context).colorScheme;
-                    final darkScheme = widget.darkColorScheme ?? Theme.of(context).colorScheme;
+                    // Generate SVG at device pixel dimensions - same as widget approach
+                    final deviceWidth = constraints.maxWidth * dpr;
+                    final deviceHeight = constraints.maxHeight * dpr;
 
-                    // Light theme: onPrimaryContainer for better contrast
-                    // Dark theme: primary for brightness
-                    final lightTempColor = lightScheme.onPrimaryContainer;
-                    final darkTempColor = darkScheme.primary;
+                    // Apply Material You dynamic colors
+                    final meteogramColors = MeteogramColors.of(context);
+                    final baseColors = isLight ? SvgChartColors.light : SvgChartColors.dark;
+                    final colors = baseColors.withDynamicColors(
+                      temperatureLine: SvgColor.fromArgb(meteogramColors.temperatureLine.toARGB32()),
+                      timeLabel: SvgColor.fromArgb(meteogramColors.timeLabel.toARGB32()),
+                    );
 
-                    // Colors for the opposite theme (hidden chart for widget capture)
-                    final oppositeColors = isLight
-                        ? MeteogramColors.dark.copyWith(
-                            temperatureLine: darkTempColor,
-                            temperatureGradientStart: darkTempColor.withAlpha(0x60),
-                            temperatureGradientEnd: darkTempColor.withAlpha(0x00),
-                            timeLabel: darkScheme.tertiary,
-                          )
-                        : MeteogramColors.light.copyWith(
-                            temperatureLine: lightTempColor,
-                            temperatureGradientStart: lightTempColor.withAlpha(0x40),
-                            temperatureGradientEnd: lightTempColor.withAlpha(0x00),
-                            timeLabel: lightScheme.tertiary,
-                          );
+                    final generator = SvgChartGenerator();
+                    final svgString = generator.generate(
+                      data: displayData,
+                      nowIndex: nowIndex,
+                      latitude: _weatherData!.latitude,
+                      colors: colors,
+                      width: deviceWidth,
+                      height: deviceHeight,
+                      locale: locale,
+                    );
 
-                    return Stack(
-                      children: [
-                        // First: chart for NON-current theme (painted for capture, but hidden below)
-                        // RepaintBoundary is inside Container so widget capture has transparent background
-                        Positioned.fill(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: isLight
-                                  ? MeteogramColors.dark.cardBackground
-                                  : MeteogramColors.light.cardBackground,
-                            ),
-                            clipBehavior: Clip.antiAlias,
-                            child: RepaintBoundary(
-                              key: isLight ? _chartKeyDark : _chartKeyLight,
-                              child: MeteogramChart(
-                                data: displayData,
-                                nowIndex: nowIndex,
-                                latitude: _weatherData!.latitude,
-                                staleText: _isShowingCachedData && _isCacheStale() ? l10n.offline : null,
-                                explicitColors: oppositeColors,
-                                explicitLocale: locale.toString(),
-                              ),
-                            ),
-                          ),
-                        ),
-                        // Second: chart for CURRENT theme (on top, visible to user)
-                        // RepaintBoundary is inside Container so widget capture has transparent background
-                        Positioned.fill(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: colors.cardBackground,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withAlpha(15),
-                                  blurRadius: 20,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            clipBehavior: Clip.antiAlias,
-                            child: RepaintBoundary(
-                              key: isLight ? _chartKeyLight : _chartKeyDark,
-                              child: MeteogramChart(
-                                data: displayData,
-                                nowIndex: nowIndex,
-                                latitude: _weatherData!.latitude,
-                                staleText: _isShowingCachedData && _isCacheStale() ? l10n.offline : null,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
+                    return NativeSvgChartView(
+                      svgString: svgString,
+                      width: deviceWidth,
+                      height: deviceHeight,
                     );
                   },
                 ),
@@ -777,59 +833,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
   }
 
-  /// Capture both light and dark theme charts, return their paths.
+  /// Chart capture is no longer needed - widget uses SVG files directly.
+  /// This method is kept for API compatibility but returns null.
   Future<({String? light, String? dark})> _captureCharts() async {
-    try {
-      // Wait for both charts to fully render
-      await Future.delayed(const Duration(milliseconds: 100));
-
-      // Get actual widget dimensions from native provider
-      final widgetDimensions = await _widgetService.getWidgetDimensions();
-      final double pixelRatio;
-      if (widgetDimensions != null) {
-        final boundaryLight = _chartKeyLight.currentContext?.findRenderObject() as RenderRepaintBoundary?;
-        if (boundaryLight != null && boundaryLight.size.width > 0) {
-          pixelRatio = widgetDimensions.widthPx / boundaryLight.size.width;
-        } else {
-          pixelRatio = MediaQuery.of(context).devicePixelRatio;
-        }
-        debugPrint('Rendering charts at ${widgetDimensions.widthPx}x${widgetDimensions.heightPx}px');
-      } else {
-        pixelRatio = MediaQuery.of(context).devicePixelRatio;
-        debugPrint('Widget dimensions not available, using device ratio: $pixelRatio');
-      }
-
-      String? lightPath;
-      String? darkPath;
-
-      // Capture light theme chart
-      final boundaryLight = _chartKeyLight.currentContext?.findRenderObject() as RenderRepaintBoundary?;
-      if (boundaryLight != null) {
-        final image = await boundaryLight.toImage(pixelRatio: pixelRatio);
-        final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-        if (byteData != null) {
-          lightPath = await _widgetService.saveChartImage(byteData.buffer.asUint8List(), isDark: false);
-          debugPrint('Light chart captured');
-        }
-      }
-
-      // Capture dark theme chart
-      final boundaryDark = _chartKeyDark.currentContext?.findRenderObject() as RenderRepaintBoundary?;
-      if (boundaryDark != null) {
-        final image = await boundaryDark.toImage(pixelRatio: pixelRatio);
-        final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-        if (byteData != null) {
-          darkPath = await _widgetService.saveChartImage(byteData.buffer.asUint8List(), isDark: true);
-          debugPrint('Dark chart captured');
-        }
-      }
-
-      _lastRenderedBrightness = WidgetsBinding.instance.platformDispatcher.platformBrightness;
-      return (light: lightPath, dark: darkPath);
-    } catch (e) {
-      debugPrint('Error capturing charts: $e');
-      return (light: null, dark: null);
-    }
+    _lastRenderedBrightness = WidgetsBinding.instance.platformDispatcher.platformBrightness;
+    return (light: null, dark: null);
   }
 }
 
