@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' show PlatformDispatcher;
 import 'package:flutter/material.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -8,6 +9,7 @@ import '../services/weather_service.dart';
 import '../services/location_service.dart';
 import '../services/widget_service.dart';
 import '../services/svg_chart_generator.dart';
+import '../services/units_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/native_svg_chart_view.dart';
 
@@ -39,6 +41,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   double _chartAspectRatio = 2.0; // Default 2:1, updated from widget dimensions
   Brightness? _lastRenderedBrightness; // Track theme for re-render on change
   String _locale = 'en'; // Cached locale for widget generation
+  bool _usesFahrenheit = false; // Cached Fahrenheit preference
 
   // Cached Material You colors for widget SVG generation
   SvgChartColors? _materialYouLightColors;
@@ -82,6 +85,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         nowIndex: _weatherData!.getNowIndex(),
         latitude: _weatherData!.latitude,
         locale: _locale,
+        usesFahrenheit: _usesFahrenheit,
         lightColors: _materialYouLightColors,
         darkColors: _materialYouDarkColors,
       );
@@ -90,6 +94,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       await _widgetService.updateWidget(
         weatherData: _weatherData!,
         locationName: _locationName,
+        locale: Locale(_locale.split('_').first, _locale.contains('_') ? _locale.split('_').last : null),
       );
 
       debugPrint('Widget updated on app background');
@@ -205,6 +210,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           await _widgetService.updateWidget(
             weatherData: cached,
             locationName: cachedCity,
+            locale: Locale(_locale.split('_').first, _locale.contains('_') ? _locale.split('_').last : null),
             lightChartPath: paths.light,
             darkChartPath: paths.dark,
           );
@@ -214,6 +220,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             nowIndex: cached.getNowIndex(),
             latitude: cached.latitude,
             locale: _locale,
+            usesFahrenheit: _usesFahrenheit,
             lightColors: _materialYouLightColors,
             darkColors: _materialYouDarkColors,
           );
@@ -251,6 +258,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         await _widgetService.updateWidget(
           weatherData: weather,
           locationName: _locationName,
+          locale: Locale(_locale.split('_').first, _locale.contains('_') ? _locale.split('_').last : null),
           lightChartPath: paths.light,
           darkChartPath: paths.dark,
         );
@@ -260,6 +268,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           nowIndex: weather.getNowIndex(),
           latitude: location.latitude,
           locale: _locale,
+          usesFahrenheit: _usesFahrenheit,
           lightColors: _materialYouLightColors,
           darkColors: _materialYouDarkColors,
         );
@@ -288,6 +297,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           await _widgetService.updateWidget(
             weatherData: cached,
             locationName: cachedCity,
+            locale: Locale(_locale.split('_').first, _locale.contains('_') ? _locale.split('_').last : null),
             lightChartPath: paths.light,
             darkChartPath: paths.dark,
           );
@@ -297,6 +307,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             nowIndex: cached.getNowIndex(),
             latitude: cached.latitude,
             locale: _locale,
+            usesFahrenheit: _usesFahrenheit,
             lightColors: _materialYouLightColors,
             darkColors: _materialYouDarkColors,
           );
@@ -513,7 +524,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                           // Temperature
                           Expanded(
                             child: Text(
-                              '${currentHour.temperature.round()}°',
+                              UnitsService.formatTemperature(currentHour.temperature, PlatformDispatcher.instance.locale),
                               style: TextStyle(
                                 color: colors.temperatureLine,
                                 fontSize: 64,
@@ -552,11 +563,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     final isLight = Theme.of(context).brightness == Brightness.light;
                     final mediaQuery = MediaQuery.of(context);
                     final dpr = mediaQuery.devicePixelRatio;
-                    // Get locale for time formatting
-                    final locale = Localizations.localeOf(context).toString();
+                    // Get locale for time formatting and temperature units
+                    // Use platform locale (not Flutter's resolved locale) to get country code for unit preferences
+                    final platformLocale = PlatformDispatcher.instance.locale;
+                    final locale = platformLocale.toString();
+                    final usesFahrenheit = UnitsService.usesFahrenheit(platformLocale);
                     _locale = locale;
+                    _usesFahrenheit = usesFahrenheit;
                     // Save for background service
                     HomeWidget.saveWidgetData<String>('locale', locale);
+                    HomeWidget.saveWidgetData<bool>('usesFahrenheit', usesFahrenheit);
 
                     // Generate SVG at device pixel dimensions - same as widget approach
                     final deviceWidth = constraints.maxWidth * dpr;
@@ -579,6 +595,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                       width: deviceWidth,
                       height: deviceHeight,
                       locale: locale,
+                      usesFahrenheit: usesFahrenheit,
                     );
 
                     return NativeSvgChartView(

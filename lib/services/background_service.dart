@@ -5,6 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import 'weather_service.dart';
 import 'location_service.dart';
 import 'svg_chart_generator.dart';
+import 'units_service.dart';
 
 const String weatherUpdateTask = 'weatherUpdateTask';
 const String periodicWeatherTask = 'periodicWeatherTask';
@@ -40,9 +41,12 @@ Future<void> _updateWeatherData() async {
       location.longitude,
     );
 
+    // Get locale preference from SharedPreferences
+    final usesFahrenheit = await HomeWidget.getWidgetData<bool>('usesFahrenheit') ?? false;
+
     final currentHour = weather.getCurrentHour();
     final tempString = currentHour != null
-        ? '${currentHour.temperature.round()}°'
+        ? UnitsService.formatTemperatureFromBool(currentHour.temperature, usesFahrenheit)
         : '--°';
 
     await HomeWidget.saveWidgetData<String>('current_temperature', tempString);
@@ -67,10 +71,11 @@ Future<void> _generateSvgCharts(dynamic weather, double latitude) async {
     final displayData = weather.getDisplayRange();
     final nowIndex = weather.getNowIndex();
 
-    // Get widget dimensions and locale
+    // Get widget dimensions, locale, and temperature unit preference
     final widthPx = await HomeWidget.getWidgetData<int>('widget_width_px') ?? 400;
     final heightPx = await HomeWidget.getWidgetData<int>('widget_height_px') ?? 200;
     final locale = await HomeWidget.getWidgetData<String>('locale') ?? 'en';
+    final usesFahrenheit = await HomeWidget.getWidgetData<bool>('usesFahrenheit') ?? false;
 
     // Get persisted Material You colors (fall back to defaults if not set)
     final lightTempColor = await HomeWidget.getWidgetData<int>('material_you_light_temp');
@@ -102,6 +107,7 @@ Future<void> _generateSvgCharts(dynamic weather, double latitude) async {
       width: widthPx.toDouble(),
       height: heightPx.toDouble(),
       locale: locale,
+      usesFahrenheit: usesFahrenheit,
     );
 
     final svgDark = generator.generate(
@@ -112,6 +118,7 @@ Future<void> _generateSvgCharts(dynamic weather, double latitude) async {
       width: widthPx.toDouble(),
       height: heightPx.toDouble(),
       locale: locale,
+      usesFahrenheit: usesFahrenheit,
     );
 
     // Save SVG files to app documents directory

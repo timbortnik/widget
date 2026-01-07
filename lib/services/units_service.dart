@@ -20,7 +20,13 @@ class UnitsService {
 
   /// Format temperature for display.
   static String formatTemperature(double celsius, Locale locale) {
-    if (usesFahrenheit(locale)) {
+    return formatTemperatureFromBool(celsius, usesFahrenheit(locale));
+  }
+
+  /// Format temperature for display using a boolean flag.
+  /// Useful for background services that cache the preference.
+  static String formatTemperatureFromBool(double celsius, bool useFahrenheit) {
+    if (useFahrenheit) {
       final fahrenheit = celsius * 9 / 5 + 32;
       return '${fahrenheit.round()}°F';
     }

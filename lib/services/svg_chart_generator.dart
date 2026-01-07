@@ -128,6 +128,9 @@ class SvgChartGenerator {
   /// Locale for time formatting.
   late String _locale;
 
+  /// Whether to display temperatures in Fahrenheit.
+  late bool _usesFahrenheit;
+
   /// Scaled stroke width.
   String _strokeWidth(double baseWidth) => (baseWidth * _scale).toStringAsFixed(1);
 
@@ -141,9 +144,11 @@ class SvgChartGenerator {
     bool usePastFade = true,
     String locale = 'en',
     double scale = 1.0,
+    bool usesFahrenheit = false,
   }) {
     _locale = locale;
     _scale = scale;
+    _usesFahrenheit = usesFahrenheit;
     if (data.isEmpty) {
       return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${_n(width)} ${_n(height)}"><rect width="100%" height="100%" fill="${colors.cardBackground.toHex()}"/></svg>';
     }
@@ -313,6 +318,14 @@ class SvgChartGenerator {
     svg.write('<path d="$path" fill="none" stroke="${colors.temperatureLine.toHex()}" stroke-width="${_strokeWidth(3)}" stroke-linecap="round" stroke-linejoin="round"/>');
   }
 
+  /// Format temperature for display, converting to Fahrenheit if needed.
+  String _formatTemp(double celsius) {
+    if (_usesFahrenheit) {
+      return (celsius * 9 / 5 + 32).round().toString();
+    }
+    return celsius.round().toString();
+  }
+
   void _writeTempLabels(StringBuffer svg, List<HourlyData> data,
       SvgChartColors colors, double width, double chartHeight, double nowFraction) {
     final temps = data.map((d) => d.temperature).toList();
@@ -337,9 +350,9 @@ class SvgChartGenerator {
     // Align labels with actual temperature positions on the line
     // Add offset to account for text height
     final yOffset = fontSize * 0.4;
-    svg.write('<text x="${_n(centerX)}" y="${_n(tempToY(maxTemp) + yOffset)}" $style dominant-baseline="middle">${maxTemp.round()}</text>');
-    svg.write('<text x="${_n(centerX)}" y="${_n(tempToY(midTemp) + yOffset)}" $style dominant-baseline="middle">${midTemp.round()}</text>');
-    svg.write('<text x="${_n(centerX)}" y="${_n(tempToY(minTemp) + yOffset)}" $style dominant-baseline="middle">${minTemp.round()}</text>');
+    svg.write('<text x="${_n(centerX)}" y="${_n(tempToY(maxTemp) + yOffset)}" $style dominant-baseline="middle">${_formatTemp(maxTemp)}</text>');
+    svg.write('<text x="${_n(centerX)}" y="${_n(tempToY(midTemp) + yOffset)}" $style dominant-baseline="middle">${_formatTemp(midTemp)}</text>');
+    svg.write('<text x="${_n(centerX)}" y="${_n(tempToY(minTemp) + yOffset)}" $style dominant-baseline="middle">${_formatTemp(minTemp)}</text>');
   }
 
   void _writeTimeLabels(StringBuffer svg, List<HourlyData> data, int nowIndex,

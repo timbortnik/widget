@@ -5,6 +5,7 @@ import 'package:home_widget/home_widget.dart';
 import 'package:path_provider/path_provider.dart';
 import '../models/weather_data.dart';
 import 'svg_chart_generator.dart';
+import 'units_service.dart';
 
 /// Widget dimensions in pixels as reported by the native widget provider.
 class WidgetDimensions {
@@ -34,15 +35,16 @@ class WidgetService {
   Future<void> updateWidget({
     required WeatherData weatherData,
     required String? locationName,
+    required Locale locale,
     String? lightChartPath,
     String? darkChartPath,
   }) async {
     try {
       final currentHour = weatherData.getCurrentHour();
 
-      // Save current temperature
+      // Save current temperature using locale-aware formatting
       final tempString = currentHour != null
-          ? '${currentHour.temperature.round()}°'
+          ? UnitsService.formatTemperature(currentHour.temperature, locale)
           : '--°';
       await HomeWidget.saveWidgetData<String>('current_temperature', tempString);
 
@@ -91,6 +93,7 @@ class WidgetService {
     required int nowIndex,
     required double latitude,
     String locale = 'en',
+    bool usesFahrenheit = false,
     SvgChartColors? lightColors,
     SvgChartColors? darkColors,
   }) async {
@@ -111,6 +114,7 @@ class WidgetService {
         width: widthPx.toDouble(),
         height: heightPx.toDouble(),
         locale: locale,
+        usesFahrenheit: usesFahrenheit,
       );
 
       final svgDark = generator.generate(
@@ -121,6 +125,7 @@ class WidgetService {
         width: widthPx.toDouble(),
         height: heightPx.toDouble(),
         locale: locale,
+        usesFahrenheit: usesFahrenheit,
       );
 
       // Save SVG files
