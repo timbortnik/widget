@@ -272,19 +272,27 @@ class SvgChartGenerator {
     final minTemp = temps.reduce((a, b) => a < b ? a : b);
     final maxTemp = temps.reduce((a, b) => a > b ? a : b);
     final midTemp = (minTemp + maxTemp) / 2;
+    final tempRange = (maxTemp - minTemp).clamp(1.0, double.infinity);
+    final yPadding = tempRange * 0.10;
+
+    // Use same Y calculation as temperature line for alignment
+    double tempToY(double temp) {
+      final normalizedTemp = (temp - minTemp + yPadding) / (tempRange + 2 * yPadding);
+      return chartHeight * (1 - normalizedTemp);
+    }
 
     final centerX = (nowFraction / 2.5) * width;
-    final topY = chartHeight * 0.083 + 4;
-    final midY = chartHeight / 2;
-    final bottomY = chartHeight * 0.917 - 4;
 
     // Font size relative to chart height (8.4% of height)
     final fontSize = (chartHeight * 0.084).round();
     final style = 'fill="${colors.temperatureLine.toHex()}" font-size="$fontSize" font-weight="bold" font-family="sans-serif" text-anchor="middle"';
 
-    svg.write('<text x="${_n(centerX)}" y="${_n(topY)}" $style>${maxTemp.round()}</text>');
-    svg.write('<text x="${_n(centerX)}" y="${_n(midY)}" $style dominant-baseline="middle">${midTemp.round()}</text>');
-    svg.write('<text x="${_n(centerX)}" y="${_n(bottomY)}" $style>${minTemp.round()}</text>');
+    // Align labels with actual temperature positions on the line
+    // Add offset to account for text height
+    final yOffset = fontSize * 0.4;
+    svg.write('<text x="${_n(centerX)}" y="${_n(tempToY(maxTemp) + yOffset)}" $style dominant-baseline="middle">${maxTemp.round()}</text>');
+    svg.write('<text x="${_n(centerX)}" y="${_n(tempToY(midTemp) + yOffset)}" $style dominant-baseline="middle">${midTemp.round()}</text>');
+    svg.write('<text x="${_n(centerX)}" y="${_n(tempToY(minTemp) + yOffset)}" $style dominant-baseline="middle">${minTemp.round()}</text>');
   }
 
   void _writeTimeLabels(StringBuffer svg, List<HourlyData> data, int nowIndex,
