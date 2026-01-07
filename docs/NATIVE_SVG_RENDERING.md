@@ -113,6 +113,21 @@ final chartHeight = height - timeFontSize * 1.5;
 - Time labels spread horizontally, so width determines available space
 - Prevents label overlap on narrow widgets
 
+### Locale-Aware Time Formatting
+
+Time labels use `DateFormat.j(locale)` from the `intl` package for proper localization:
+
+```dart
+// System handles 12h/24h and AM/PM translation automatically
+final timeStr = DateFormat.j(_locale).format(data[i].time);
+```
+
+This automatically provides:
+- **24-hour format** for locales that prefer it (German: `10:00`, `22:00`)
+- **12-hour with localized AM/PM** for others (English: `10 AM`, Arabic: `10 ص`)
+
+The locale is obtained from `Localizations.localeOf(context)` and saved to HomeWidget storage for background service access.
+
 ---
 
 ## Overview
