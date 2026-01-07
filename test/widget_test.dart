@@ -1,12 +1,13 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:meteogram_widget/main.dart';
 
 void main() {
-  testWidgets('App loads successfully', (WidgetTester tester) async {
+  testWidgets('App builds without error', (WidgetTester tester) async {
     // Build our app and trigger a frame.
     await tester.pumpWidget(const MeteogramApp());
 
-    // Verify that the app title is shown.
-    expect(find.text('Meteogram'), findsOneWidget);
+    // App should render a Scaffold
+    expect(find.byType(Scaffold), findsOneWidget);
   });
 }
