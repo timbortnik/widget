@@ -148,8 +148,12 @@ class MeteogramColors {
   static MeteogramColors of(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final colorScheme = theme.colorScheme;
+    return fromColorScheme(theme.colorScheme, isDark: isDark);
+  }
 
+  /// Create colors from a specific ColorScheme.
+  /// Used for generating widget SVGs with both light and dark Material You colors.
+  static MeteogramColors fromColorScheme(ColorScheme colorScheme, {required bool isDark}) {
     // Use Material You colors with appropriate contrast for each theme:
     // - Light mode: onPrimaryContainer (darker, better contrast on light bg)
     // - Dark mode: primary (brighter, better contrast on dark bg)

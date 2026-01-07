@@ -43,6 +43,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   Brightness? _lastRenderedBrightness; // Track theme for re-render on change
   String _locale = 'en'; // Cached locale for widget generation
 
+  // Cached Material You colors for widget SVG generation
+  SvgChartColors? _materialYouLightColors;
+  SvgChartColors? _materialYouDarkColors;
+
   @override
   void initState() {
     super.initState();
@@ -75,12 +79,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     if (_weatherData == null) return;
 
     try {
-      // Generate fresh SVG charts with current time
+      // Generate fresh SVG charts with current time and Material You colors
       await _widgetService.generateAndSaveSvgCharts(
         displayData: _weatherData!.getDisplayRange(),
         nowIndex: _weatherData!.getNowIndex(),
         latitude: _weatherData!.latitude,
         locale: _locale,
+        lightColors: _materialYouLightColors,
+        darkColors: _materialYouDarkColors,
       );
 
       // Trigger widget update to load new SVGs
@@ -118,6 +124,29 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       });
       debugPrint('Chart aspect ratio updated to: $_chartAspectRatio');
     }
+  }
+
+  /// Update cached Material You colors for widget SVG generation.
+  /// Called from build() when context is available.
+  void _updateMaterialYouColors(BuildContext context) {
+    // Get dynamic colors from Material You color schemes (if available)
+    // Fall back to static colors if no dynamic colors
+    final lightMeteogram = widget.lightColorScheme != null
+        ? MeteogramColors.fromColorScheme(widget.lightColorScheme!, isDark: false)
+        : MeteogramColors.light;
+    final darkMeteogram = widget.darkColorScheme != null
+        ? MeteogramColors.fromColorScheme(widget.darkColorScheme!, isDark: true)
+        : MeteogramColors.dark;
+
+    // Apply dynamic colors to SVG chart colors
+    _materialYouLightColors = SvgChartColors.light.withDynamicColors(
+      temperatureLine: SvgColor.fromArgb(lightMeteogram.temperatureLine.toARGB32()),
+      timeLabel: SvgColor.fromArgb(lightMeteogram.timeLabel.toARGB32()),
+    );
+    _materialYouDarkColors = SvgChartColors.dark.withDynamicColors(
+      temperatureLine: SvgColor.fromArgb(darkMeteogram.temperatureLine.toARGB32()),
+      timeLabel: SvgColor.fromArgb(darkMeteogram.timeLabel.toARGB32()),
+    );
   }
 
   /// Quick check on startup to sync widget state with cache age.
@@ -178,6 +207,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             nowIndex: cached.getNowIndex(),
             latitude: cached.latitude,
             locale: _locale,
+            lightColors: _materialYouLightColors,
+            darkColors: _materialYouDarkColors,
           );
         });
       }
@@ -223,6 +254,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           nowIndex: weather.getNowIndex(),
           latitude: location.latitude,
           locale: _locale,
+          lightColors: _materialYouLightColors,
+          darkColors: _materialYouDarkColors,
         );
       });
     } catch (e) {
@@ -259,6 +292,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             nowIndex: cached.getNowIndex(),
             latitude: cached.latitude,
             locale: _locale,
+            lightColors: _materialYouLightColors,
+            darkColors: _materialYouDarkColors,
           );
         });
 
@@ -297,6 +332,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = MeteogramColors.of(context);
+
+    // Update cached Material You colors for widget SVG generation
+    _updateMaterialYouColors(context);
 
     return Scaffold(
       backgroundColor: colors.background,

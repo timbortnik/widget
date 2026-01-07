@@ -84,11 +84,16 @@ class WidgetService {
 
   /// Generate and save SVG charts for the widget.
   /// This runs in the main isolate and complements PNG generation.
+  ///
+  /// Optional [lightColors] and [darkColors] can be provided to apply
+  /// Material You dynamic colors. If not provided, uses default colors.
   Future<void> generateAndSaveSvgCharts({
     required List<HourlyData> displayData,
     required int nowIndex,
     required double latitude,
     String locale = 'en',
+    SvgChartColors? lightColors,
+    SvgChartColors? darkColors,
   }) async {
     try {
       final generator = SvgChartGenerator();
@@ -98,12 +103,12 @@ class WidgetService {
       final widthPx = dimensions?.widthPx ?? 400;
       final heightPx = dimensions?.heightPx ?? 200;
 
-      // Generate light and dark SVGs
+      // Generate light and dark SVGs with provided or default colors
       final svgLight = generator.generate(
         data: displayData,
         nowIndex: nowIndex,
         latitude: latitude,
-        colors: SvgChartColors.light,
+        colors: lightColors ?? SvgChartColors.light,
         width: widthPx.toDouble(),
         height: heightPx.toDouble(),
         locale: locale,
@@ -113,7 +118,7 @@ class WidgetService {
         data: displayData,
         nowIndex: nowIndex,
         latitude: latitude,
-        colors: SvgChartColors.dark,
+        colors: darkColors ?? SvgChartColors.dark,
         width: widthPx.toDouble(),
         height: heightPx.toDouble(),
         locale: locale,
