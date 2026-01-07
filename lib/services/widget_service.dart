@@ -88,7 +88,7 @@ class WidgetService {
     required List<HourlyData> displayData,
     required int nowIndex,
     required double latitude,
-    bool use24HourFormat = false,
+    String locale = 'en',
   }) async {
     try {
       final generator = SvgChartGenerator();
@@ -106,7 +106,7 @@ class WidgetService {
         colors: SvgChartColors.light,
         width: widthPx.toDouble(),
         height: heightPx.toDouble(),
-        use24HourFormat: use24HourFormat,
+        locale: locale,
       );
 
       final svgDark = generator.generate(
@@ -116,7 +116,7 @@ class WidgetService {
         colors: SvgChartColors.dark,
         width: widthPx.toDouble(),
         height: heightPx.toDouble(),
-        use24HourFormat: use24HourFormat,
+        locale: locale,
       );
 
       // Save SVG files
