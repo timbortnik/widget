@@ -88,29 +88,30 @@ Flutter's bitmap image quality degradation is a **known issue** documented in mu
 
 ## SVG Font Sizing
 
-Font sizes in the SVG are **relative to chart dimensions** to ensure consistent appearance across different device resolutions and widget sizes.
+Font sizes in the SVG are **relative to width** to ensure consistent appearance across different device resolutions and widget sizes.
 
-| Element | Formula | Example (669px height) |
+| Element | Formula | Example (1044px width) |
 |---------|---------|------------------------|
-| Temperature labels | chartHeight × 8.4% | ~50px |
-| Time labels | totalHeight × 6.3% | ~42px |
-| Time label area | totalHeight × 10.5% | ~70px reserved |
+| Temperature labels | width × 4.5% | ~47px |
+| Time labels | width × 4% | ~42px |
+| Time label area | timeFontSize × 1.5 | ~63px reserved |
 
 ```dart
-// Temperature labels - relative to chart area height
-final fontSize = (chartHeight * 0.084).round();
+// Temperature labels - relative to width
+final fontSize = (width * 0.045).round();
 
-// Time labels - relative to total SVG height
-final fontSize = (height * 0.063).round();
+// Time labels - relative to width
+final fontSize = (width * 0.04).round();
 
-// Chart area excludes time label space
-final chartHeight = height * 0.895;  // 89.5% for chart, 10.5% for labels
+// Chart area reserves space for time labels based on font size
+final timeFontSize = width * 0.04;
+final chartHeight = height - timeFontSize * 1.5;
 ```
 
-**Why relative sizing:**
-- Widget and app render at different pixel dimensions
-- Device pixel ratios vary (2x, 3x, 4x)
-- SVG is generated at device pixels, so fixed px values would appear different sizes
+**Why width-based sizing:**
+- Ensures consistent text proportions regardless of widget aspect ratio
+- Time labels spread horizontally, so width determines available space
+- Prevents label overlap on narrow widgets
 
 ---
 
