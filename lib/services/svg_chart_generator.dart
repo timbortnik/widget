@@ -10,6 +10,16 @@ class SvgColor {
   final int r, g, b, a;
   const SvgColor(this.r, this.g, this.b, [this.a = 255]);
 
+  /// Create from ARGB int value (e.g., Color.value from Flutter).
+  factory SvgColor.fromArgb(int argb) {
+    return SvgColor(
+      (argb >> 16) & 0xFF,
+      (argb >> 8) & 0xFF,
+      argb & 0xFF,
+      (argb >> 24) & 0xFF,
+    );
+  }
+
   /// Convert to hex color string (#RRGGBB).
   String toHex() => '#${r.toRadixString(16).padLeft(2, '0')}'
       '${g.toRadixString(16).padLeft(2, '0')}'
@@ -74,6 +84,37 @@ class SvgChartColors {
     cardBackground: SvgColor(0x1B, 0x28, 0x38),
     primaryText: SvgColor(0xFF, 0xFF, 0xFF),
   );
+
+  /// Create colors with custom temperature line and time label colors.
+  /// Used to apply Material You dynamic colors.
+  SvgChartColors withDynamicColors({
+    required SvgColor temperatureLine,
+    required SvgColor timeLabel,
+  }) {
+    return SvgChartColors(
+      temperatureLine: temperatureLine,
+      temperatureGradientStart: SvgColor(
+        temperatureLine.r,
+        temperatureLine.g,
+        temperatureLine.b,
+        this.temperatureGradientStart.a,
+      ),
+      temperatureGradientEnd: SvgColor(
+        temperatureLine.r,
+        temperatureLine.g,
+        temperatureLine.b,
+        0x00,
+      ),
+      precipitationBar: precipitationBar,
+      precipitationGradient: precipitationGradient,
+      sunshineBar: sunshineBar,
+      sunshineGradient: sunshineGradient,
+      nowIndicator: nowIndicator,
+      timeLabel: timeLabel,
+      cardBackground: cardBackground,
+      primaryText: primaryText,
+    );
+  }
 }
 
 /// Generates SVG meteogram charts for background widget updates.

@@ -494,12 +494,20 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     final deviceWidth = constraints.maxWidth * dpr;
                     final deviceHeight = constraints.maxHeight * dpr;
 
+                    // Apply Material You dynamic colors
+                    final meteogramColors = MeteogramColors.of(context);
+                    final baseColors = isLight ? SvgChartColors.light : SvgChartColors.dark;
+                    final colors = baseColors.withDynamicColors(
+                      temperatureLine: SvgColor.fromArgb(meteogramColors.temperatureLine.toARGB32()),
+                      timeLabel: SvgColor.fromArgb(meteogramColors.timeLabel.toARGB32()),
+                    );
+
                     final generator = SvgChartGenerator();
                     final svgString = generator.generate(
                       data: displayData,
                       nowIndex: nowIndex,
                       latitude: _weatherData!.latitude,
-                      colors: isLight ? SvgChartColors.light : SvgChartColors.dark,
+                      colors: colors,
                       width: deviceWidth,
                       height: deviceHeight,
                       locale: locale,
