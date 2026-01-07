@@ -1,4 +1,4 @@
-import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 /// Renders SVG to bitmap using native platform renderer (AndroidSVG on Android).
@@ -21,7 +21,7 @@ class NativeSvgRenderer {
       });
       return result;
     } on PlatformException catch (e) {
-      print('Native SVG render error: ${e.message}');
+      debugPrint('Native SVG render error: ${e.message}');
       return null;
     }
   }

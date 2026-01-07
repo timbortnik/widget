@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -10,7 +9,6 @@ import '../services/location_service.dart';
 import '../services/widget_service.dart';
 import '../services/svg_chart_generator.dart';
 import '../theme/app_theme.dart';
-import '../widgets/meteogram_chart.dart';
 import '../widgets/native_svg_chart_view.dart';
 
 /// Main home screen displaying the meteogram.
@@ -38,7 +36,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   bool _loading = true;
   String? _error;
   LocationSource _locationSource = LocationSource.gps;
-  bool _isShowingCachedData = false;
   double _chartAspectRatio = 2.0; // Default 2:1, updated from widget dimensions
   Brightness? _lastRenderedBrightness; // Track theme for re-render on change
   String _locale = 'en'; // Cached locale for widget generation
@@ -198,11 +195,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       final cached = await _weatherService.getCachedWeather();
       final cachedCity = await _weatherService.getCachedCityName();
       if (cached != null) {
-        // Mark as showing cached data so chart renders with watermark (if stale)
         setState(() {
           _weatherData = cached;
           _locationName = cachedCity;
-          _isShowingCachedData = isStale;
         });
         // Update widget (with watermark if stale, or just re-render if resized)
         WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -245,7 +240,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         _locationName = location.city;
         _locationSource = location.source;
         _loading = false;
-        _isShowingCachedData = false;
       });
 
       // Cache location info for offline use
@@ -286,10 +280,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             );
           }
           _loading = false;
-          _isShowingCachedData = true;
         });
 
-        // Update widget with cached data (includes OFFLINE watermark)
+        // Update widget with cached data
         WidgetsBinding.instance.addPostFrameCallback((_) async {
           final paths = await _captureCharts();
           await _widgetService.updateWidget(
@@ -450,10 +443,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final displayData = _weatherData!.getDisplayRange();
     final nowIndex = _weatherData!.getNowIndex();
     final currentHour = _weatherData!.getCurrentHour();
-    final locale = Localizations.localeOf(context);
-    final useImperial = _useImperialUnits(locale);
-    final maxPrecip = _getMaxPrecipitation(displayData, nowIndex);
-    final maxSunshine = _getMaxSunshine(displayData, nowIndex, _weatherData!.latitude);
 
     return RefreshIndicator(
       onRefresh: () => _loadWeather(userTriggered: true),
@@ -717,102 +706,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         },
       ),
     );
-  }
-
-  String _formatLastUpdated(AppLocalizations l10n) {
-    if (_weatherData == null) return '';
-
-    final diff = DateTime.now().difference(_weatherData!.fetchedAt);
-    if (diff.inMinutes < 1) {
-      return l10n.justNow;
-    }
-    return l10n.minutesAgo(diff.inMinutes);
-  }
-
-  /// Check if current weather data is stale (older than 1 hour).
-  bool _isCacheStale() {
-    if (_weatherData == null) return false;
-    return DateTime.now().difference(_weatherData!.fetchedAt) > const Duration(hours: 1);
-  }
-
-  /// Get max precipitation from forecast data (from now onwards).
-  double _getMaxPrecipitation(List<HourlyData> data, int nowIndex) {
-    if (data.isEmpty || nowIndex >= data.length) return 0;
-    return data.skip(nowIndex).map((h) => h.precipitation).reduce((a, b) => a > b ? a : b);
-  }
-
-  /// Check if locale uses imperial units (US).
-  bool _useImperialUnits(Locale locale) {
-    return locale.countryCode == 'US';
-  }
-
-  /// Format precipitation with localized units.
-  String _formatPrecipitation(double mm, bool useImperial) {
-    if (useImperial) {
-      final inches = mm / 25.4;
-      return '${inches.toStringAsFixed(2)} in';
-    }
-    return '${mm.toStringAsFixed(1)} mm';
-  }
-
-  /// Get max sunshine percentage from forecast data (from now onwards).
-  /// Uses same calculation as meteogram chart.
-  int _getMaxSunshine(List<HourlyData> data, int nowIndex, double latitude) {
-    if (data.isEmpty || nowIndex >= data.length) return 0;
-
-    double maxSunshine = 0;
-    for (final hour in data.skip(nowIndex)) {
-      final elevation = _solarElevation(latitude, hour.time);
-      final clearSkyLux = _clearSkyIlluminance(elevation);
-      if (clearSkyLux <= 0) continue;
-
-      const maxIlluminance = 130000.0;
-      final potential = (clearSkyLux / maxIlluminance).clamp(0.0, 1.0);
-
-      // Cloud attenuation
-      final cloudDivisor = math.pow(10, hour.cloudCover / 100.0);
-      // Precipitation attenuation
-      final precipDivisor = 1 + 0.5 * math.pow(hour.precipitation, 0.6);
-
-      final sunshine = potential / cloudDivisor / precipDivisor;
-      if (sunshine > maxSunshine) maxSunshine = sunshine;
-    }
-    return (maxSunshine * 100).round();
-  }
-
-  /// Calculate solar elevation angle in degrees.
-  double _solarElevation(double latitude, DateTime time) {
-    final dayOfYear = time.difference(DateTime(time.year, 1, 1)).inDays + 1;
-    final hour = time.hour + time.minute / 60.0;
-
-    final declination = 23.45 * math.sin(2 * math.pi / 365 * (284 + dayOfYear));
-    final hourAngle = 15.0 * (hour - 12);
-
-    final latRad = latitude * math.pi / 180;
-    final decRad = declination * math.pi / 180;
-    final haRad = hourAngle * math.pi / 180;
-
-    final sinElevation = math.sin(latRad) * math.sin(decRad) +
-        math.cos(latRad) * math.cos(decRad) * math.cos(haRad);
-
-    return math.asin(sinElevation.clamp(-1.0, 1.0)) * 180 / math.pi;
-  }
-
-  /// Calculate clear-sky illuminance in lux from solar elevation angle.
-  double _clearSkyIlluminance(double elevation) {
-    if (elevation < -6) return 0;
-
-    final elevRad = elevation * math.pi / 180;
-    final u = math.sin(elevRad);
-
-    const x = 753.66156;
-    final s = math.asin((x * math.cos(elevRad) / (x + 1)).clamp(-1.0, 1.0));
-    final m = x * (math.cos(s) - u) + math.cos(s);
-
-    final factor = math.exp(-0.2 * m) * u +
-        0.0289 * math.exp(-0.042 * m) * (1 + (elevation + 90) * u / 57.29577951);
-
-    return 133775 * factor.clamp(0.0, double.infinity);
   }
 
   IconData _getLocationIcon() {

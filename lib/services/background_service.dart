@@ -133,7 +133,7 @@ Future<void> _generateSvgCharts(dynamic weather, double latitude) async {
 /// Initialize background service
 class BackgroundService {
   static Future<void> initialize() async {
-    await Workmanager().initialize(callbackDispatcher, isInDebugMode: false);
+    await Workmanager().initialize(callbackDispatcher);
   }
 
   static Future<void> registerPeriodicTask() async {

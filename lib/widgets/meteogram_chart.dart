@@ -242,9 +242,6 @@ class _MeteogramChartState extends State<MeteogramChart> {
     // Add 10% Y padding so temperature line doesn't hit top/bottom edges
     final yPadding = tempRange * 0.10;
 
-    // Use nowIndex for the "now" line position
-    final nowPosition = nowIndex.toDouble();
-
     // Build vertical lines for time labels (12h intervals from now)
     final verticalLines = <VerticalLine>[];
     for (var i = nowIndex; i < data.length - 8; i++) {

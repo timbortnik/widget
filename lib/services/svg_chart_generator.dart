@@ -97,7 +97,7 @@ class SvgChartColors {
         temperatureLine.r,
         temperatureLine.g,
         temperatureLine.b,
-        this.temperatureGradientStart.a,
+        temperatureGradientStart.a,
       ),
       temperatureGradientEnd: SvgColor(
         temperatureLine.r,
@@ -127,9 +127,6 @@ class SvgChartGenerator {
 
   /// Locale for time formatting.
   late String _locale;
-
-  /// Scaled font size.
-  String _fontSize(double baseSize) => _n(baseSize * _scale);
 
   /// Scaled stroke width.
   String _strokeWidth(double baseWidth) => (baseWidth * _scale).toStringAsFixed(1);
@@ -205,7 +202,7 @@ class SvgChartGenerator {
     return svg.toString();
   }
 
-  /// Write gradient definitions to SVG <defs> section.
+  /// Write gradient definitions to SVG defs section.
   void _writeGradientDefs(StringBuffer svg, SvgChartColors colors, double nowFraction, bool usePastFade) {
     // Temperature area gradient (vertical: line color fading to transparent)
     svg.write('<linearGradient id="tempGradient" x1="0" y1="0" x2="0" y2="1">');
