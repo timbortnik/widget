@@ -72,12 +72,33 @@ Future<void> _generateSvgCharts(dynamic weather, double latitude) async {
     final heightPx = await HomeWidget.getWidgetData<int>('widget_height_px') ?? 200;
     final locale = await HomeWidget.getWidgetData<String>('locale') ?? 'en';
 
+    // Get persisted Material You colors (fall back to defaults if not set)
+    final lightTempColor = await HomeWidget.getWidgetData<int>('material_you_light_temp');
+    final lightTimeColor = await HomeWidget.getWidgetData<int>('material_you_light_time');
+    final darkTempColor = await HomeWidget.getWidgetData<int>('material_you_dark_temp');
+    final darkTimeColor = await HomeWidget.getWidgetData<int>('material_you_dark_time');
+
+    // Apply Material You colors if available
+    final lightColors = (lightTempColor != null && lightTimeColor != null)
+        ? SvgChartColors.light.withDynamicColors(
+            temperatureLine: SvgColor.fromArgb(lightTempColor),
+            timeLabel: SvgColor.fromArgb(lightTimeColor),
+          )
+        : SvgChartColors.light;
+
+    final darkColors = (darkTempColor != null && darkTimeColor != null)
+        ? SvgChartColors.dark.withDynamicColors(
+            temperatureLine: SvgColor.fromArgb(darkTempColor),
+            timeLabel: SvgColor.fromArgb(darkTimeColor),
+          )
+        : SvgChartColors.dark;
+
     // Generate light and dark theme SVGs
     final svgLight = generator.generate(
       data: displayData,
       nowIndex: nowIndex,
       latitude: latitude,
-      colors: SvgChartColors.light,
+      colors: lightColors,
       width: widthPx.toDouble(),
       height: heightPx.toDouble(),
       locale: locale,
@@ -87,7 +108,7 @@ Future<void> _generateSvgCharts(dynamic weather, double latitude) async {
       data: displayData,
       nowIndex: nowIndex,
       latitude: latitude,
-      colors: SvgChartColors.dark,
+      colors: darkColors,
       width: widthPx.toDouble(),
       height: heightPx.toDouble(),
       locale: locale,

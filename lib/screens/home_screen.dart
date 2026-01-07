@@ -138,15 +138,27 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         ? MeteogramColors.fromColorScheme(widget.darkColorScheme!, isDark: true)
         : MeteogramColors.dark;
 
+    // Get ARGB values for persistence
+    final lightTempColor = lightMeteogram.temperatureLine.toARGB32();
+    final lightTimeColor = lightMeteogram.timeLabel.toARGB32();
+    final darkTempColor = darkMeteogram.temperatureLine.toARGB32();
+    final darkTimeColor = darkMeteogram.timeLabel.toARGB32();
+
     // Apply dynamic colors to SVG chart colors
     _materialYouLightColors = SvgChartColors.light.withDynamicColors(
-      temperatureLine: SvgColor.fromArgb(lightMeteogram.temperatureLine.toARGB32()),
-      timeLabel: SvgColor.fromArgb(lightMeteogram.timeLabel.toARGB32()),
+      temperatureLine: SvgColor.fromArgb(lightTempColor),
+      timeLabel: SvgColor.fromArgb(lightTimeColor),
     );
     _materialYouDarkColors = SvgChartColors.dark.withDynamicColors(
-      temperatureLine: SvgColor.fromArgb(darkMeteogram.temperatureLine.toARGB32()),
-      timeLabel: SvgColor.fromArgb(darkMeteogram.timeLabel.toARGB32()),
+      temperatureLine: SvgColor.fromArgb(darkTempColor),
+      timeLabel: SvgColor.fromArgb(darkTimeColor),
     );
+
+    // Persist colors for background service (async, fire-and-forget)
+    HomeWidget.saveWidgetData<int>('material_you_light_temp', lightTempColor);
+    HomeWidget.saveWidgetData<int>('material_you_light_time', lightTimeColor);
+    HomeWidget.saveWidgetData<int>('material_you_dark_temp', darkTempColor);
+    HomeWidget.saveWidgetData<int>('material_you_dark_time', darkTimeColor);
   }
 
   /// Quick check on startup to sync widget state with cache age.
