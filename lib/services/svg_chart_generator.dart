@@ -103,8 +103,9 @@ class SvgChartGenerator {
     }
 
     final svg = StringBuffer();
-    // Reserve space for time labels (10.5% of height)
-    final chartHeight = height * 0.895;
+    // Reserve space for time labels based on font size (width × 4% + padding)
+    final timeFontSize = width * 0.04;
+    final chartHeight = height - timeFontSize * 1.5;
     final nowFraction = (nowIndex + 1) / data.length;
 
     svg.write('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${_n(width)} ${_n(height)}">');
@@ -283,8 +284,8 @@ class SvgChartGenerator {
 
     final centerX = (nowFraction / 2.5) * width;
 
-    // Font size relative to chart height (8.4% of height)
-    final fontSize = (chartHeight * 0.084).round();
+    // Font size relative to width (4.5% of width)
+    final fontSize = (width * 0.045).round();
     final style = 'fill="${colors.temperatureLine.toHex()}" font-size="$fontSize" font-weight="bold" font-family="sans-serif" text-anchor="middle"';
 
     // Align labels with actual temperature positions on the line
@@ -297,9 +298,9 @@ class SvgChartGenerator {
 
   void _writeTimeLabels(StringBuffer svg, List<HourlyData> data, int nowIndex,
       SvgChartColors colors, double width, double height) {
-    // Font size relative to chart height (6.3% of height)
-    final fontSize = (height * 0.063).round();
-    final labelY = height - fontSize * 0.3;
+    // Font size relative to width (4% of width)
+    final fontSize = (width * 0.04).round();
+    final labelY = height - fontSize * 0.2;
     final style = 'fill="${colors.timeLabel.toHex()}" font-size="$fontSize" font-weight="600" font-family="sans-serif" text-anchor="middle"';
 
     for (var i = nowIndex; i < data.length - 8; i++) {
