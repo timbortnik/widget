@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:home_widget/home_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../l10n/app_localizations.dart';
 import '../models/weather_data.dart';
@@ -40,6 +41,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   bool _isShowingCachedData = false;
   double _chartAspectRatio = 2.0; // Default 2:1, updated from widget dimensions
   Brightness? _lastRenderedBrightness; // Track theme for re-render on change
+  bool _use24HourFormat = false; // Cached from MediaQuery for widget generation
 
   @override
   void initState() {
@@ -146,6 +148,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             displayData: cached.getDisplayRange(),
             nowIndex: cached.getNowIndex(),
             latitude: cached.latitude,
+            use24HourFormat: _use24HourFormat,
           );
         });
       }
@@ -190,6 +193,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           displayData: weather.getDisplayRange(),
           nowIndex: weather.getNowIndex(),
           latitude: location.latitude,
+          use24HourFormat: _use24HourFormat,
         );
       });
     } catch (e) {
@@ -225,6 +229,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             displayData: cached.getDisplayRange(),
             nowIndex: cached.getNowIndex(),
             latitude: cached.latitude,
+            use24HourFormat: _use24HourFormat,
           );
         });
 
@@ -477,7 +482,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 child: LayoutBuilder(
                   builder: (context, constraints) {
                     final isLight = Theme.of(context).brightness == Brightness.light;
-                    final dpr = MediaQuery.of(context).devicePixelRatio;
+                    final mediaQuery = MediaQuery.of(context);
+                    final dpr = mediaQuery.devicePixelRatio;
+                    final use24Hour = mediaQuery.alwaysUse24HourFormat;
+                    _use24HourFormat = use24Hour; // Cache for widget generation
+                    // Save for background service
+                    HomeWidget.saveWidgetData<bool>('use_24_hour_format', use24Hour);
 
                     // Generate SVG at device pixel dimensions - same as widget approach
                     final deviceWidth = constraints.maxWidth * dpr;
@@ -491,7 +501,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                       colors: isLight ? SvgChartColors.light : SvgChartColors.dark,
                       width: deviceWidth,
                       height: deviceHeight,
-                      // NO scale - SVG dimensions match render dimensions
+                      use24HourFormat: use24Hour,
                     );
 
                     return NativeSvgChartView(

@@ -81,6 +81,9 @@ class SvgChartGenerator {
   /// Scale factor for font sizes and stroke widths.
   late double _scale;
 
+  /// Whether to use 24-hour time format.
+  late bool _use24HourFormat;
+
   /// Scaled font size.
   String _fontSize(double baseSize) => _n(baseSize * _scale);
 
@@ -95,8 +98,10 @@ class SvgChartGenerator {
     required double width,
     required double height,
     bool usePastFade = true,
+    bool use24HourFormat = false,
     double scale = 1.0,
   }) {
+    _use24HourFormat = use24HourFormat;
     _scale = scale;
     if (data.isEmpty) {
       return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${_n(width)} ${_n(height)}"><rect width="100%" height="100%" fill="${colors.cardBackground.toHex()}"/></svg>';
@@ -308,7 +313,9 @@ class SvgChartGenerator {
       if (offset < 0 || offset % 12 != 0) continue;
 
       final hour = data[i].time.hour;
-      final timeStr = hour == 0 ? '12AM' : hour == 12 ? '12PM' : hour < 12 ? '${hour}AM' : '${hour - 12}PM';
+      final timeStr = _use24HourFormat
+          ? '$hour:00'
+          : (hour == 0 ? '12AM' : hour == 12 ? '12PM' : hour < 12 ? '${hour}AM' : '${hour - 12}PM');
       final x = (i / (data.length - 1)) * width;
 
       svg.write('<text x="${_n(x)}" y="${_n(labelY)}" $style>$timeStr</text>');

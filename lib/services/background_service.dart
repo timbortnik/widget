@@ -67,9 +67,10 @@ Future<void> _generateSvgCharts(dynamic weather, double latitude) async {
     final displayData = weather.getDisplayRange();
     final nowIndex = weather.getNowIndex();
 
-    // Get widget dimensions (saved by native side, with defaults)
+    // Get widget dimensions and time format preference
     final widthPx = await HomeWidget.getWidgetData<int>('widget_width_px') ?? 400;
     final heightPx = await HomeWidget.getWidgetData<int>('widget_height_px') ?? 200;
+    final use24Hour = await HomeWidget.getWidgetData<bool>('use_24_hour_format') ?? false;
 
     // Generate light and dark theme SVGs
     final svgLight = generator.generate(
@@ -79,6 +80,7 @@ Future<void> _generateSvgCharts(dynamic weather, double latitude) async {
       colors: SvgChartColors.light,
       width: widthPx.toDouble(),
       height: heightPx.toDouble(),
+      use24HourFormat: use24Hour,
     );
 
     final svgDark = generator.generate(
@@ -88,6 +90,7 @@ Future<void> _generateSvgCharts(dynamic weather, double latitude) async {
       colors: SvgChartColors.dark,
       width: widthPx.toDouble(),
       height: heightPx.toDouble(),
+      use24HourFormat: use24Hour,
     );
 
     // Save SVG files to app documents directory
