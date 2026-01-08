@@ -156,7 +156,7 @@ class SvgChartGenerator {
     final svg = StringBuffer();
     // Reserve space for time labels based on font size (width × 4% + padding)
     final timeFontSize = width * 0.04;
-    final chartHeight = height - timeFontSize * 1.5;
+    final chartHeight = (height - timeFontSize * 1.5) * 0.95;
     final nowFraction = (nowIndex + 1) / data.length;
 
     svg.write('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${_n(width)} ${_n(height)}">');
@@ -201,7 +201,7 @@ class SvgChartGenerator {
     _writeTempLabels(svg, data, colors, width, chartHeight, nowFraction);
 
     // Time labels
-    _writeTimeLabels(svg, data, nowIndex, colors, width, height);
+    _writeTimeLabels(svg, data, nowIndex, colors, width, height, chartHeight);
 
     svg.write('</svg>');
     return svg.toString();
@@ -356,11 +356,12 @@ class SvgChartGenerator {
   }
 
   void _writeTimeLabels(StringBuffer svg, List<HourlyData> data, int nowIndex,
-      SvgChartColors colors, double width, double height) {
+      SvgChartColors colors, double width, double height, double chartHeight) {
     // Font size relative to width (4% of width)
     final fontSize = (width * 0.04).round();
-    final labelY = height - fontSize * 0.2;
-    final style = 'fill="${colors.timeLabel.toHex()}" font-size="$fontSize" font-weight="600" font-family="sans-serif" text-anchor="middle"';
+    // Position labels 60% down in the area below the chart
+    final labelY = chartHeight + (height - chartHeight) * 0.6;
+    final style = 'fill="${colors.timeLabel.toHex()}" font-size="$fontSize" font-weight="600" font-family="sans-serif" text-anchor="middle" dominant-baseline="middle"';
 
     for (var i = nowIndex; i < data.length - 8; i++) {
       final offset = i - nowIndex;
