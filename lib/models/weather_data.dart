@@ -77,6 +77,14 @@ class WeatherData {
 
   /// Get the index of "now" in the display data.
   /// Finds the hour slot matching current time by comparing timestamps.
+  ///
+  /// Timezone note: The API returns timestamps without timezone offsets
+  /// (e.g., "2024-01-15T12:00:00"), which DateTime.parse() interprets as
+  /// device local time. Since DateTime.now() is also device local time,
+  /// the comparison is consistent. This works correctly when the device
+  /// timezone matches the weather location (typical for GPS-based weather).
+  /// Edge case: if the user travels to a new timezone and the phone updates
+  /// but cached weather data remains, hours may be off until data refreshes.
   int getNowIndex() {
     final now = DateTime.now();
     // Truncate to hour precision for comparison
