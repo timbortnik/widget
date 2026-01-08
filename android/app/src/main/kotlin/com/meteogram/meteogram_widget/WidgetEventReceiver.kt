@@ -76,8 +76,13 @@ class WidgetEventReceiver : BroadcastReceiver() {
         try {
             // Read dimensions from SharedPreferences and pass in URI for cold-start reliability
             val prefs = context.getSharedPreferences("HomeWidgetPreferences", Context.MODE_PRIVATE)
-            val widthPx = prefs.getInt("widget_width_px", 400)
-            val heightPx = prefs.getInt("widget_height_px", 200)
+            var widthPx = prefs.getInt("widget_width_px", 0)
+            var heightPx = prefs.getInt("widget_height_px", 0)
+
+            // Use fallback dimensions if SharedPreferences has invalid values
+            // Default to ~4x4 grid widget at ~3x density: 300dp * 3 = 900px
+            if (widthPx <= 0) widthPx = 1000
+            if (heightPx <= 0) heightPx = 500
 
             // Get current system locale (Platform.localeName in Dart may be stale in background)
             val locale = java.util.Locale.getDefault()

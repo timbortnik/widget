@@ -184,12 +184,17 @@ class MeteogramWidgetProvider : HomeWidgetProvider() {
 
             Log.d(TAG, "Widget dimensions: ${minWidth}dp x ${maxHeight}dp = ${widthPx}px x ${heightPx}px (density: $density)")
 
-            // Save dimensions to SharedPreferences for Flutter to read
-            widgetData.edit()
-                .putInt("widget_width_px", widthPx)
-                .putInt("widget_height_px", heightPx)
-                .putFloat("widget_density", density)
-                .apply()
+            // Save dimensions to SharedPreferences for Flutter to read (only if valid)
+            // getAppWidgetOptions can return 0 in some scenarios - don't overwrite valid dimensions
+            if (widthPx > 0 && heightPx > 0) {
+                widgetData.edit()
+                    .putInt("widget_width_px", widthPx)
+                    .putInt("widget_height_px", heightPx)
+                    .putFloat("widget_density", density)
+                    .apply()
+            } else {
+                Log.d(TAG, "Skipping dimension save - invalid dimensions")
+            }
 
             // Set up tap to open app
             val intent = android.content.Intent(context, MainActivity::class.java).apply {

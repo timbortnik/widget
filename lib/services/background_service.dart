@@ -222,11 +222,12 @@ Future<void> _generateSvgCharts(WeatherData weather, double latitude, {int? uriW
 
     // Get widget dimensions - prefer URI params (reliable in cold-start),
     // fall back to SharedPreferences, then defaults
-    var widthPx = uriWidth ?? await HomeWidget.getWidgetData<int>('widget_width_px') ?? 400;
-    var heightPx = uriHeight ?? await HomeWidget.getWidgetData<int>('widget_height_px') ?? 200;
+    var widthPx = uriWidth ?? await HomeWidget.getWidgetData<int>('widget_width_px') ?? 0;
+    var heightPx = uriHeight ?? await HomeWidget.getWidgetData<int>('widget_height_px') ?? 0;
     // Ensure valid dimensions (0 means not set)
-    if (widthPx <= 0) widthPx = 400;
-    if (heightPx <= 0) heightPx = 200;
+    // Default to ~4x4 grid widget at ~3x density: 300dp * 3 = 900px
+    if (widthPx <= 0) widthPx = 1000;
+    if (heightPx <= 0) heightPx = 500;
     _log('_generateSvgCharts: using dimensions=${widthPx}x$heightPx (uri=${uriWidth}x$uriHeight)');
 
     // Get locale - prefer URI param (reliable when native passes it), fallback to Platform.localeName
