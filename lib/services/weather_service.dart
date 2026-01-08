@@ -17,6 +17,13 @@ class WeatherService {
   /// Fibonacci backoff delays in minutes: 1, 2, 3, 5, 8
   static const List<int> _retryDelaysMinutes = [1, 2, 3, 5, 8];
 
+  /// HTTP client for making requests. Defaults to standard client.
+  /// Can be overridden for testing.
+  final http.Client _client;
+
+  /// Create a WeatherService with optional custom HTTP client.
+  WeatherService({http.Client? client}) : _client = client ?? http.Client();
+
   /// Fetch weather data for foreground use.
   /// Tries once, falls back to cache on failure. Does not block with retries.
   Future<WeatherData> fetchWeather(double latitude, double longitude) async {
@@ -96,7 +103,7 @@ class WeatherService {
     });
 
     try {
-      final response = await http.get(uri).timeout(const Duration(seconds: 5));
+      final response = await _client.get(uri).timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body) as Map<String, dynamic>;

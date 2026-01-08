@@ -66,6 +66,10 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
 
+  # Testing
+  mocktail: ^1.0.4
+  http: ^1.2.0  # For MockClient
+
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 

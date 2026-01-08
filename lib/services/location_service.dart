@@ -17,6 +17,12 @@ class LocationService {
   static const String _useGpsKey = 'use_gps';
   static const String _sourceKey = 'location_source';
 
+  /// HTTP client for making requests. Defaults to standard client.
+  final http.Client _client;
+
+  /// Create a LocationService with optional custom HTTP client.
+  LocationService({http.Client? client}) : _client = client ?? http.Client();
+
   /// Get the current location (GPS or saved).
   Future<LocationData> getLocation() async {
     final prefs = await SharedPreferences.getInstance();
@@ -248,7 +254,7 @@ class LocationService {
       'format': 'json',
     });
 
-    final response = await http.get(uri).timeout(const Duration(seconds: 5));
+    final response = await _client.get(uri).timeout(const Duration(seconds: 5));
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
@@ -315,7 +321,7 @@ class LocationService {
       'format': 'json',
     });
 
-    final response = await http.get(uri).timeout(const Duration(seconds: 5));
+    final response = await _client.get(uri).timeout(const Duration(seconds: 5));
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
