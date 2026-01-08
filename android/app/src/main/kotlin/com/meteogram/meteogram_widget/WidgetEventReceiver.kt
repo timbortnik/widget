@@ -9,12 +9,22 @@ import android.util.Log
 
 /**
  * BroadcastReceiver for system events that trigger widget updates.
- * Registered at runtime to handle implicit broadcasts (Android 8.0+).
+ *
+ * Registration:
+ * - USER_PRESENT, CONNECTIVITY_CHANGE: Runtime (in MeteogramApplication)
+ * - LOCALE_CHANGED, TIMEZONE_CHANGED: Manifest (app killed on change)
+ *
+ * Note: CONNECTIVITY_CHANGE is deprecated since Android 7.0 (API 24).
+ * On newer devices, connectivity changes may be delayed or batched.
+ * For more reliable network monitoring, consider using:
+ * - ConnectivityManager.registerNetworkCallback() for API 21+
+ * - WorkManager with NetworkType.CONNECTED constraint
+ * Current implementation uses WorkManager periodic task as primary mechanism,
+ * with CONNECTIVITY_CHANGE as supplementary for faster response on older devices.
  */
 class WidgetEventReceiver : BroadcastReceiver() {
     companion object {
         private const val TAG = "WidgetEventReceiver"
-        private const val STALE_THRESHOLD_MS = 15 * 60 * 1000L // 15 minutes
     }
 
     override fun onReceive(context: Context, intent: Intent) {
@@ -47,55 +57,11 @@ class WidgetEventReceiver : BroadcastReceiver() {
     }
 
     private fun fetchWeatherIfStale(context: Context) {
-        val prefs = context.getSharedPreferences("HomeWidgetPreferences", Context.MODE_PRIVATE)
-        val lastUpdate = prefs.getLong("last_weather_update", 0)
-
-        if (System.currentTimeMillis() - lastUpdate > STALE_THRESHOLD_MS) {
-            val ageMinutes = (System.currentTimeMillis() - lastUpdate) / 60000
-            Log.d(TAG, "Data stale (${ageMinutes} min old) - triggering weather fetch")
-            triggerWeatherFetch(context)
-        } else {
-            val ageMinutes = (System.currentTimeMillis() - lastUpdate) / 60000
-            Log.d(TAG, "Data fresh (${ageMinutes} min old) - skipping fetch")
-        }
-    }
-
-    private fun triggerWeatherFetch(context: Context) {
-        try {
-            es.antonborri.home_widget.HomeWidgetBackgroundIntent.getBroadcast(
-                context,
-                android.net.Uri.parse("homewidget://weatherUpdate")
-            ).send()
-            Log.d(TAG, "Weather fetch triggered via HomeWidget")
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to trigger weather fetch: ${e.message}")
-        }
+        WidgetUtils.fetchWeatherIfStale(context)
     }
 
     private fun triggerReRender(context: Context) {
-        try {
-            // Read dimensions from SharedPreferences and pass in URI for cold-start reliability
-            val prefs = context.getSharedPreferences("HomeWidgetPreferences", Context.MODE_PRIVATE)
-            var widthPx = prefs.getInt("widget_width_px", 0)
-            var heightPx = prefs.getInt("widget_height_px", 0)
-
-            // Use fallback dimensions if SharedPreferences has invalid values
-            // Default to ~4x4 grid widget at ~3x density: 300dp * 3 = 900px
-            if (widthPx <= 0) widthPx = 1000
-            if (heightPx <= 0) heightPx = 500
-
-            // Get current system locale (Platform.localeName in Dart may be stale in background)
-            val locale = java.util.Locale.getDefault()
-            val localeStr = "${locale.language}_${locale.country}"
-
-            es.antonborri.home_widget.HomeWidgetBackgroundIntent.getBroadcast(
-                context,
-                android.net.Uri.parse("homewidget://chartReRender?width=$widthPx&height=$heightPx&locale=$localeStr")
-            ).send()
-            Log.d(TAG, "Chart re-render triggered via HomeWidget (${widthPx}x${heightPx}, locale=$localeStr)")
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to trigger chart re-render: ${e.message}")
-        }
+        WidgetUtils.triggerChartReRender(context)
     }
 
     private fun isNetworkAvailable(context: Context): Boolean {

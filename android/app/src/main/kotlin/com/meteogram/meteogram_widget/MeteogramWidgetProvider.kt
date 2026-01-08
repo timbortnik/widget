@@ -31,23 +31,30 @@ class MeteogramWidgetProvider : HomeWidgetProvider() {
      * @return Bitmap or null if rendering fails
      */
     private fun renderSvgToBitmap(svgPath: String, width: Int, height: Int): Bitmap? {
+        if (width <= 0 || height <= 0) {
+            Log.e(TAG, "Invalid dimensions for SVG rendering: ${width}x${height}")
+            return null
+        }
+
         return try {
-            val svg = SVG.getFromInputStream(FileInputStream(svgPath))
+            FileInputStream(svgPath).use { inputStream ->
+                val svg = SVG.getFromInputStream(inputStream)
 
-            // Set document dimensions to scale SVG
-            svg.documentWidth = width.toFloat()
-            svg.documentHeight = height.toFloat()
+                // Set document dimensions to scale SVG
+                svg.documentWidth = width.toFloat()
+                svg.documentHeight = height.toFloat()
 
-            // Create bitmap and canvas
-            val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-            val canvas = Canvas(bitmap)
+                // Create bitmap and canvas
+                val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+                val canvas = Canvas(bitmap)
 
-            // Render SVG to canvas
-            svg.renderToCanvas(canvas)
+                // Render SVG to canvas
+                svg.renderToCanvas(canvas)
 
-            bitmap
+                bitmap
+            }
         } catch (e: Exception) {
-            Log.e(TAG, "Error rendering SVG: ${e.message}")
+            Log.e(TAG, "Error rendering SVG", e)
             null
         }
     }
@@ -138,27 +145,15 @@ class MeteogramWidgetProvider : HomeWidgetProvider() {
         Log.d(TAG, "New dimensions: ${minWidth}dp x ${maxHeight}dp = ${widthPx}px x ${heightPx}px")
 
         // Update SharedPreferences with new dimensions (commit synchronously before triggering callback)
-        val prefs = context.getSharedPreferences("HomeWidgetPreferences", Context.MODE_PRIVATE)
+        val prefs = context.getSharedPreferences(WidgetUtils.PREFS_NAME, Context.MODE_PRIVATE)
         prefs.edit()
-            .putInt("widget_width_px", widthPx)
-            .putInt("widget_height_px", heightPx)
+            .putInt(WidgetUtils.KEY_WIDGET_WIDTH_PX, widthPx)
+            .putInt(WidgetUtils.KEY_WIDGET_HEIGHT_PX, heightPx)
             .putFloat("widget_density", density)
             .commit()
 
-        // Trigger chart re-render with new dimensions (pass in URI for cold-start reliability)
-        try {
-            // Get current system locale (Platform.localeName in Dart may be stale in background)
-            val locale = java.util.Locale.getDefault()
-            val localeStr = "${locale.language}_${locale.country}"
-
-            es.antonborri.home_widget.HomeWidgetBackgroundIntent.getBroadcast(
-                context,
-                android.net.Uri.parse("homewidget://chartReRender?width=$widthPx&height=$heightPx&locale=$localeStr")
-            ).send()
-            Log.d(TAG, "Chart re-render triggered for new dimensions (locale=$localeStr)")
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to trigger chart re-render: ${e.message}")
-        }
+        // Trigger chart re-render with new dimensions
+        WidgetUtils.triggerChartReRender(context)
     }
 
     override fun onUpdate(
@@ -186,12 +181,13 @@ class MeteogramWidgetProvider : HomeWidgetProvider() {
 
             // Save dimensions to SharedPreferences for Flutter to read (only if valid)
             // getAppWidgetOptions can return 0 in some scenarios - don't overwrite valid dimensions
+            // Use commit() (synchronous) to ensure dimensions are saved before any callbacks
             if (widthPx > 0 && heightPx > 0) {
                 widgetData.edit()
-                    .putInt("widget_width_px", widthPx)
-                    .putInt("widget_height_px", heightPx)
+                    .putInt(WidgetUtils.KEY_WIDGET_WIDTH_PX, widthPx)
+                    .putInt(WidgetUtils.KEY_WIDGET_HEIGHT_PX, heightPx)
                     .putFloat("widget_density", density)
-                    .apply()
+                    .commit()
             } else {
                 Log.d(TAG, "Skipping dimension save - invalid dimensions")
             }
@@ -222,6 +218,7 @@ class MeteogramWidgetProvider : HomeWidgetProvider() {
             val lightBitmap = loadChartBitmap(svgLightPath, pngLightPath, widthPx, heightPx)
             if (lightBitmap != null) {
                 views.setImageViewBitmap(R.id.widget_chart_light, lightBitmap)
+                lightBitmap.recycle() // RemoteViews parcelizes bitmap, safe to recycle
                 hasChart = true
                 Log.d(TAG, "Light chart loaded")
             }
@@ -230,6 +227,7 @@ class MeteogramWidgetProvider : HomeWidgetProvider() {
             val darkBitmap = loadChartBitmap(svgDarkPath, pngDarkPath, widthPx, heightPx)
             if (darkBitmap != null) {
                 views.setImageViewBitmap(R.id.widget_chart_dark, darkBitmap)
+                darkBitmap.recycle() // RemoteViews parcelizes bitmap, safe to recycle
                 hasChart = true
                 Log.d(TAG, "Dark chart loaded")
             }

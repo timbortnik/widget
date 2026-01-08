@@ -26,7 +26,12 @@ Locale _getSystemLocale() {
 
   // Parse locale string (formats: "en", "en_US", "en-US", "en_US.UTF-8")
   final cleaned = localeName.split('.').first; // Remove .UTF-8 suffix
-  final parts = cleaned.split(RegExp(r'[_-]'));
+  final parts = cleaned.split(RegExp(r'[_-]')).where((p) => p.isNotEmpty).toList();
+
+  if (parts.isEmpty) {
+    _log('Invalid locale format, defaulting to en');
+    return const Locale('en');
+  }
 
   if (parts.length >= 2) {
     return Locale(parts[0], parts[1].toUpperCase());
@@ -37,6 +42,10 @@ Locale _getSystemLocale() {
 const String weatherUpdateTask = 'weatherUpdateTask';
 const String periodicWeatherTask = 'periodicWeatherTask';
 const String chartRenderTask = 'chartRenderTask';
+
+// Default fallback dimensions - must match WidgetUtils.kt
+const int kDefaultWidthPx = 1000;
+const int kDefaultHeightPx = 500;
 
 /// Background task dispatcher for WorkManager
 @pragma('vm:entry-point')
@@ -163,6 +172,7 @@ Future<void> _updateWeatherData() async {
     _log('Widget updated successfully');
   } catch (e, stack) {
     _log('_updateWeatherData failed: $e\n$stack');
+    rethrow; // Propagate error so WorkManager knows task failed and can retry
   }
 }
 
@@ -209,6 +219,7 @@ Future<void> _reRenderCharts([Uri? uri]) async {
     _log('_reRenderCharts: widget updated');
   } catch (e, stack) {
     _log('_reRenderCharts failed: $e\n$stack');
+    rethrow; // Propagate error for proper failure handling
   }
 }
 
@@ -225,19 +236,22 @@ Future<void> _generateSvgCharts(WeatherData weather, double latitude, {int? uriW
     var widthPx = uriWidth ?? await HomeWidget.getWidgetData<int>('widget_width_px') ?? 0;
     var heightPx = uriHeight ?? await HomeWidget.getWidgetData<int>('widget_height_px') ?? 0;
     // Ensure valid dimensions (0 means not set)
-    // Default to ~4x4 grid widget at ~3x density: 300dp * 3 = 900px
-    if (widthPx <= 0) widthPx = 1000;
-    if (heightPx <= 0) heightPx = 500;
+    if (widthPx <= 0) widthPx = kDefaultWidthPx;
+    if (heightPx <= 0) heightPx = kDefaultHeightPx;
     _log('_generateSvgCharts: using dimensions=${widthPx}x$heightPx (uri=${uriWidth}x$uriHeight)');
 
     // Get locale - prefer URI param (reliable when native passes it), fallback to Platform.localeName
     Locale systemLocale;
     if (uriLocale != null && uriLocale.isNotEmpty) {
       // Parse locale from URI (format: "en_US" or "uk_UA")
-      final parts = uriLocale.split('_');
-      systemLocale = parts.length >= 2
-          ? Locale(parts[0], parts[1].toUpperCase())
-          : Locale(parts[0]);
+      final parts = uriLocale.split('_').where((p) => p.isNotEmpty).toList();
+      if (parts.length >= 2) {
+        systemLocale = Locale(parts[0], parts[1].toUpperCase());
+      } else if (parts.isNotEmpty) {
+        systemLocale = Locale(parts[0]);
+      } else {
+        systemLocale = const Locale('en');
+      }
       _log('_generateSvgCharts: using URI locale: $uriLocale -> $systemLocale');
     } else {
       systemLocale = _getSystemLocale();
@@ -316,6 +330,7 @@ Future<void> _generateSvgCharts(WeatherData weather, double latitude, {int? uriW
     await HomeWidget.saveWidgetData<String>('svg_path_dark', darkPath);
   } catch (e, stack) {
     _log('_generateSvgCharts failed: $e\n$stack');
+    rethrow; // Propagate error so caller knows chart generation failed
   }
 }
 

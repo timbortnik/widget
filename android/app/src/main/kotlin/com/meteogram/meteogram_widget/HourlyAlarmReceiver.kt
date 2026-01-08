@@ -6,8 +6,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import java.util.Calendar
 
@@ -131,47 +129,13 @@ class HourlyAlarmReceiver : BroadcastReceiver() {
     }
 
     private fun scheduleRetry(context: Context) {
-        // Calculate delay until next hour boundary + buffer
-        val now = Calendar.getInstance()
-        val nextHour = Calendar.getInstance().apply {
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, HOUR_BUFFER_SECONDS)
-            set(Calendar.MILLISECOND, 0)
-            add(Calendar.HOUR_OF_DAY, 1)
-        }
-        val delayMs = nextHour.timeInMillis - now.timeInMillis
-
-        Log.d(TAG, "Scheduling retry in ${delayMs}ms (at ${nextHour.time})")
-
-        Handler(Looper.getMainLooper()).postDelayed({
-            Log.d(TAG, "Retry: checking hour boundary again")
-            handleHourlyUpdate(context)
-        }, delayMs)
+        // Use AlarmManager instead of Handler.postDelayed to avoid memory leaks
+        // (Handler captures context in long-delayed callback)
+        Log.d(TAG, "Alarm fired early - rescheduling via AlarmManager")
+        scheduleNextAlarm(context)
     }
 
     private fun triggerChartReRender(context: Context) {
-        try {
-            // Read dimensions from SharedPreferences and pass in URI for cold-start reliability
-            val prefs = context.getSharedPreferences("HomeWidgetPreferences", Context.MODE_PRIVATE)
-            var widthPx = prefs.getInt("widget_width_px", 0)
-            var heightPx = prefs.getInt("widget_height_px", 0)
-
-            // Use fallback dimensions if SharedPreferences has invalid values
-            // Default to ~4x4 grid widget at ~3x density: 300dp * 3 = 900px
-            if (widthPx <= 0) widthPx = 1000
-            if (heightPx <= 0) heightPx = 500
-
-            // Get current system locale (Platform.localeName in Dart may be stale in background)
-            val locale = java.util.Locale.getDefault()
-            val localeStr = "${locale.language}_${locale.country}"
-
-            es.antonborri.home_widget.HomeWidgetBackgroundIntent.getBroadcast(
-                context,
-                android.net.Uri.parse("homewidget://chartReRender?width=$widthPx&height=$heightPx&locale=$localeStr")
-            ).send()
-            Log.d(TAG, "Chart re-render triggered via HomeWidget (${widthPx}x${heightPx}, locale=$localeStr)")
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to trigger chart re-render: ${e.message}")
-        }
+        WidgetUtils.triggerChartReRender(context)
     }
 }
