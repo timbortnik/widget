@@ -42,6 +42,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   Brightness? _lastRenderedBrightness; // Track theme for re-render on change
   String _locale = 'en'; // Cached locale for widget generation
   bool _usesFahrenheit = false; // Cached Fahrenheit preference
+  bool _isUpdatingWidget = false; // Prevents concurrent widget updates
 
   // Cached Material You colors for widget SVG generation
   SvgChartColors? _materialYouLightColors;
@@ -204,28 +205,45 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           _weatherData = cached;
           _locationName = cachedCity;
         });
-        // Update widget (with watermark if stale, or just re-render if resized)
+        // Update widget after frame is rendered
         WidgetsBinding.instance.addPostFrameCallback((_) async {
-          final paths = await _captureCharts();
-          await _widgetService.updateWidget(
-            weatherData: cached,
-            locationName: cachedCity,
-            locale: Locale(_locale.split('_').first, _locale.contains('_') ? _locale.split('_').last : null),
-            lightChartPath: paths.light,
-            darkChartPath: paths.dark,
-          );
-          // Also generate SVG charts for background widget updates
-          await _widgetService.generateAndSaveSvgCharts(
-            displayData: cached.getDisplayRange(),
-            nowIndex: cached.getNowIndex(),
-            latitude: cached.latitude,
-            locale: _locale,
-            usesFahrenheit: _usesFahrenheit,
-            lightColors: _materialYouLightColors,
-            darkColors: _materialYouDarkColors,
-          );
+          await _updateWidgetWithData(cached, cached.latitude);
         });
       }
+    }
+  }
+
+  /// Safely update the home widget with weather data.
+  /// Prevents concurrent updates that could cause race conditions.
+  Future<void> _updateWidgetWithData(WeatherData weather, double latitude) async {
+    // Skip if already updating to prevent race conditions
+    if (_isUpdatingWidget) {
+      debugPrint('Widget update already in progress, skipping');
+      return;
+    }
+
+    _isUpdatingWidget = true;
+    try {
+      final paths = await _captureCharts();
+      await _widgetService.updateWidget(
+        weatherData: weather,
+        locationName: _locationName,
+        locale: Locale(_locale.split('_').first, _locale.contains('_') ? _locale.split('_').last : null),
+        lightChartPath: paths.light,
+        darkChartPath: paths.dark,
+      );
+      // Also generate SVG charts for background widget updates
+      await _widgetService.generateAndSaveSvgCharts(
+        displayData: weather.getDisplayRange(),
+        nowIndex: weather.getNowIndex(),
+        latitude: latitude,
+        locale: _locale,
+        usesFahrenheit: _usesFahrenheit,
+        lightColors: _materialYouLightColors,
+        darkColors: _materialYouDarkColors,
+      );
+    } finally {
+      _isUpdatingWidget = false;
     }
   }
 
@@ -252,26 +270,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       // Cache location info for offline use
       await _weatherService.cacheLocationInfo(location.city, _locationSource.name);
 
-      // Capture chart after frame is rendered
+      // Update widget after frame is rendered
       WidgetsBinding.instance.addPostFrameCallback((_) async {
-        final paths = await _captureCharts();
-        await _widgetService.updateWidget(
-          weatherData: weather,
-          locationName: _locationName,
-          locale: Locale(_locale.split('_').first, _locale.contains('_') ? _locale.split('_').last : null),
-          lightChartPath: paths.light,
-          darkChartPath: paths.dark,
-        );
-        // Also generate SVG charts for background widget updates
-        await _widgetService.generateAndSaveSvgCharts(
-          displayData: weather.getDisplayRange(),
-          nowIndex: weather.getNowIndex(),
-          latitude: location.latitude,
-          locale: _locale,
-          usesFahrenheit: _usesFahrenheit,
-          lightColors: _materialYouLightColors,
-          darkColors: _materialYouDarkColors,
-        );
+        await _updateWidgetWithData(weather, location.latitude);
       });
     } catch (e) {
       // Try to use cached weather data on any failure
@@ -293,24 +294,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
         // Update widget with cached data
         WidgetsBinding.instance.addPostFrameCallback((_) async {
-          final paths = await _captureCharts();
-          await _widgetService.updateWidget(
-            weatherData: cached,
-            locationName: cachedCity,
-            locale: Locale(_locale.split('_').first, _locale.contains('_') ? _locale.split('_').last : null),
-            lightChartPath: paths.light,
-            darkChartPath: paths.dark,
-          );
-          // Also generate SVG charts for background widget updates
-          await _widgetService.generateAndSaveSvgCharts(
-            displayData: cached.getDisplayRange(),
-            nowIndex: cached.getNowIndex(),
-            latitude: cached.latitude,
-            locale: _locale,
-            usesFahrenheit: _usesFahrenheit,
-            lightColors: _materialYouLightColors,
-            darkColors: _materialYouDarkColors,
-          );
+          await _updateWidgetWithData(cached, cached.latitude);
         });
 
         // Notify user if they triggered the refresh

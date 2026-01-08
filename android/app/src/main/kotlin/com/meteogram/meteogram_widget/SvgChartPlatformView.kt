@@ -3,6 +3,7 @@ package com.meteogram.meteogram_widget
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -11,7 +12,14 @@ import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.platform.PlatformView
 import java.io.ByteArrayInputStream
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicBoolean
 
+/**
+ * Platform view for rendering SVG charts.
+ * SVG rendering is performed on a background thread to avoid blocking the UI.
+ */
 class SvgChartPlatformView(
     context: Context,
     private val viewId: Int,
@@ -19,8 +27,15 @@ class SvgChartPlatformView(
     creationParams: Map<String, Any?>?
 ) : PlatformView {
 
+    companion object {
+        private const val TAG = "SvgChartView"
+        // Shared executor for all instances to limit thread creation
+        private val renderExecutor: ExecutorService = Executors.newSingleThreadExecutor()
+    }
+
     private var pendingSvg: String? = null
     private var currentBitmap: Bitmap? = null
+    private val isRendering = AtomicBoolean(false)
 
     private val imageView = ImageView(context).apply {
         layoutParams = ViewGroup.LayoutParams(
@@ -70,23 +85,40 @@ class SvgChartPlatformView(
 
         if (width <= 0 || height <= 0) return
 
-        android.util.Log.d("SvgChartView", "Rendering at actual view size: ${width}x${height}px")
+        // Skip if already rendering to prevent queue buildup
+        if (!isRendering.compareAndSet(false, true)) {
+            Log.d(TAG, "Skipping render - already in progress")
+            return
+        }
 
-        try {
-            val parsedSvg = SVG.getFromInputStream(ByteArrayInputStream(svg.toByteArray()))
-            parsedSvg.documentWidth = width.toFloat()
-            parsedSvg.documentHeight = height.toFloat()
+        Log.d(TAG, "Rendering at actual view size: ${width}x${height}px")
 
-            currentBitmap?.recycle()
+        // Render on background thread to avoid blocking UI
+        renderExecutor.execute {
+            var bitmap: Bitmap? = null
+            try {
+                val parsedSvg = SVG.getFromInputStream(ByteArrayInputStream(svg.toByteArray()))
+                parsedSvg.documentWidth = width.toFloat()
+                parsedSvg.documentHeight = height.toFloat()
 
-            val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-            val canvas = Canvas(bitmap)
-            parsedSvg.renderToCanvas(canvas)
+                bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+                val canvas = Canvas(bitmap)
+                parsedSvg.renderToCanvas(canvas)
 
-            currentBitmap = bitmap
-            imageView.setImageBitmap(bitmap)
-        } catch (e: Exception) {
-            e.printStackTrace()
+                // Post result to main thread
+                val finalBitmap = bitmap
+                imageView.post {
+                    // Recycle old bitmap on main thread (safer)
+                    currentBitmap?.recycle()
+                    currentBitmap = finalBitmap
+                    imageView.setImageBitmap(finalBitmap)
+                    isRendering.set(false)
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error rendering SVG", e)
+                bitmap?.recycle()
+                isRendering.set(false)
+            }
         }
     }
 
