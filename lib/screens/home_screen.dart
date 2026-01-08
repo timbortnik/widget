@@ -70,8 +70,33 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _loadWidgetDimensions();
-    _checkAndSyncWidget();
-    _loadWeather();
+    _initializeData();
+  }
+
+  /// Initialize data on cold start.
+  /// Shows cached data immediately while fetching fresh in background.
+  Future<void> _initializeData() async {
+    // First, immediately show cached data if available (same as widget)
+    final cached = await _weatherService.getCachedWeather();
+    if (cached != null) {
+      final cachedCity = await _weatherService.getCachedCityName();
+      final cachedSource = await _weatherService.getCachedLocationSource();
+      setState(() {
+        _weatherData = cached;
+        _locationName = cachedCity;
+        if (cachedSource != null) {
+          _locationSource = LocationSource.values.firstWhere(
+            (s) => s.name == cachedSource,
+            orElse: () => LocationSource.gps,
+          );
+        }
+        _loading = false;
+      });
+      debugPrint('Showing cached data immediately: ${cached.fetchedAt}');
+    }
+
+    // Then try to fetch fresh data in background
+    _loadWeather(showLoadingIndicator: cached == null);
   }
 
   @override
@@ -213,11 +238,18 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       debugPrint('Theme changed since last render: $_lastRenderedBrightness -> $currentBrightness');
     }
 
+    // Check if cache has newer data than in-memory (background service may have updated)
+    final cached = await _weatherService.getCachedWeather();
+    final cacheIsNewer = cached != null &&
+        (_weatherData == null || cached.fetchedAt.isAfter(_weatherData!.fetchedAt));
+
     final isStale = await _weatherService.isCacheStale();
-    if (isStale || wasResized || themeChanged) {
-      final cached = await _weatherService.getCachedWeather();
+    if (isStale || wasResized || themeChanged || cacheIsNewer) {
       final cachedCity = await _weatherService.getCachedCityName();
       if (cached != null) {
+        if (cacheIsNewer) {
+          debugPrint('Cache is newer than in-memory data, syncing: ${cached.fetchedAt} > ${_weatherData?.fetchedAt}');
+        }
         setState(() {
           _weatherData = cached;
           _locationName = cachedCity;
@@ -264,11 +296,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
   }
 
-  Future<void> _loadWeather({bool userTriggered = false}) async {
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
+  Future<void> _loadWeather({
+    bool userTriggered = false,
+    bool showLoadingIndicator = true,
+  }) async {
+    if (showLoadingIndicator) {
+      setState(() {
+        _loading = true;
+        _error = null;
+      });
+    }
 
     try {
       final location = await _locationService.getLocation();
