@@ -224,13 +224,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
     _isUpdatingWidget = true;
     try {
-      final paths = await _captureCharts();
+      // Track brightness for theme change detection
+      _lastRenderedBrightness = WidgetsBinding.instance.platformDispatcher.platformBrightness;
+
       await _widgetService.updateWidget(
         weatherData: weather,
         locationName: _locationName,
         locale: Locale(_locale.split('_').first, _locale.contains('_') ? _locale.split('_').last : null),
-        lightChartPath: paths.light,
-        darkChartPath: paths.dark,
       );
       // Also generate SVG charts for background widget updates
       await _widgetService.generateAndSaveSvgCharts(
@@ -734,12 +734,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
   }
 
-  /// Chart capture is no longer needed - widget uses SVG files directly.
-  /// This method is kept for API compatibility but returns null.
-  Future<({String? light, String? dark})> _captureCharts() async {
-    _lastRenderedBrightness = WidgetsBinding.instance.platformDispatcher.platformBrightness;
-    return (light: null, dark: null);
-  }
 }
 
 /// Location picker bottom sheet with search functionality.

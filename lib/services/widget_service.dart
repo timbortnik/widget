@@ -36,8 +36,6 @@ class WidgetService {
     required WeatherData weatherData,
     required String? locationName,
     required Locale locale,
-    String? lightChartPath,
-    String? darkChartPath,
   }) async {
     try {
       final currentHour = weatherData.getCurrentHour();
@@ -51,15 +49,7 @@ class WidgetService {
       // Save location name
       await HomeWidget.saveWidgetData<String>('location_name', locationName ?? '');
 
-      // Save chart image paths (both themes)
-      if (lightChartPath != null) {
-        await HomeWidget.saveWidgetData<String>('meteogram_image_light', lightChartPath);
-      }
-      if (darkChartPath != null) {
-        await HomeWidget.saveWidgetData<String>('meteogram_image_dark', darkChartPath);
-      }
-
-      // Trigger widget update
+      // Trigger widget update (SVG chart paths are saved by generateAndSaveSvgCharts)
       await HomeWidget.updateWidget(
         androidName: _androidWidgetName,
         iOSName: _iosWidgetName,
@@ -88,7 +78,8 @@ class WidgetService {
   ///
   /// Optional [lightColors] and [darkColors] can be provided to apply
   /// Material You dynamic colors. If not provided, uses default colors.
-  Future<void> generateAndSaveSvgCharts({
+  /// Returns true if charts were generated successfully, false on error.
+  Future<bool> generateAndSaveSvgCharts({
     required List<HourlyData> displayData,
     required int nowIndex,
     required double latitude,
@@ -148,8 +139,10 @@ class WidgetService {
       await HomeWidget.saveWidgetData<String>('svg_path_dark', darkPath);
 
       debugPrint('SVG charts generated: $lightPath, $darkPath');
+      return true;
     } catch (e) {
       debugPrint('Error generating SVG charts: $e');
+      return false;
     }
   }
 
