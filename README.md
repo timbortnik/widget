@@ -55,8 +55,11 @@ flutter pub get
 # Generate localizations
 flutter gen-l10n
 
-# Run on device
-flutter run
+# Build options (via Makefile)
+make debug          # x86_64 only (68MB) - for emulator
+make release        # arm64 only (19MB) - for phones
+make install        # Build release + install on device
+make install-debug  # Build debug + install on emulator
 ```
 
 ### Install Widget
