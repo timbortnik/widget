@@ -143,7 +143,7 @@ class LocationService {
     );
   }
 
-  /// Get city name from coordinates via reverse geocoding.
+  /// Get city name from coordinates via native platform reverse geocoding.
   Future<String?> _getCityFromCoordinates(double lat, double lon) async {
     try {
       final placemarks = await placemarkFromCoordinates(lat, lon)

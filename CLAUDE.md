@@ -12,7 +12,7 @@ This file provides context for AI assistants working on this project.
 |--------|-------|
 | Framework | Flutter 3.x |
 | Weather API | Open-Meteo (free, no key) |
-| Charting | fl_chart |
+| Charting | Native SVG (SvgChartGenerator + AndroidSVG) |
 | Widget package | home_widget + workmanager |
 | i18n | flutter_localizations + intl (ARB files) |
 | License | BSL 1.1 (converts to MIT 2029) |
@@ -42,13 +42,14 @@ lib/
 │   ├── weather_service.dart      # Open-Meteo API client
 │   ├── location_service.dart     # Geolocator wrapper with fallback
 │   ├── widget_service.dart       # home_widget integration
-│   └── background_service.dart   # WorkManager periodic tasks
+│   ├── background_service.dart   # WorkManager periodic tasks
+│   └── svg_chart_generator.dart  # Pure Dart SVG generation
 ├── theme/
 │   └── app_theme.dart       # MeteogramColors, WeatherGradients
 ├── widgets/
-│   └── meteogram_chart.dart # fl_chart + custom sky painter
+│   └── native_svg_chart_view.dart # Native SVG PlatformView
 └── screens/
-    └── home_screen.dart     # Main UI with chart capture
+    └── home_screen.dart     # Main UI with SVG chart
 
 android/app/src/main/
 ├── kotlin/.../
@@ -105,11 +106,10 @@ Android widgets use RemoteViews which only support:
 **NOT supported:** View, Space, custom views, most Material widgets
 
 ### Data Flow
-1. `home_screen.dart` loads weather → renders chart
-2. `RepaintBoundary` captures chart as image
-3. `widget_service.dart` saves PNG, updates SharedPreferences
-4. `HomeWidget.updateWidget()` triggers native update
-5. `MeteogramWidgetProvider.kt` reads prefs, loads image, updates RemoteViews
+1. `home_screen.dart` loads weather → generates SVG via `SvgChartGenerator`
+2. In-app: SVG rendered via `NativeSvgChartView` (Android PlatformView)
+3. Widget: SVG saved to file, `HomeWidget.updateWidget()` triggers native update
+4. `MeteogramWidgetProvider.kt` reads SVG file, renders via AndroidSVG → ImageView
 
 ### Background Refresh
 ```dart
@@ -124,10 +124,11 @@ Workmanager().registerPeriodicTask(
 ## Common Tasks
 
 ### Modify chart appearance
-Edit `lib/widgets/meteogram_chart.dart`:
-- `_buildTemperatureChart()` - line style, gradient, dots
-- `_buildPrecipitationBars()` - bar colors, width
-- `_SkyGradientPainter` - background gradient
+Edit `lib/services/svg_chart_generator.dart`:
+- `_writeTemperatureLine()` - line style, gradient fill
+- `_writePrecipitationBars()` - bar colors, width
+- `_writeSunshineBars()` - sunshine intensity display
+- `SvgChartColors` - color definitions for light/dark themes
 
 ### Modify widget layout
 Edit `android/app/src/main/res/layout/meteogram_widget.xml`
@@ -150,19 +151,19 @@ adb logcat | grep -i "Error inflating"
 
 | File | Purpose |
 |------|---------|
-| `lib/widgets/meteogram_chart.dart` | The core chart widget |
-| `lib/services/svg_chart_generator.dart` | Pure Dart SVG generation |
+| `lib/services/svg_chart_generator.dart` | Pure Dart SVG generation (core chart) |
+| `lib/widgets/native_svg_chart_view.dart` | In-app SVG display via PlatformView |
 | `lib/services/background_service.dart` | WorkManager + event callbacks |
 | `lib/theme/app_theme.dart` | All colors and gradients |
 | `android/.../MeteogramWidgetProvider.kt` | Native widget code |
+| `android/.../SvgChartPlatformView.kt` | Native SVG rendering for in-app |
 | `android/.../WidgetEventReceiver.kt` | System event handler |
-| `android/.../MeteogramApplication.kt` | App init, registers receivers |
 
 ## Gotchas
 
 1. **RemoteViews errors** - Check logcat for "Class not allowed to be inflated"
 2. **Widget not updating** - Ensure `HomeWidget.updateWidget()` called with correct names
-3. **Chart not captured** - Add delay before capture, check RepaintBoundary key
+3. **SVG not rendering** - Check logcat for AndroidSVG errors, validate SVG string
 4. **Location timeout** - Has 15s timeout with Berlin fallback
 5. **Null API values** - Use `?.toDouble() ?? 0.0` pattern for nullable JSON
 6. **Implicit broadcasts** - Android 8.0+ requires runtime receiver registration (not manifest)

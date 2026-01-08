@@ -91,7 +91,7 @@ lib/
 ├── theme/
 │   └── app_theme.dart       # Colors and themes
 └── widgets/
-    └── meteogram_chart.dart # The chart widget
+    └── native_svg_chart_view.dart # Native SVG chart display
 
 android/
 ├── app/src/main/
@@ -151,11 +151,10 @@ The home screen widget uses:
 ### Data Flow
 
 1. App loads weather from Open-Meteo API
-2. Chart renders in Flutter using fl_chart
-3. Chart captured via RepaintBoundary → PNG
-4. Image saved to app documents folder
-5. Widget provider loads image and displays it
-6. WorkManager triggers refresh every 30 minutes
+2. SVG chart generated via `SvgChartGenerator` (pure Dart)
+3. In-app: SVG rendered via native Android PlatformView
+4. Widget: SVG saved to file, rendered by native provider
+5. WorkManager triggers refresh every 30 minutes
 
 ## Customization
 
@@ -201,7 +200,6 @@ Edit `android/app/src/main/res/drawable/widget_background.xml`:
 
 | Package | Purpose |
 |---------|---------|
-| fl_chart | Chart rendering |
 | home_widget | Android/iOS widget support |
 | workmanager | Background refresh |
 | geolocator | GPS location |
@@ -209,6 +207,8 @@ Edit `android/app/src/main/res/drawable/widget_background.xml`:
 | http | API requests |
 | path_provider | File storage |
 | shared_preferences | Settings storage |
+| dynamic_color | Material You theming |
+| intl | Locale-aware formatting |
 
 ## License
 
@@ -225,5 +225,5 @@ Contributions welcome! Please read the existing code style and test your changes
 ## Acknowledgments
 
 - Weather data: [Open-Meteo](https://open-meteo.com/)
-- Chart library: [fl_chart](https://pub.dev/packages/fl_chart)
 - Widget support: [home_widget](https://pub.dev/packages/home_widget)
+- SVG rendering: [AndroidSVG](https://bigbadaboom.github.io/androidsvg/)

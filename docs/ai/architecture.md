@@ -9,7 +9,7 @@ The app follows a standard Flutter architecture with clear separation of concern
 │                    Presentation                      │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  │
 │  │   Screens   │  │   Widgets   │  │    Theme    │  │
-│  │ (setState)  │  │ MeteogramChart│ │MeteogramColors│
+│  │ (setState)  │  │NativeSvgChart│ │MeteogramColors│
 │  └─────────────┘  └─────────────┘  └─────────────┘  │
 ├─────────────────────────────────────────────────────┤
 │                     Services                         │
@@ -88,15 +88,6 @@ PlatformView wrapper for in-app SVG display. Responsibilities:
 - Embed native Android ImageView via AndroidView
 - Pass SVG string to native side via MethodChannel
 - Bypass Flutter's image compositor for 1:1 pixel rendering
-
-### MeteogramChart (`lib/widgets/meteogram_chart.dart`)
-Flutter-based chart using fl_chart (legacy, kept for reference):
-- Render temperature line (LineChart with gradient fill)
-- Render precipitation bars (BarChart)
-- Render cloud cover background (CustomPainter)
-- Show current time indicator (vertical golden line)
-
-**Note:** In-app display now uses NativeSvgChartView for pixel-perfect match with widget.
 
 ### WeatherService (`lib/services/weather_service.dart`)
 API client for Open-Meteo. Responsibilities:
@@ -177,7 +168,6 @@ lib/
 ├── theme/
 │   └── app_theme.dart           # Colors, light/dark themes
 └── widgets/
-    ├── meteogram_chart.dart     # fl_chart meteogram (legacy)
     └── native_svg_chart_view.dart # PlatformView SVG display
 
 android/app/src/main/kotlin/.../
@@ -244,7 +234,7 @@ catch (e) {
 | shared_preferences | Settings storage |
 | flutter_localizations | i18n framework |
 | intl | Locale-aware time formatting (DateFormat.j) |
-| fl_chart | Legacy chart (kept for reference) |
+| dynamic_color | Material You theming |
 
 ### Android Native
 | Library | Purpose |
