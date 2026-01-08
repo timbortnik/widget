@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Monochrome filled mountain/chart shape for Material You themed icons -->
+    <!-- Safe zone: 18-90 (72dp centered in 108dp) -->
+    <path
+        android:pathData="M22,82 L22,58 L36,50 L44,58 L54,30 L64,58 L72,50 L86,58 L86,82 Z"
+        android:fillColor="#000000"/>
+</vector>

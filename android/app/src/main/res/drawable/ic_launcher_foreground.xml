@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Abstract M shape - temperature graph style -->
+    <path
+        android:pathData="M20,78 L20,52 Q20,46 26,49 L38,57 Q44,61 50,52 L54,32 Q56,26 58,32 L70,57 Q76,68 88,52 L88,78"
+        android:strokeWidth="6"
+        android:strokeColor="#FFFFFF"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="#00000000"/>
+</vector>
