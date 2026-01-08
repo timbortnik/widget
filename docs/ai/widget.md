@@ -209,7 +209,16 @@ class MeteogramWidgetProvider : HomeWidgetProvider() {
 ## Flutter Integration
 
 ### SVG Chart Generator (`lib/services/svg_chart_generator.dart`)
-Pure Dart SVG generation - no Flutter UI dependencies, works in background isolates:
+Pure Dart SVG generation - no Flutter UI dependencies, works in background isolates.
+
+**CRITICAL: Transparent Background Requirement**
+The SVG MUST NOT have a background fill. The widget layout uses `?android:attr/colorBackground` with 80% alpha to match system widgets (like Google Search bar). If the SVG has a solid background, it will:
+- Override the system background color
+- Break visual consistency with other widgets
+- Prevent the translucent effect
+
+The chart elements (temperature line, precipitation bars, daylight bars) are drawn directly on the transparent canvas.
+
 ```dart
 class SvgChartGenerator {
   String generate({
@@ -222,7 +231,7 @@ class SvgChartGenerator {
     String locale = 'en',
   }) {
     // Generates complete SVG string with:
-    // - Sky gradient background based on solar elevation
+    // - NO background rect (transparent - uses system widget background)
     // - Temperature line with gradient fill
     // - Precipitation bars
     // - Daylight intensity bars

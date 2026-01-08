@@ -150,7 +150,7 @@ class SvgChartGenerator {
     _scale = scale;
     _usesFahrenheit = usesFahrenheit;
     if (data.isEmpty) {
-      return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${_n(width)} ${_n(height)}"><rect width="100%" height="100%" fill="${colors.cardBackground.toHex()}"/></svg>';
+      return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${_n(width)} ${_n(height)}"></svg>';
     }
 
     final svg = StringBuffer();
@@ -166,8 +166,7 @@ class SvgChartGenerator {
     _writeGradientDefs(svg, colors, nowFraction, usePastFade);
     svg.write('</defs>');
 
-    // Background
-    svg.write('<rect width="100%" height="100%" fill="${colors.cardBackground.toHex()}"/>');
+    // No background - widget uses system background via ?android:attr/colorBackground
 
     // Chart group with optional past-time fade mask
     if (usePastFade) {
