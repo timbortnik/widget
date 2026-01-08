@@ -1,6 +1,5 @@
 {
   "@@locale": "el",
-
   "appTitle": "Μετεωρόγραμμα",
   "temperature": "Θερμοκρασία",
   "precipitation": "Βροχόπτωση",
@@ -27,5 +26,13 @@
   "locationSourceManual": "Χειροκίνητα",
   "daylight": "Φως ημέρας",
   "weatherDataBy": "Δεδομένα καιρού από {provider} (CC BY 4.0)",
-  "daylightDerived": "Φως ημέρας υπολογισμένο"
+  "daylightDerived": "Φως ημέρας υπολογισμένο",
+  "offlineRefreshError": "Αδυναμία ανανέωσης - εμφανίζονται αποθηκευμένα δεδομένα",
+  "loadingWeather": "Φόρτωση καιρού...",
+  "unableToLoadWeather": "Αδυναμία φόρτωσης καιρού",
+  "unknownLocation": "Άγνωστο",
+  "gpsPermissionDenied": "Η άδεια GPS απορρίφθηκε. Ενεργοποιήστε στις ρυθμίσεις.",
+  "searchConnectionError": "Αδυναμία αναζήτησης - ελέγξτε τη σύνδεση",
+  "selectLocation": "Επιλογή τοποθεσίας",
+  "searchCityHint": "Αναζήτηση πόλης..."
 }

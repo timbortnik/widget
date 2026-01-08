@@ -1,6 +1,5 @@
 {
   "@@locale": "is",
-
   "appTitle": "Veðurrit",
   "temperature": "Hitastig",
   "precipitation": "Úrkoma",
@@ -27,5 +26,13 @@
   "locationSourceManual": "Handvirkt",
   "daylight": "Dagsbirta",
   "weatherDataBy": "Veðurgögn frá {provider} (CC BY 4.0)",
-  "daylightDerived": "Dagsbirta reiknuð"
+  "daylightDerived": "Dagsbirta reiknuð",
+  "offlineRefreshError": "Ekki tókst að uppfæra - sýni vistuð gögn",
+  "loadingWeather": "Hleð veðri...",
+  "unableToLoadWeather": "Ekki tókst að hlaða veðri",
+  "unknownLocation": "Óþekkt",
+  "gpsPermissionDenied": "GPS heimild hafnað. Virkja í stillingar tækis.",
+  "searchConnectionError": "Ekki tókst að leita - athugaðu tengingu",
+  "selectLocation": "Veldu staðsetningu",
+  "searchCityHint": "Leita að borg..."
 }

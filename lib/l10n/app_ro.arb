@@ -1,6 +1,5 @@
 {
   "@@locale": "ro",
-
   "appTitle": "Meteogramă",
   "temperature": "Temperatură",
   "precipitation": "Precipitații",
@@ -27,5 +26,13 @@
   "locationSourceManual": "Manual",
   "daylight": "Lumina zilei",
   "weatherDataBy": "Date meteo de la {provider} (CC BY 4.0)",
-  "daylightDerived": "Lumina zilei calculată"
+  "daylightDerived": "Lumina zilei calculată",
+  "offlineRefreshError": "Nu se poate reîmprospăta - se afișează date din cache",
+  "loadingWeather": "Se încarcă vremea...",
+  "unableToLoadWeather": "Nu se poate încărca vremea",
+  "unknownLocation": "Necunoscut",
+  "gpsPermissionDenied": "Permisiunea GPS refuzată. Activați din setările dispozitivului.",
+  "searchConnectionError": "Nu se poate căuta - verificați conexiunea",
+  "selectLocation": "Selectați locația",
+  "searchCityHint": "Căutați oraș..."
 }

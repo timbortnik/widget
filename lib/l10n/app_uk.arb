@@ -1,31 +1,25 @@
 {
   "@@locale": "uk",
-
   "appTitle": "Метеограма",
   "@appTitle": {
     "description": "App name shown in title bar and widget"
   },
-
   "temperature": "Температура",
   "@temperature": {
     "description": "Label for temperature data on chart"
   },
-
   "precipitation": "Опади",
   "@precipitation": {
     "description": "Label for precipitation data on chart"
   },
-
   "cloudCover": "Хмарність",
   "@cloudCover": {
     "description": "Label for cloud cover data"
   },
-
   "now": "Зараз",
   "@now": {
     "description": "Label for current time indicator on chart"
   },
-
   "updatedAt": "Оновлено {time}",
   "@updatedAt": {
     "description": "Shows when weather data was last refreshed",
@@ -36,7 +30,6 @@
       }
     }
   },
-
   "minutesAgo": "{count} хв тому",
   "@minutesAgo": {
     "description": "Time elapsed in minutes",
@@ -47,62 +40,50 @@
       }
     }
   },
-
   "justNow": "Щойно",
   "@justNow": {
     "description": "Shown when data was updated less than a minute ago"
   },
-
   "refresh": "Оновити",
   "@refresh": {
     "description": "Button to manually refresh weather data"
   },
-
   "settings": "Налаштування",
   "@settings": {
     "description": "Settings screen title"
   },
-
   "location": "Місцезнаходження",
   "@location": {
     "description": "Location settings label"
   },
-
   "currentLocation": "Поточне місце",
   "@currentLocation": {
     "description": "Option to use GPS location"
   },
-
   "setManually": "Вказати вручну",
   "@setManually": {
     "description": "Option to set location manually"
   },
-
   "errorNoConnection": "Немає з'єднання з інтернетом",
   "@errorNoConnection": {
     "description": "Error shown when network is unavailable"
   },
-
   "errorLocationUnavailable": "Місцезнаходження недоступне",
   "@errorLocationUnavailable": {
     "description": "Error when GPS/location cannot be determined"
   },
-
   "errorLoadingData": "Не вдалося завантажити дані погоди",
   "@errorLoadingData": {
     "description": "Generic error when API request fails"
   },
-
   "retry": "Повторити",
   "@retry": {
     "description": "Button to retry failed operation"
   },
-
   "offline": "ОФЛАЙН",
   "@offline": {
     "description": "Watermark shown on chart when displaying cached data"
   },
-
   "forecastHours": "Прогноз на {hours} год",
   "@forecastHours": {
     "description": "Label showing forecast duration",
@@ -113,7 +94,6 @@
       }
     }
   },
-
   "maxPrecipitation": "Макс {amount}",
   "@maxPrecipitation": {
     "description": "Maximum precipitation in forecast",
@@ -124,7 +104,6 @@
       }
     }
   },
-
   "maxSunshine": "Макс {percent}%",
   "@maxSunshine": {
     "description": "Maximum sunshine in forecast",
@@ -135,7 +114,6 @@
       }
     }
   },
-
   "precipitationRate": "{amount} мм/год",
   "@precipitationRate": {
     "description": "Precipitation rate shown on chart",
@@ -146,10 +124,17 @@
       }
     }
   },
-
   "locationSourceGps": "GPS",
   "locationSourceManual": "Вручну",
   "daylight": "Денне світло",
   "weatherDataBy": "Дані погоди від {provider} (CC BY 4.0)",
-  "daylightDerived": "Денне світло розраховано"
+  "daylightDerived": "Денне світло розраховано",
+  "offlineRefreshError": "Не вдалося оновити - показуються кешовані дані",
+  "loadingWeather": "Завантаження погоди...",
+  "unableToLoadWeather": "Не вдалося завантажити погоду",
+  "unknownLocation": "Невідомо",
+  "gpsPermissionDenied": "Дозвіл GPS відхилено. Увімкніть у налаштуваннях пристрою.",
+  "searchConnectionError": "Не вдалося знайти - перевірте підключення",
+  "selectLocation": "Оберіть місце",
+  "searchCityHint": "Пошук міста..."
 }

@@ -1,6 +1,5 @@
 {
   "@@locale": "nl",
-
   "appTitle": "Meteogram",
   "temperature": "Temperatuur",
   "precipitation": "Neerslag",
@@ -27,5 +26,13 @@
   "locationSourceManual": "Handmatig",
   "daylight": "Daglicht",
   "weatherDataBy": "Weergegevens van {provider} (CC BY 4.0)",
-  "daylightDerived": "Daglicht berekend"
+  "daylightDerived": "Daglicht berekend",
+  "offlineRefreshError": "Kan niet vernieuwen - toont opgeslagen gegevens",
+  "loadingWeather": "Weer laden...",
+  "unableToLoadWeather": "Kan weer niet laden",
+  "unknownLocation": "Onbekend",
+  "gpsPermissionDenied": "GPS-toestemming geweigerd. Schakel in via apparaatinstellingen.",
+  "searchConnectionError": "Kan niet zoeken - controleer je verbinding",
+  "selectLocation": "Selecteer locatie",
+  "searchCityHint": "Zoek stad..."
 }

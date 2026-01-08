@@ -102,4 +102,30 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get daylightDerived => 'Denní světlo vypočteno';
+
+  @override
+  String get offlineRefreshError => 'Nelze obnovit - zobrazují se uložená data';
+
+  @override
+  String get loadingWeather => 'Načítání počasí...';
+
+  @override
+  String get unableToLoadWeather => 'Nelze načíst počasí';
+
+  @override
+  String get unknownLocation => 'Neznámé';
+
+  @override
+  String get gpsPermissionDenied =>
+      'Oprávnění GPS zamítnuto. Povolte v nastavení zařízení.';
+
+  @override
+  String get searchConnectionError =>
+      'Nelze vyhledávat - zkontrolujte připojení';
+
+  @override
+  String get selectLocation => 'Vyberte umístění';
+
+  @override
+  String get searchCityHint => 'Hledat město...';
 }

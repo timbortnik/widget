@@ -102,4 +102,31 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get daylightDerived => 'Ánh sáng tính toán';
+
+  @override
+  String get offlineRefreshError =>
+      'Không thể làm mới - hiển thị dữ liệu đã lưu';
+
+  @override
+  String get loadingWeather => 'Đang tải thời tiết...';
+
+  @override
+  String get unableToLoadWeather => 'Không thể tải thời tiết';
+
+  @override
+  String get unknownLocation => 'Không xác định';
+
+  @override
+  String get gpsPermissionDenied =>
+      'Quyền GPS bị từ chối. Bật trong cài đặt thiết bị.';
+
+  @override
+  String get searchConnectionError =>
+      'Không thể tìm kiếm - kiểm tra kết nối của bạn';
+
+  @override
+  String get selectLocation => 'Chọn vị trí';
+
+  @override
+  String get searchCityHint => 'Tìm thành phố...';
 }

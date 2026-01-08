@@ -102,4 +102,30 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get daylightDerived => 'Daylight derived';
+
+  @override
+  String get offlineRefreshError => 'Unable to refresh - showing cached data';
+
+  @override
+  String get loadingWeather => 'Loading weather...';
+
+  @override
+  String get unableToLoadWeather => 'Unable to load weather';
+
+  @override
+  String get unknownLocation => 'Unknown';
+
+  @override
+  String get gpsPermissionDenied =>
+      'GPS permission denied. Enable in device settings.';
+
+  @override
+  String get searchConnectionError =>
+      'Unable to search - check your connection';
+
+  @override
+  String get selectLocation => 'Select Location';
+
+  @override
+  String get searchCityHint => 'Search city...';
 }

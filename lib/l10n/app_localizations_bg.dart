@@ -102,4 +102,30 @@ class AppLocalizationsBg extends AppLocalizations {
 
   @override
   String get daylightDerived => 'Дневна светлина изчислена';
+
+  @override
+  String get offlineRefreshError =>
+      'Неуспешно обновяване - показват се кеширани данни';
+
+  @override
+  String get loadingWeather => 'Зареждане на времето...';
+
+  @override
+  String get unableToLoadWeather => 'Неуспешно зареждане на времето';
+
+  @override
+  String get unknownLocation => 'Неизвестно';
+
+  @override
+  String get gpsPermissionDenied =>
+      'Достъпът до GPS е отказан. Активирайте в настройките.';
+
+  @override
+  String get searchConnectionError => 'Неуспешно търсене - проверете връзката';
+
+  @override
+  String get selectLocation => 'Изберете местоположение';
+
+  @override
+  String get searchCityHint => 'Търсене на град...';
 }

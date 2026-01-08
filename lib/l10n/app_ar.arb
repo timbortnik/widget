@@ -1,6 +1,5 @@
 {
   "@@locale": "ar",
-
   "appTitle": "مخطط الطقس",
   "temperature": "درجة الحرارة",
   "precipitation": "هطول الأمطار",
@@ -27,5 +26,13 @@
   "locationSourceManual": "يدوي",
   "daylight": "ضوء النهار",
   "weatherDataBy": "بيانات الطقس من {provider} (CC BY 4.0)",
-  "daylightDerived": "ضوء النهار محسوب"
+  "daylightDerived": "ضوء النهار محسوب",
+  "offlineRefreshError": "تعذر التحديث - يتم عرض البيانات المخزنة مؤقتًا",
+  "loadingWeather": "جارٍ تحميل الطقس...",
+  "unableToLoadWeather": "تعذر تحميل الطقس",
+  "unknownLocation": "غير معروف",
+  "gpsPermissionDenied": "تم رفض إذن GPS. قم بتمكينه في إعدادات الجهاز.",
+  "searchConnectionError": "تعذر البحث - تحقق من اتصالك",
+  "selectLocation": "اختر الموقع",
+  "searchCityHint": "ابحث عن مدينة..."
 }

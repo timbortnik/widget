@@ -1,6 +1,5 @@
 {
   "@@locale": "de",
-
   "appTitle": "Meteogramm",
   "temperature": "Temperatur",
   "precipitation": "Niederschlag",
@@ -27,5 +26,13 @@
   "locationSourceManual": "Manuell",
   "daylight": "Tageslicht",
   "weatherDataBy": "Wetterdaten von {provider} (CC BY 4.0)",
-  "daylightDerived": "Tageslicht berechnet"
+  "daylightDerived": "Tageslicht berechnet",
+  "offlineRefreshError": "Aktualisierung fehlgeschlagen - zeige zwischengespeicherte Daten",
+  "loadingWeather": "Wetter wird geladen...",
+  "unableToLoadWeather": "Wetter konnte nicht geladen werden",
+  "unknownLocation": "Unbekannt",
+  "gpsPermissionDenied": "GPS-Berechtigung verweigert. In Geräteeinstellungen aktivieren.",
+  "searchConnectionError": "Suche fehlgeschlagen - Verbindung prüfen",
+  "selectLocation": "Standort auswählen",
+  "searchCityHint": "Stadt suchen..."
 }

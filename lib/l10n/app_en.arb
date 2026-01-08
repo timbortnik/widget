@@ -180,5 +180,45 @@
   "daylightDerived": "Daylight derived",
   "@daylightDerived": {
     "description": "Note indicating daylight values are calculated from cloud data (CC BY 4.0 modification disclosure)"
+  },
+
+  "offlineRefreshError": "Unable to refresh - showing cached data",
+  "@offlineRefreshError": {
+    "description": "Snackbar message when refresh fails but cached data is available"
+  },
+
+  "loadingWeather": "Loading weather...",
+  "@loadingWeather": {
+    "description": "Loading indicator text while fetching weather data"
+  },
+
+  "unableToLoadWeather": "Unable to load weather",
+  "@unableToLoadWeather": {
+    "description": "Error message when weather data cannot be loaded"
+  },
+
+  "unknownLocation": "Unknown",
+  "@unknownLocation": {
+    "description": "Fallback text when location name is not available"
+  },
+
+  "gpsPermissionDenied": "GPS permission denied. Enable in device settings.",
+  "@gpsPermissionDenied": {
+    "description": "Snackbar message when GPS permission is denied"
+  },
+
+  "searchConnectionError": "Unable to search - check your connection",
+  "@searchConnectionError": {
+    "description": "Error message when city search fails due to network"
+  },
+
+  "selectLocation": "Select Location",
+  "@selectLocation": {
+    "description": "Title for location selection dialog"
+  },
+
+  "searchCityHint": "Search city...",
+  "@searchCityHint": {
+    "description": "Placeholder text in city search field"
   }
 }

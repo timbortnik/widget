@@ -1,6 +1,5 @@
 {
   "@@locale": "ja",
-
   "appTitle": "気象グラフ",
   "temperature": "気温",
   "precipitation": "降水量",
@@ -27,5 +26,13 @@
   "locationSourceManual": "手動",
   "daylight": "日光",
   "weatherDataBy": "{provider}の気象データ (CC BY 4.0)",
-  "daylightDerived": "日光は計算値"
+  "daylightDerived": "日光は計算値",
+  "offlineRefreshError": "更新できません - キャッシュデータを表示中",
+  "loadingWeather": "天気を読み込み中...",
+  "unableToLoadWeather": "天気を読み込めません",
+  "unknownLocation": "不明",
+  "gpsPermissionDenied": "GPS権限が拒否されました。設定で有効にしてください。",
+  "searchConnectionError": "検索できません - 接続を確認してください",
+  "selectLocation": "場所を選択",
+  "searchCityHint": "都市を検索..."
 }

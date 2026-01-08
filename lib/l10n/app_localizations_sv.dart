@@ -102,4 +102,30 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get daylightDerived => 'Dagsljus beräknat';
+
+  @override
+  String get offlineRefreshError => 'Kan inte uppdatera - visar cachad data';
+
+  @override
+  String get loadingWeather => 'Laddar väder...';
+
+  @override
+  String get unableToLoadWeather => 'Kan inte ladda väder';
+
+  @override
+  String get unknownLocation => 'Okänd';
+
+  @override
+  String get gpsPermissionDenied =>
+      'GPS-behörighet nekad. Aktivera i enhetsinställningar.';
+
+  @override
+  String get searchConnectionError =>
+      'Kan inte söka - kontrollera anslutningen';
+
+  @override
+  String get selectLocation => 'Välj plats';
+
+  @override
+  String get searchCityHint => 'Sök stad...';
 }

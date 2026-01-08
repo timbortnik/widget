@@ -102,4 +102,30 @@ class AppLocalizationsJv extends AppLocalizations {
 
   @override
   String get daylightDerived => 'Cahya awan dietung';
+
+  @override
+  String get offlineRefreshError =>
+      'Ora bisa nganyari - nuduhake data sing disimpen';
+
+  @override
+  String get loadingWeather => 'Ngunggah cuaca...';
+
+  @override
+  String get unableToLoadWeather => 'Ora bisa ngunggah cuaca';
+
+  @override
+  String get unknownLocation => 'Ora dingerteni';
+
+  @override
+  String get gpsPermissionDenied =>
+      'Ijin GPS ditolak. Aktifake ing setelan piranti.';
+
+  @override
+  String get searchConnectionError => 'Ora bisa nggoleki - priksa sambungan';
+
+  @override
+  String get selectLocation => 'Pilih lokasi';
+
+  @override
+  String get searchCityHint => 'Goleki kutha...';
 }

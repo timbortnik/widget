@@ -1,6 +1,5 @@
 {
   "@@locale": "no",
-
   "appTitle": "Meteogram",
   "temperature": "Temperatur",
   "precipitation": "Nedbør",
@@ -27,5 +26,13 @@
   "locationSourceManual": "Manuell",
   "daylight": "Dagslys",
   "weatherDataBy": "Værdata fra {provider} (CC BY 4.0)",
-  "daylightDerived": "Dagslys beregnet"
+  "daylightDerived": "Dagslys beregnet",
+  "offlineRefreshError": "Kan ikke oppdatere - viser bufrede data",
+  "loadingWeather": "Laster vær...",
+  "unableToLoadWeather": "Kan ikke laste vær",
+  "unknownLocation": "Ukjent",
+  "gpsPermissionDenied": "GPS-tillatelse avslått. Aktiver i enhetsinnstillinger.",
+  "searchConnectionError": "Kan ikke søke - sjekk tilkoblingen",
+  "selectLocation": "Velg plassering",
+  "searchCityHint": "Søk by..."
 }

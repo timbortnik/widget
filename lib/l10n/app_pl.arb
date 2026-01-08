@@ -1,6 +1,5 @@
 {
   "@@locale": "pl",
-
   "appTitle": "Meteogram",
   "temperature": "Temperatura",
   "precipitation": "Opady",
@@ -27,5 +26,13 @@
   "locationSourceManual": "Ręcznie",
   "daylight": "Światło dzienne",
   "weatherDataBy": "Dane pogodowe od {provider} (CC BY 4.0)",
-  "daylightDerived": "Światło dzienne obliczone"
+  "daylightDerived": "Światło dzienne obliczone",
+  "offlineRefreshError": "Nie można odświeżyć - wyświetlam dane z pamięci podręcznej",
+  "loadingWeather": "Ładowanie pogody...",
+  "unableToLoadWeather": "Nie można załadować pogody",
+  "unknownLocation": "Nieznane",
+  "gpsPermissionDenied": "Odmowa dostępu do GPS. Włącz w ustawieniach urządzenia.",
+  "searchConnectionError": "Nie można wyszukać - sprawdź połączenie",
+  "selectLocation": "Wybierz lokalizację",
+  "searchCityHint": "Szukaj miasta..."
 }

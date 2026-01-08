@@ -102,4 +102,28 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get daylightDerived => '日光为计算值';
+
+  @override
+  String get offlineRefreshError => '无法刷新 - 显示缓存数据';
+
+  @override
+  String get loadingWeather => '加载天气中...';
+
+  @override
+  String get unableToLoadWeather => '无法加载天气';
+
+  @override
+  String get unknownLocation => '未知';
+
+  @override
+  String get gpsPermissionDenied => 'GPS权限被拒绝。请在设备设置中启用。';
+
+  @override
+  String get searchConnectionError => '无法搜索 - 请检查您的连接';
+
+  @override
+  String get selectLocation => '选择位置';
+
+  @override
+  String get searchCityHint => '搜索城市...';
 }

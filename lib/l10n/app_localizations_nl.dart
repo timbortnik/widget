@@ -102,4 +102,31 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get daylightDerived => 'Daglicht berekend';
+
+  @override
+  String get offlineRefreshError =>
+      'Kan niet vernieuwen - toont opgeslagen gegevens';
+
+  @override
+  String get loadingWeather => 'Weer laden...';
+
+  @override
+  String get unableToLoadWeather => 'Kan weer niet laden';
+
+  @override
+  String get unknownLocation => 'Onbekend';
+
+  @override
+  String get gpsPermissionDenied =>
+      'GPS-toestemming geweigerd. Schakel in via apparaatinstellingen.';
+
+  @override
+  String get searchConnectionError =>
+      'Kan niet zoeken - controleer je verbinding';
+
+  @override
+  String get selectLocation => 'Selecteer locatie';
+
+  @override
+  String get searchCityHint => 'Zoek stad...';
 }

@@ -102,4 +102,30 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get daylightDerived => 'ضوء النهار محسوب';
+
+  @override
+  String get offlineRefreshError =>
+      'تعذر التحديث - يتم عرض البيانات المخزنة مؤقتًا';
+
+  @override
+  String get loadingWeather => 'جارٍ تحميل الطقس...';
+
+  @override
+  String get unableToLoadWeather => 'تعذر تحميل الطقس';
+
+  @override
+  String get unknownLocation => 'غير معروف';
+
+  @override
+  String get gpsPermissionDenied =>
+      'تم رفض إذن GPS. قم بتمكينه في إعدادات الجهاز.';
+
+  @override
+  String get searchConnectionError => 'تعذر البحث - تحقق من اتصالك';
+
+  @override
+  String get selectLocation => 'اختر الموقع';
+
+  @override
+  String get searchCityHint => 'ابحث عن مدينة...';
 }

@@ -1,6 +1,5 @@
 {
   "@@locale": "tr",
-
   "appTitle": "Meteogram",
   "temperature": "Sıcaklık",
   "precipitation": "Yağış",
@@ -27,5 +26,13 @@
   "locationSourceManual": "Manuel",
   "daylight": "Gün ışığı",
   "weatherDataBy": "{provider} hava durumu verileri (CC BY 4.0)",
-  "daylightDerived": "Gün ışığı hesaplanmış"
+  "daylightDerived": "Gün ışığı hesaplanmış",
+  "offlineRefreshError": "Yenilenemiyor - önbelleğe alınmış veriler gösteriliyor",
+  "loadingWeather": "Hava durumu yükleniyor...",
+  "unableToLoadWeather": "Hava durumu yüklenemiyor",
+  "unknownLocation": "Bilinmiyor",
+  "gpsPermissionDenied": "GPS izni reddedildi. Cihaz ayarlarından etkinleştirin.",
+  "searchConnectionError": "Arama yapılamıyor - bağlantınızı kontrol edin",
+  "selectLocation": "Konum seçin",
+  "searchCityHint": "Şehir ara..."
 }

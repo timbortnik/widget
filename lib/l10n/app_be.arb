@@ -1,6 +1,5 @@
 {
   "@@locale": "be",
-
   "appTitle": "Метэаграма",
   "temperature": "Тэмпература",
   "precipitation": "Ападкі",
@@ -27,5 +26,13 @@
   "locationSourceManual": "Уручную",
   "daylight": "Дзённае святло",
   "weatherDataBy": "Даныя надвор'я ад {provider} (CC BY 4.0)",
-  "daylightDerived": "Дзённае святло разлічана"
+  "daylightDerived": "Дзённае святло разлічана",
+  "offlineRefreshError": "Немагчыма абнавіць - паказваюцца кэшаваныя даныя",
+  "loadingWeather": "Загрузка надвор'я...",
+  "unableToLoadWeather": "Немагчыма загрузіць надвор'е",
+  "unknownLocation": "Невядома",
+  "gpsPermissionDenied": "Дазвол GPS адхілены. Уключыце ў наладах прылады.",
+  "searchConnectionError": "Немагчыма шукаць - праверце падключэнне",
+  "selectLocation": "Выбраць месца",
+  "searchCityHint": "Пошук горада..."
 }

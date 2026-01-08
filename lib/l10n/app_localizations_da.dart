@@ -102,4 +102,30 @@ class AppLocalizationsDa extends AppLocalizations {
 
   @override
   String get daylightDerived => 'Dagslys beregnet';
+
+  @override
+  String get offlineRefreshError =>
+      'Kan ikke opdatere - viser cachelagrede data';
+
+  @override
+  String get loadingWeather => 'Indlæser vejr...';
+
+  @override
+  String get unableToLoadWeather => 'Kan ikke indlæse vejr';
+
+  @override
+  String get unknownLocation => 'Ukendt';
+
+  @override
+  String get gpsPermissionDenied =>
+      'GPS-tilladelse afvist. Aktivér i enhedsindstillinger.';
+
+  @override
+  String get searchConnectionError => 'Kan ikke søge - tjek din forbindelse';
+
+  @override
+  String get selectLocation => 'Vælg placering';
+
+  @override
+  String get searchCityHint => 'Søg by...';
 }

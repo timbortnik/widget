@@ -1,6 +1,5 @@
 {
   "@@locale": "hi",
-
   "appTitle": "मौसम चार्ट",
   "temperature": "तापमान",
   "precipitation": "वर्षा",
@@ -27,5 +26,13 @@
   "locationSourceManual": "मैन्युअल",
   "daylight": "दिन का प्रकाश",
   "weatherDataBy": "{provider} से मौसम डेटा (CC BY 4.0)",
-  "daylightDerived": "दिन का प्रकाश गणना"
+  "daylightDerived": "दिन का प्रकाश गणना",
+  "offlineRefreshError": "रीफ्रेश नहीं हो सका - कैश्ड डेटा दिखाया जा रहा है",
+  "loadingWeather": "मौसम लोड हो रहा है...",
+  "unableToLoadWeather": "मौसम लोड नहीं हो सका",
+  "unknownLocation": "अज्ञात",
+  "gpsPermissionDenied": "GPS अनुमति अस्वीकृत। डिवाइस सेटिंग्स में सक्षम करें।",
+  "searchConnectionError": "खोज नहीं हो सकी - अपना कनेक्शन जांचें",
+  "selectLocation": "स्थान चुनें",
+  "searchCityHint": "शहर खोजें..."
 }

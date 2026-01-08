@@ -102,4 +102,31 @@ class AppLocalizationsPa extends AppLocalizations {
 
   @override
   String get daylightDerived => 'ਦਿਨ ਦੀ ਰੌਸ਼ਨੀ ਗਣਨਾ';
+
+  @override
+  String get offlineRefreshError =>
+      'ਤਾਜ਼ਾ ਨਹੀਂ ਹੋ ਸਕਦਾ - ਕੈਸ਼ ਕੀਤਾ ਡਾਟਾ ਦਿਖਾ ਰਿਹਾ ਹੈ';
+
+  @override
+  String get loadingWeather => 'ਮੌਸਮ ਲੋਡ ਹੋ ਰਿਹਾ ਹੈ...';
+
+  @override
+  String get unableToLoadWeather => 'ਮੌਸਮ ਲੋਡ ਨਹੀਂ ਹੋ ਸਕਦਾ';
+
+  @override
+  String get unknownLocation => 'ਅਣਜਾਣ';
+
+  @override
+  String get gpsPermissionDenied =>
+      'GPS ਇਜਾਜ਼ਤ ਰੱਦ। ਡਿਵਾਈਸ ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਯੋਗ ਕਰੋ।';
+
+  @override
+  String get searchConnectionError =>
+      'ਖੋਜ ਨਹੀਂ ਹੋ ਸਕਦੀ - ਆਪਣਾ ਕਨੈਕਸ਼ਨ ਚੈੱਕ ਕਰੋ';
+
+  @override
+  String get selectLocation => 'ਟਿਕਾਣਾ ਚੁਣੋ';
+
+  @override
+  String get searchCityHint => 'ਸ਼ਹਿਰ ਲੱਭੋ...';
 }

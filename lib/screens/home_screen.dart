@@ -13,6 +13,23 @@ import '../services/units_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/native_svg_chart_view.dart';
 
+/// Parse a locale string (e.g., "en_US", "en-US", "en") into a Locale.
+/// Returns Locale('en') if the input is empty or invalid.
+Locale parseLocaleString(String localeStr) {
+  if (localeStr.isEmpty) return const Locale('en');
+
+  // Handle formats: "en_US", "en-US", "en_US.UTF-8"
+  final cleaned = localeStr.split('.').first; // Remove .UTF-8 suffix
+  final parts = cleaned.split(RegExp(r'[_-]')).where((p) => p.isNotEmpty).toList();
+
+  if (parts.isEmpty || parts[0].isEmpty) return const Locale('en');
+
+  if (parts.length >= 2) {
+    return Locale(parts[0].toLowerCase(), parts[1].toUpperCase());
+  }
+  return Locale(parts[0].toLowerCase());
+}
+
 /// Main home screen displaying the meteogram.
 class HomeScreen extends StatefulWidget {
   final ColorScheme? lightColorScheme;
@@ -95,7 +112,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       await _widgetService.updateWidget(
         weatherData: _weatherData!,
         locationName: _locationName,
-        locale: Locale(_locale.split('_').first, _locale.contains('_') ? _locale.split('_').last : null),
+        locale: parseLocaleString(_locale),
       );
 
       debugPrint('Widget updated on app background');
@@ -230,7 +247,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       await _widgetService.updateWidget(
         weatherData: weather,
         locationName: _locationName,
-        locale: Locale(_locale.split('_').first, _locale.contains('_') ? _locale.split('_').last : null),
+        locale: parseLocaleString(_locale),
       );
       // Also generate SVG charts for background widget updates
       await _widgetService.generateAndSaveSvgCharts(
@@ -319,9 +336,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   void _showOfflineSnackbar() {
+    final l10n = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text('Unable to refresh - showing cached data'),
+        content: Text(l10n.offlineRefreshError),
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 3),
       ),
@@ -360,7 +378,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             ),
             const SizedBox(height: 24),
             Text(
-              'Loading weather...',
+              l10n.loadingWeather,
               style: TextStyle(
                 color: colors.secondaryText,
                 fontSize: 16,
@@ -392,7 +410,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               ),
               const SizedBox(height: 24),
               Text(
-                'Unable to load weather',
+                l10n.unableToLoadWeather,
                 style: TextStyle(
                   color: colors.primaryText,
                   fontSize: 20,
@@ -462,7 +480,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      _locationName ?? 'Unknown',
+                      _locationName ?? l10n.unknownLocation,
                       style: TextStyle(
                         color: colors.secondaryText,
                         fontSize: 13,
@@ -680,11 +698,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             _loadWeather(userTriggered: true);
           } else {
             if (mounted) {
+              final l10n = AppLocalizations.of(this.context)!;
               ScaffoldMessenger.of(this.context).showSnackBar(
                 SnackBar(
-                  content: Text('GPS permission denied. Enable in device settings.'),
+                  content: Text(l10n.gpsPermissionDenied),
                   action: SnackBarAction(
-                    label: 'Settings',
+                    label: l10n.settings,
                     onPressed: () => _locationService.openLocationSettings(),
                   ),
                 ),
@@ -704,11 +723,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         },
         onSearchError: () {
           Navigator.pop(context); // Close bottom sheet first
+          final l10n = AppLocalizations.of(this.context)!;
           ScaffoldMessenger.of(this.context).showSnackBar(
-            const SnackBar(
-              content: Text('Unable to search - check your connection'),
+            SnackBar(
+              content: Text(l10n.searchConnectionError),
               behavior: SnackBarBehavior.floating,
-              duration: Duration(seconds: 3),
+              duration: const Duration(seconds: 3),
             ),
           );
         },
@@ -828,6 +848,7 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
   @override
   Widget build(BuildContext context) {
     final colors = widget.colors;
+    final l10n = AppLocalizations.of(context)!;
 
     return DraggableScrollableSheet(
       initialChildSize: 0.6,
@@ -843,7 +864,7 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Select Location',
+                  l10n.selectLocation,
                   style: TextStyle(
                     color: colors.primaryText,
                     fontSize: 18,
@@ -857,7 +878,7 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
                   onChanged: _onSearchChanged,
                   style: TextStyle(color: colors.primaryText),
                   decoration: InputDecoration(
-                    hintText: 'Search city...',
+                    hintText: l10n.searchCityHint,
                     hintStyle: TextStyle(color: colors.secondaryText),
                     prefixIcon: Icon(Icons.search, color: colors.secondaryText),
                     suffixIcon: _searchController.text.isNotEmpty

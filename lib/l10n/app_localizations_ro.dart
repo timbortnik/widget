@@ -102,4 +102,31 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get daylightDerived => 'Lumina zilei calculată';
+
+  @override
+  String get offlineRefreshError =>
+      'Nu se poate reîmprospăta - se afișează date din cache';
+
+  @override
+  String get loadingWeather => 'Se încarcă vremea...';
+
+  @override
+  String get unableToLoadWeather => 'Nu se poate încărca vremea';
+
+  @override
+  String get unknownLocation => 'Necunoscut';
+
+  @override
+  String get gpsPermissionDenied =>
+      'Permisiunea GPS refuzată. Activați din setările dispozitivului.';
+
+  @override
+  String get searchConnectionError =>
+      'Nu se poate căuta - verificați conexiunea';
+
+  @override
+  String get selectLocation => 'Selectați locația';
+
+  @override
+  String get searchCityHint => 'Căutați oraș...';
 }

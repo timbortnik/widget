@@ -1,6 +1,5 @@
 {
   "@@locale": "sk",
-
   "appTitle": "Meteogram",
   "temperature": "Teplota",
   "precipitation": "Zrážky",
@@ -27,5 +26,13 @@
   "locationSourceManual": "Ručne",
   "daylight": "Denné svetlo",
   "weatherDataBy": "Údaje o počasí od {provider} (CC BY 4.0)",
-  "daylightDerived": "Denné svetlo vypočítané"
+  "daylightDerived": "Denné svetlo vypočítané",
+  "offlineRefreshError": "Nie je možné obnoviť - zobrazujú sa uložené údaje",
+  "loadingWeather": "Načítava sa počasie...",
+  "unableToLoadWeather": "Nie je možné načítať počasie",
+  "unknownLocation": "Neznáme",
+  "gpsPermissionDenied": "Povolenie GPS zamietnuté. Povoľte v nastaveniach zariadenia.",
+  "searchConnectionError": "Nie je možné vyhľadávať - skontrolujte pripojenie",
+  "selectLocation": "Vyberte umiestnenie",
+  "searchCityHint": "Hľadať mesto..."
 }

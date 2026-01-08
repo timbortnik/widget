@@ -1,6 +1,5 @@
 {
   "@@locale": "sv",
-
   "appTitle": "Meteogram",
   "temperature": "Temperatur",
   "precipitation": "Nederbörd",
@@ -27,5 +26,13 @@
   "locationSourceManual": "Manuell",
   "daylight": "Dagsljus",
   "weatherDataBy": "Väderdata från {provider} (CC BY 4.0)",
-  "daylightDerived": "Dagsljus beräknat"
+  "daylightDerived": "Dagsljus beräknat",
+  "offlineRefreshError": "Kan inte uppdatera - visar cachad data",
+  "loadingWeather": "Laddar väder...",
+  "unableToLoadWeather": "Kan inte ladda väder",
+  "unknownLocation": "Okänd",
+  "gpsPermissionDenied": "GPS-behörighet nekad. Aktivera i enhetsinställningar.",
+  "searchConnectionError": "Kan inte söka - kontrollera anslutningen",
+  "selectLocation": "Välj plats",
+  "searchCityHint": "Sök stad..."
 }

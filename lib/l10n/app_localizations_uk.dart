@@ -102,4 +102,31 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get daylightDerived => 'Денне світло розраховано';
+
+  @override
+  String get offlineRefreshError =>
+      'Не вдалося оновити - показуються кешовані дані';
+
+  @override
+  String get loadingWeather => 'Завантаження погоди...';
+
+  @override
+  String get unableToLoadWeather => 'Не вдалося завантажити погоду';
+
+  @override
+  String get unknownLocation => 'Невідомо';
+
+  @override
+  String get gpsPermissionDenied =>
+      'Дозвіл GPS відхилено. Увімкніть у налаштуваннях пристрою.';
+
+  @override
+  String get searchConnectionError =>
+      'Не вдалося знайти - перевірте підключення';
+
+  @override
+  String get selectLocation => 'Оберіть місце';
+
+  @override
+  String get searchCityHint => 'Пошук міста...';
 }

@@ -1,6 +1,5 @@
 {
   "@@locale": "ko",
-
   "appTitle": "기상 차트",
   "temperature": "기온",
   "precipitation": "강수량",
@@ -27,5 +26,13 @@
   "locationSourceManual": "수동",
   "daylight": "일광",
   "weatherDataBy": "{provider} 날씨 데이터 (CC BY 4.0)",
-  "daylightDerived": "일광 계산값"
+  "daylightDerived": "일광 계산값",
+  "offlineRefreshError": "새로고침 불가 - 캐시된 데이터 표시 중",
+  "loadingWeather": "날씨 로딩 중...",
+  "unableToLoadWeather": "날씨를 불러올 수 없음",
+  "unknownLocation": "알 수 없음",
+  "gpsPermissionDenied": "GPS 권한이 거부되었습니다. 기기 설정에서 활성화하세요.",
+  "searchConnectionError": "검색 불가 - 연결을 확인하세요",
+  "selectLocation": "위치 선택",
+  "searchCityHint": "도시 검색..."
 }

@@ -1,6 +1,5 @@
 {
   "@@locale": "ta",
-
   "appTitle": "வானிலை வரைபடம்",
   "temperature": "வெப்பநிலை",
   "precipitation": "மழைப்பொழிவு",
@@ -27,5 +26,13 @@
   "locationSourceManual": "கைமுறை",
   "daylight": "பகல் ஒளி",
   "weatherDataBy": "{provider} வானிலை தரவு (CC BY 4.0)",
-  "daylightDerived": "பகல் ஒளி கணக்கிடப்பட்டது"
+  "daylightDerived": "பகல் ஒளி கணக்கிடப்பட்டது",
+  "offlineRefreshError": "புதுப்பிக்க இயலவில்லை - தற்காலிகமாக சேமிக்கப்பட்ட தரவைக் காட்டுகிறது",
+  "loadingWeather": "வானிலை ஏற்றப்படுகிறது...",
+  "unableToLoadWeather": "வானிலையை ஏற்ற இயலவில்லை",
+  "unknownLocation": "தெரியாத",
+  "gpsPermissionDenied": "GPS அனுமதி மறுக்கப்பட்டது. சாதன அமைப்புகளில் இயக்கவும்.",
+  "searchConnectionError": "தேட இயலவில்லை - இணைப்பைச் சரிபார்க்கவும்",
+  "selectLocation": "இருப்பிடத்தைத் தேர்ந்தெடுக்கவும்",
+  "searchCityHint": "நகரத்தைத் தேடு..."
 }

@@ -102,4 +102,30 @@ class AppLocalizationsKa extends AppLocalizations {
 
   @override
   String get daylightDerived => 'დღის სინათლე გამოთვლილი';
+
+  @override
+  String get offlineRefreshError =>
+      'განახლება ვერ მოხერხდა - ნაჩვენებია ქეშირებული მონაცემები';
+
+  @override
+  String get loadingWeather => 'ამინდის ჩატვირთვა...';
+
+  @override
+  String get unableToLoadWeather => 'ამინდის ჩატვირთვა ვერ მოხერხდა';
+
+  @override
+  String get unknownLocation => 'უცნობი';
+
+  @override
+  String get gpsPermissionDenied =>
+      'GPS ნებართვა უარყოფილია. ჩართეთ მოწყობილობის პარამეტრებში.';
+
+  @override
+  String get searchConnectionError => 'ძიება ვერ მოხერხდა - შეამოწმეთ კავშირი';
+
+  @override
+  String get selectLocation => 'აირჩიეთ მდებარეობა';
+
+  @override
+  String get searchCityHint => 'მოძებნე ქალაქი...';
 }

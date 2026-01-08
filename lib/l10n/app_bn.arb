@@ -1,6 +1,5 @@
 {
   "@@locale": "bn",
-
   "appTitle": "আবহাওয়া চার্ট",
   "temperature": "তাপমাত্রা",
   "precipitation": "বৃষ্টিপাত",
@@ -27,5 +26,13 @@
   "locationSourceManual": "ম্যানুয়াল",
   "daylight": "দিনের আলো",
   "weatherDataBy": "{provider} থেকে আবহাওয়া ডেটা (CC BY 4.0)",
-  "daylightDerived": "দিনের আলো গণনাকৃত"
+  "daylightDerived": "দিনের আলো গণনাকৃত",
+  "offlineRefreshError": "রিফ্রেশ করা যাচ্ছে না - ক্যাশ করা ডেটা দেখানো হচ্ছে",
+  "loadingWeather": "আবহাওয়া লোড হচ্ছে...",
+  "unableToLoadWeather": "আবহাওয়া লোড করা যাচ্ছে না",
+  "unknownLocation": "অজানা",
+  "gpsPermissionDenied": "GPS অনুমতি অস্বীকৃত। ডিভাইস সেটিংসে সক্ষম করুন।",
+  "searchConnectionError": "অনুসন্ধান করা যাচ্ছে না - আপনার সংযোগ পরীক্ষা করুন",
+  "selectLocation": "অবস্থান নির্বাচন করুন",
+  "searchCityHint": "শহর খুঁজুন..."
 }

@@ -102,4 +102,28 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get daylightDerived => '日光は計算値';
+
+  @override
+  String get offlineRefreshError => '更新できません - キャッシュデータを表示中';
+
+  @override
+  String get loadingWeather => '天気を読み込み中...';
+
+  @override
+  String get unableToLoadWeather => '天気を読み込めません';
+
+  @override
+  String get unknownLocation => '不明';
+
+  @override
+  String get gpsPermissionDenied => 'GPS権限が拒否されました。設定で有効にしてください。';
+
+  @override
+  String get searchConnectionError => '検索できません - 接続を確認してください';
+
+  @override
+  String get selectLocation => '場所を選択';
+
+  @override
+  String get searchCityHint => '都市を検索...';
 }

@@ -1,6 +1,5 @@
 {
   "@@locale": "vi",
-
   "appTitle": "Biểu đồ thời tiết",
   "temperature": "Nhiệt độ",
   "precipitation": "Lượng mưa",
@@ -27,5 +26,13 @@
   "locationSourceManual": "Thủ công",
   "daylight": "Ánh sáng ban ngày",
   "weatherDataBy": "Dữ liệu thời tiết từ {provider} (CC BY 4.0)",
-  "daylightDerived": "Ánh sáng tính toán"
+  "daylightDerived": "Ánh sáng tính toán",
+  "offlineRefreshError": "Không thể làm mới - hiển thị dữ liệu đã lưu",
+  "loadingWeather": "Đang tải thời tiết...",
+  "unableToLoadWeather": "Không thể tải thời tiết",
+  "unknownLocation": "Không xác định",
+  "gpsPermissionDenied": "Quyền GPS bị từ chối. Bật trong cài đặt thiết bị.",
+  "searchConnectionError": "Không thể tìm kiếm - kiểm tra kết nối của bạn",
+  "selectLocation": "Chọn vị trí",
+  "searchCityHint": "Tìm thành phố..."
 }

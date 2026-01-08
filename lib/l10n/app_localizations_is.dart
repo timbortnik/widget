@@ -102,4 +102,29 @@ class AppLocalizationsIs extends AppLocalizations {
 
   @override
   String get daylightDerived => 'Dagsbirta reiknuð';
+
+  @override
+  String get offlineRefreshError => 'Ekki tókst að uppfæra - sýni vistuð gögn';
+
+  @override
+  String get loadingWeather => 'Hleð veðri...';
+
+  @override
+  String get unableToLoadWeather => 'Ekki tókst að hlaða veðri';
+
+  @override
+  String get unknownLocation => 'Óþekkt';
+
+  @override
+  String get gpsPermissionDenied =>
+      'GPS heimild hafnað. Virkja í stillingar tækis.';
+
+  @override
+  String get searchConnectionError => 'Ekki tókst að leita - athugaðu tengingu';
+
+  @override
+  String get selectLocation => 'Veldu staðsetningu';
+
+  @override
+  String get searchCityHint => 'Leita að borg...';
 }

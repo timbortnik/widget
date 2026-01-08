@@ -1,6 +1,5 @@
 {
   "@@locale": "cs",
-
   "appTitle": "Meteogram",
   "temperature": "Teplota",
   "precipitation": "Srážky",
@@ -27,5 +26,13 @@
   "locationSourceManual": "Ručně",
   "daylight": "Denní světlo",
   "weatherDataBy": "Data o počasí od {provider} (CC BY 4.0)",
-  "daylightDerived": "Denní světlo vypočteno"
+  "daylightDerived": "Denní světlo vypočteno",
+  "offlineRefreshError": "Nelze obnovit - zobrazují se uložená data",
+  "loadingWeather": "Načítání počasí...",
+  "unableToLoadWeather": "Nelze načíst počasí",
+  "unknownLocation": "Neznámé",
+  "gpsPermissionDenied": "Oprávnění GPS zamítnuto. Povolte v nastavení zařízení.",
+  "searchConnectionError": "Nelze vyhledávat - zkontrolujte připojení",
+  "selectLocation": "Vyberte umístění",
+  "searchCityHint": "Hledat město..."
 }

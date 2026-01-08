@@ -102,4 +102,31 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get daylightDerived => 'Lumière du jour calculée';
+
+  @override
+  String get offlineRefreshError =>
+      'Impossible d\'actualiser - affichage des données en cache';
+
+  @override
+  String get loadingWeather => 'Chargement de la météo...';
+
+  @override
+  String get unableToLoadWeather => 'Impossible de charger la météo';
+
+  @override
+  String get unknownLocation => 'Inconnu';
+
+  @override
+  String get gpsPermissionDenied =>
+      'Permission GPS refusée. Activer dans les paramètres.';
+
+  @override
+  String get searchConnectionError =>
+      'Recherche impossible - vérifiez votre connexion';
+
+  @override
+  String get selectLocation => 'Sélectionner un lieu';
+
+  @override
+  String get searchCityHint => 'Rechercher une ville...';
 }

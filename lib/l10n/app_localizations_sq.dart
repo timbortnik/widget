@@ -102,4 +102,31 @@ class AppLocalizationsSq extends AppLocalizations {
 
   @override
   String get daylightDerived => 'Drita e ditës e llogaritur';
+
+  @override
+  String get offlineRefreshError =>
+      'Nuk mund të rifreskoj - po shfaq të dhëna të ruajtura';
+
+  @override
+  String get loadingWeather => 'Duke ngarkuar motin...';
+
+  @override
+  String get unableToLoadWeather => 'Nuk mund të ngarkoj motin';
+
+  @override
+  String get unknownLocation => 'E panjohur';
+
+  @override
+  String get gpsPermissionDenied =>
+      'Leja GPS u refuzua. Aktivizoni në cilësimet e pajisjes.';
+
+  @override
+  String get searchConnectionError =>
+      'Nuk mund të kërkoj - kontrolloni lidhjen';
+
+  @override
+  String get selectLocation => 'Zgjidhni vendndodhjen';
+
+  @override
+  String get searchCityHint => 'Kërko qytet...';
 }

@@ -102,4 +102,31 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get daylightDerived => 'দিনের আলো গণনাকৃত';
+
+  @override
+  String get offlineRefreshError =>
+      'রিফ্রেশ করা যাচ্ছে না - ক্যাশ করা ডেটা দেখানো হচ্ছে';
+
+  @override
+  String get loadingWeather => 'আবহাওয়া লোড হচ্ছে...';
+
+  @override
+  String get unableToLoadWeather => 'আবহাওয়া লোড করা যাচ্ছে না';
+
+  @override
+  String get unknownLocation => 'অজানা';
+
+  @override
+  String get gpsPermissionDenied =>
+      'GPS অনুমতি অস্বীকৃত। ডিভাইস সেটিংসে সক্ষম করুন।';
+
+  @override
+  String get searchConnectionError =>
+      'অনুসন্ধান করা যাচ্ছে না - আপনার সংযোগ পরীক্ষা করুন';
+
+  @override
+  String get selectLocation => 'অবস্থান নির্বাচন করুন';
+
+  @override
+  String get searchCityHint => 'শহর খুঁজুন...';
 }

@@ -103,4 +103,31 @@ class AppLocalizationsMk extends AppLocalizations {
 
   @override
   String get daylightDerived => 'Дневна светлина пресметана';
+
+  @override
+  String get offlineRefreshError =>
+      'Не може да се освежи - се прикажуваат кеширани податоци';
+
+  @override
+  String get loadingWeather => 'Се вчитува времето...';
+
+  @override
+  String get unableToLoadWeather => 'Не може да се вчита времето';
+
+  @override
+  String get unknownLocation => 'Непознато';
+
+  @override
+  String get gpsPermissionDenied =>
+      'GPS дозволата е одбиена. Овозможете во поставките.';
+
+  @override
+  String get searchConnectionError =>
+      'Не може да се пребарува - проверете ја врската';
+
+  @override
+  String get selectLocation => 'Изберете локација';
+
+  @override
+  String get searchCityHint => 'Пребарај град...';
 }

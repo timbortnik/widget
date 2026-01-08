@@ -1,6 +1,5 @@
 {
   "@@locale": "sq",
-
   "appTitle": "Meteogram",
   "temperature": "Temperatura",
   "precipitation": "Reshjet",
@@ -27,5 +26,13 @@
   "locationSourceManual": "Manual",
   "daylight": "Drita e ditës",
   "weatherDataBy": "Të dhënat e motit nga {provider} (CC BY 4.0)",
-  "daylightDerived": "Drita e ditës e llogaritur"
+  "daylightDerived": "Drita e ditës e llogaritur",
+  "offlineRefreshError": "Nuk mund të rifreskoj - po shfaq të dhëna të ruajtura",
+  "loadingWeather": "Duke ngarkuar motin...",
+  "unableToLoadWeather": "Nuk mund të ngarkoj motin",
+  "unknownLocation": "E panjohur",
+  "gpsPermissionDenied": "Leja GPS u refuzua. Aktivizoni në cilësimet e pajisjes.",
+  "searchConnectionError": "Nuk mund të kërkoj - kontrolloni lidhjen",
+  "selectLocation": "Zgjidhni vendndodhjen",
+  "searchCityHint": "Kërko qytet..."
 }

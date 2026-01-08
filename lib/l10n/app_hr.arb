@@ -1,6 +1,5 @@
 {
   "@@locale": "hr",
-
   "appTitle": "Meteogram",
   "temperature": "Temperatura",
   "precipitation": "Oborine",
@@ -27,5 +26,13 @@
   "locationSourceManual": "Ručno",
   "daylight": "Dnevno svjetlo",
   "weatherDataBy": "Vremenski podaci od {provider} (CC BY 4.0)",
-  "daylightDerived": "Dnevno svjetlo izračunato"
+  "daylightDerived": "Dnevno svjetlo izračunato",
+  "offlineRefreshError": "Nije moguće osvježiti - prikazuju se spremljeni podaci",
+  "loadingWeather": "Učitavanje vremena...",
+  "unableToLoadWeather": "Nije moguće učitati vrijeme",
+  "unknownLocation": "Nepoznato",
+  "gpsPermissionDenied": "GPS dozvola odbijena. Omogućite u postavkama uređaja.",
+  "searchConnectionError": "Nije moguće pretraživati - provjerite vezu",
+  "selectLocation": "Odaberite lokaciju",
+  "searchCityHint": "Pretraži grad..."
 }

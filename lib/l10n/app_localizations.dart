@@ -327,6 +327,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Daylight derived'**
   String get daylightDerived;
+
+  /// Snackbar message when refresh fails but cached data is available
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to refresh - showing cached data'**
+  String get offlineRefreshError;
+
+  /// Loading indicator text while fetching weather data
+  ///
+  /// In en, this message translates to:
+  /// **'Loading weather...'**
+  String get loadingWeather;
+
+  /// Error message when weather data cannot be loaded
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to load weather'**
+  String get unableToLoadWeather;
+
+  /// Fallback text when location name is not available
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown'**
+  String get unknownLocation;
+
+  /// Snackbar message when GPS permission is denied
+  ///
+  /// In en, this message translates to:
+  /// **'GPS permission denied. Enable in device settings.'**
+  String get gpsPermissionDenied;
+
+  /// Error message when city search fails due to network
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to search - check your connection'**
+  String get searchConnectionError;
+
+  /// Title for location selection dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Select Location'**
+  String get selectLocation;
+
+  /// Placeholder text in city search field
+  ///
+  /// In en, this message translates to:
+  /// **'Search city...'**
+  String get searchCityHint;
 }
 
 class _AppLocalizationsDelegate

@@ -102,4 +102,31 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get daylightDerived => 'Gün ışığı hesaplanmış';
+
+  @override
+  String get offlineRefreshError =>
+      'Yenilenemiyor - önbelleğe alınmış veriler gösteriliyor';
+
+  @override
+  String get loadingWeather => 'Hava durumu yükleniyor...';
+
+  @override
+  String get unableToLoadWeather => 'Hava durumu yüklenemiyor';
+
+  @override
+  String get unknownLocation => 'Bilinmiyor';
+
+  @override
+  String get gpsPermissionDenied =>
+      'GPS izni reddedildi. Cihaz ayarlarından etkinleştirin.';
+
+  @override
+  String get searchConnectionError =>
+      'Arama yapılamıyor - bağlantınızı kontrol edin';
+
+  @override
+  String get selectLocation => 'Konum seçin';
+
+  @override
+  String get searchCityHint => 'Şehir ara...';
 }

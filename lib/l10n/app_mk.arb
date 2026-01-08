@@ -1,6 +1,5 @@
 {
   "@@locale": "mk",
-
   "appTitle": "Метеограм",
   "temperature": "Температура",
   "precipitation": "Врнежи",
@@ -27,5 +26,13 @@
   "locationSourceManual": "Рачно",
   "daylight": "Дневна светлина",
   "weatherDataBy": "Податоци за времето од {provider} (CC BY 4.0)",
-  "daylightDerived": "Дневна светлина пресметана"
+  "daylightDerived": "Дневна светлина пресметана",
+  "offlineRefreshError": "Не може да се освежи - се прикажуваат кеширани податоци",
+  "loadingWeather": "Се вчитува времето...",
+  "unableToLoadWeather": "Не може да се вчита времето",
+  "unknownLocation": "Непознато",
+  "gpsPermissionDenied": "GPS дозволата е одбиена. Овозможете во поставките.",
+  "searchConnectionError": "Не може да се пребарува - проверете ја врската",
+  "selectLocation": "Изберете локација",
+  "searchCityHint": "Пребарај град..."
 }

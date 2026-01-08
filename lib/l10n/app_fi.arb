@@ -1,6 +1,5 @@
 {
   "@@locale": "fi",
-
   "appTitle": "Meteogrammi",
   "temperature": "Lämpötila",
   "precipitation": "Sademäärä",
@@ -27,5 +26,13 @@
   "locationSourceManual": "Manuaalinen",
   "daylight": "Päivänvalo",
   "weatherDataBy": "Säätiedot: {provider} (CC BY 4.0)",
-  "daylightDerived": "Päivänvalo laskettu"
+  "daylightDerived": "Päivänvalo laskettu",
+  "offlineRefreshError": "Päivitys epäonnistui - näytetään välimuistissa olevat tiedot",
+  "loadingWeather": "Ladataan säätä...",
+  "unableToLoadWeather": "Säätä ei voida ladata",
+  "unknownLocation": "Tuntematon",
+  "gpsPermissionDenied": "GPS-lupa evätty. Ota käyttöön laitteen asetuksista.",
+  "searchConnectionError": "Haku epäonnistui - tarkista yhteys",
+  "selectLocation": "Valitse sijainti",
+  "searchCityHint": "Hae kaupunkia..."
 }

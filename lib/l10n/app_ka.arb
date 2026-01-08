@@ -1,6 +1,5 @@
 {
   "@@locale": "ka",
-
   "appTitle": "მეტეოგრამა",
   "temperature": "ტემპერატურა",
   "precipitation": "ნალექი",
@@ -27,5 +26,13 @@
   "locationSourceManual": "ხელით",
   "daylight": "დღის სინათლე",
   "weatherDataBy": "ამინდის მონაცემები {provider}-დან (CC BY 4.0)",
-  "daylightDerived": "დღის სინათლე გამოთვლილი"
+  "daylightDerived": "დღის სინათლე გამოთვლილი",
+  "offlineRefreshError": "განახლება ვერ მოხერხდა - ნაჩვენებია ქეშირებული მონაცემები",
+  "loadingWeather": "ამინდის ჩატვირთვა...",
+  "unableToLoadWeather": "ამინდის ჩატვირთვა ვერ მოხერხდა",
+  "unknownLocation": "უცნობი",
+  "gpsPermissionDenied": "GPS ნებართვა უარყოფილია. ჩართეთ მოწყობილობის პარამეტრებში.",
+  "searchConnectionError": "ძიება ვერ მოხერხდა - შეამოწმეთ კავშირი",
+  "selectLocation": "აირჩიეთ მდებარეობა",
+  "searchCityHint": "მოძებნე ქალაქი..."
 }

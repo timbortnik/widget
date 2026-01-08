@@ -102,4 +102,30 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get daylightDerived => 'Päivänvalo laskettu';
+
+  @override
+  String get offlineRefreshError =>
+      'Päivitys epäonnistui - näytetään välimuistissa olevat tiedot';
+
+  @override
+  String get loadingWeather => 'Ladataan säätä...';
+
+  @override
+  String get unableToLoadWeather => 'Säätä ei voida ladata';
+
+  @override
+  String get unknownLocation => 'Tuntematon';
+
+  @override
+  String get gpsPermissionDenied =>
+      'GPS-lupa evätty. Ota käyttöön laitteen asetuksista.';
+
+  @override
+  String get searchConnectionError => 'Haku epäonnistui - tarkista yhteys';
+
+  @override
+  String get selectLocation => 'Valitse sijainti';
+
+  @override
+  String get searchCityHint => 'Hae kaupunkia...';
 }

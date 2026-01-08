@@ -102,4 +102,31 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get daylightDerived => 'பகல் ஒளி கணக்கிடப்பட்டது';
+
+  @override
+  String get offlineRefreshError =>
+      'புதுப்பிக்க இயலவில்லை - தற்காலிகமாக சேமிக்கப்பட்ட தரவைக் காட்டுகிறது';
+
+  @override
+  String get loadingWeather => 'வானிலை ஏற்றப்படுகிறது...';
+
+  @override
+  String get unableToLoadWeather => 'வானிலையை ஏற்ற இயலவில்லை';
+
+  @override
+  String get unknownLocation => 'தெரியாத';
+
+  @override
+  String get gpsPermissionDenied =>
+      'GPS அனுமதி மறுக்கப்பட்டது. சாதன அமைப்புகளில் இயக்கவும்.';
+
+  @override
+  String get searchConnectionError =>
+      'தேட இயலவில்லை - இணைப்பைச் சரிபார்க்கவும்';
+
+  @override
+  String get selectLocation => 'இருப்பிடத்தைத் தேர்ந்தெடுக்கவும்';
+
+  @override
+  String get searchCityHint => 'நகரத்தைத் தேடு...';
 }

@@ -102,4 +102,28 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get daylightDerived => '일광 계산값';
+
+  @override
+  String get offlineRefreshError => '새로고침 불가 - 캐시된 데이터 표시 중';
+
+  @override
+  String get loadingWeather => '날씨 로딩 중...';
+
+  @override
+  String get unableToLoadWeather => '날씨를 불러올 수 없음';
+
+  @override
+  String get unknownLocation => '알 수 없음';
+
+  @override
+  String get gpsPermissionDenied => 'GPS 권한이 거부되었습니다. 기기 설정에서 활성화하세요.';
+
+  @override
+  String get searchConnectionError => '검색 불가 - 연결을 확인하세요';
+
+  @override
+  String get selectLocation => '위치 선택';
+
+  @override
+  String get searchCityHint => '도시 검색...';
 }

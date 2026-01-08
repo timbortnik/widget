@@ -1,6 +1,5 @@
 {
   "@@locale": "zh",
-
   "appTitle": "气象图",
   "temperature": "温度",
   "precipitation": "降水",
@@ -27,5 +26,13 @@
   "locationSourceManual": "手动",
   "daylight": "日光",
   "weatherDataBy": "天气数据由 {provider} 提供 (CC BY 4.0)",
-  "daylightDerived": "日光为计算值"
+  "daylightDerived": "日光为计算值",
+  "offlineRefreshError": "无法刷新 - 显示缓存数据",
+  "loadingWeather": "加载天气中...",
+  "unableToLoadWeather": "无法加载天气",
+  "unknownLocation": "未知",
+  "gpsPermissionDenied": "GPS权限被拒绝。请在设备设置中启用。",
+  "searchConnectionError": "无法搜索 - 请检查您的连接",
+  "selectLocation": "选择位置",
+  "searchCityHint": "搜索城市..."
 }

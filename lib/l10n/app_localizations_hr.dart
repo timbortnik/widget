@@ -102,4 +102,31 @@ class AppLocalizationsHr extends AppLocalizations {
 
   @override
   String get daylightDerived => 'Dnevno svjetlo izračunato';
+
+  @override
+  String get offlineRefreshError =>
+      'Nije moguće osvježiti - prikazuju se spremljeni podaci';
+
+  @override
+  String get loadingWeather => 'Učitavanje vremena...';
+
+  @override
+  String get unableToLoadWeather => 'Nije moguće učitati vrijeme';
+
+  @override
+  String get unknownLocation => 'Nepoznato';
+
+  @override
+  String get gpsPermissionDenied =>
+      'GPS dozvola odbijena. Omogućite u postavkama uređaja.';
+
+  @override
+  String get searchConnectionError =>
+      'Nije moguće pretraživati - provjerite vezu';
+
+  @override
+  String get selectLocation => 'Odaberite lokaciju';
+
+  @override
+  String get searchCityHint => 'Pretraži grad...';
 }

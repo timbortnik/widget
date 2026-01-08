@@ -1,6 +1,5 @@
 {
   "@@locale": "bg",
-
   "appTitle": "Метеограма",
   "temperature": "Температура",
   "precipitation": "Валежи",
@@ -27,5 +26,13 @@
   "locationSourceManual": "Ръчно",
   "daylight": "Дневна светлина",
   "weatherDataBy": "Метео данни от {provider} (CC BY 4.0)",
-  "daylightDerived": "Дневна светлина изчислена"
+  "daylightDerived": "Дневна светлина изчислена",
+  "offlineRefreshError": "Неуспешно обновяване - показват се кеширани данни",
+  "loadingWeather": "Зареждане на времето...",
+  "unableToLoadWeather": "Неуспешно зареждане на времето",
+  "unknownLocation": "Неизвестно",
+  "gpsPermissionDenied": "Достъпът до GPS е отказан. Активирайте в настройките.",
+  "searchConnectionError": "Неуспешно търсене - проверете връзката",
+  "selectLocation": "Изберете местоположение",
+  "searchCityHint": "Търсене на град..."
 }

@@ -102,4 +102,30 @@ class AppLocalizationsBe extends AppLocalizations {
 
   @override
   String get daylightDerived => 'Дзённае святло разлічана';
+
+  @override
+  String get offlineRefreshError =>
+      'Немагчыма абнавіць - паказваюцца кэшаваныя даныя';
+
+  @override
+  String get loadingWeather => 'Загрузка надвор\'я...';
+
+  @override
+  String get unableToLoadWeather => 'Немагчыма загрузіць надвор\'е';
+
+  @override
+  String get unknownLocation => 'Невядома';
+
+  @override
+  String get gpsPermissionDenied =>
+      'Дазвол GPS адхілены. Уключыце ў наладах прылады.';
+
+  @override
+  String get searchConnectionError => 'Немагчыма шукаць - праверце падключэнне';
+
+  @override
+  String get selectLocation => 'Выбраць месца';
+
+  @override
+  String get searchCityHint => 'Пошук горада...';
 }

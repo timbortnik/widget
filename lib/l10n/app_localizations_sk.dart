@@ -102,4 +102,31 @@ class AppLocalizationsSk extends AppLocalizations {
 
   @override
   String get daylightDerived => 'Denné svetlo vypočítané';
+
+  @override
+  String get offlineRefreshError =>
+      'Nie je možné obnoviť - zobrazujú sa uložené údaje';
+
+  @override
+  String get loadingWeather => 'Načítava sa počasie...';
+
+  @override
+  String get unableToLoadWeather => 'Nie je možné načítať počasie';
+
+  @override
+  String get unknownLocation => 'Neznáme';
+
+  @override
+  String get gpsPermissionDenied =>
+      'Povolenie GPS zamietnuté. Povoľte v nastaveniach zariadenia.';
+
+  @override
+  String get searchConnectionError =>
+      'Nie je možné vyhľadávať - skontrolujte pripojenie';
+
+  @override
+  String get selectLocation => 'Vyberte umiestnenie';
+
+  @override
+  String get searchCityHint => 'Hľadať mesto...';
 }

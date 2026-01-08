@@ -102,4 +102,31 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get daylightDerived => 'Φως ημέρας υπολογισμένο';
+
+  @override
+  String get offlineRefreshError =>
+      'Αδυναμία ανανέωσης - εμφανίζονται αποθηκευμένα δεδομένα';
+
+  @override
+  String get loadingWeather => 'Φόρτωση καιρού...';
+
+  @override
+  String get unableToLoadWeather => 'Αδυναμία φόρτωσης καιρού';
+
+  @override
+  String get unknownLocation => 'Άγνωστο';
+
+  @override
+  String get gpsPermissionDenied =>
+      'Η άδεια GPS απορρίφθηκε. Ενεργοποιήστε στις ρυθμίσεις.';
+
+  @override
+  String get searchConnectionError =>
+      'Αδυναμία αναζήτησης - ελέγξτε τη σύνδεση';
+
+  @override
+  String get selectLocation => 'Επιλογή τοποθεσίας';
+
+  @override
+  String get searchCityHint => 'Αναζήτηση πόλης...';
 }

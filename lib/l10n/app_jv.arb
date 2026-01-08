@@ -1,6 +1,5 @@
 {
   "@@locale": "jv",
-
   "appTitle": "Grafik Cuaca",
   "temperature": "Suhu",
   "precipitation": "Udan",
@@ -27,5 +26,13 @@
   "locationSourceManual": "Manual",
   "daylight": "Cahya awan",
   "weatherDataBy": "Data cuaca saka {provider} (CC BY 4.0)",
-  "daylightDerived": "Cahya awan dietung"
+  "daylightDerived": "Cahya awan dietung",
+  "offlineRefreshError": "Ora bisa nganyari - nuduhake data sing disimpen",
+  "loadingWeather": "Ngunggah cuaca...",
+  "unableToLoadWeather": "Ora bisa ngunggah cuaca",
+  "unknownLocation": "Ora dingerteni",
+  "gpsPermissionDenied": "Ijin GPS ditolak. Aktifake ing setelan piranti.",
+  "searchConnectionError": "Ora bisa nggoleki - priksa sambungan",
+  "selectLocation": "Pilih lokasi",
+  "searchCityHint": "Goleki kutha..."
 }

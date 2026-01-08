@@ -102,4 +102,30 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get daylightDerived => 'Światło dzienne obliczone';
+
+  @override
+  String get offlineRefreshError =>
+      'Nie można odświeżyć - wyświetlam dane z pamięci podręcznej';
+
+  @override
+  String get loadingWeather => 'Ładowanie pogody...';
+
+  @override
+  String get unableToLoadWeather => 'Nie można załadować pogody';
+
+  @override
+  String get unknownLocation => 'Nieznane';
+
+  @override
+  String get gpsPermissionDenied =>
+      'Odmowa dostępu do GPS. Włącz w ustawieniach urządzenia.';
+
+  @override
+  String get searchConnectionError => 'Nie można wyszukać - sprawdź połączenie';
+
+  @override
+  String get selectLocation => 'Wybierz lokalizację';
+
+  @override
+  String get searchCityHint => 'Szukaj miasta...';
 }

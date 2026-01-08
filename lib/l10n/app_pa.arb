@@ -1,6 +1,5 @@
 {
   "@@locale": "pa",
-
   "appTitle": "ਮੌਸਮ ਚਾਰਟ",
   "temperature": "ਤਾਪਮਾਨ",
   "precipitation": "ਵਰਖਾ",
@@ -27,5 +26,13 @@
   "locationSourceManual": "ਹੱਥੀਂ",
   "daylight": "ਦਿਨ ਦੀ ਰੌਸ਼ਨੀ",
   "weatherDataBy": "{provider} ਤੋਂ ਮੌਸਮ ਡਾਟਾ (CC BY 4.0)",
-  "daylightDerived": "ਦਿਨ ਦੀ ਰੌਸ਼ਨੀ ਗਣਨਾ"
+  "daylightDerived": "ਦਿਨ ਦੀ ਰੌਸ਼ਨੀ ਗਣਨਾ",
+  "offlineRefreshError": "ਤਾਜ਼ਾ ਨਹੀਂ ਹੋ ਸਕਦਾ - ਕੈਸ਼ ਕੀਤਾ ਡਾਟਾ ਦਿਖਾ ਰਿਹਾ ਹੈ",
+  "loadingWeather": "ਮੌਸਮ ਲੋਡ ਹੋ ਰਿਹਾ ਹੈ...",
+  "unableToLoadWeather": "ਮੌਸਮ ਲੋਡ ਨਹੀਂ ਹੋ ਸਕਦਾ",
+  "unknownLocation": "ਅਣਜਾਣ",
+  "gpsPermissionDenied": "GPS ਇਜਾਜ਼ਤ ਰੱਦ। ਡਿਵਾਈਸ ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਯੋਗ ਕਰੋ।",
+  "searchConnectionError": "ਖੋਜ ਨਹੀਂ ਹੋ ਸਕਦੀ - ਆਪਣਾ ਕਨੈਕਸ਼ਨ ਚੈੱਕ ਕਰੋ",
+  "selectLocation": "ਟਿਕਾਣਾ ਚੁਣੋ",
+  "searchCityHint": "ਸ਼ਹਿਰ ਲੱਭੋ..."
 }

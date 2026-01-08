@@ -102,4 +102,30 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get daylightDerived => 'दिन का प्रकाश गणना';
+
+  @override
+  String get offlineRefreshError =>
+      'रीफ्रेश नहीं हो सका - कैश्ड डेटा दिखाया जा रहा है';
+
+  @override
+  String get loadingWeather => 'मौसम लोड हो रहा है...';
+
+  @override
+  String get unableToLoadWeather => 'मौसम लोड नहीं हो सका';
+
+  @override
+  String get unknownLocation => 'अज्ञात';
+
+  @override
+  String get gpsPermissionDenied =>
+      'GPS अनुमति अस्वीकृत। डिवाइस सेटिंग्स में सक्षम करें।';
+
+  @override
+  String get searchConnectionError => 'खोज नहीं हो सकी - अपना कनेक्शन जांचें';
+
+  @override
+  String get selectLocation => 'स्थान चुनें';
+
+  @override
+  String get searchCityHint => 'शहर खोजें...';
 }
