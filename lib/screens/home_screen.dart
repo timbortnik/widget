@@ -523,13 +523,20 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                         children: [
                           // Temperature
                           Expanded(
-                            child: Text(
-                              UnitsService.formatTemperature(currentHour.temperature, PlatformDispatcher.instance.locale),
-                              style: TextStyle(
-                                color: colors.temperatureLine,
-                                fontSize: 64,
-                                fontWeight: FontWeight.w300,
-                                height: 1,
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 16),
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  UnitsService.formatTemperature(currentHour.temperature, PlatformDispatcher.instance.locale),
+                                  style: TextStyle(
+                                    color: colors.temperatureLine,
+                                    fontSize: 64,
+                                    fontWeight: FontWeight.w300,
+                                    height: 1,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
