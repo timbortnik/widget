@@ -432,15 +432,18 @@ The widget uses `AlarmManager` to re-render the chart at each hour boundary, kee
 To ensure the alarm always fires AFTER the hour change (never before):
 
 1. Schedule alarm for XX:00:15 (15-second buffer after the hour)
-2. When alarm fires, verify we're past the hour (minute != 59)
-3. If fired early, retry after 30 seconds
+2. When alarm fires, verify minute <= 30 (early in hour = past the boundary)
+3. If fired early (minute > 30), calculate delay to next hour boundary and retry
 
 ```kotlin
 // HourlyAlarmReceiver.kt
+private const val HOUR_BUFFER_SECONDS = 15
+private const val MAX_VALID_MINUTE = 30  // If minute > 30, we're still in previous hour
+
 fun scheduleNextAlarm(context: Context) {
     val calendar = Calendar.getInstance().apply {
         set(Calendar.MINUTE, 0)
-        set(Calendar.SECOND, 15)  // 15-second buffer
+        set(Calendar.SECOND, HOUR_BUFFER_SECONDS)
         add(Calendar.HOUR_OF_DAY, 1)
     }
     alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent)
@@ -448,8 +451,8 @@ fun scheduleNextAlarm(context: Context) {
 
 fun handleHourlyUpdate(context: Context) {
     val minute = Calendar.getInstance().get(Calendar.MINUTE)
-    if (minute == 59) {
-        // Fired early - retry in 30 seconds
+    if (minute > MAX_VALID_MINUTE) {
+        // Fired early - schedule retry at next hour boundary + buffer
         scheduleRetry(context)
         return
     }

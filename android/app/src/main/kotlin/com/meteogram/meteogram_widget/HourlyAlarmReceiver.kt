@@ -18,8 +18,8 @@ import java.util.Calendar
  * Uses a buffer + verification approach to ensure the alarm always fires
  * AFTER the hour change, never before:
  * 1. Schedule alarm for XX:00:15 (15 seconds after the hour)
- * 2. When alarm fires, verify we're past the hour boundary
- * 3. If fired early (still in previous hour), retry after a short delay
+ * 2. When alarm fires, verify minute <= MAX_VALID_MINUTE (early in hour = past boundary)
+ * 3. If fired early (minute > 30, still in previous hour), retry after a short delay
  */
 class HourlyAlarmReceiver : BroadcastReceiver() {
     companion object {
@@ -28,8 +28,9 @@ class HourlyAlarmReceiver : BroadcastReceiver() {
 
         // Buffer after hour boundary to ensure we're always past it
         private const val HOUR_BUFFER_SECONDS = 15
-        // Retry delay if we somehow fired early
-        private const val RETRY_DELAY_MS = 30_000L
+        // Maximum minute value to consider "early in the hour" (past the boundary)
+        // Inexact alarms can drift significantly, so we use a generous threshold
+        private const val MAX_VALID_MINUTE = 30
 
         /**
          * Schedule the next hourly alarm shortly after the next hour boundary.
@@ -114,9 +115,9 @@ class HourlyAlarmReceiver : BroadcastReceiver() {
         Log.d(TAG, "Hourly alarm fired at ${calendar.time} (minute=$minute, second=$second)")
 
         // Verify we're actually past the hour boundary
-        // If minute is 59, we fired early - retry after a delay
-        if (minute == 59) {
-            Log.w(TAG, "Alarm fired early (minute=59) - scheduling retry in ${RETRY_DELAY_MS}ms")
+        // If minute > MAX_VALID_MINUTE, we likely fired early (still in previous hour)
+        if (minute > MAX_VALID_MINUTE) {
+            Log.w(TAG, "Alarm fired early (minute=$minute > $MAX_VALID_MINUTE) - scheduling retry")
             scheduleRetry(context)
             return
         }
@@ -130,11 +131,22 @@ class HourlyAlarmReceiver : BroadcastReceiver() {
     }
 
     private fun scheduleRetry(context: Context) {
-        // Use a Handler to retry after a short delay
+        // Calculate delay until next hour boundary + buffer
+        val now = Calendar.getInstance()
+        val nextHour = Calendar.getInstance().apply {
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, HOUR_BUFFER_SECONDS)
+            set(Calendar.MILLISECOND, 0)
+            add(Calendar.HOUR_OF_DAY, 1)
+        }
+        val delayMs = nextHour.timeInMillis - now.timeInMillis
+
+        Log.d(TAG, "Scheduling retry in ${delayMs}ms (at ${nextHour.time})")
+
         Handler(Looper.getMainLooper()).postDelayed({
             Log.d(TAG, "Retry: checking hour boundary again")
             handleHourlyUpdate(context)
-        }, RETRY_DELAY_MS)
+        }, delayMs)
     }
 
     private fun triggerChartReRender(context: Context) {

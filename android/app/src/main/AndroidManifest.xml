@@ -73,9 +73,10 @@
             android:exported="false" />
 
         <!-- Hourly alarm receiver for updating "now" indicator at hour boundaries -->
+        <!-- exported="true" required to receive BOOT_COMPLETED from system -->
         <receiver
             android:name=".HourlyAlarmReceiver"
-            android:exported="false">
+            android:exported="true">
             <intent-filter>
                 <action android:name="com.meteogram.meteogram_widget.HOURLY_UPDATE" />
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
