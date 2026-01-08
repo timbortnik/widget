@@ -76,11 +76,34 @@ class WeatherData {
   }
 
   /// Get the index of "now" in the display data.
-  /// Accounts for data age - if data is X hours old, shifts index forward by X.
+  /// Finds the hour slot matching current time by comparing timestamps.
   int getNowIndex() {
-    final hoursOld = DateTime.now().difference(fetchedAt).inHours;
-    final adjustedIndex = kPastHours + hoursOld;
-    return adjustedIndex.clamp(0, hourly.length - 1);
+    final now = DateTime.now();
+    // Truncate to hour precision for comparison
+    final nowHour = DateTime(now.year, now.month, now.day, now.hour);
+
+    // Find the hour slot that matches current time
+    for (var i = 0; i < hourly.length; i++) {
+      final entryHour = DateTime(
+        hourly[i].time.year,
+        hourly[i].time.month,
+        hourly[i].time.day,
+        hourly[i].time.hour,
+      );
+      if (entryHour == nowHour) {
+        return i;
+      }
+    }
+
+    // Fallback: find closest hour before now
+    for (var i = hourly.length - 1; i >= 0; i--) {
+      if (hourly[i].time.isBefore(now)) {
+        return i;
+      }
+    }
+
+    // Ultimate fallback
+    return kPastHours.clamp(0, hourly.length - 1);
   }
 
   /// Find the current hour's data.
