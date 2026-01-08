@@ -6,31 +6,42 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import java.util.Calendar
 
 /**
  * BroadcastReceiver that triggers widget chart re-render at hour boundaries.
  * This updates the "now" indicator position without fetching new weather data.
+ *
+ * Uses a buffer + verification approach to ensure the alarm always fires
+ * AFTER the hour change, never before:
+ * 1. Schedule alarm for XX:00:15 (15 seconds after the hour)
+ * 2. When alarm fires, verify we're past the hour boundary
+ * 3. If fired early (still in previous hour), retry after a short delay
  */
 class HourlyAlarmReceiver : BroadcastReceiver() {
     companion object {
         private const val TAG = "HourlyAlarmReceiver"
         const val ACTION_HOURLY_UPDATE = "com.meteogram.meteogram_widget.HOURLY_UPDATE"
 
+        // Buffer after hour boundary to ensure we're always past it
+        private const val HOUR_BUFFER_SECONDS = 15
+        // Retry delay if we somehow fired early
+        private const val RETRY_DELAY_MS = 30_000L
+
         /**
-         * Schedule the next hourly alarm at the start of the next hour.
-         * Uses inexact alarms to avoid requiring SCHEDULE_EXACT_ALARM permission.
-         * The alarm may fire up to a few minutes before/after the hour boundary,
-         * which is acceptable for updating the "now" indicator.
+         * Schedule the next hourly alarm shortly after the next hour boundary.
+         * Uses a 15-second buffer to ensure we're always past the hour change.
          */
         fun scheduleNextAlarm(context: Context) {
             val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-            // Calculate next hour boundary
+            // Calculate next hour boundary + buffer
             val calendar = Calendar.getInstance().apply {
                 set(Calendar.MINUTE, 0)
-                set(Calendar.SECOND, 0)
+                set(Calendar.SECOND, HOUR_BUFFER_SECONDS)
                 set(Calendar.MILLISECOND, 0)
                 add(Calendar.HOUR_OF_DAY, 1)
             }
@@ -47,8 +58,6 @@ class HourlyAlarmReceiver : BroadcastReceiver() {
             )
 
             // Use setAndAllowWhileIdle for battery-efficient scheduling
-            // This doesn't require SCHEDULE_EXACT_ALARM permission
-            // The alarm may be delayed by up to a few minutes, which is fine for our use case
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 alarmManager.setAndAllowWhileIdle(
                     AlarmManager.RTC_WAKEUP,
@@ -88,16 +97,44 @@ class HourlyAlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         when (intent.action) {
             ACTION_HOURLY_UPDATE -> {
-                Log.d(TAG, "Hourly alarm fired - triggering chart re-render")
-                triggerChartReRender(context)
-                // Schedule next hourly alarm
-                scheduleNextAlarm(context)
+                handleHourlyUpdate(context)
             }
             Intent.ACTION_BOOT_COMPLETED -> {
                 Log.d(TAG, "Device booted - scheduling hourly alarm")
                 scheduleNextAlarm(context)
             }
         }
+    }
+
+    private fun handleHourlyUpdate(context: Context) {
+        val calendar = Calendar.getInstance()
+        val minute = calendar.get(Calendar.MINUTE)
+        val second = calendar.get(Calendar.SECOND)
+
+        Log.d(TAG, "Hourly alarm fired at ${calendar.time} (minute=$minute, second=$second)")
+
+        // Verify we're actually past the hour boundary
+        // If minute is 59, we fired early - retry after a delay
+        if (minute == 59) {
+            Log.w(TAG, "Alarm fired early (minute=59) - scheduling retry in ${RETRY_DELAY_MS}ms")
+            scheduleRetry(context)
+            return
+        }
+
+        // We're past the hour boundary - safe to re-render
+        Log.d(TAG, "Hour boundary confirmed - triggering chart re-render")
+        triggerChartReRender(context)
+
+        // Schedule next hourly alarm
+        scheduleNextAlarm(context)
+    }
+
+    private fun scheduleRetry(context: Context) {
+        // Use a Handler to retry after a short delay
+        Handler(Looper.getMainLooper()).postDelayed({
+            Log.d(TAG, "Retry: checking hour boundary again")
+            handleHourlyUpdate(context)
+        }, RETRY_DELAY_MS)
     }
 
     private fun triggerChartReRender(context: Context) {
