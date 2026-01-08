@@ -29,14 +29,11 @@ void main() {
     }
 
     test('finds exact hour match', () {
-      // Data starts at 12:00, now is 15:00 -> index 3
+      // Data starts at 12:00, entry at index 3 is 15:00
       final baseTime = DateTime(2024, 1, 15, 12, 0);
-      final now = DateTime(2024, 1, 15, 15, 0);
       final data = createTestData(baseTime: baseTime, fetchedAt: baseTime);
 
-      // Mock DateTime.now() by checking the logic directly
-      // Since we can't mock DateTime.now(), we verify the algorithm
-      // by checking that hourly[3].time.hour == 15
+      // Verify the data structure: hourly[3] should be 15:00
       expect(data.hourly[3].time.hour, equals(15));
     });
 
@@ -134,9 +131,8 @@ void main() {
     });
 
     test('getNowIndex uses fallback when hour not found', () {
-      // Create data with hours that don't include "now"
-      final now = DateTime.now();
-      final baseTime = DateTime(2020, 1, 1, 0, 0); // Very old data
+      // Create data with hours that don't include current time (very old data)
+      final baseTime = DateTime(2020, 1, 1, 0, 0);
       final data = createTestData(baseTime: baseTime, fetchedAt: baseTime);
 
       final nowIndex = data.getNowIndex();
