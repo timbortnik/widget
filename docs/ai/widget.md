@@ -34,6 +34,7 @@ dependencies:
 
 ### AndroidManifest.xml
 ```xml
+<!-- Widget provider -->
 <receiver android:name=".MeteogramWidgetProvider"
           android:exported="true">
     <intent-filter>
@@ -42,6 +43,18 @@ dependencies:
     <meta-data android:name="android.appwidget.provider"
                android:resource="@xml/meteogram_widget_info" />
 </receiver>
+
+<!-- HomeWidget background callback support (required for event-driven refresh) -->
+<receiver android:name="es.antonborri.home_widget.HomeWidgetBackgroundReceiver"
+          android:exported="true">
+    <intent-filter>
+        <action android:name="es.antonborri.home_widget.action.BACKGROUND" />
+    </intent-filter>
+</receiver>
+
+<service android:name="es.antonborri.home_widget.HomeWidgetBackgroundService"
+         android:permission="android.permission.BIND_JOB_SERVICE"
+         android:exported="false" />
 ```
 
 ### res/xml/meteogram_widget_info.xml
@@ -245,9 +258,12 @@ Future<void> generateAndSaveSvgCharts({
     // ... same dimensions
   );
 
-  // Save SVG files
-  await File(lightPath).writeAsString(svgLight);
-  await File(darkPath).writeAsString(svgDark);
+  // Save SVG files using atomic writes (write to .tmp, then rename)
+  // This prevents race conditions when native widget reads while Flutter writes
+  await File('$lightPath.tmp').writeAsString(svgLight);
+  await File('$darkPath.tmp').writeAsString(svgDark);
+  await File('$lightPath.tmp').rename(lightPath);
+  await File('$darkPath.tmp').rename(darkPath);
 
   // Store paths for native widget
   await HomeWidget.saveWidgetData<String>('svg_path_light', lightPath);
@@ -333,13 +349,15 @@ The widget responds to system events via runtime-registered broadcast receivers.
 
 ```dart
 // HomeWidget background callback (handles native events)
+// IMPORTANT: URI hosts are always lowercase!
 @pragma('vm:entry-point')
 Future<void> homeWidgetBackgroundCallback(Uri? uri) async {
-  switch (uri?.host) {
-    case 'weatherUpdate':
+  WidgetsFlutterBinding.ensureInitialized();  // Required for headless execution
+  switch (uri?.host.toLowerCase()) {
+    case 'weatherupdate':
       await _updateWeatherData();  // Fetch + cache + render
       break;
-    case 'chartReRender':
+    case 'chartrerender':
       await _reRenderCharts();     // Render from cache only
       break;
   }
