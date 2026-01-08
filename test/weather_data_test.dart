@@ -65,33 +65,46 @@ void main() {
     });
 
     test('getCurrentHour returns data at now index', () {
-      final now = DateTime.now();
-      final baseTime = DateTime(now.year, now.month, now.day, now.hour - 6);
-      final data = createTestData(baseTime: baseTime, fetchedAt: now);
+      // Use UTC for consistency with getNowIndex() which compares in UTC
+      final nowUtc = DateTime.now().toUtc();
+      final baseTime = DateTime.utc(
+        nowUtc.year,
+        nowUtc.month,
+        nowUtc.day,
+        nowUtc.hour - 6,
+      );
+      final data = createTestData(baseTime: baseTime, fetchedAt: nowUtc);
 
       final currentHour = data.getCurrentHour();
       expect(currentHour, isNotNull);
-      expect(currentHour!.time.hour, equals(now.hour));
+      expect(currentHour!.time.hour, equals(nowUtc.hour));
     });
 
     test('getNowIndex finds current hour in real data', () {
-      final now = DateTime.now();
+      // Use UTC for consistency with getNowIndex() which compares in UTC
+      final nowUtc = DateTime.now().toUtc();
       // Create data starting 6 hours ago (like the real API)
-      final baseTime = DateTime(now.year, now.month, now.day, now.hour - 6);
-      final data = createTestData(baseTime: baseTime, fetchedAt: now);
+      final baseTime = DateTime.utc(
+        nowUtc.year,
+        nowUtc.month,
+        nowUtc.day,
+        nowUtc.hour - 6,
+      );
+      final data = createTestData(baseTime: baseTime, fetchedAt: nowUtc);
 
       final nowIndex = data.getNowIndex();
 
-      // The index should point to an entry with the current hour
-      expect(data.hourly[nowIndex].time.hour, equals(now.hour));
-      expect(data.hourly[nowIndex].time.day, equals(now.day));
+      // The index should point to an entry with the current hour (UTC)
+      expect(data.hourly[nowIndex].time.hour, equals(nowUtc.hour));
+      expect(data.hourly[nowIndex].time.day, equals(nowUtc.day));
     });
 
     test('getNowIndex works when data is 30 minutes old', () {
-      final now = DateTime.now();
+      // Use UTC for consistency with getNowIndex() which compares in UTC
+      final nowUtc = DateTime.now().toUtc();
       // Fetched 30 minutes ago (same hour)
-      final fetchedAt = now.subtract(const Duration(minutes: 30));
-      final baseTime = DateTime(
+      final fetchedAt = nowUtc.subtract(const Duration(minutes: 30));
+      final baseTime = DateTime.utc(
         fetchedAt.year,
         fetchedAt.month,
         fetchedAt.day,
@@ -102,21 +115,22 @@ void main() {
       final nowIndex = data.getNowIndex();
 
       // Should still find current hour even though data is 30 min old
-      expect(data.hourly[nowIndex].time.hour, equals(now.hour));
+      expect(data.hourly[nowIndex].time.hour, equals(nowUtc.hour));
     });
 
     test('getNowIndex works after hour boundary crossed', () {
-      final now = DateTime.now();
+      // Use UTC for consistency with getNowIndex() which compares in UTC
+      final nowUtc = DateTime.now().toUtc();
       // Simulate: fetched at XX:50, now is (XX+1):10 (crossed hour boundary)
       // We need current minute > 10 for this test to make sense
-      if (now.minute < 15) {
+      if (nowUtc.minute < 15) {
         // Skip if we're too close to hour boundary
         return;
       }
 
       // Create data as if fetched 50 minutes ago
-      final fetchedAt = now.subtract(const Duration(minutes: 50));
-      final baseTime = DateTime(
+      final fetchedAt = nowUtc.subtract(const Duration(minutes: 50));
+      final baseTime = DateTime.utc(
         fetchedAt.year,
         fetchedAt.month,
         fetchedAt.day,
@@ -127,7 +141,7 @@ void main() {
       final nowIndex = data.getNowIndex();
 
       // Should find current hour, not the hour when fetched
-      expect(data.hourly[nowIndex].time.hour, equals(now.hour));
+      expect(data.hourly[nowIndex].time.hour, equals(nowUtc.hour));
     });
 
     test('getNowIndex uses fallback when hour not found', () {
