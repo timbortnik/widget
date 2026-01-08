@@ -7,6 +7,10 @@ import '../models/weather_data.dart';
 import 'svg_chart_generator.dart';
 import 'units_service.dart';
 
+/// SVG chart file names used by both Flutter and native widget code.
+const String kLightSvgFileName = 'meteogram_light.svg';
+const String kDarkSvgFileName = 'meteogram_dark.svg';
+
 /// Widget dimensions in pixels as reported by the native widget provider.
 class WidgetDimensions {
   final int widthPx;
@@ -121,10 +125,10 @@ class WidgetService {
 
       // Save SVG files using atomic writes (write to temp, then rename)
       final docsDir = await getApplicationDocumentsDirectory();
-      final lightPath = '${docsDir.path}/meteogram_light.svg';
-      final darkPath = '${docsDir.path}/meteogram_dark.svg';
-      final lightTempPath = '${docsDir.path}/meteogram_light.svg.tmp';
-      final darkTempPath = '${docsDir.path}/meteogram_dark.svg.tmp';
+      final lightPath = '${docsDir.path}/$kLightSvgFileName';
+      final darkPath = '${docsDir.path}/$kDarkSvgFileName';
+      final lightTempPath = '${docsDir.path}/$kLightSvgFileName.tmp';
+      final darkTempPath = '${docsDir.path}/$kDarkSvgFileName.tmp';
 
       // Write to temp files first
       await File(lightTempPath).writeAsString(svgLight);

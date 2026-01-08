@@ -10,12 +10,11 @@ import 'weather_service.dart';
 import 'location_service.dart';
 import 'svg_chart_generator.dart';
 import 'units_service.dart';
+import 'widget_service.dart' show kLightSvgFileName, kDarkSvgFileName;
 import '../models/weather_data.dart';
 
 void _log(String message) {
   developer.log(message, name: 'BackgroundService');
-  // ignore: avoid_print
-  print('[BackgroundService] $message');
 }
 
 /// Get current system locale from Platform.localeName.
@@ -308,10 +307,10 @@ Future<void> _generateSvgCharts(WeatherData weather, double latitude, {int? uriW
     // Save SVG files to app documents directory using atomic writes
     // (write to temp file, then rename to avoid race conditions with native reader)
     final docsDir = await getApplicationDocumentsDirectory();
-    final lightPath = '${docsDir.path}/meteogram_light.svg';
-    final darkPath = '${docsDir.path}/meteogram_dark.svg';
-    final lightTempPath = '${docsDir.path}/meteogram_light.svg.tmp';
-    final darkTempPath = '${docsDir.path}/meteogram_dark.svg.tmp';
+    final lightPath = '${docsDir.path}/$kLightSvgFileName';
+    final darkPath = '${docsDir.path}/$kDarkSvgFileName';
+    final lightTempPath = '${docsDir.path}/$kLightSvgFileName.tmp';
+    final darkTempPath = '${docsDir.path}/$kDarkSvgFileName.tmp';
 
     _log('Writing SVG files to $lightPath');
 

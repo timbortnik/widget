@@ -29,8 +29,13 @@ class WeatherData {
     final temperatures = (hourlyJson['temperature_2m'] as List);
     final precipitation = (hourlyJson['precipitation'] as List);
     final cloudCover = (hourlyJson['cloud_cover'] as List);
+
+    // Validate array lengths match to prevent index errors
+    final minLength = [times.length, temperatures.length, precipitation.length, cloudCover.length]
+        .reduce((a, b) => a < b ? a : b);
+
     final hourlyData = <HourlyData>[];
-    for (var i = 0; i < times.length; i++) {
+    for (var i = 0; i < minLength; i++) {
       // Skip entries with null values
       if (times[i] == null || temperatures[i] == null) continue;
 

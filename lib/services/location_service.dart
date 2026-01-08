@@ -4,6 +4,11 @@ import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+/// Default fallback location (Berlin) when GPS and IP geolocation fail.
+const double kDefaultLatitude = 52.52;
+const double kDefaultLongitude = 13.405;
+const String kDefaultCity = 'Berlin';
+
 /// Service for getting device location.
 class LocationService {
   static const String _latKey = 'saved_latitude';
@@ -92,12 +97,12 @@ class LocationService {
           city: city,
         );
       }
-      // Final fallback to default location (Berlin)
+      // Final fallback to default location
       return LocationData(
-        latitude: 52.52,
-        longitude: 13.405,
+        latitude: kDefaultLatitude,
+        longitude: kDefaultLongitude,
         source: LocationSource.manual,
-        city: 'Berlin',
+        city: kDefaultCity,
       );
     }
   }
@@ -129,13 +134,12 @@ class LocationService {
   }
 
   /// Get fallback location when GPS is unavailable.
-  /// Falls back to Berlin as default location.
   Future<LocationData> _getFallbackLocation() async {
     return LocationData(
-      latitude: 52.52,
-      longitude: 13.405,
+      latitude: kDefaultLatitude,
+      longitude: kDefaultLongitude,
       source: LocationSource.manual,
-      city: 'Berlin',
+      city: kDefaultCity,
     );
   }
 
@@ -166,8 +170,8 @@ class LocationService {
       return 'Mountain View';
     }
     // Berlin fallback location
-    if ((lat - 52.52).abs() < 0.01 && (lon - 13.405).abs() < 0.01) {
-      return 'Berlin';
+    if ((lat - kDefaultLatitude).abs() < 0.01 && (lon - kDefaultLongitude).abs() < 0.01) {
+      return kDefaultCity;
     }
     return null;
   }
