@@ -39,8 +39,12 @@ class WeatherData {
       // Skip entries with null values
       if (times[i] == null || temperatures[i] == null) continue;
 
+      // Parse timestamp as UTC (API returns UTC timestamps)
+      final timeStr = times[i] as String;
+      final timeUtc = DateTime.parse(timeStr.endsWith('Z') ? timeStr : '${timeStr}Z');
+
       hourlyData.add(HourlyData(
-        time: DateTime.parse(times[i] as String),
+        time: timeUtc,
         temperature: (temperatures[i] as num).toDouble(),
         precipitation: (precipitation[i] as num?)?.toDouble() ?? 0.0,
         cloudCover: (cloudCover[i] as num?)?.toInt() ?? 0,
@@ -81,23 +85,15 @@ class WeatherData {
   }
 
   /// Get the index of "now" in the display data.
-  /// Finds the hour slot matching current time by comparing timestamps.
-  ///
-  /// Timezone note: The API returns timestamps without timezone offsets
-  /// (e.g., "2024-01-15T12:00:00"), which DateTime.parse() interprets as
-  /// device local time. Since DateTime.now() is also device local time,
-  /// the comparison is consistent. This works correctly when the device
-  /// timezone matches the weather location (typical for GPS-based weather).
-  /// Edge case: if the user travels to a new timezone and the phone updates
-  /// but cached weather data remains, hours may be off until data refreshes.
+  /// Finds the hour slot matching current time by comparing UTC timestamps.
   int getNowIndex() {
-    final now = DateTime.now();
+    final nowUtc = DateTime.now().toUtc();
     // Truncate to hour precision for comparison
-    final nowHour = DateTime(now.year, now.month, now.day, now.hour);
+    final nowHour = DateTime.utc(nowUtc.year, nowUtc.month, nowUtc.day, nowUtc.hour);
 
     // Find the hour slot that matches current time
     for (var i = 0; i < hourly.length; i++) {
-      final entryHour = DateTime(
+      final entryHour = DateTime.utc(
         hourly[i].time.year,
         hourly[i].time.month,
         hourly[i].time.day,
@@ -110,7 +106,7 @@ class WeatherData {
 
     // Fallback: find closest hour before now
     for (var i = hourly.length - 1; i >= 0; i--) {
-      if (hourly[i].time.isBefore(now)) {
+      if (hourly[i].time.isBefore(nowUtc)) {
         return i;
       }
     }

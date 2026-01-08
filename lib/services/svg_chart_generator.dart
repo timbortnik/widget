@@ -366,8 +366,9 @@ class SvgChartGenerator {
       final offset = i - nowIndex;
       if (offset < 0 || offset % 12 != 0) continue;
 
-      // Use locale-aware time formatting
-      final timeStr = DateFormat.j(_locale).format(data[i].time);
+      // Convert UTC to local time for display, use locale-aware formatting
+      final localTime = data[i].time.toLocal();
+      final timeStr = DateFormat.j(_locale).format(localTime);
       final x = (i / (data.length - 1)) * width;
 
       svg.write('<text x="${_n(x)}" y="${_n(labelY)}" $style>$timeStr</text>');

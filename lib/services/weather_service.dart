@@ -90,7 +90,7 @@ class WeatherService {
       'latitude': latitude.toString(),
       'longitude': longitude.toString(),
       'hourly': 'temperature_2m,precipitation,cloud_cover',
-      'timezone': 'auto',
+      'timezone': 'UTC',
       'past_hours': kPastHours.toString(),
       'forecast_days': '2',
     });
