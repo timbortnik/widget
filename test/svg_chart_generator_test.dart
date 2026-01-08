@@ -279,7 +279,7 @@ void main() {
       expect(svg, contains('<text'));
     });
 
-    test('uses card background color', () {
+    test('light theme uses light colors', () {
       final svg = generator.generate(
         data: testData,
         nowIndex: 6,
@@ -289,7 +289,8 @@ void main() {
         height: 400,
       );
 
-      expect(svg, contains('fill="${SvgChartColors.light.cardBackground.toHex()}"'));
+      // SVG has transparent background (no fill rect) - check temperature line instead
+      expect(svg, contains('stroke="${SvgChartColors.light.temperatureLine.toHex()}"'));
     });
 
     test('dark theme uses dark colors', () {
@@ -302,7 +303,7 @@ void main() {
         height: 400,
       );
 
-      expect(svg, contains('fill="${SvgChartColors.dark.cardBackground.toHex()}"'));
+      // SVG has transparent background (no fill rect) - check temperature line
       expect(svg, contains('stroke="${SvgChartColors.dark.temperatureLine.toHex()}"'));
     });
 
