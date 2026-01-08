@@ -128,13 +128,20 @@ class WidgetService {
         usesFahrenheit: usesFahrenheit,
       );
 
-      // Save SVG files
+      // Save SVG files using atomic writes (write to temp, then rename)
       final docsDir = await getApplicationDocumentsDirectory();
       final lightPath = '${docsDir.path}/meteogram_light.svg';
       final darkPath = '${docsDir.path}/meteogram_dark.svg';
+      final lightTempPath = '${docsDir.path}/meteogram_light.svg.tmp';
+      final darkTempPath = '${docsDir.path}/meteogram_dark.svg.tmp';
 
-      await File(lightPath).writeAsString(svgLight);
-      await File(darkPath).writeAsString(svgDark);
+      // Write to temp files first
+      await File(lightTempPath).writeAsString(svgLight);
+      await File(darkTempPath).writeAsString(svgDark);
+
+      // Atomic rename to final paths
+      await File(lightTempPath).rename(lightPath);
+      await File(darkTempPath).rename(darkPath);
 
       // Save paths for native widget
       await HomeWidget.saveWidgetData<String>('svg_path_light', lightPath);

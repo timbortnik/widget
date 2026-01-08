@@ -37,7 +37,7 @@ class WidgetEventReceiver : BroadcastReceiver() {
                 triggerReRender(context)
             }
             "android.net.conn.CONNECTIVITY_CHANGE" -> {
-                // Network restored - fetch only if stale
+                // Check network immediately - staleness check prevents duplicate fetches
                 if (isNetworkAvailable(context)) {
                     Log.d(TAG, "Network available - checking staleness")
                     fetchWeatherIfStale(context)
@@ -86,8 +86,19 @@ class WidgetEventReceiver : BroadcastReceiver() {
 
     private fun isNetworkAvailable(context: Context): Boolean {
         val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val network = cm.activeNetwork ?: return false
-        val capabilities = cm.getNetworkCapabilities(network) ?: return false
-        return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+        val network = cm.activeNetwork
+        if (network == null) {
+            Log.d(TAG, "No active network")
+            return false
+        }
+        val capabilities = cm.getNetworkCapabilities(network)
+        if (capabilities == null) {
+            Log.d(TAG, "No network capabilities")
+            return false
+        }
+        val hasInternet = capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+        Log.d(TAG, "Network check: internet=$hasInternet")
+        // Just check for INTERNET capability - VALIDATED may not be available immediately
+        return hasInternet
     }
 }

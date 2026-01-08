@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:developer' as developer;
 import 'dart:io';
+import 'package:flutter/widgets.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:path_provider/path_provider.dart';
@@ -9,6 +11,12 @@ import 'svg_chart_generator.dart';
 import 'units_service.dart';
 import '../models/weather_data.dart';
 
+void _log(String message) {
+  developer.log(message, name: 'BackgroundService');
+  // ignore: avoid_print
+  print('[BackgroundService] $message');
+}
+
 const String weatherUpdateTask = 'weatherUpdateTask';
 const String periodicWeatherTask = 'periodicWeatherTask';
 const String chartRenderTask = 'chartRenderTask';
@@ -17,19 +25,28 @@ const String chartRenderTask = 'chartRenderTask';
 @pragma('vm:entry-point')
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
+    // Initialize Flutter bindings for background isolate
+    WidgetsFlutterBinding.ensureInitialized();
+    _log('callbackDispatcher called with task: $task');
     try {
       switch (task) {
         case weatherUpdateTask:
         case periodicWeatherTask:
+          _log('Executing weather update task');
           await _updateWeatherData();
+          _log('Weather update task completed');
           return true;
         case chartRenderTask:
+          _log('Executing chart render task');
           await _reRenderCharts();
+          _log('Chart render task completed');
           return true;
         default:
+          _log('Unknown task: $task');
           return true;
       }
-    } catch (e) {
+    } catch (e, stack) {
+      _log('Task failed with error: $e\n$stack');
       return false;
     }
   });
@@ -38,31 +55,50 @@ void callbackDispatcher() {
 /// Background callback for HomeWidget (handles native events)
 @pragma('vm:entry-point')
 Future<void> homeWidgetBackgroundCallback(Uri? uri) async {
-  if (uri == null) return;
+  // Initialize Flutter bindings for headless execution
+  WidgetsFlutterBinding.ensureInitialized();
+  _log('homeWidgetBackgroundCallback called with uri: $uri');
 
-  switch (uri.host) {
-    case 'weatherUpdate':
+  if (uri == null) {
+    _log('homeWidgetBackgroundCallback: uri is null');
+    return;
+  }
+
+  _log('homeWidgetBackgroundCallback: host=${uri.host}');
+  // Note: URI host is always lowercase
+  switch (uri.host.toLowerCase()) {
+    case 'weatherupdate':
       // Fetch weather data if stale
+      _log('homeWidgetBackgroundCallback: executing weatherUpdate');
       await _updateWeatherData();
       break;
-    case 'chartReRender':
+    case 'chartrerender':
       // Re-render charts from cached data (no network call)
+      _log('homeWidgetBackgroundCallback: executing chartReRender');
       await _reRenderCharts();
       break;
+    default:
+      _log('homeWidgetBackgroundCallback: unknown host ${uri.host}');
   }
 }
 
 /// Update weather data in background
 Future<void> _updateWeatherData() async {
+  _log('_updateWeatherData started');
   final locationService = LocationService();
   final weatherService = WeatherService();
 
   try {
+    _log('Getting location...');
     final location = await locationService.getLocation();
+    _log('Location: ${location.latitude}, ${location.longitude} (${location.city})');
+
+    _log('Fetching weather...');
     final weather = await weatherService.fetchWeatherWithRetry(
       location.latitude,
       location.longitude,
     );
+    _log('Weather fetched: ${weather.hourly.length} hours');
 
     // Cache weather data and location for re-rendering
     await HomeWidget.saveWidgetData<String>(
@@ -76,6 +112,7 @@ Future<void> _updateWeatherData() async {
       'last_weather_update',
       DateTime.now().millisecondsSinceEpoch,
     );
+    _log('Cached weather data and timestamp');
 
     // Get locale preference from SharedPreferences
     final usesFahrenheit = await HomeWidget.getWidgetData<bool>('usesFahrenheit') ?? false;
@@ -87,16 +124,21 @@ Future<void> _updateWeatherData() async {
 
     await HomeWidget.saveWidgetData<String>('current_temperature', tempString);
     await HomeWidget.saveWidgetData<String>('location_name', location.city ?? '');
+    _log('Saved temperature: $tempString');
 
     // Generate SVG charts for widget display
+    _log('Generating SVG charts...');
     await _generateSvgCharts(weather, location.latitude);
+    _log('SVG charts generated');
 
+    _log('Updating widget...');
     await HomeWidget.updateWidget(
       androidName: 'MeteogramWidgetProvider',
       iOSName: 'MeteogramWidget',
     );
-  } catch (e) {
-    // Silently fail in background
+    _log('Widget updated successfully');
+  } catch (e, stack) {
+    _log('_updateWeatherData failed: $e\n$stack');
   }
 }
 
@@ -184,13 +226,21 @@ Future<void> _generateSvgCharts(WeatherData weather, double latitude) async {
       usesFahrenheit: usesFahrenheit,
     );
 
-    // Save SVG files to app documents directory
+    // Save SVG files to app documents directory using atomic writes
+    // (write to temp file, then rename to avoid race conditions with native reader)
     final docsDir = await getApplicationDocumentsDirectory();
     final lightPath = '${docsDir.path}/meteogram_light.svg';
     final darkPath = '${docsDir.path}/meteogram_dark.svg';
+    final lightTempPath = '${docsDir.path}/meteogram_light.svg.tmp';
+    final darkTempPath = '${docsDir.path}/meteogram_dark.svg.tmp';
 
-    await File(lightPath).writeAsString(svgLight);
-    await File(darkPath).writeAsString(svgDark);
+    // Write to temp files first
+    await File(lightTempPath).writeAsString(svgLight);
+    await File(darkTempPath).writeAsString(svgDark);
+
+    // Atomic rename to final paths
+    await File(lightTempPath).rename(lightPath);
+    await File(darkTempPath).rename(darkPath);
 
     // Store paths for native widget to read
     await HomeWidget.saveWidgetData<String>('svg_path_light', lightPath);
