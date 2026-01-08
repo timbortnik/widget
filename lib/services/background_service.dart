@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'weather_service.dart';
 import 'location_service.dart';
 import 'svg_chart_generator.dart';
@@ -145,16 +146,21 @@ Future<void> _updateWeatherData() async {
 /// Re-render charts from cached weather data (no network call).
 /// Used for locale/timezone/theme changes where data doesn't need refreshing.
 Future<void> _reRenderCharts() async {
+  _log('_reRenderCharts started');
   try {
+    // Initialize locale data for DateFormat (required in background isolate)
+    await initializeDateFormatting();
+
     // Load cached weather data
     final cachedJson = await HomeWidget.getWidgetData<String>('cached_weather');
     if (cachedJson == null) {
-      // No cached data available - can't re-render
+      _log('_reRenderCharts: no cached weather data');
       return;
     }
 
     final weather = WeatherData.fromJson(jsonDecode(cachedJson));
     final latitude = await HomeWidget.getWidgetData<double>('cached_latitude') ?? 0.0;
+    _log('_reRenderCharts: loaded weather with ${weather.hourly.length} hours');
 
     // Regenerate SVG charts
     await _generateSvgCharts(weather, latitude);
@@ -164,8 +170,9 @@ Future<void> _reRenderCharts() async {
       androidName: 'MeteogramWidgetProvider',
       iOSName: 'MeteogramWidget',
     );
-  } catch (e) {
-    // Silently fail in background
+    _log('_reRenderCharts: widget updated');
+  } catch (e, stack) {
+    _log('_reRenderCharts failed: $e\n$stack');
   }
 }
 
@@ -181,6 +188,7 @@ Future<void> _generateSvgCharts(WeatherData weather, double latitude) async {
     final heightPx = await HomeWidget.getWidgetData<int>('widget_height_px') ?? 200;
     final locale = await HomeWidget.getWidgetData<String>('locale') ?? 'en';
     final usesFahrenheit = await HomeWidget.getWidgetData<bool>('usesFahrenheit') ?? false;
+    _log('_generateSvgCharts: dimensions=${widthPx}x${heightPx}');
 
     // Get persisted Material You colors (fall back to defaults if not set)
     final lightTempColor = await HomeWidget.getWidgetData<int>('material_you_light_temp');
@@ -234,6 +242,8 @@ Future<void> _generateSvgCharts(WeatherData weather, double latitude) async {
     final lightTempPath = '${docsDir.path}/meteogram_light.svg.tmp';
     final darkTempPath = '${docsDir.path}/meteogram_dark.svg.tmp';
 
+    _log('Writing SVG files to $lightPath');
+
     // Write to temp files first
     await File(lightTempPath).writeAsString(svgLight);
     await File(darkTempPath).writeAsString(svgDark);
@@ -242,11 +252,13 @@ Future<void> _generateSvgCharts(WeatherData weather, double latitude) async {
     await File(lightTempPath).rename(lightPath);
     await File(darkTempPath).rename(darkPath);
 
+    _log('SVG files written successfully');
+
     // Store paths for native widget to read
     await HomeWidget.saveWidgetData<String>('svg_path_light', lightPath);
     await HomeWidget.saveWidgetData<String>('svg_path_dark', darkPath);
-  } catch (e) {
-    // SVG generation failed - widget will use previous chart or fallback
+  } catch (e, stack) {
+    _log('_generateSvgCharts failed: $e\n$stack');
   }
 }
 

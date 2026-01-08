@@ -137,28 +137,24 @@ class MeteogramWidgetProvider : HomeWidgetProvider() {
 
         Log.d(TAG, "New dimensions: ${minWidth}dp x ${maxHeight}dp = ${widthPx}px x ${heightPx}px")
 
-        // Update SharedPreferences with new dimensions
+        // Update SharedPreferences with new dimensions (commit synchronously before triggering callback)
         val prefs = context.getSharedPreferences("HomeWidgetPreferences", Context.MODE_PRIVATE)
         prefs.edit()
             .putInt("widget_width_px", widthPx)
             .putInt("widget_height_px", heightPx)
             .putFloat("widget_density", density)
-            .putBoolean("widget_resized", true)
-            .apply()
+            .commit()
 
-        // Show refresh indicator on widget
-        val views = RemoteViews(context.packageName, R.layout.meteogram_widget)
-        views.setViewVisibility(R.id.widget_refresh_indicator, View.VISIBLE)
-
-        // Update all widgets with the indicator
-        val appWidgetManager = AppWidgetManager.getInstance(context)
-        val componentName = android.content.ComponentName(context, MeteogramWidgetProvider::class.java)
-        val widgetIds = appWidgetManager.getAppWidgetIds(componentName)
-        for (id in widgetIds) {
-            appWidgetManager.partiallyUpdateAppWidget(id, views)
+        // Trigger chart re-render with new dimensions
+        try {
+            es.antonborri.home_widget.HomeWidgetBackgroundIntent.getBroadcast(
+                context,
+                android.net.Uri.parse("homewidget://chartReRender")
+            ).send()
+            Log.d(TAG, "Chart re-render triggered for new dimensions")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to trigger chart re-render: ${e.message}")
         }
-
-        Log.d(TAG, "Resize indicator shown - tap widget to update chart")
     }
 
     override fun onUpdate(
