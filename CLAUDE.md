@@ -22,10 +22,10 @@ This file provides context for AI assistants working on this project.
 - **Time range:** 6h past + 46h future with current time marker
 - **Data:** Temperature (line with gradient fill), precipitation (bars), cloudiness (sky gradient)
 - **Theme:** System light/dark mode with custom color palette
-- **Units:** Celsius (hardcoded for now)
-- **Update:** 30 minute background refresh via WorkManager
-- **Languages:** EN, DE, FR, ES, IT (extensible via ARB)
-- **Widget:** Captures Flutter chart as PNG for native Android RemoteViews
+- **Units:** Locale-aware (°F for US/Liberia/Myanmar, °C elsewhere)
+- **Update:** 30 min periodic + event-driven (unlock, network, locale/timezone change)
+- **Languages:** 30+ languages via ARB files
+- **Widget:** SVG rendered natively via AndroidSVG for pixel-perfect display
 
 ## Architecture
 
@@ -53,6 +53,8 @@ lib/
 android/app/src/main/
 ├── kotlin/.../
 │   ├── MainActivity.kt
+│   ├── MeteogramApplication.kt     # Registers event receivers
+│   ├── WidgetEventReceiver.kt      # Handles system broadcasts
 │   └── MeteogramWidgetProvider.kt  # Extends HomeWidgetProvider
 └── res/
     ├── layout/meteogram_widget.xml  # RemoteViews layout
@@ -149,10 +151,12 @@ adb logcat | grep -i "Error inflating"
 | File | Purpose |
 |------|---------|
 | `lib/widgets/meteogram_chart.dart` | The core chart widget |
+| `lib/services/svg_chart_generator.dart` | Pure Dart SVG generation |
+| `lib/services/background_service.dart` | WorkManager + event callbacks |
 | `lib/theme/app_theme.dart` | All colors and gradients |
-| `lib/services/widget_service.dart` | Widget update logic |
 | `android/.../MeteogramWidgetProvider.kt` | Native widget code |
-| `android/.../meteogram_widget.xml` | Widget layout |
+| `android/.../WidgetEventReceiver.kt` | System event handler |
+| `android/.../MeteogramApplication.kt` | App init, registers receivers |
 
 ## Gotchas
 
@@ -161,3 +165,5 @@ adb logcat | grep -i "Error inflating"
 3. **Chart not captured** - Add delay before capture, check RepaintBoundary key
 4. **Location timeout** - Has 15s timeout with Berlin fallback
 5. **Null API values** - Use `?.toDouble() ?? 0.0` pattern for nullable JSON
+6. **Implicit broadcasts** - Android 8.0+ requires runtime receiver registration (not manifest)
+7. **Event staleness** - Widget checks `last_weather_update` timestamp (15 min threshold)

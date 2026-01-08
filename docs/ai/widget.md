@@ -275,52 +275,31 @@ class NativeSvgChartView extends StatefulWidget {
 
 ## Background Refresh
 
-### Background Service (Flutter)
+### Periodic Updates (WorkManager)
 ```dart
 import 'package:workmanager/workmanager.dart';
 
 @pragma('vm:entry-point')
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
-    try {
-      await _updateWeatherData();
-      return true;
-    } catch (e) {
-      return false;
+    switch (task) {
+      case 'weatherUpdateTask':
+      case 'periodicWeatherTask':
+        await _updateWeatherData();  // Fetch + render
+        return true;
+      case 'chartRenderTask':
+        await _reRenderCharts();     // Render only, no fetch
+        return true;
+      default:
+        return true;
     }
   });
-}
-
-Future<void> _updateWeatherData() async {
-  final location = await locationService.getLocation();
-  final weather = await weatherService.fetchWeather(
-    location.latitude,
-    location.longitude,
-  );
-
-  // Generate SVG charts (works in background - no UI needed!)
-  await _generateSvgCharts(weather, location.latitude);
-
-  await HomeWidget.updateWidget(androidName: 'MeteogramWidgetProvider');
-}
-
-Future<void> _generateSvgCharts(dynamic weather, double latitude) async {
-  final generator = SvgChartGenerator();
-  final locale = await HomeWidget.getWidgetData<String>('locale') ?? 'en';
-
-  // Generate light and dark SVGs at widget dimensions
-  final svgLight = generator.generate(
-    data: weather.getDisplayRange(),
-    colors: SvgChartColors.light,
-    locale: locale,
-    // ...
-  );
-  // Save to files, update widget data paths
 }
 
 class BackgroundService {
   static Future<void> initialize() async {
     await Workmanager().initialize(callbackDispatcher);
+    await HomeWidget.registerInteractivityCallback(homeWidgetBackgroundCallback);
   }
 
   static Future<void> registerPeriodicTask() async {
@@ -328,13 +307,103 @@ class BackgroundService {
       'periodicWeatherTask',
       'periodicWeatherTask',
       frequency: const Duration(minutes: 30),
-      constraints: Constraints(
-        networkType: NetworkType.connected,
-      ),
+      constraints: Constraints(networkType: NetworkType.connected),
     );
   }
 }
 ```
+
+### Event-Driven Refresh
+
+The widget responds to system events via runtime-registered broadcast receivers.
+
+#### Events Handled
+
+| Event | Android Action | Response |
+|-------|----------------|----------|
+| Screen unlock | `ACTION_USER_PRESENT` | Fetch if stale (>15 min) |
+| Network restored | `CONNECTIVITY_CHANGE` | Fetch if stale (>15 min) |
+| Widget resize | `onAppWidgetOptionsChanged` | Show refresh indicator |
+| Locale change | `ACTION_LOCALE_CHANGED` | Re-render (no fetch) |
+| Timezone change | `ACTION_TIMEZONE_CHANGED` | Re-render (no fetch) |
+
+#### Two-Operation Pattern
+
+**Key design:** Separate weather fetching from chart rendering to minimize unnecessary API calls.
+
+```dart
+// HomeWidget background callback (handles native events)
+@pragma('vm:entry-point')
+Future<void> homeWidgetBackgroundCallback(Uri? uri) async {
+  switch (uri?.host) {
+    case 'weatherUpdate':
+      await _updateWeatherData();  // Fetch + cache + render
+      break;
+    case 'chartReRender':
+      await _reRenderCharts();     // Render from cache only
+      break;
+  }
+}
+
+// Re-render from cached data (no network call)
+Future<void> _reRenderCharts() async {
+  final cachedJson = await HomeWidget.getWidgetData<String>('cached_weather');
+  if (cachedJson == null) return;
+
+  final weather = WeatherData.fromJson(jsonDecode(cachedJson));
+  final latitude = await HomeWidget.getWidgetData<double>('cached_latitude') ?? 0.0;
+
+  await _generateSvgCharts(weather, latitude);
+  await HomeWidget.updateWidget(androidName: 'MeteogramWidgetProvider');
+}
+```
+
+#### Staleness Check (Native Side)
+
+```kotlin
+// WidgetEventReceiver.kt
+private fun fetchWeatherIfStale(context: Context) {
+    val prefs = context.getSharedPreferences("HomeWidgetPreferences", Context.MODE_PRIVATE)
+    val lastUpdate = prefs.getLong("last_weather_update", 0)
+    val staleThreshold = 15 * 60 * 1000L // 15 minutes
+
+    if (System.currentTimeMillis() - lastUpdate > staleThreshold) {
+        triggerWeatherFetch(context)  // Via HomeWidgetBackgroundIntent
+    }
+}
+```
+
+#### Android Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     MeteogramApplication                      │
+│  Registers WidgetEventReceiver at runtime (RECEIVER_EXPORTED) │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    WidgetEventReceiver                        │
+│  Handles: USER_PRESENT, CONNECTIVITY_CHANGE, LOCALE_CHANGED,  │
+│           TIMEZONE_CHANGED                                    │
+│  Actions: fetchWeatherIfStale() or triggerReRender()          │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│              HomeWidgetBackgroundIntent                       │
+│  URIs: homewidget://weatherUpdate, homewidget://chartReRender │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                background_service.dart                        │
+│  homeWidgetBackgroundCallback() → _updateWeatherData() or     │
+│                                   _reRenderCharts()           │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Note:** Implicit broadcasts (USER_PRESENT, etc.) require runtime registration on Android 8.0+. Manifest-declared receivers don't receive them.
 
 ### main.dart setup
 ```dart

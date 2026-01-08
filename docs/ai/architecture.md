@@ -140,11 +140,12 @@ Home widget data management. Responsibilities:
 - Trigger native widget update
 
 ### BackgroundService (`lib/services/background_service.dart`)
-WorkManager integration. Responsibilities:
-- Initialize workmanager
-- Register periodic task (30 min)
-- Execute background weather fetch
-- Update widget without UI
+WorkManager + HomeWidget integration. Responsibilities:
+- Initialize WorkManager for periodic tasks
+- Register HomeWidget interactivity callback for event-driven updates
+- Execute background weather fetch (with caching)
+- Re-render charts from cached data (no network call)
+- Handle two task types: `weatherUpdateTask` (fetch+render) and `chartRenderTask` (render only)
 
 ### MeteogramColors (`lib/theme/app_theme.dart`)
 Theme-aware color palette. Responsibilities:
@@ -181,6 +182,8 @@ lib/
 
 android/app/src/main/kotlin/.../
 ├── MainActivity.kt              # Registers PlatformView factory
+├── MeteogramApplication.kt      # Application class, registers event receiver
+├── WidgetEventReceiver.kt       # Handles system broadcasts (unlock, network, locale)
 ├── SvgChartViewFactory.kt       # Creates PlatformView instances
 ├── SvgChartPlatformView.kt      # Native ImageView + AndroidSVG rendering
 └── MeteogramWidgetProvider.kt   # Home screen widget provider

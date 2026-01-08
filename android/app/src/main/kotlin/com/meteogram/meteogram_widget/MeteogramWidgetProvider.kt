@@ -92,15 +92,9 @@ class MeteogramWidgetProvider : HomeWidgetProvider() {
         return null
     }
 
-    override fun onReceive(context: Context, intent: Intent) {
-        super.onReceive(context, intent)
-
-        // Handle configuration changes (including theme changes)
-        if (intent.action == Intent.ACTION_CONFIGURATION_CHANGED) {
-            Log.d(TAG, "Configuration changed - checking theme mismatch")
-            checkThemeMismatchAndShowIndicator(context)
-        }
-    }
+    // Note: System events (USER_PRESENT, LOCALE_CHANGED, etc.) are handled
+    // by WidgetEventReceiver which is registered at runtime in MeteogramApplication.
+    // Implicit broadcasts cannot be received via manifest-declared receivers on Android 8.0+.
 
     private fun checkThemeMismatchAndShowIndicator(context: Context) {
         val prefs = context.getSharedPreferences("HomeWidgetPreferences", Context.MODE_PRIVATE)

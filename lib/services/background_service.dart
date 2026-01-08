@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:workmanager/workmanager.dart';
 import 'package:home_widget/home_widget.dart';
@@ -6,9 +7,11 @@ import 'weather_service.dart';
 import 'location_service.dart';
 import 'svg_chart_generator.dart';
 import 'units_service.dart';
+import '../models/weather_data.dart';
 
 const String weatherUpdateTask = 'weatherUpdateTask';
 const String periodicWeatherTask = 'periodicWeatherTask';
+const String chartRenderTask = 'chartRenderTask';
 
 /// Background task dispatcher for WorkManager
 @pragma('vm:entry-point')
@@ -20,6 +23,9 @@ void callbackDispatcher() {
         case periodicWeatherTask:
           await _updateWeatherData();
           return true;
+        case chartRenderTask:
+          await _reRenderCharts();
+          return true;
         default:
           return true;
       }
@@ -27,6 +33,23 @@ void callbackDispatcher() {
       return false;
     }
   });
+}
+
+/// Background callback for HomeWidget (handles native events)
+@pragma('vm:entry-point')
+Future<void> homeWidgetBackgroundCallback(Uri? uri) async {
+  if (uri == null) return;
+
+  switch (uri.host) {
+    case 'weatherUpdate':
+      // Fetch weather data if stale
+      await _updateWeatherData();
+      break;
+    case 'chartReRender':
+      // Re-render charts from cached data (no network call)
+      await _reRenderCharts();
+      break;
+  }
 }
 
 /// Update weather data in background
@@ -39,6 +62,19 @@ Future<void> _updateWeatherData() async {
     final weather = await weatherService.fetchWeatherWithRetry(
       location.latitude,
       location.longitude,
+    );
+
+    // Cache weather data and location for re-rendering
+    await HomeWidget.saveWidgetData<String>(
+      'cached_weather',
+      jsonEncode(weather.toJson()),
+    );
+    await HomeWidget.saveWidgetData<double>('cached_latitude', location.latitude);
+
+    // Save timestamp for staleness checks
+    await HomeWidget.saveWidgetData<int>(
+      'last_weather_update',
+      DateTime.now().millisecondsSinceEpoch,
     );
 
     // Get locale preference from SharedPreferences
@@ -64,8 +100,35 @@ Future<void> _updateWeatherData() async {
   }
 }
 
+/// Re-render charts from cached weather data (no network call).
+/// Used for locale/timezone/theme changes where data doesn't need refreshing.
+Future<void> _reRenderCharts() async {
+  try {
+    // Load cached weather data
+    final cachedJson = await HomeWidget.getWidgetData<String>('cached_weather');
+    if (cachedJson == null) {
+      // No cached data available - can't re-render
+      return;
+    }
+
+    final weather = WeatherData.fromJson(jsonDecode(cachedJson));
+    final latitude = await HomeWidget.getWidgetData<double>('cached_latitude') ?? 0.0;
+
+    // Regenerate SVG charts
+    await _generateSvgCharts(weather, latitude);
+
+    // Update widget
+    await HomeWidget.updateWidget(
+      androidName: 'MeteogramWidgetProvider',
+      iOSName: 'MeteogramWidget',
+    );
+  } catch (e) {
+    // Silently fail in background
+  }
+}
+
 /// Generate SVG chart images for the widget.
-Future<void> _generateSvgCharts(dynamic weather, double latitude) async {
+Future<void> _generateSvgCharts(WeatherData weather, double latitude) async {
   try {
     final generator = SvgChartGenerator();
     final displayData = weather.getDisplayRange();
@@ -140,7 +203,11 @@ Future<void> _generateSvgCharts(dynamic weather, double latitude) async {
 /// Initialize background service
 class BackgroundService {
   static Future<void> initialize() async {
+    // Initialize WorkManager for periodic tasks
     await Workmanager().initialize(callbackDispatcher);
+
+    // Register HomeWidget background callback for native event handling
+    await HomeWidget.registerInteractivityCallback(homeWidgetBackgroundCallback);
   }
 
   static Future<void> registerPeriodicTask() async {
