@@ -153,7 +153,7 @@ class WidgetService {
   /// Initialize widget service.
   static Future<void> initialize() async {
     // Set app group ID for iOS
-    await HomeWidget.setAppGroupId('group.com.meteogram.widget');
+    await HomeWidget.setAppGroupId('group.org.bortnik.meteogram');
   }
 
   /// Trigger a native widget update (to check theme mismatch and show indicator).

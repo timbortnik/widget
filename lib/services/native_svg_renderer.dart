@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 /// Renders SVG to bitmap using native platform renderer (AndroidSVG on Android).
 /// This ensures exact visual match between widget and app.
 class NativeSvgRenderer {
-  static const _channel = MethodChannel('com.meteogram.meteogram_widget/svg');
+  static const _channel = MethodChannel('org.bortnik.meteogram/svg');
 
   /// Render SVG string to PNG bitmap bytes.
   /// Returns null if rendering fails.

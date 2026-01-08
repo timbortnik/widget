@@ -1,4 +1,4 @@
-package com.meteogram.meteogram_widget
+package org.bortnik.meteogram
 
 import android.app.AlarmManager
 import android.app.PendingIntent
@@ -22,7 +22,7 @@ import java.util.Calendar
 class HourlyAlarmReceiver : BroadcastReceiver() {
     companion object {
         private const val TAG = "HourlyAlarmReceiver"
-        const val ACTION_HOURLY_UPDATE = "com.meteogram.meteogram_widget.HOURLY_UPDATE"
+        const val ACTION_HOURLY_UPDATE = "org.bortnik.meteogram.HOURLY_UPDATE"
 
         // Buffer after hour boundary to ensure we're always past it
         private const val HOUR_BUFFER_SECONDS = 15

@@ -1,4 +1,4 @@
-package com.meteogram.meteogram_widget
+package org.bortnik.meteogram
 
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager

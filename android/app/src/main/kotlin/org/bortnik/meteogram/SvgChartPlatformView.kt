@@ -1,4 +1,4 @@
-package com.meteogram.meteogram_widget
+package org.bortnik.meteogram
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -47,7 +47,7 @@ class SvgChartPlatformView(
 
     private val methodChannel = MethodChannel(
         messenger,
-        "com.meteogram.svg_chart_view_$viewId"
+        "org.bortnik.svg_chart_view_$viewId"
     )
 
     init {

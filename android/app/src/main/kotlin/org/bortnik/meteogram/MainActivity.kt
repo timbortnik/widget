@@ -1,4 +1,4 @@
-package com.meteogram.meteogram_widget
+package org.bortnik.meteogram
 
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -10,7 +10,7 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 
 class MainActivity : FlutterActivity() {
-    private val CHANNEL = "com.meteogram.meteogram_widget/svg"
+    private val CHANNEL = "org.bortnik.meteogram/svg"
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)

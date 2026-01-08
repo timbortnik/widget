@@ -47,7 +47,7 @@ class _NativeSvgChartViewState extends State<NativeSvgChartView> {
 
   void _onPlatformViewCreated(int viewId) {
     _viewId = viewId;
-    _channel = MethodChannel('com.meteogram.svg_chart_view_$viewId');
+    _channel = MethodChannel('org.bortnik.svg_chart_view_$viewId');
   }
 
   @override

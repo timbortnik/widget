@@ -1,4 +1,4 @@
-package com.meteogram.meteogram_widget
+package org.bortnik.meteogram
 
 import android.content.Context
 import io.flutter.plugin.common.BinaryMessenger
