@@ -165,37 +165,37 @@ void main() {
 
   group('Locale to temperature unit', () {
     test('US uses Fahrenheit', () {
-      final locale = Locale('en', 'US');
+      const locale = Locale('en', 'US');
       expect(UnitsService.usesFahrenheit(locale), isTrue);
     });
 
     test('UK uses Celsius', () {
-      final locale = Locale('en', 'GB');
+      const locale = Locale('en', 'GB');
       expect(UnitsService.usesFahrenheit(locale), isFalse);
     });
 
     test('Germany uses Celsius', () {
-      final locale = Locale('de', 'DE');
+      const locale = Locale('de', 'DE');
       expect(UnitsService.usesFahrenheit(locale), isFalse);
     });
 
     test('Ukraine uses Celsius', () {
-      final locale = Locale('uk', 'UA');
+      const locale = Locale('uk', 'UA');
       expect(UnitsService.usesFahrenheit(locale), isFalse);
     });
 
     test('Liberia uses Fahrenheit', () {
-      final locale = Locale('en', 'LR');
+      const locale = Locale('en', 'LR');
       expect(UnitsService.usesFahrenheit(locale), isTrue);
     });
 
     test('Myanmar uses Fahrenheit', () {
-      final locale = Locale('my', 'MM');
+      const locale = Locale('my', 'MM');
       expect(UnitsService.usesFahrenheit(locale), isTrue);
     });
 
     test('Language-only locale defaults to Celsius', () {
-      final locale = Locale('en');
+      const locale = Locale('en');
       expect(UnitsService.usesFahrenheit(locale), isFalse);
     });
   });

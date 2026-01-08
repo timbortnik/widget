@@ -25,10 +25,10 @@ class WeatherData {
 
   factory WeatherData.fromJson(Map<String, dynamic> json) {
     final hourlyJson = json['hourly'] as Map<String, dynamic>;
-    final times = (hourlyJson['time'] as List);
-    final temperatures = (hourlyJson['temperature_2m'] as List);
-    final precipitation = (hourlyJson['precipitation'] as List);
-    final cloudCover = (hourlyJson['cloud_cover'] as List);
+    final times = hourlyJson['time'] as List;
+    final temperatures = hourlyJson['temperature_2m'] as List;
+    final precipitation = hourlyJson['precipitation'] as List;
+    final cloudCover = hourlyJson['cloud_cover'] as List;
 
     // Validate array lengths match to prevent index errors
     final minLength = [times.length, temperatures.length, precipitation.length, cloudCover.length]

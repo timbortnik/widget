@@ -99,7 +99,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
 
     // Then try to fetch fresh data in background
-    _loadWeather(showLoadingIndicator: cached == null);
+    unawaited(_loadWeather(showLoadingIndicator: cached == null));
   }
 
   @override
@@ -738,7 +738,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final colors = MeteogramColors.of(context);
     final locale = Localizations.localeOf(context);
 
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       backgroundColor: colors.cardBackground,
       shape: const RoundedRectangleBorder(
@@ -756,7 +756,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           final hasPermission = await _locationService.requestGpsPermission();
           if (hasPermission) {
             await _locationService.useGpsLocation();
-            _loadWeather(userTriggered: true);
+            await _loadWeather(userTriggered: true);
           } else {
             if (mounted) {
               final l10n = AppLocalizations.of(this.context)!;
@@ -765,7 +765,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   content: Text(l10n.gpsPermissionDenied),
                   action: SnackBarAction(
                     label: l10n.settings,
-                    onPressed: () => _locationService.openLocationSettings(),
+                    onPressed: _locationService.openLocationSettings,
                   ),
                 ),
               );
@@ -780,7 +780,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             city.longitude,
             city: city.name,
           );
-          _loadWeather(userTriggered: true);
+          await _loadWeather(userTriggered: true);
         },
         onSearchError: () {
           Navigator.pop(context); // Close bottom sheet first
@@ -996,7 +996,7 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
                       ),
                     )
                   else
-                    ..._searchResults.map((city) => _buildCityResultTile(city)),
+                    ..._searchResults.map(_buildCityResultTile),
                 ] else ...[
                   // GPS option
                   ListTile(
@@ -1018,7 +1018,7 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
                         style: TextStyle(color: colors.secondaryText, fontSize: 12),
                       ),
                     ),
-                    ..._recentCities.map((city) => _buildRecentCityTile(city)),
+                    ..._recentCities.map(_buildRecentCityTile),
                   ],
                 ],
                 const SizedBox(height: 20),

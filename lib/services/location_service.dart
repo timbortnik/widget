@@ -338,7 +338,7 @@ class LocationService {
     final prefs = await SharedPreferences.getInstance();
     final citiesJson = prefs.getStringList(_recentCitiesKey) ?? [];
     return citiesJson
-        .map((json) => CitySearchResult.fromJson(jsonDecode(json)))
+        .map((json) => CitySearchResult.fromJson(jsonDecode(json) as Map<String, dynamic>))
         .toList();
   }
 

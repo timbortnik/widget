@@ -203,7 +203,7 @@ Future<void> _reRenderCharts([Uri? uri]) async {
       return;
     }
 
-    final weather = WeatherData.fromJson(jsonDecode(cachedJson));
+    final weather = WeatherData.fromJson(jsonDecode(cachedJson) as Map<String, dynamic>);
     final latitude = await HomeWidget.getWidgetData<double>('cached_latitude') ?? 0.0;
     _log('_reRenderCharts: loaded weather with ${weather.hourly.length} hours');
 

@@ -72,7 +72,7 @@ class WeatherService {
 
     // Retry attempts with Fibonacci delays
     for (final delayMinutes in _retryDelaysMinutes) {
-      await Future.delayed(Duration(minutes: delayMinutes));
+      await Future<void>.delayed(Duration(minutes: delayMinutes));
 
       try {
         return await _fetchFromApi(latitude, longitude);
