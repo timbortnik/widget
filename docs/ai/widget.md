@@ -340,18 +340,20 @@ class BackgroundService {
 
 ### Event-Driven Refresh
 
-The widget responds to system events via runtime-registered broadcast receivers.
+The widget responds to system events via broadcast receivers.
 
 #### Events Handled
 
-| Event | Android Action | Response |
-|-------|----------------|----------|
-| Screen unlock | `ACTION_USER_PRESENT` | Fetch if stale (>15 min) |
-| Network restored | `CONNECTIVITY_CHANGE` | Fetch if stale (>15 min) |
-| Widget resize | `onAppWidgetOptionsChanged` | Show refresh indicator |
-| Locale change | `ACTION_LOCALE_CHANGED` | Re-render (no fetch) |
-| Timezone change | `ACTION_TIMEZONE_CHANGED` | Re-render (no fetch) |
-| Hour boundary | `HourlyAlarmReceiver` | Re-render (no fetch) |
+| Event | Android Action | Registration | Response |
+|-------|----------------|--------------|----------|
+| Screen unlock | `ACTION_USER_PRESENT` | Runtime | Fetch if stale (>15 min) |
+| Network restored | `CONNECTIVITY_CHANGE` | Runtime | Fetch if stale (>15 min) |
+| Widget resize | `onAppWidgetOptionsChanged` | N/A | Re-render immediately |
+| Locale change | `ACTION_LOCALE_CHANGED` | Manifest | Re-render (no fetch) |
+| Timezone change | `ACTION_TIMEZONE_CHANGED` | Manifest | Re-render (no fetch) |
+| Hour boundary | `HourlyAlarmReceiver` | Manifest | Re-render (no fetch) |
+
+**Important:** `LOCALE_CHANGED` and `TIMEZONE_CHANGED` use manifest-declared receivers because the app process is killed when locale/timezone changes. Runtime-registered receivers are lost when the process dies. These broadcasts are exempt from Android 8.0+ implicit broadcast restrictions.
 
 #### Two-Operation Pattern
 
@@ -368,22 +370,58 @@ Future<void> homeWidgetBackgroundCallback(Uri? uri) async {
       await _updateWeatherData();  // Fetch + cache + render
       break;
     case 'chartrerender':
-      await _reRenderCharts();     // Render from cache only
+      await _reRenderCharts(uri);  // Render from cache only (pass URI for params)
       break;
   }
 }
 
 // Re-render from cached data (no network call)
-Future<void> _reRenderCharts() async {
+// URI params: width, height, locale (all optional, fallback to cached/Platform values)
+Future<void> _reRenderCharts([Uri? uri]) async {
+  // Extract params from URI (more reliable than Platform.localeName in cold-start)
+  final uriWidth = int.tryParse(uri?.queryParameters['width'] ?? '');
+  final uriHeight = int.tryParse(uri?.queryParameters['height'] ?? '');
+  final uriLocale = uri?.queryParameters['locale'];
+
   final cachedJson = await HomeWidget.getWidgetData<String>('cached_weather');
   if (cachedJson == null) return;
 
   final weather = WeatherData.fromJson(jsonDecode(cachedJson));
   final latitude = await HomeWidget.getWidgetData<double>('cached_latitude') ?? 0.0;
 
-  await _generateSvgCharts(weather, latitude);
+  await _generateSvgCharts(weather, latitude,
+    uriWidth: uriWidth, uriHeight: uriHeight, uriLocale: uriLocale);
   await HomeWidget.updateWidget(androidName: 'MeteogramWidgetProvider');
 }
+```
+
+**CRITICAL: Locale Passing via URI**
+
+`Platform.localeName` is stale in background isolates - it returns the locale from when the Flutter engine started, not the current system locale. When the system locale changes, native code must pass the current locale via URI query params:
+
+```kotlin
+// Native side: pass current locale in URI
+val locale = java.util.Locale.getDefault()
+val localeStr = "${locale.language}_${locale.country}"  // e.g., "en_US", "uk_UA"
+
+HomeWidgetBackgroundIntent.getBroadcast(
+    context,
+    Uri.parse("homewidget://chartReRender?width=$widthPx&height=$heightPx&locale=$localeStr")
+).send()
+```
+
+```dart
+// Dart side: prefer URI locale over Platform.localeName
+Locale systemLocale;
+if (uriLocale != null && uriLocale.isNotEmpty) {
+  final parts = uriLocale.split('_');
+  systemLocale = parts.length >= 2
+      ? Locale(parts[0], parts[1].toUpperCase())
+      : Locale(parts[0]);
+} else {
+  systemLocale = _getSystemLocale();  // Fallback to Platform.localeName
+}
+final usesFahrenheit = UnitsService.usesFahrenheit(systemLocale);
 ```
 
 #### Staleness Check (Native Side)
@@ -406,32 +444,44 @@ private fun fetchWeatherIfStale(context: Context) {
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                     MeteogramApplication                      │
-│  Registers WidgetEventReceiver at runtime (RECEIVER_EXPORTED) │
+│  Registers WidgetEventReceiver at runtime for:                │
+│  - USER_PRESENT, CONNECTIVITY_CHANGE (require runtime reg)    │
+└─────────────────────────────────────────────────────────────┘
+                              │
+┌─────────────────────────────────────────────────────────────┐
+│                     AndroidManifest.xml                       │
+│  Declares WidgetEventReceiver for:                            │
+│  - LOCALE_CHANGED, TIMEZONE_CHANGED (app killed on change)    │
 └─────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                    WidgetEventReceiver                        │
-│  Handles: USER_PRESENT, CONNECTIVITY_CHANGE, LOCALE_CHANGED,  │
-│           TIMEZONE_CHANGED                                    │
+│  Handles: USER_PRESENT, CONNECTIVITY_CHANGE (runtime)         │
+│           LOCALE_CHANGED, TIMEZONE_CHANGED (manifest)         │
 │  Actions: fetchWeatherIfStale() or triggerReRender()          │
+│  Passes: width, height, locale via URI query params           │
 └─────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────┐
 │              HomeWidgetBackgroundIntent                       │
-│  URIs: homewidget://weatherUpdate, homewidget://chartReRender │
+│  URI: homewidget://chartReRender?width=X&height=Y&locale=Z    │
+│  URI: homewidget://weatherUpdate                              │
 └─────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                background_service.dart                        │
 │  homeWidgetBackgroundCallback() → _updateWeatherData() or     │
-│                                   _reRenderCharts()           │
+│                                   _reRenderCharts(uri)        │
+│  Parses URI params for dimensions and locale                  │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-**Note:** Implicit broadcasts (USER_PRESENT, etc.) require runtime registration on Android 8.0+. Manifest-declared receivers don't receive them.
+**Broadcast Registration Notes:**
+- `USER_PRESENT`, `CONNECTIVITY_CHANGE`: Require runtime registration (Android 8.0+ restriction)
+- `LOCALE_CHANGED`, `TIMEZONE_CHANGED`: Use manifest declaration (app process killed on change, runtime receivers lost; these are exempt from 8.0+ restrictions)
 
 #### Hourly Alarm for "Now" Indicator
 
