@@ -46,4 +46,14 @@ flutter {
 dependencies {
     // AndroidSVG for rendering SVG charts in the widget
     implementation("com.caverock:androidsvg-aar:1.4")
+
+    // Unit testing
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:5.2.1")
+    testImplementation("org.robolectric:robolectric:4.11.1")
+
+    // Instrumented testing
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("androidx.test:runner:1.5.2")
+    androidTestImplementation("androidx.test:rules:1.5.0")
 }
