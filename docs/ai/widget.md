@@ -342,6 +342,7 @@ The widget responds to system events via runtime-registered broadcast receivers.
 | Widget resize | `onAppWidgetOptionsChanged` | Show refresh indicator |
 | Locale change | `ACTION_LOCALE_CHANGED` | Re-render (no fetch) |
 | Timezone change | `ACTION_TIMEZONE_CHANGED` | Re-render (no fetch) |
+| Hour boundary | `HourlyAlarmReceiver` | Re-render (no fetch) |
 
 #### Two-Operation Pattern
 
@@ -422,6 +423,31 @@ private fun fetchWeatherIfStale(context: Context) {
 ```
 
 **Note:** Implicit broadcasts (USER_PRESENT, etc.) require runtime registration on Android 8.0+. Manifest-declared receivers don't receive them.
+
+#### Hourly Alarm for "Now" Indicator
+
+The widget uses `AlarmManager` to re-render the chart at each hour boundary, keeping the "now" indicator current:
+
+```kotlin
+// HourlyAlarmReceiver.kt
+fun scheduleNextAlarm(context: Context) {
+    val calendar = Calendar.getInstance().apply {
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+        add(Calendar.HOUR_OF_DAY, 1)
+    }
+
+    // Inexact alarm - may fire a few minutes before/after the hour
+    // Uses setAndAllowWhileIdle to avoid SCHEDULE_EXACT_ALARM permission
+    alarmManager.setAndAllowWhileIdle(
+        AlarmManager.RTC_WAKEUP,
+        calendar.timeInMillis,
+        pendingIntent
+    )
+}
+```
+
+The alarm triggers `chartReRender` (no weather fetch), updating only the "now" indicator position. Each alarm reschedules itself for the next hour.
 
 ### main.dart setup
 ```dart
