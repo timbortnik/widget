@@ -65,6 +65,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   SvgChartColors? _materialYouLightColors;
   SvgChartColors? _materialYouDarkColors;
 
+  // Throttle staleness checks to once per minute
+  DateTime? _lastStaleCheck;
+
   @override
   void initState() {
     super.initState();
@@ -103,6 +106,24 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  /// Refresh weather data if stale (throttled to check once per minute).
+  void _refreshIfStale() {
+    final now = DateTime.now();
+    if (_lastStaleCheck != null && now.difference(_lastStaleCheck!).inSeconds < 60) {
+      return; // Throttle: skip if checked within last minute
+    }
+    _lastStaleCheck = now;
+
+    // Check if data is stale (>15 min old)
+    if (_weatherData != null) {
+      final age = now.difference(_weatherData!.fetchedAt);
+      if (age.inMinutes >= 15) {
+        debugPrint('Data is ${age.inMinutes} min old, refreshing...');
+        _loadWeather(showLoadingIndicator: false);
+      }
+    }
   }
 
   @override
@@ -606,6 +627,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 aspectRatio: _chartAspectRatio,
                 child: LayoutBuilder(
                   builder: (context, constraints) {
+                    // Auto-refresh if data is stale (throttled to once per minute)
+                    _refreshIfStale();
+
                     final isLight = Theme.of(context).brightness == Brightness.light;
                     final mediaQuery = MediaQuery.of(context);
                     final dpr = mediaQuery.devicePixelRatio;

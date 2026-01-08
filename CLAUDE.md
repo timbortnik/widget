@@ -23,7 +23,7 @@ This file provides context for AI assistants working on this project.
 - **Data:** Temperature (line with gradient fill), precipitation (bars), cloudiness (sky gradient)
 - **Theme:** System light/dark mode with custom color palette
 - **Units:** Locale-aware (°F for US/Liberia/Myanmar, °C elsewhere)
-- **Update:** 30 min periodic + event-driven (unlock, network, locale/timezone change)
+- **Update:** 15 min auto-refresh in foreground, 30 min periodic in background, event-driven (unlock, network, locale/timezone change)
 - **Languages:** 30+ languages via ARB files
 - **Widget:** SVG rendered natively via AndroidSVG for pixel-perfect display
 
