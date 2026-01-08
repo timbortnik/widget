@@ -145,13 +145,17 @@ class MeteogramWidgetProvider : HomeWidgetProvider() {
             .putFloat("widget_density", density)
             .commit()
 
-        // Trigger chart re-render with new dimensions
+        // Trigger chart re-render with new dimensions (pass in URI for cold-start reliability)
         try {
+            // Get current system locale (Platform.localeName in Dart may be stale in background)
+            val locale = java.util.Locale.getDefault()
+            val localeStr = "${locale.language}_${locale.country}"
+
             es.antonborri.home_widget.HomeWidgetBackgroundIntent.getBroadcast(
                 context,
-                android.net.Uri.parse("homewidget://chartReRender")
+                android.net.Uri.parse("homewidget://chartReRender?width=$widthPx&height=$heightPx&locale=$localeStr")
             ).send()
-            Log.d(TAG, "Chart re-render triggered for new dimensions")
+            Log.d(TAG, "Chart re-render triggered for new dimensions (locale=$localeStr)")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to trigger chart re-render: ${e.message}")
         }

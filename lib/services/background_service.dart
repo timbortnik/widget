@@ -18,6 +18,22 @@ void _log(String message) {
   print('[BackgroundService] $message');
 }
 
+/// Get current system locale from Platform.localeName.
+/// Returns Locale with language and country code (e.g., en_US -> Locale('en', 'US'))
+Locale _getSystemLocale() {
+  final localeName = Platform.localeName;
+  _log('System locale: $localeName');
+
+  // Parse locale string (formats: "en", "en_US", "en-US", "en_US.UTF-8")
+  final cleaned = localeName.split('.').first; // Remove .UTF-8 suffix
+  final parts = cleaned.split(RegExp(r'[_-]'));
+
+  if (parts.length >= 2) {
+    return Locale(parts[0], parts[1].toUpperCase());
+  }
+  return Locale(parts[0]);
+}
+
 const String weatherUpdateTask = 'weatherUpdateTask';
 const String periodicWeatherTask = 'periodicWeatherTask';
 const String chartRenderTask = 'chartRenderTask';
@@ -75,8 +91,9 @@ Future<void> homeWidgetBackgroundCallback(Uri? uri) async {
       break;
     case 'chartrerender':
       // Re-render charts from cached data (no network call)
+      // Dimensions may be passed in URI query params for cold-start reliability
       _log('homeWidgetBackgroundCallback: executing chartReRender');
-      await _reRenderCharts();
+      await _reRenderCharts(uri);
       break;
     default:
       _log('homeWidgetBackgroundCallback: unknown host ${uri.host}');
@@ -86,6 +103,10 @@ Future<void> homeWidgetBackgroundCallback(Uri? uri) async {
 /// Update weather data in background
 Future<void> _updateWeatherData() async {
   _log('_updateWeatherData started');
+
+  // Initialize locale data for DateFormat (required in background isolate)
+  await initializeDateFormatting();
+
   final locationService = LocationService();
   final weatherService = WeatherService();
 
@@ -115,8 +136,10 @@ Future<void> _updateWeatherData() async {
     );
     _log('Cached weather data and timestamp');
 
-    // Get locale preference from SharedPreferences
-    final usesFahrenheit = await HomeWidget.getWidgetData<bool>('usesFahrenheit') ?? false;
+    // Get current system locale for temperature formatting
+    final systemLocale = _getSystemLocale();
+    final usesFahrenheit = UnitsService.usesFahrenheit(systemLocale);
+    _log('Using locale: ${systemLocale.toLanguageTag()}, usesFahrenheit: $usesFahrenheit');
 
     final currentHour = weather.getCurrentHour();
     final tempString = currentHour != null
@@ -145,8 +168,21 @@ Future<void> _updateWeatherData() async {
 
 /// Re-render charts from cached weather data (no network call).
 /// Used for locale/timezone/theme changes where data doesn't need refreshing.
-Future<void> _reRenderCharts() async {
-  _log('_reRenderCharts started');
+/// Dimensions and locale can be passed in URI query params for cold-start reliability.
+Future<void> _reRenderCharts([Uri? uri]) async {
+  _log('_reRenderCharts started with uri: $uri');
+
+  // Extract params from URI if provided (more reliable than SharedPreferences/Platform in cold-start)
+  int? uriWidth;
+  int? uriHeight;
+  String? uriLocale;
+  if (uri != null) {
+    uriWidth = int.tryParse(uri.queryParameters['width'] ?? '');
+    uriHeight = int.tryParse(uri.queryParameters['height'] ?? '');
+    uriLocale = uri.queryParameters['locale'];
+    _log('_reRenderCharts: URI dimensions=${uriWidth}x$uriHeight, locale=$uriLocale');
+  }
+
   try {
     // Initialize locale data for DateFormat (required in background isolate)
     await initializeDateFormatting();
@@ -162,8 +198,8 @@ Future<void> _reRenderCharts() async {
     final latitude = await HomeWidget.getWidgetData<double>('cached_latitude') ?? 0.0;
     _log('_reRenderCharts: loaded weather with ${weather.hourly.length} hours');
 
-    // Regenerate SVG charts
-    await _generateSvgCharts(weather, latitude);
+    // Regenerate SVG charts (pass URI params if available)
+    await _generateSvgCharts(weather, latitude, uriWidth: uriWidth, uriHeight: uriHeight, uriLocale: uriLocale);
 
     // Update widget
     await HomeWidget.updateWidget(
@@ -177,18 +213,38 @@ Future<void> _reRenderCharts() async {
 }
 
 /// Generate SVG chart images for the widget.
-Future<void> _generateSvgCharts(WeatherData weather, double latitude) async {
+/// Optional uriWidth/uriHeight/uriLocale can be passed for cold-start reliability.
+Future<void> _generateSvgCharts(WeatherData weather, double latitude, {int? uriWidth, int? uriHeight, String? uriLocale}) async {
   try {
     final generator = SvgChartGenerator();
     final displayData = weather.getDisplayRange();
     final nowIndex = weather.getNowIndex();
 
-    // Get widget dimensions, locale, and temperature unit preference
-    final widthPx = await HomeWidget.getWidgetData<int>('widget_width_px') ?? 400;
-    final heightPx = await HomeWidget.getWidgetData<int>('widget_height_px') ?? 200;
-    final locale = await HomeWidget.getWidgetData<String>('locale') ?? 'en';
-    final usesFahrenheit = await HomeWidget.getWidgetData<bool>('usesFahrenheit') ?? false;
-    _log('_generateSvgCharts: dimensions=${widthPx}x${heightPx}');
+    // Get widget dimensions - prefer URI params (reliable in cold-start),
+    // fall back to SharedPreferences, then defaults
+    var widthPx = uriWidth ?? await HomeWidget.getWidgetData<int>('widget_width_px') ?? 400;
+    var heightPx = uriHeight ?? await HomeWidget.getWidgetData<int>('widget_height_px') ?? 200;
+    // Ensure valid dimensions (0 means not set)
+    if (widthPx <= 0) widthPx = 400;
+    if (heightPx <= 0) heightPx = 200;
+    _log('_generateSvgCharts: using dimensions=${widthPx}x$heightPx (uri=${uriWidth}x$uriHeight)');
+
+    // Get locale - prefer URI param (reliable when native passes it), fallback to Platform.localeName
+    Locale systemLocale;
+    if (uriLocale != null && uriLocale.isNotEmpty) {
+      // Parse locale from URI (format: "en_US" or "uk_UA")
+      final parts = uriLocale.split('_');
+      systemLocale = parts.length >= 2
+          ? Locale(parts[0], parts[1].toUpperCase())
+          : Locale(parts[0]);
+      _log('_generateSvgCharts: using URI locale: $uriLocale -> $systemLocale');
+    } else {
+      systemLocale = _getSystemLocale();
+      _log('_generateSvgCharts: using Platform locale: $systemLocale');
+    }
+    final locale = systemLocale.toLanguageTag();
+    final usesFahrenheit = UnitsService.usesFahrenheit(systemLocale);
+    _log('_generateSvgCharts: locale=$locale, usesFahrenheit=$usesFahrenheit');
 
     // Get persisted Material You colors (fall back to defaults if not set)
     final lightTempColor = await HomeWidget.getWidgetData<int>('material_you_light_temp');

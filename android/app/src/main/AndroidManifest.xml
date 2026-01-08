@@ -82,6 +82,18 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
+
+        <!-- Widget event receiver for system broadcasts that trigger widget updates -->
+        <!-- LOCALE_CHANGED and TIMEZONE_CHANGED are exempt from Android 8.0+ restrictions -->
+        <!-- USER_PRESENT and CONNECTIVITY_CHANGE are registered at runtime in MeteogramApplication -->
+        <receiver
+            android:name=".WidgetEventReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.LOCALE_CHANGED" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+            </intent-filter>
+        </receiver>
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

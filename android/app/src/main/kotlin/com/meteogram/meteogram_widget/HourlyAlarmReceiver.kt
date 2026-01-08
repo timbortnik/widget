@@ -151,11 +151,20 @@ class HourlyAlarmReceiver : BroadcastReceiver() {
 
     private fun triggerChartReRender(context: Context) {
         try {
+            // Read dimensions from SharedPreferences and pass in URI for cold-start reliability
+            val prefs = context.getSharedPreferences("HomeWidgetPreferences", Context.MODE_PRIVATE)
+            val widthPx = prefs.getInt("widget_width_px", 400)
+            val heightPx = prefs.getInt("widget_height_px", 200)
+
+            // Get current system locale (Platform.localeName in Dart may be stale in background)
+            val locale = java.util.Locale.getDefault()
+            val localeStr = "${locale.language}_${locale.country}"
+
             es.antonborri.home_widget.HomeWidgetBackgroundIntent.getBroadcast(
                 context,
-                android.net.Uri.parse("homewidget://chartReRender")
+                android.net.Uri.parse("homewidget://chartReRender?width=$widthPx&height=$heightPx&locale=$localeStr")
             ).send()
-            Log.d(TAG, "Chart re-render triggered via HomeWidget")
+            Log.d(TAG, "Chart re-render triggered via HomeWidget (${widthPx}x${heightPx}, locale=$localeStr)")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to trigger chart re-render: ${e.message}")
         }

@@ -31,16 +31,17 @@ class MeteogramApplication : Application() {
     private fun registerEventReceiver() {
         if (receiverRegistered) return
 
+        // LOCALE_CHANGED and TIMEZONE_CHANGED are handled by manifest-declared receiver
+        // (required because app process is killed on locale change)
+        // USER_PRESENT and CONNECTIVITY_CHANGE require runtime registration
         val filter = IntentFilter().apply {
             addAction(Intent.ACTION_USER_PRESENT)
-            addAction(Intent.ACTION_LOCALE_CHANGED)
-            addAction(Intent.ACTION_TIMEZONE_CHANGED)
             addAction("android.net.conn.CONNECTIVITY_CHANGE")
         }
 
         // Use RECEIVER_EXPORTED to receive system broadcasts (USER_PRESENT, etc.)
         registerReceiver(widgetEventReceiver, filter, RECEIVER_EXPORTED)
         receiverRegistered = true
-        Log.d(TAG, "Widget event receiver registered")
+        Log.d(TAG, "Widget event receiver registered (runtime: USER_PRESENT, CONNECTIVITY_CHANGE)")
     }
 }
