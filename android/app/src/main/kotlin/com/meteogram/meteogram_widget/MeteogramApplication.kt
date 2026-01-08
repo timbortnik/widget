@@ -21,6 +21,11 @@ class MeteogramApplication : Application() {
         super.onCreate()
         Log.d(TAG, "Application onCreate")
         registerEventReceiver()
+        scheduleHourlyAlarm()
+    }
+
+    private fun scheduleHourlyAlarm() {
+        HourlyAlarmReceiver.scheduleNextAlarm(this)
     }
 
     private fun registerEventReceiver() {
