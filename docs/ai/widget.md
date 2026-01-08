@@ -426,28 +426,40 @@ private fun fetchWeatherIfStale(context: Context) {
 
 #### Hourly Alarm for "Now" Indicator
 
-The widget uses `AlarmManager` to re-render the chart at each hour boundary, keeping the "now" indicator current:
+The widget uses `AlarmManager` to re-render the chart at each hour boundary, keeping the "now" indicator current.
+
+**Buffer + Verification Approach:**
+To ensure the alarm always fires AFTER the hour change (never before):
+
+1. Schedule alarm for XX:00:15 (15-second buffer after the hour)
+2. When alarm fires, verify we're past the hour (minute != 59)
+3. If fired early, retry after 30 seconds
 
 ```kotlin
 // HourlyAlarmReceiver.kt
 fun scheduleNextAlarm(context: Context) {
     val calendar = Calendar.getInstance().apply {
         set(Calendar.MINUTE, 0)
-        set(Calendar.SECOND, 0)
+        set(Calendar.SECOND, 15)  // 15-second buffer
         add(Calendar.HOUR_OF_DAY, 1)
     }
+    alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent)
+}
 
-    // Inexact alarm - may fire a few minutes before/after the hour
-    // Uses setAndAllowWhileIdle to avoid SCHEDULE_EXACT_ALARM permission
-    alarmManager.setAndAllowWhileIdle(
-        AlarmManager.RTC_WAKEUP,
-        calendar.timeInMillis,
-        pendingIntent
-    )
+fun handleHourlyUpdate(context: Context) {
+    val minute = Calendar.getInstance().get(Calendar.MINUTE)
+    if (minute == 59) {
+        // Fired early - retry in 30 seconds
+        scheduleRetry(context)
+        return
+    }
+    // Safe to re-render
+    triggerChartReRender(context)
+    scheduleNextAlarm(context)
 }
 ```
 
-The alarm triggers `chartReRender` (no weather fetch), updating only the "now" indicator position. Each alarm reschedules itself for the next hour.
+The alarm triggers `chartReRender` (no weather fetch), updating only the "now" indicator position.
 
 ### main.dart setup
 ```dart
