@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.content.res.Configuration
 import android.graphics.Bitmap
+import android.os.Build
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.os.Bundle
@@ -163,6 +164,17 @@ class MeteogramWidgetProvider : HomeWidgetProvider() {
         widgetData: SharedPreferences
     ) {
         Log.d(TAG, "onUpdate called for ${appWidgetIds.size} widgets")
+
+        // Check for Material You color changes (Android 12+)
+        // This detects wallpaper/theme color changes and triggers SVG re-generation
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (MaterialYouColorExtractor.checkAndUpdateColors(context)) {
+                Log.d(TAG, "Material You colors changed - triggering re-render")
+                WidgetUtils.triggerChartReRender(context)
+                // Continue with current render using old SVGs
+                // New SVGs will trigger another onUpdate when ready
+            }
+        }
 
         for (appWidgetId in appWidgetIds) {
             val views = RemoteViews(context.packageName, R.layout.meteogram_widget)

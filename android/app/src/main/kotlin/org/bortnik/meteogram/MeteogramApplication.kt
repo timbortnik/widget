@@ -21,7 +21,13 @@ class MeteogramApplication : Application() {
         super.onCreate()
         Log.d(TAG, "Application onCreate")
         registerEventReceiver()
+        enqueueMaterialYouColorObserver()
         scheduleHourlyAlarm()
+    }
+
+    private fun enqueueMaterialYouColorObserver() {
+        // Use WorkManager to observe Material You color changes via content URI trigger
+        MaterialYouColorWorker.enqueue(this)
     }
 
     private fun scheduleHourlyAlarm() {

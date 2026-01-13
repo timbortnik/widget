@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.os.Build
 import android.util.Log
 
 /**
@@ -32,8 +33,9 @@ class WidgetEventReceiver : BroadcastReceiver() {
 
         when (intent.action) {
             Intent.ACTION_USER_PRESENT -> {
-                // Screen unlocked - fetch only if stale
-                Log.d(TAG, "User present - checking staleness")
+                // Screen unlocked - check for Material You color changes and fetch if stale
+                Log.d(TAG, "User present - checking colors and staleness")
+                checkMaterialYouColors(context)
                 fetchWeatherIfStale(context)
             }
             Intent.ACTION_LOCALE_CHANGED -> {
@@ -52,6 +54,17 @@ class WidgetEventReceiver : BroadcastReceiver() {
                     Log.d(TAG, "Network available - checking staleness")
                     fetchWeatherIfStale(context)
                 }
+            }
+        }
+    }
+
+    private fun checkMaterialYouColors(context: Context) {
+        // Check for Material You color changes (Android 12+)
+        // This catches changes made while app was force-closed
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (MaterialYouColorExtractor.checkAndUpdateColors(context)) {
+                Log.d(TAG, "Material You colors changed - triggering re-render")
+                WidgetUtils.triggerChartReRender(context)
             }
         }
     }

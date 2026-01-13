@@ -55,6 +55,9 @@ dependencies {
     // AndroidSVG for rendering SVG charts in the widget
     implementation("com.caverock:androidsvg-aar:1.4")
 
+    // WorkManager for observing Material You color changes
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
+
     // Unit testing
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.2.1")

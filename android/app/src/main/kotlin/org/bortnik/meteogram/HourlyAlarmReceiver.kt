@@ -136,6 +136,14 @@ class HourlyAlarmReceiver : BroadcastReceiver() {
     }
 
     private fun triggerChartReRender(context: Context) {
+        // Check for Material You color changes (Android 12+)
+        // This catches changes made while app was force-closed
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (MaterialYouColorExtractor.checkAndUpdateColors(context)) {
+                Log.d(TAG, "Material You colors changed - will re-render with new colors")
+            }
+        }
+
         WidgetUtils.triggerChartReRender(context)
     }
 }
