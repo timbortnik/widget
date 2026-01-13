@@ -278,7 +278,7 @@ void main() {
       String? capturedLanguage;
       final mockClient = MockClient((request) async {
         capturedLanguage = request.url.queryParameters['language'];
-        return http.Response(jsonEncode({'results': []}), 200);
+        return http.Response(jsonEncode({'results': <dynamic>[]}), 200);
       });
 
       final service = LocationService(client: mockClient);
@@ -435,7 +435,7 @@ void main() {
       String? capturedLanguage;
       final mockClient = MockClient((request) async {
         capturedLanguage = request.url.queryParameters['language'];
-        return http.Response(jsonEncode({'results': []}), 200);
+        return http.Response(jsonEncode({'results': <dynamic>[]}), 200);
       });
 
       final service = LocationService(client: mockClient);

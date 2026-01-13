@@ -1,11 +1,9 @@
-import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:meteogram_widget/models/weather_data.dart';
 import 'package:meteogram_widget/services/weather_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
