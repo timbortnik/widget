@@ -95,6 +95,49 @@ Colors are stored in `HomeWidgetPreferences` for Flutter to read:
 - `material_you_dark_time` - Dark theme time label color (ARGB int)
 - `material_you_colors_hash` - XOR hash for quick change detection
 
+## Why Standard Broadcasts Don't Work
+
+### ACTION_CONFIGURATION_CHANGED
+
+A common question is whether `Intent.ACTION_CONFIGURATION_CHANGED` can detect Material You color changes. **It cannot.**
+
+`ACTION_CONFIGURATION_CHANGED` fires for changes to Android's `Configuration` class:
+- ✅ Dark ↔ Light mode (`uiMode`)
+- ✅ Locale changes
+- ✅ Screen orientation
+- ✅ Font scale
+- ❌ **Material You accent colors**
+
+Material You palette colors (blue → green → purple) are stored in `Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES`, which is a **system setting**, not part of the `Configuration` class. Android does not broadcast when this setting changes.
+
+### Dark/Light Mode vs Material You Colors
+
+These are two separate concerns:
+
+| Aspect | Dark/Light Mode | Material You Colors |
+|--------|-----------------|---------------------|
+| Storage | `Configuration.uiMode` | `Settings.Secure` |
+| Broadcast | `ACTION_CONFIGURATION_CHANGED` | None |
+| Our solution | Dual SVGs with XML visibility | ContentObserver + fallbacks |
+
+**Dark/light mode** is handled automatically by Android. The widget XML uses:
+```xml
+<ImageView android:visibility="@{isNightMode ? gone : visible}" />  <!-- light -->
+<ImageView android:visibility="@{isNightMode ? visible : gone}" />  <!-- dark -->
+```
+RemoteViews switches visibility instantly when system theme changes - no app code needed.
+
+**Material You accent colors** require active detection because Android provides no broadcast. This is why we use the multi-layered approach (ContentObserver, WorkManager, USER_PRESENT, etc.).
+
+### Why Themed Icons Update Instantly
+
+Android adaptive/themed icons update instantly when Material You colors change because the **launcher renders them**, not the app. The launcher:
+1. Receives the icon as a monochrome drawable
+2. Applies current Material You colors at render time
+3. Re-renders when colors change (launcher observes the setting)
+
+Widgets are different - the **app pre-renders** the content as RemoteViews/bitmaps. The launcher just displays what the app provides. This is why widgets need explicit change detection.
+
 ## Dependencies
 
 WorkManager is used for content URI observation:
