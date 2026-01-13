@@ -24,6 +24,7 @@ class NativeSvgChartView extends StatefulWidget {
 class _NativeSvgChartViewState extends State<NativeSvgChartView> {
   MethodChannel? _channel;
   int? _viewId;
+  String? _lastRenderedSvg;
 
   @override
   Widget build(BuildContext context) {
@@ -48,6 +49,16 @@ class _NativeSvgChartViewState extends State<NativeSvgChartView> {
   void _onPlatformViewCreated(int viewId) {
     _viewId = viewId;
     _channel = MethodChannel('org.bortnik.svg_chart_view_$viewId');
+
+    // If SVG changed while view was being created, render the latest version
+    if (_lastRenderedSvg != null && _lastRenderedSvg != widget.svgString) {
+      _channel!.invokeMethod('renderSvg', {
+        'svg': widget.svgString,
+        'width': widget.width.round(),
+        'height': widget.height.round(),
+      });
+    }
+    _lastRenderedSvg = widget.svgString;
   }
 
   @override
@@ -55,16 +66,18 @@ class _NativeSvgChartViewState extends State<NativeSvgChartView> {
     super.didUpdateWidget(oldWidget);
 
     // Re-render if SVG or dimensions changed
-    if (_viewId != null &&
-        _channel != null &&
-        (oldWidget.svgString != widget.svgString ||
-            oldWidget.width != widget.width ||
-            oldWidget.height != widget.height)) {
-      _channel!.invokeMethod('renderSvg', {
-        'svg': widget.svgString,
-        'width': widget.width.round(),
-        'height': widget.height.round(),
-      });
+    if (oldWidget.svgString != widget.svgString ||
+        oldWidget.width != widget.width ||
+        oldWidget.height != widget.height) {
+      _lastRenderedSvg = widget.svgString;
+      if (_viewId != null && _channel != null) {
+        _channel!.invokeMethod('renderSvg', {
+          'svg': widget.svgString,
+          'width': widget.width.round(),
+          'height': widget.height.round(),
+        });
+      }
+      // If view not ready yet, it will render the latest SVG when created
     }
   }
 }

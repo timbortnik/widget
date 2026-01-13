@@ -142,6 +142,7 @@ Future<void> _updateWeatherData() async {
 /// Re-render charts from cached weather data (no network call).
 /// Used for locale/timezone/theme changes where data doesn't need refreshing.
 /// Dimensions and locale can be passed in URI query params for cold-start reliability.
+/// If cached data is stale (>15 min old), fetches fresh data instead.
 Future<void> _reRenderCharts([Uri? uri]) async {
   _log('_reRenderCharts started with uri: $uri');
 
@@ -160,16 +161,29 @@ Future<void> _reRenderCharts([Uri? uri]) async {
     // Initialize locale data for DateFormat (required in background isolate)
     await initializeDateFormatting();
 
+    // Check if cached data is stale (>15 minutes old)
+    final lastUpdate = await HomeWidget.getWidgetData<int>('last_weather_update') ?? 0;
+    final ageMs = DateTime.now().millisecondsSinceEpoch - lastUpdate;
+    const staleThresholdMs = 15 * 60 * 1000; // 15 minutes
+
+    if (ageMs > staleThresholdMs) {
+      _log('_reRenderCharts: cached data is stale (${ageMs ~/ 60000} min old), fetching fresh data');
+      await _updateWeatherData();
+      return;
+    }
+
     // Load cached weather data
     final cachedJson = await HomeWidget.getWidgetData<String>('cached_weather');
     if (cachedJson == null) {
-      _log('_reRenderCharts: no cached weather data');
+      _log('_reRenderCharts: no cached weather data, fetching fresh');
+      await _updateWeatherData();
       return;
     }
 
     final weather = WeatherData.fromJson(jsonDecode(cachedJson) as Map<String, dynamic>);
     final latitude = await HomeWidget.getWidgetData<double>('cached_latitude') ?? 0.0;
-    _log('_reRenderCharts: loaded weather with ${weather.hourly.length} hours');
+    final nowIndex = weather.getNowIndex();
+    _log('_reRenderCharts: loaded weather with ${weather.hourly.length} hours, nowIndex=$nowIndex (${ageMs ~/ 60000} min old)');
 
     // Regenerate SVG charts (pass URI params if available)
     await _generateSvgCharts(weather, latitude, uriWidth: uriWidth, uriHeight: uriHeight, uriLocale: uriLocale);

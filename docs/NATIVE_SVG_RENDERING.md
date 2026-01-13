@@ -660,6 +660,64 @@ dependencies {
 5. **Theme Support** - Both light and dark themes generated and cached
 6. **Cross-Context** - Works in app, widget, and background service
 
+## Rendering Synchronization
+
+To ensure correct rendering, several synchronization mechanisms are in place:
+
+### Dimension Consistency
+
+All code paths use the same default dimensions to avoid aspect ratio mismatches:
+
+| Location | Default Dimensions |
+|----------|-------------------|
+| `WidgetUtils.kt` | 1000×500 |
+| `background_service.dart` | 1000×500 |
+| `widget_service.dart` | 1000×500 |
+
+When `getAppWidgetOptions()` returns invalid dimensions (0×0), the widget falls back to saved dimensions from SharedPreferences.
+
+### App Initialization Order
+
+The app waits for dimensions before rendering the chart:
+
+```dart
+Future<void> _initialize() async {
+  await _loadWidgetDimensions();  // Wait for aspect ratio
+  await _initializeData();        // Then load weather data
+}
+```
+
+This ensures the chart renders with the correct aspect ratio from the start, avoiding visual jumps.
+
+### Color Change Re-rendering
+
+When Material You colors change while the native view is being created, the `NativeSvgChartView` tracks pending updates:
+
+```dart
+void _onPlatformViewCreated(int viewId) {
+  // If SVG changed while view was being created, render the latest
+  if (_lastRenderedSvg != null && _lastRenderedSvg != widget.svgString) {
+    _channel!.invokeMethod('renderSvg', {...});
+  }
+  _lastRenderedSvg = widget.svgString;
+}
+```
+
+This handles the race condition where `DynamicColorBuilder` provides new colors before the native view is ready.
+
+### Stale Data Protection
+
+When re-rendering charts (e.g., for color changes), the background service checks data staleness:
+
+```dart
+if (ageMs > staleThresholdMs) {  // 15 minutes
+  await _updateWeatherData();    // Fetch fresh data
+  return;
+}
+```
+
+This prevents displaying charts with outdated time labels.
+
 ## Limitations
 
 1. **Android Only** - iOS would need similar implementation with SVGKit or Core Graphics

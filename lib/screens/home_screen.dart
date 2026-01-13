@@ -72,8 +72,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _loadWidgetDimensions();
-    _initializeData();
+    _initialize();
+  }
+
+  /// Combined initialization: load dimensions first, then data.
+  /// Ensures chart renders with correct aspect ratio from the start.
+  Future<void> _initialize() async {
+    // Load widget dimensions first (needed for chart aspect ratio)
+    await _loadWidgetDimensions();
+    // Then initialize weather data
+    await _initializeData();
   }
 
   /// Initialize data on cold start.

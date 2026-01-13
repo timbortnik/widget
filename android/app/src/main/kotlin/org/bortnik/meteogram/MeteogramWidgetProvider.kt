@@ -186,10 +186,10 @@ class MeteogramWidgetProvider : HomeWidgetProvider() {
             val density = context.resources.displayMetrics.density
 
             // Convert dp to pixels
-            val widthPx = (minWidth * density).toInt()
-            val heightPx = (maxHeight * density).toInt()
+            var widthPx = (minWidth * density).toInt()
+            var heightPx = (maxHeight * density).toInt()
 
-            Log.d(TAG, "Widget dimensions: ${minWidth}dp x ${maxHeight}dp = ${widthPx}px x ${heightPx}px (density: $density)")
+            Log.d(TAG, "Widget dimensions from options: ${minWidth}dp x ${maxHeight}dp = ${widthPx}px x ${heightPx}px (density: $density)")
 
             // Save dimensions to SharedPreferences for Flutter to read (only if valid)
             // getAppWidgetOptions can return 0 in some scenarios - don't overwrite valid dimensions
@@ -201,7 +201,12 @@ class MeteogramWidgetProvider : HomeWidgetProvider() {
                     .putFloat("widget_density", density)
                     .commit()
             } else {
-                Log.d(TAG, "Skipping dimension save - invalid dimensions")
+                // getAppWidgetOptions returned invalid dimensions - use saved/default dimensions for rendering
+                Log.d(TAG, "Invalid dimensions from options - using saved/default")
+                val (savedWidth, savedHeight) = WidgetUtils.getWidgetDimensions(context)
+                widthPx = savedWidth
+                heightPx = savedHeight
+                Log.d(TAG, "Using dimensions: ${widthPx}x${heightPx}px")
             }
 
             // Set up tap to open app

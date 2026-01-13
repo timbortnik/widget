@@ -11,6 +11,10 @@ import 'units_service.dart';
 const String kLightSvgFileName = 'meteogram_light.svg';
 const String kDarkSvgFileName = 'meteogram_dark.svg';
 
+/// Default fallback dimensions - must match WidgetUtils.kt and background_service.dart
+const int kDefaultWidthPx = 1000;
+const int kDefaultHeightPx = 500;
+
 /// Widget dimensions in pixels as reported by the native widget provider.
 class WidgetDimensions {
   final int widthPx;
@@ -95,10 +99,10 @@ class WidgetService {
     try {
       final generator = SvgChartGenerator();
 
-      // Get widget dimensions
+      // Get widget dimensions (use consistent defaults across all code paths)
       final dimensions = await getWidgetDimensions();
-      final widthPx = dimensions?.widthPx ?? 400;
-      final heightPx = dimensions?.heightPx ?? 200;
+      final widthPx = dimensions?.widthPx ?? kDefaultWidthPx;
+      final heightPx = dimensions?.heightPx ?? kDefaultHeightPx;
 
       // Generate light and dark SVGs with provided or default colors
       final svgLight = generator.generate(
