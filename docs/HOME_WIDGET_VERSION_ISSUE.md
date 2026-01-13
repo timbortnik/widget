@@ -39,9 +39,24 @@ Tested commits:
 - `49c18c1` (home_widget 0.9.0) - **BAD** - Resize delayed/unreliable
 - `817c817` (home_widget 0.9.0) - **BAD** - Resize delayed/unreliable
 
-## Workarounds
+## Resolution
 
-### Option 1: Downgrade home_widget (Recommended)
+**Applied: Option 1 - Downgrade to home_widget 0.7.0+1**
+
+Commit `f305526` implements this fix:
+- Pinned `home_widget` to 0.7.0+1 in `pubspec.yaml`
+- Removed `workmanager` dependency (not needed with 0.7.0+1)
+- Removed WorkManager-related code from `background_service.dart`
+
+Widget resize now works immediately.
+
+**Note on deprecation**: `JobIntentService` is deprecated (API 30) but still functional. This doesn't affect Play Store publishing (targetSdk requirements are separate from internal API usage). Monitor for future Android versions that may remove the API.
+
+---
+
+## Alternative Workarounds (Not Used)
+
+### Option 1: Downgrade home_widget ✓ APPLIED
 
 Pin `home_widget` to version 0.7.0+1 in `pubspec.yaml`:
 
