@@ -12,7 +12,6 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await WidgetService.initialize();
   await BackgroundService.initialize();
-  await BackgroundService.registerPeriodicTask();
   runApp(const MeteogramApp());
 }
 

@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:developer' as developer;
 import 'dart:io';
 import 'package:flutter/widgets.dart';
-import 'package:workmanager/workmanager.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -38,44 +37,9 @@ Locale _getSystemLocale() {
   return Locale(parts[0]);
 }
 
-const String weatherUpdateTask = 'weatherUpdateTask';
-const String periodicWeatherTask = 'periodicWeatherTask';
-const String chartRenderTask = 'chartRenderTask';
-
 // Default fallback dimensions - must match WidgetUtils.kt
 const int kDefaultWidthPx = 1000;
 const int kDefaultHeightPx = 500;
-
-/// Background task dispatcher for WorkManager
-@pragma('vm:entry-point')
-void callbackDispatcher() {
-  Workmanager().executeTask((task, inputData) async {
-    // Initialize Flutter bindings for background isolate
-    WidgetsFlutterBinding.ensureInitialized();
-    _log('callbackDispatcher called with task: $task');
-    try {
-      switch (task) {
-        case weatherUpdateTask:
-        case periodicWeatherTask:
-          _log('Executing weather update task');
-          await _updateWeatherData();
-          _log('Weather update task completed');
-          return true;
-        case chartRenderTask:
-          _log('Executing chart render task');
-          await _reRenderCharts();
-          _log('Chart render task completed');
-          return true;
-        default:
-          _log('Unknown task: $task');
-          return true;
-      }
-    } catch (e, stack) {
-      _log('Task failed with error: $e\n$stack');
-      return false;
-    }
-  });
-}
 
 /// Background callback for HomeWidget (handles native events)
 @pragma('vm:entry-point')
@@ -336,25 +300,8 @@ Future<void> _generateSvgCharts(WeatherData weather, double latitude, {int? uriW
 /// Initialize background service
 class BackgroundService {
   static Future<void> initialize() async {
-    // Initialize WorkManager for periodic tasks
-    await Workmanager().initialize(callbackDispatcher);
-
     // Register HomeWidget background callback for native event handling
+    // Note: Periodic weather updates are handled by native HourlyAlarmReceiver
     await HomeWidget.registerInteractivityCallback(homeWidgetBackgroundCallback);
-  }
-
-  static Future<void> registerPeriodicTask() async {
-    await Workmanager().registerPeriodicTask(
-      periodicWeatherTask,
-      periodicWeatherTask,
-      frequency: const Duration(minutes: 30),
-      constraints: Constraints(
-        networkType: NetworkType.connected,
-      ),
-    );
-  }
-
-  static Future<void> cancelAll() async {
-    await Workmanager().cancelAll();
   }
 }
