@@ -7,6 +7,7 @@ import android.util.Log
 import androidx.work.Constraints
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkManager
 import androidx.work.Worker
 import androidx.work.WorkerParameters
@@ -54,6 +55,7 @@ class MaterialYouColorWorker(
 
                 val workRequest = OneTimeWorkRequestBuilder<MaterialYouColorWorker>()
                     .setConstraints(constraints)
+                    .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
                     .build()
 
                 WorkManager.getInstance(context).enqueueUniqueWork(
