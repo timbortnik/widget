@@ -3,6 +3,11 @@ package org.bortnik.meteogram
 import android.app.Application
 import android.content.Intent
 import android.content.IntentFilter
+import android.database.ContentObserver
+import android.os.Build
+import android.os.Handler
+import android.os.Looper
+import android.provider.Settings
 import android.util.Log
 
 /**
@@ -12,21 +17,50 @@ import android.util.Log
 class MeteogramApplication : Application() {
     companion object {
         private const val TAG = "MeteogramApp"
+        private const val THEME_CUSTOMIZATION_KEY = "theme_customization_overlay_packages"
     }
 
     private val widgetEventReceiver = WidgetEventReceiver()
     private var receiverRegistered = false
+    private var themeObserver: ContentObserver? = null
 
     override fun onCreate() {
         super.onCreate()
         Log.d(TAG, "Application onCreate")
         registerEventReceiver()
+        registerThemeObserver()
         enqueueMaterialYouColorObserver()
         scheduleHourlyAlarm()
     }
 
+    /**
+     * Register ContentObserver for immediate Material You color change detection.
+     * This fires instantly when colors change (while app process is alive).
+     * WorkManager and USER_PRESENT provide fallback when app is killed.
+     */
+    private fun registerThemeObserver() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return
+
+        try {
+            val uri = Settings.Secure.getUriFor(THEME_CUSTOMIZATION_KEY)
+            themeObserver = object : ContentObserver(Handler(Looper.getMainLooper())) {
+                override fun onChange(selfChange: Boolean) {
+                    Log.d(TAG, "Theme customization changed (ContentObserver)")
+                    if (MaterialYouColorExtractor.checkAndUpdateColors(applicationContext)) {
+                        Log.d(TAG, "Material You colors changed - triggering re-render")
+                        WidgetUtils.triggerChartReRender(applicationContext)
+                    }
+                }
+            }
+            contentResolver.registerContentObserver(uri, false, themeObserver!!)
+            Log.d(TAG, "Theme ContentObserver registered")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to register theme observer", e)
+        }
+    }
+
     private fun enqueueMaterialYouColorObserver() {
-        // Use WorkManager to observe Material You color changes via content URI trigger
+        // WorkManager fallback for when app is killed (fires on next process start)
         MaterialYouColorWorker.enqueue(this)
     }
 
