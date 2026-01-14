@@ -237,7 +237,8 @@ class MeteogramWidgetProvider : HomeWidgetProvider() {
             val lightBitmap = loadChartBitmap(svgLightPath, pngLightPath, widthPx, heightPx)
             if (lightBitmap != null) {
                 views.setImageViewBitmap(R.id.widget_chart_light, lightBitmap)
-                lightBitmap.recycle() // RemoteViews parcelizes bitmap, safe to recycle
+                // Don't recycle - RemoteViews needs bitmap during IPC serialization
+                // Let GC handle cleanup after RemoteViews is done with it
                 hasChart = true
                 Log.d(TAG, "Light chart loaded")
             }
@@ -246,7 +247,7 @@ class MeteogramWidgetProvider : HomeWidgetProvider() {
             val darkBitmap = loadChartBitmap(svgDarkPath, pngDarkPath, widthPx, heightPx)
             if (darkBitmap != null) {
                 views.setImageViewBitmap(R.id.widget_chart_dark, darkBitmap)
-                darkBitmap.recycle() // RemoteViews parcelizes bitmap, safe to recycle
+                // Don't recycle - let GC handle cleanup
                 hasChart = true
                 Log.d(TAG, "Dark chart loaded")
             }

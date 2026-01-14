@@ -186,6 +186,11 @@ class WeatherService {
     await prefs.remove(_cacheKey);
     await prefs.remove(_cacheLocationKey);
   }
+
+  /// Dispose of resources (close HTTP client).
+  void dispose() {
+    _client.close();
+  }
 }
 
 /// Exception thrown when weather data cannot be fetched.

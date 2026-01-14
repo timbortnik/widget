@@ -120,6 +120,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   @override
   void dispose() {
     _refreshTimer?.cancel();
+    _weatherService.dispose();
+    _locationService.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }

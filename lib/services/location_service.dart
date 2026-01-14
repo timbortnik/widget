@@ -366,6 +366,11 @@ class LocationService {
   }
 
   static const String _recentCitiesKey = 'recent_cities';
+
+  /// Dispose of resources (close HTTP client).
+  void dispose() {
+    _client.close();
+  }
 }
 
 /// How the location was determined.
