@@ -20,7 +20,7 @@
   "offline": "ऑफलाइन",
   "forecastHours": "{hours} घंटे का पूर्वानुमान",
   "maxPrecipitation": "अधिकतम {amount}",
-  "maxSunshine": "अधिकतम {percent}%",
+  "maxDaylight": "अधिकतम {percent}%",
   "precipitationRate": "{amount} मिमी/घंटा",
   "locationSourceGps": "GPS",
   "locationSourceManual": "मैन्युअल",

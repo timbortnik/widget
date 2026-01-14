@@ -20,7 +20,7 @@
   "offline": "오프라인",
   "forecastHours": "{hours}시간 예보",
   "maxPrecipitation": "최대 {amount}",
-  "maxSunshine": "최대 {percent}%",
+  "maxDaylight": "최대 {percent}%",
   "precipitationRate": "{amount} mm/시",
   "locationSourceGps": "GPS",
   "locationSourceManual": "수동",

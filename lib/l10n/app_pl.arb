@@ -20,7 +20,7 @@
   "offline": "OFFLINE",
   "forecastHours": "Prognoza na {hours} godz.",
   "maxPrecipitation": "Maks. {amount}",
-  "maxSunshine": "Maks. {percent}%",
+  "maxDaylight": "Maks. {percent}%",
   "precipitationRate": "{amount} mm/godz.",
   "locationSourceGps": "GPS",
   "locationSourceManual": "Ręcznie",

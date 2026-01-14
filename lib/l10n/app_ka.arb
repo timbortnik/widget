@@ -20,7 +20,7 @@
   "offline": "ᲝᲤᲚᲐᲘᲜ",
   "forecastHours": "{hours} საათის პროგნოზი",
   "maxPrecipitation": "მაქს {amount}",
-  "maxSunshine": "მაქს {percent}%",
+  "maxDaylight": "მაქს {percent}%",
   "precipitationRate": "{amount} მმ/სთ",
   "locationSourceGps": "GPS",
   "locationSourceManual": "ხელით",

@@ -20,7 +20,7 @@
   "offline": "АФЛАЙН",
   "forecastHours": "Прагноз на {hours} гадзін",
   "maxPrecipitation": "Макс {amount}",
-  "maxSunshine": "Макс {percent}%",
+  "maxDaylight": "Макс {percent}%",
   "precipitationRate": "{amount} мм/гадз",
   "locationSourceGps": "GPS",
   "locationSourceManual": "Уручную",

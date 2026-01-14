@@ -20,7 +20,7 @@
   "offline": "离线",
   "forecastHours": "{hours}小时预报",
   "maxPrecipitation": "最大 {amount}",
-  "maxSunshine": "最大 {percent}%",
+  "maxDaylight": "最大 {percent}%",
   "precipitationRate": "{amount} 毫米/小时",
   "locationSourceGps": "GPS",
   "locationSourceManual": "手动",

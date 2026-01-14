@@ -114,7 +114,7 @@ void main() {
       expect(copied.gridLine, MeteogramColors.light.gridLine);
       expect(copied.labelText, MeteogramColors.light.labelText);
       expect(copied.primaryText, MeteogramColors.light.primaryText);
-      expect(copied.sunshineBar, MeteogramColors.light.sunshineBar);
+      expect(copied.daylightBar, MeteogramColors.light.daylightBar);
     });
   });
 

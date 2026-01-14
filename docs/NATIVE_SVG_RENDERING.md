@@ -179,7 +179,7 @@ This approach works because:
 │  │  • Pure Dart (no dart:ui imports)                        │    │
 │  │  • Generates complete SVG strings                        │    │
 │  │  • Calculates solar elevation, illuminance               │    │
-│  │  • Creates temperature lines, sunshine/precip bars       │    │
+│  │  • Creates temperature lines, daylight/precip bars       │    │
 │  │  • Works in any isolate (main, background, compute)      │    │
 │  └─────────────────────┬───────────────────────────────────┘    │
 │                        │                                         │
@@ -249,7 +249,7 @@ class SvgColor {
 class SvgChartColors {
   static const light = SvgChartColors(
     temperatureLine: SvgColor(0xFF, 0x6B, 0x6B),      // Coral red
-    sunshineBar: SvgColor(0xFF, 0xF0, 0xAA),          // Pastel yellow
+    daylightBar: SvgColor(0xFF, 0xF0, 0xAA),          // Pastel yellow
     precipitationBar: SvgColor(0x4E, 0xCD, 0xC4),     // Teal
     cardBackground: SvgColor(0xFF, 0xFF, 0xFF),       // White
     // ...
@@ -257,7 +257,7 @@ class SvgChartColors {
 
   static const dark = SvgChartColors(
     temperatureLine: SvgColor(0xFF, 0x76, 0x75),      // Coral
-    sunshineBar: SvgColor(0xFF, 0xF0, 0xAA),          // Pastel yellow
+    daylightBar: SvgColor(0xFF, 0xF0, 0xAA),          // Pastel yellow
     precipitationBar: SvgColor(0x00, 0xCE, 0xC9),     // Cyan
     cardBackground: SvgColor(0x1B, 0x28, 0x38),       // Dark blue-gray
     // ...
@@ -288,7 +288,7 @@ class SvgChartGenerator {
         'fill="${colors.cardBackground.toHex()}"/>');
 
     // Chart layers (bottom to top)
-    _writeSunshineBars(svg, ...);      // Yellow bars from top
+    _writeDaylightBars(svg, ...);      // Yellow bars from top
     _writePrecipitationBars(svg, ...); // Teal bars from top
     _writeTemperatureLine(svg, ...);   // Curved line with fill
     _writeNowIndicator(svg, ...);      // Vertical "now" line
@@ -304,7 +304,7 @@ class SvgChartGenerator {
 
 #### Scientific Calculations (Pure Dart)
 
-The generator includes astronomical calculations for sunshine display:
+The generator includes astronomical calculations for daylight display:
 
 ```dart
 /// Solar elevation angle in degrees
@@ -344,8 +344,8 @@ double _clearSkyIlluminance(double elevation) {
   return 133775 * factor.clamp(0.0, double.infinity);
 }
 
-/// Combined sunshine value with cloud and precipitation attenuation
-double _calculateSunshine(HourlyData data, double latitude) {
+/// Combined daylight value with cloud and precipitation attenuation
+double _calculateDaylight(HourlyData data, double latitude) {
   final elevation = _solarElevation(latitude, data.time);
   final clearSkyLux = _clearSkyIlluminance(elevation);
   if (clearSkyLux <= 0) return 0;

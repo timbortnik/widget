@@ -20,7 +20,7 @@
   "offline": "HORS LIGNE",
   "forecastHours": "Prévisions {hours}h",
   "maxPrecipitation": "Max {amount}",
-  "maxSunshine": "Max {percent}%",
+  "maxDaylight": "Max {percent}%",
   "precipitationRate": "{amount} mm/h",
   "locationSourceGps": "GPS",
   "locationSourceManual": "Manuel",

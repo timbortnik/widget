@@ -166,8 +166,8 @@ void main() {
 
       // Precipitation should be unchanged
       expect(colors.precipitationBar.toHex(), SvgChartColors.light.precipitationBar.toHex());
-      // Sunshine should be unchanged
-      expect(colors.sunshineBar.toHex(), SvgChartColors.light.sunshineBar.toHex());
+      // Daylight should be unchanged
+      expect(colors.daylightBar.toHex(), SvgChartColors.light.daylightBar.toHex());
       // Card background should be unchanged
       expect(colors.cardBackground.toHex(), SvgChartColors.light.cardBackground.toHex());
     });

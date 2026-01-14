@@ -576,9 +576,9 @@ class MeteogramColors {
 ### Trade-off
 Doubles storage (two PNG files instead of one), but enables instant theme switching without any app code running.
 
-## Sunshine Calculation
+## Daylight Calculation
 
-The meteogram displays sunshine intensity as yellow bars, calculated using scientifically-grounded formulas.
+The meteogram displays daylight intensity as yellow bars, calculated using scientifically-grounded formulas.
 
 ### Solar Elevation (Astronomical)
 

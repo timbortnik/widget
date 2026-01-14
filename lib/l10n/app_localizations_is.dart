@@ -77,7 +77,7 @@ class AppLocalizationsIs extends AppLocalizations {
   }
 
   @override
-  String maxSunshine(int percent) {
+  String maxDaylight(int percent) {
     return 'Hám $percent%';
   }
 

@@ -20,7 +20,7 @@
   "offline": "OFFLINE",
   "forecastHours": "Ramalan {hours} jam",
   "maxPrecipitation": "Maks {amount}",
-  "maxSunshine": "Maks {percent}%",
+  "maxDaylight": "Maks {percent}%",
   "precipitationRate": "{amount} mm/jam",
   "locationSourceGps": "GPS",
   "locationSourceManual": "Manual",

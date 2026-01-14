@@ -36,8 +36,8 @@ class SvgChartColors {
   final SvgColor temperatureGradientEnd;
   final SvgColor precipitationBar;
   final SvgColor precipitationGradient;
-  final SvgColor sunshineBar;
-  final SvgColor sunshineGradient;
+  final SvgColor daylightBar;
+  final SvgColor daylightGradient;
   final SvgColor nowIndicator;
   final SvgColor timeLabel;
   final SvgColor cardBackground;
@@ -49,8 +49,8 @@ class SvgChartColors {
     required this.temperatureGradientEnd,
     required this.precipitationBar,
     required this.precipitationGradient,
-    required this.sunshineBar,
-    required this.sunshineGradient,
+    required this.daylightBar,
+    required this.daylightGradient,
     required this.nowIndicator,
     required this.timeLabel,
     required this.cardBackground,
@@ -63,8 +63,8 @@ class SvgChartColors {
     temperatureGradientEnd: SvgColor(0xFF, 0x6B, 0x6B, 0x00),
     precipitationBar: SvgColor(0x4E, 0xCD, 0xC4),
     precipitationGradient: SvgColor(0x4E, 0xCD, 0xC4, 0x80),
-    sunshineBar: SvgColor(0xFF, 0xF0, 0xAA),
-    sunshineGradient: SvgColor(0xFF, 0xD5, 0x80),
+    daylightBar: SvgColor(0xFF, 0xF0, 0xAA),
+    daylightGradient: SvgColor(0xFF, 0xD5, 0x80),
     nowIndicator: SvgColor(0x4A, 0x55, 0x68),
     timeLabel: SvgColor(0x4A, 0x55, 0x68),
     cardBackground: SvgColor(0xFF, 0xFF, 0xFF),
@@ -77,8 +77,8 @@ class SvgChartColors {
     temperatureGradientEnd: SvgColor(0xFF, 0x76, 0x75, 0x00),
     precipitationBar: SvgColor(0x00, 0xCE, 0xC9),
     precipitationGradient: SvgColor(0x00, 0xCE, 0xC9, 0x80),
-    sunshineBar: SvgColor(0xFF, 0xF0, 0xAA),
-    sunshineGradient: SvgColor(0xFF, 0xD0, 0x80),
+    daylightBar: SvgColor(0xFF, 0xF0, 0xAA),
+    daylightGradient: SvgColor(0xFF, 0xD0, 0x80),
     nowIndicator: SvgColor(0xE0, 0xE0, 0xE0),
     timeLabel: SvgColor(0xE0, 0xE0, 0xE0),
     cardBackground: SvgColor(0x1B, 0x28, 0x38),
@@ -107,8 +107,8 @@ class SvgChartColors {
       ),
       precipitationBar: precipitationBar,
       precipitationGradient: precipitationGradient,
-      sunshineBar: sunshineBar,
-      sunshineGradient: sunshineGradient,
+      daylightBar: daylightBar,
+      daylightGradient: daylightGradient,
       nowIndicator: nowIndicator,
       timeLabel: timeLabel,
       cardBackground: cardBackground,
@@ -175,8 +175,8 @@ class SvgChartGenerator {
       svg.write('<g>');
     }
 
-    // Sunshine bars (with gradient)
-    _writeSunshineBars(svg, data, latitude, colors, width, chartHeight);
+    // Daylight bars (with gradient)
+    _writeDaylightBars(svg, data, latitude, colors, width, chartHeight);
 
     // Precipitation bars (with gradient)
     _writePrecipitationBars(svg, data, colors, width, chartHeight);
@@ -214,10 +214,10 @@ class SvgChartGenerator {
     svg.write('<stop offset="100%" stop-color="${colors.temperatureLine.toHex()}" stop-opacity="${colors.temperatureGradientEnd.opacity.toStringAsFixed(2)}"/>');
     svg.write('</linearGradient>');
 
-    // Sunshine bar gradient (vertical: orange at top to yellow at bottom)
-    svg.write('<linearGradient id="sunshineGradient" x1="0" y1="0" x2="0" y2="1">');
-    svg.write('<stop offset="0%" stop-color="${colors.sunshineGradient.toHex()}"/>');
-    svg.write('<stop offset="100%" stop-color="${colors.sunshineBar.toHex()}"/>');
+    // Daylight bar gradient (vertical: orange at top to yellow at bottom)
+    svg.write('<linearGradient id="daylightGradient" x1="0" y1="0" x2="0" y2="1">');
+    svg.write('<stop offset="0%" stop-color="${colors.daylightGradient.toHex()}"/>');
+    svg.write('<stop offset="100%" stop-color="${colors.daylightBar.toHex()}"/>');
     svg.write('</linearGradient>');
 
     // Precipitation bar gradient (vertical: semi-transparent at top to solid at bottom)
@@ -240,21 +240,21 @@ class SvgChartGenerator {
     }
   }
 
-  void _writeSunshineBars(StringBuffer svg, List<HourlyData> data,
+  void _writeDaylightBars(StringBuffer svg, List<HourlyData> data,
       double latitude, SvgChartColors colors, double width, double chartHeight) {
     final slotWidth = width / data.length;
     final barWidth = slotWidth * 0.7;
 
     svg.write('<g opacity="0.8">');
     for (var i = 0; i < data.length; i++) {
-      final sunshine = _calculateSunshine(data[i], latitude);
-      if (sunshine <= 0) continue;
+      final daylight = _calculateDaylight(data[i], latitude);
+      if (daylight <= 0) continue;
 
-      final barHeight = sunshine * chartHeight;
+      final barHeight = daylight * chartHeight;
       final x = i * slotWidth + (slotWidth - barWidth) / 2;
 
-      // Use gradient fill for sunshine bars
-      svg.write('<rect x="${_n(x)}" y="0" width="${_n(barWidth)}" height="${_n(barHeight)}" fill="url(#sunshineGradient)" rx="${_strokeWidth(2)}"/>');
+      // Use gradient fill for daylight bars
+      svg.write('<rect x="${_n(x)}" y="0" width="${_n(barWidth)}" height="${_n(barHeight)}" fill="url(#daylightGradient)" rx="${_strokeWidth(2)}"/>');
     }
     svg.write('</g>');
   }
@@ -398,7 +398,7 @@ class SvgChartGenerator {
     return 133775 * factor.clamp(0.0, double.infinity);
   }
 
-  double _calculateSunshine(HourlyData data, double latitude) {
+  double _calculateDaylight(HourlyData data, double latitude) {
     final elevation = _solarElevation(latitude, data.time);
     final clearSkyLux = _clearSkyIlluminance(elevation);
     if (clearSkyLux <= 0) return 0;

@@ -20,7 +20,7 @@
   "offline": "অফলাইন",
   "forecastHours": "{hours} ঘণ্টার পূর্বাভাস",
   "maxPrecipitation": "সর্বোচ্চ {amount}",
-  "maxSunshine": "সর্বোচ্চ {percent}%",
+  "maxDaylight": "সর্বোচ্চ {percent}%",
   "precipitationRate": "{amount} মিমি/ঘণ্টা",
   "locationSourceGps": "GPS",
   "locationSourceManual": "ম্যানুয়াল",

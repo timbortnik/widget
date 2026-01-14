@@ -65,9 +65,9 @@ class MeteogramColors {
   final Color primaryText;
   final Color secondaryText;
   final Color chartTempLabel;
-  final Color sunshineBar;
-  final Color sunshineGradient;
-  final Color sunshineIcon;
+  final Color daylightBar;
+  final Color daylightGradient;
+  final Color daylightIcon;
   final Color timeLabel;
 
   const MeteogramColors({
@@ -84,9 +84,9 @@ class MeteogramColors {
     required this.primaryText,
     required this.secondaryText,
     required this.chartTempLabel,
-    required this.sunshineBar,
-    required this.sunshineGradient,
-    required this.sunshineIcon,
+    required this.daylightBar,
+    required this.daylightGradient,
+    required this.daylightIcon,
     required this.timeLabel,
   });
 
@@ -105,9 +105,9 @@ class MeteogramColors {
     primaryText: Color(0xFF2D3436),
     secondaryText: Color(0xFF636E72),
     chartTempLabel: Color(0xFF1A1A2E),
-    sunshineBar: Color(0xFFFFF0AA),      // Light pastel yellow
-    sunshineGradient: Color(0xFFFFD580),  // Light pastel orange
-    sunshineIcon: Color(0xFFD49A00),      // Darker amber for light backgrounds
+    daylightBar: Color(0xFFFFF0AA),      // Light pastel yellow
+    daylightGradient: Color(0xFFFFD580),  // Light pastel orange
+    daylightIcon: Color(0xFFD49A00),      // Darker amber for light backgrounds
     timeLabel: Color(0xFF4A5568),         // Fallback - overridden by Material You tertiary
   );
 
@@ -126,9 +126,9 @@ class MeteogramColors {
     primaryText: Color(0xFFFFFFFF),
     secondaryText: Color(0xFFB2BEC3),
     chartTempLabel: Color(0xFFF0F0F0),
-    sunshineBar: Color(0xFFFFF0AA),      // Light pastel yellow
-    sunshineGradient: Color(0xFFFFD080),  // Light pastel orange
-    sunshineIcon: Color(0xFFFFD93D),      // Bright yellow for dark backgrounds
+    daylightBar: Color(0xFFFFF0AA),      // Light pastel yellow
+    daylightGradient: Color(0xFFFFD080),  // Light pastel orange
+    daylightIcon: Color(0xFFFFD93D),      // Bright yellow for dark backgrounds
     timeLabel: Color(0xFFE0E0E0),         // Fallback - overridden by Material You tertiary
   );
 
@@ -179,9 +179,9 @@ class MeteogramColors {
       primaryText: primaryText,
       secondaryText: secondaryText,
       chartTempLabel: chartTempLabel,
-      sunshineBar: sunshineBar,
-      sunshineGradient: sunshineGradient,
-      sunshineIcon: sunshineIcon,
+      daylightBar: daylightBar,
+      daylightGradient: daylightGradient,
+      daylightIcon: daylightIcon,
       timeLabel: timeLabel ?? this.timeLabel,
     );
   }

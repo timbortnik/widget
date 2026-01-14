@@ -20,7 +20,7 @@
   "offline": "ÇEVRİMDIŞI",
   "forecastHours": "{hours} saatlik tahmin",
   "maxPrecipitation": "Maks {amount}",
-  "maxSunshine": "Maks {percent}%",
+  "maxDaylight": "Maks {percent}%",
   "precipitationRate": "{amount} mm/sa",
   "locationSourceGps": "GPS",
   "locationSourceManual": "Manuel",

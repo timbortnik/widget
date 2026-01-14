@@ -20,7 +20,7 @@
   "offline": "ஆஃப்லைன்",
   "forecastHours": "{hours} மணி நேர முன்னறிவிப்பு",
   "maxPrecipitation": "அதிகபட்சம் {amount}",
-  "maxSunshine": "அதிகபட்சம் {percent}%",
+  "maxDaylight": "அதிகபட்சம் {percent}%",
   "precipitationRate": "{amount} மிமீ/மணி",
   "locationSourceGps": "GPS",
   "locationSourceManual": "கைமுறை",

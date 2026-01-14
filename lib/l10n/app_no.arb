@@ -20,7 +20,7 @@
   "offline": "FRAKOBLET",
   "forecastHours": "{hours}-timers prognose",
   "maxPrecipitation": "Maks {amount}",
-  "maxSunshine": "Maks {percent}%",
+  "maxDaylight": "Maks {percent}%",
   "precipitationRate": "{amount} mm/t",
   "locationSourceGps": "GPS",
   "locationSourceManual": "Manuell",

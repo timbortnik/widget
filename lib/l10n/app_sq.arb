@@ -20,7 +20,7 @@
   "offline": "OFFLINE",
   "forecastHours": "Parashikim {hours} orë",
   "maxPrecipitation": "Maks {amount}",
-  "maxSunshine": "Maks {percent}%",
+  "maxDaylight": "Maks {percent}%",
   "precipitationRate": "{amount} mm/orë",
   "locationSourceGps": "GPS",
   "locationSourceManual": "Manual",

@@ -20,7 +20,7 @@
   "offline": "OFFLINE",
   "forecastHours": "{hours}-uurs voorspelling",
   "maxPrecipitation": "Max {amount}",
-  "maxSunshine": "Max {percent}%",
+  "maxDaylight": "Max {percent}%",
   "precipitationRate": "{amount} mm/u",
   "locationSourceGps": "GPS",
   "locationSourceManual": "Handmatig",

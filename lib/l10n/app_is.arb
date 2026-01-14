@@ -20,7 +20,7 @@
   "offline": "ÓTENGT",
   "forecastHours": "{hours} tíma spá",
   "maxPrecipitation": "Hám {amount}",
-  "maxSunshine": "Hám {percent}%",
+  "maxDaylight": "Hám {percent}%",
   "precipitationRate": "{amount} mm/klst",
   "locationSourceGps": "GPS",
   "locationSourceManual": "Handvirkt",

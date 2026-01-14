@@ -77,7 +77,7 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String maxSunshine(int percent) {
+  String maxDaylight(int percent) {
     return '최대 $percent%';
   }
 

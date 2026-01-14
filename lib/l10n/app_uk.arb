@@ -104,9 +104,9 @@
       }
     }
   },
-  "maxSunshine": "Макс {percent}%",
+  "maxDaylight": "Макс {percent}%",
   "@maxSunshine": {
-    "description": "Maximum sunshine in forecast",
+    "description": "Maximum daylight in forecast",
     "placeholders": {
       "percent": {
         "type": "int",

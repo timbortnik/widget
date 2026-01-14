@@ -20,7 +20,7 @@
   "offline": "غير متصل",
   "forecastHours": "توقعات {hours} ساعة",
   "maxPrecipitation": "الحد الأقصى {amount}",
-  "maxSunshine": "الحد الأقصى {percent}%",
+  "maxDaylight": "الحد الأقصى {percent}%",
   "precipitationRate": "{amount} مم/ساعة",
   "locationSourceGps": "GPS",
   "locationSourceManual": "يدوي",

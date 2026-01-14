@@ -20,7 +20,7 @@
   "offline": "ਆਫਲਾਈਨ",
   "forecastHours": "{hours} ਘੰਟੇ ਦੀ ਭਵਿੱਖਬਾਣੀ",
   "maxPrecipitation": "ਵੱਧ {amount}",
-  "maxSunshine": "ਵੱਧ {percent}%",
+  "maxDaylight": "ਵੱਧ {percent}%",
   "precipitationRate": "{amount} ਮਿਮੀ/ਘੰਟਾ",
   "locationSourceGps": "GPS",
   "locationSourceManual": "ਹੱਥੀਂ",

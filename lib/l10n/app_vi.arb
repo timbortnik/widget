@@ -20,7 +20,7 @@
   "offline": "NGOẠI TUYẾN",
   "forecastHours": "Dự báo {hours} giờ",
   "maxPrecipitation": "Tối đa {amount}",
-  "maxSunshine": "Tối đa {percent}%",
+  "maxDaylight": "Tối đa {percent}%",
   "precipitationRate": "{amount} mm/giờ",
   "locationSourceGps": "GPS",
   "locationSourceManual": "Thủ công",

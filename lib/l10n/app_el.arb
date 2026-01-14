@@ -20,7 +20,7 @@
   "offline": "ΕΚΤΟΣ ΣΥΝΔΕΣΗΣ",
   "forecastHours": "Πρόβλεψη {hours} ωρών",
   "maxPrecipitation": "Μέγ. {amount}",
-  "maxSunshine": "Μέγ. {percent}%",
+  "maxDaylight": "Μέγ. {percent}%",
   "precipitationRate": "{amount} mm/ώρα",
   "locationSourceGps": "GPS",
   "locationSourceManual": "Χειροκίνητα",

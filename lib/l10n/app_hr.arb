@@ -20,7 +20,7 @@
   "offline": "OFFLINE",
   "forecastHours": "Prognoza za {hours} sati",
   "maxPrecipitation": "Maks {amount}",
-  "maxSunshine": "Maks {percent}%",
+  "maxDaylight": "Maks {percent}%",
   "precipitationRate": "{amount} mm/h",
   "locationSourceGps": "GPS",
   "locationSourceManual": "Ručno",

@@ -20,7 +20,7 @@
   "offline": "OFFLINE",
   "forecastHours": "Predpoveď na {hours} hod",
   "maxPrecipitation": "Max {amount}",
-  "maxSunshine": "Max {percent}%",
+  "maxDaylight": "Max {percent}%",
   "precipitationRate": "{amount} mm/hod",
   "locationSourceGps": "GPS",
   "locationSourceManual": "Ručne",
