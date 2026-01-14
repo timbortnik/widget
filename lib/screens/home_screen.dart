@@ -65,14 +65,18 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   SvgChartColors? _materialYouLightColors;
   SvgChartColors? _materialYouDarkColors;
 
-  // Throttle staleness checks to once per minute
-  DateTime? _lastStaleCheck;
+  // Periodic timer for foreground auto-refresh (every minute)
+  Timer? _refreshTimer;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _initialize();
+    // Start periodic refresh timer (checks staleness every minute)
+    _refreshTimer = Timer.periodic(const Duration(minutes: 1), (_) {
+      _refreshIfStale();
+    });
   }
 
   /// Combined initialization: load dimensions first, then data.
@@ -112,25 +116,20 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   @override
   void dispose() {
+    _refreshTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
-  /// Refresh weather data if stale (throttled to check once per minute).
+  /// Refresh weather data if stale (>15 min old).
+  /// Called periodically by _refreshTimer and on first build.
   void _refreshIfStale() {
-    final now = DateTime.now();
-    if (_lastStaleCheck != null && now.difference(_lastStaleCheck!).inSeconds < 60) {
-      return; // Throttle: skip if checked within last minute
-    }
-    _lastStaleCheck = now;
+    if (_weatherData == null || _loading) return;
 
-    // Check if data is stale (>15 min old)
-    if (_weatherData != null) {
-      final age = now.difference(_weatherData!.fetchedAt);
-      if (age.inMinutes >= 15) {
-        debugPrint('Data is ${age.inMinutes} min old, refreshing...');
-        _loadWeather(showLoadingIndicator: false);
-      }
+    final age = DateTime.now().difference(_weatherData!.fetchedAt);
+    if (age.inMinutes >= 15) {
+      debugPrint('Data is ${age.inMinutes} min old, refreshing...');
+      _loadWeather(showLoadingIndicator: false);
     }
   }
 
@@ -633,7 +632,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 aspectRatio: _chartAspectRatio,
                 child: LayoutBuilder(
                   builder: (context, constraints) {
-                    // Auto-refresh if data is stale (throttled to once per minute)
+                    // Check staleness on first build (cold start after long time)
                     _refreshIfStale();
 
                     final isLight = Theme.of(context).brightness == Brightness.light;
