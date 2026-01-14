@@ -47,6 +47,8 @@ class HourlyAlarmReceiver : BroadcastReceiver() {
 
             val intent = Intent(context, HourlyAlarmReceiver::class.java).apply {
                 action = ACTION_HOURLY_UPDATE
+                // Explicitly set component for security (prevents intent interception)
+                component = android.content.ComponentName(context, HourlyAlarmReceiver::class.java)
             }
 
             val pendingIntent = PendingIntent.getBroadcast(
@@ -81,6 +83,8 @@ class HourlyAlarmReceiver : BroadcastReceiver() {
             val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
             val intent = Intent(context, HourlyAlarmReceiver::class.java).apply {
                 action = ACTION_HOURLY_UPDATE
+                // Explicitly set component for security
+                component = android.content.ComponentName(context, HourlyAlarmReceiver::class.java)
             }
             val pendingIntent = PendingIntent.getBroadcast(
                 context,

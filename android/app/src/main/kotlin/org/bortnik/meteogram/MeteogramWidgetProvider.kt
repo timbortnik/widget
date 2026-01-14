@@ -212,6 +212,8 @@ class MeteogramWidgetProvider : HomeWidgetProvider() {
             // Set up tap to open app
             val intent = android.content.Intent(context, MainActivity::class.java).apply {
                 flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP
+                // Explicitly set component for security (prevents intent interception)
+                component = android.content.ComponentName(context, MainActivity::class.java)
             }
             val pendingIntent = PendingIntent.getActivity(
                 context,
