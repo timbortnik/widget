@@ -60,6 +60,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   String _locale = 'en'; // Cached locale for widget generation
   bool _usesFahrenheit = false; // Cached Fahrenheit preference
   bool _isUpdatingWidget = false; // Prevents concurrent widget updates
+  bool _isLoadingWeather = false; // Prevents concurrent weather fetches
 
   // Cached Material You colors for widget SVG generation
   SvgChartColors? _materialYouLightColors;
@@ -114,7 +115,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
 
     // Then try to fetch fresh data in background
-    unawaited(_loadWeather(showLoadingIndicator: cached == null));
+    unawaited(
+      _loadWeather(showLoadingIndicator: cached == null).catchError((Object error) {
+        debugPrint('Background weather fetch failed: $error');
+        // Cached data is already displayed, so just log the error
+      }),
+    );
   }
 
   @override
@@ -346,6 +352,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     bool userTriggered = false,
     bool showLoadingIndicator = true,
   }) async {
+    // Prevent concurrent weather fetches (unless user explicitly triggered)
+    if (_isLoadingWeather && !userTriggered) {
+      debugPrint('Weather fetch already in progress, skipping');
+      return;
+    }
+
+    _isLoadingWeather = true;
+
     if (showLoadingIndicator) {
       setState(() {
         _loading = true;
@@ -415,6 +429,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         }
         _loading = false;
       });
+    } finally {
+      _isLoadingWeather = false;
     }
   }
 

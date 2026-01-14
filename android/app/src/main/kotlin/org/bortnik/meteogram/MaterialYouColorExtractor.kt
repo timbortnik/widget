@@ -41,8 +41,8 @@ object MaterialYouColorExtractor {
             val darkTemp = context.getColor(android.R.color.system_accent1_200)
             val darkTime = context.getColor(android.R.color.system_accent3_200)
 
-            // Simple hash to detect any color change
-            val newHash = lightTemp xor lightTime xor darkTemp xor darkTime
+            // Proper hash to detect any color change (prevents collision if colors swap)
+            val newHash = arrayOf(lightTemp, lightTime, darkTemp, darkTime).contentHashCode()
 
             val prefs = context.getSharedPreferences(WidgetUtils.PREFS_NAME, Context.MODE_PRIVATE)
             val oldHash = prefs.getInt(KEY_COLORS_HASH, 0)
