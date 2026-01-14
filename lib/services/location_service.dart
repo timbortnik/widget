@@ -265,11 +265,11 @@ class LocationService {
       }
 
       return results.map((r) => CitySearchResult(
-        name: r['name'] as String,
-        country: r['country'] as String? ?? '',
+        name: (r['name'] as String?) ?? 'Unknown',
+        country: (r['country'] as String?) ?? '',
         admin1: r['admin1'] as String?,
-        latitude: (r['latitude'] as num).toDouble(),
-        longitude: (r['longitude'] as num).toDouble(),
+        latitude: ((r['latitude'] as num?) ?? 0.0).toDouble(),
+        longitude: ((r['longitude'] as num?) ?? 0.0).toDouble(),
       )).toList();
     }
     return [];
@@ -326,11 +326,11 @@ class LocationService {
       if (results == null) return [];
 
       return results.map((r) => CitySearchResult(
-        name: r['name'] as String,
-        country: r['country'] as String? ?? '',
+        name: (r['name'] as String?) ?? 'Unknown',
+        country: (r['country'] as String?) ?? '',
         admin1: r['admin1'] as String?,
-        latitude: (r['latitude'] as num).toDouble(),
-        longitude: (r['longitude'] as num).toDouble(),
+        latitude: ((r['latitude'] as num?) ?? 0.0).toDouble(),
+        longitude: ((r['longitude'] as num?) ?? 0.0).toDouble(),
       )).toList();
     }
     return [];
