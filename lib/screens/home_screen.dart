@@ -67,6 +67,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   // Periodic timer for foreground auto-refresh (every minute)
   Timer? _refreshTimer;
+  // Track last hour for detecting hour boundary crossings
+  int? _lastRenderedHour;
 
   @override
   void initState() {
@@ -106,6 +108,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           );
         }
         _loading = false;
+        _lastRenderedHour = DateTime.now().hour;
       });
       debugPrint('Showing cached data immediately: ${cached.fetchedAt}');
     }
@@ -121,12 +124,24 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     super.dispose();
   }
 
-  /// Refresh weather data if stale (>15 min old).
+  /// Refresh weather data if stale (>15 min old) or redraw on hour boundary.
   /// Called periodically by _refreshTimer and on first build.
   void _refreshIfStale() {
     if (_weatherData == null || _loading) return;
 
-    final age = DateTime.now().difference(_weatherData!.fetchedAt);
+    final now = DateTime.now();
+    final currentHour = now.hour;
+
+    // Check if we've crossed an hour boundary
+    if (_lastRenderedHour != null && _lastRenderedHour != currentHour) {
+      debugPrint('Hour boundary crossed ($_lastRenderedHour -> $currentHour), redrawing chart...');
+      _lastRenderedHour = currentHour;
+      setState(() {}); // Trigger rebuild to update "now" indicator position
+    }
+    _lastRenderedHour ??= currentHour;
+
+    // Check if data is stale (>15 min old)
+    final age = now.difference(_weatherData!.fetchedAt);
     if (age.inMinutes >= 15) {
       debugPrint('Data is ${age.inMinutes} min old, refreshing...');
       _loadWeather(showLoadingIndicator: false);
@@ -281,6 +296,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         setState(() {
           _weatherData = cached;
           _locationName = cachedCity;
+          _lastRenderedHour = DateTime.now().hour;
         });
         // Update widget after frame is rendered
         WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -347,6 +363,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         _locationName = location.city;
         _locationSource = location.source;
         _loading = false;
+        _lastRenderedHour = DateTime.now().hour;
       });
 
       // Cache location info for offline use
@@ -372,6 +389,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             );
           }
           _loading = false;
+          _lastRenderedHour = DateTime.now().hour;
         });
 
         // Update widget with cached data
