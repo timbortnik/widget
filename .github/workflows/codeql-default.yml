@@ -26,7 +26,7 @@ jobs:
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
         with:
-          languages: java
+          languages: java-kotlin
           config-file: .github/codeql/codeql-config.yml
 
       - name: Setup Java
@@ -61,4 +61,4 @@ jobs:
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4
         with:
-          category: "/language:java"
+          category: "/language:java-kotlin"

@@ -2,7 +2,7 @@ name: "CodeQL Config"
 
 # Specify languages to analyze
 languages:
-  - java  # Covers both Java and Kotlin
+  - java-kotlin  # Explicit Java and Kotlin scanning
 
 # Note: Java/Kotlin does not support path-based filtering (paths/paths-ignore)
 # CodeQL scans all Java/Kotlin files in the repository automatically
