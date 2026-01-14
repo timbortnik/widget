@@ -54,40 +54,5 @@ jobs:
         run: flutter pub outdated --no-dev-dependencies
         continue-on-error: true  # Don't fail build, just informational
 
-  codeql-analysis:
-    name: CodeQL Analysis
-    runs-on: ubuntu-latest
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
-        with:
-          languages: java  # Android Kotlin code
-          # Add queries for additional security checks
-          queries: security-and-quality
-
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          channel: 'stable'
-          cache: true
-
-      - name: Build APK for CodeQL
-        run: |
-          flutter pub get
-          flutter build apk --debug --target-platform android-x64
-
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+  # CodeQL handled by GitHub's default code scanning (enabled in Settings)
+  # This keeps our workflow focused on Flutter-specific checks
