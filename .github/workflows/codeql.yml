@@ -58,10 +58,7 @@ jobs:
 
       # Manual build command for CodeQL (minimal, just compile Kotlin)
       - name: Build for CodeQL
-        run: |
-          chmod +x android/gradlew
-          cd android
-          ./gradlew compileDebugKotlin --no-daemon
+        run: cd android && ./gradlew compileDebugKotlin --no-daemon
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
