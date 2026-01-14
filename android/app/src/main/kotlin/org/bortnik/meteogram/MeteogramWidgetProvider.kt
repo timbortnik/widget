@@ -201,12 +201,12 @@ class MeteogramWidgetProvider : HomeWidgetProvider() {
                     .putFloat("widget_density", density)
                     .commit()
             } else {
-                // getAppWidgetOptions returned invalid dimensions - use saved/default dimensions for rendering
+                // getAppWidgetOptions returned invalid dimensions - use saved or default
                 Log.d(TAG, "Invalid dimensions from options - using saved/default")
                 val (savedWidth, savedHeight) = WidgetUtils.getWidgetDimensions(context)
                 widthPx = savedWidth
                 heightPx = savedHeight
-                Log.d(TAG, "Using dimensions: ${widthPx}x${heightPx}px")
+                Log.d(TAG, "Using fallback dimensions: ${widthPx}x${heightPx}px")
             }
 
             // Set up tap to open app
