@@ -4,7 +4,7 @@ This file provides context for AI assistants working on this project.
 
 ## Project Overview
 
-**Meteogram Widget** - A Flutter mobile app with Android home screen widget displaying weather forecasts as a meteogram (temperature line + precipitation bars + cloud cover gradient background).
+**Meteogram Widget** - A Flutter mobile app with Android home screen widget displaying weather forecasts as a meteogram (temperature line + precipitation bars + sunshine intensity).
 
 ## Quick Reference
 
@@ -20,7 +20,7 @@ This file provides context for AI assistants working on this project.
 ## Key Design Decisions
 
 - **Time range:** 6h past + 46h future with current time marker
-- **Data:** Temperature (line with gradient fill), precipitation (bars), cloudiness (sky gradient)
+- **Data:** Temperature (line with gradient fill), precipitation (bars), sunshine (computed from cloud cover)
 - **Theme:** System light/dark mode with custom color palette
 - **Units:** Locale-aware (°F for US/Liberia/Myanmar, °C elsewhere)
 - **Update:** 15 min auto-refresh in foreground, 30 min periodic in background, event-driven (unlock, network, locale/timezone change)

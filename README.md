@@ -13,7 +13,6 @@ A beautiful, modern weather widget for Android showing temperature forecasts as 
   - Temperature line with gradient fill
   - Precipitation bars
   - Sunshine intensity (computed from cloud cover and sun position)
-  - Cloud cover sky gradient background
   - Current time indicator
 - **Home screen widget** with native SVG rendering via AndroidSVG
 - **Smart refresh**:
