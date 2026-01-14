@@ -55,20 +55,18 @@ Prevents merging PRs that introduce vulnerable dependencies.
 
 ---
 
-## 3. Enable CodeQL Analysis (Advanced)
+## 3. CodeQL Analysis (Custom Configuration)
 
 Scans Java/Kotlin Android code for security vulnerabilities.
 
-**Steps:**
-1. Go to: **Settings** → **Code security and analysis**
-2. Enable **Code scanning** → **Set up** → **Default**
-3. Or manually enable **CodeQL analysis**
+**Already configured in:** `.github/workflows/codeql.yml`
 
 **What it scans:**
 - SQL injection, XSS, command injection
 - Insecure cryptography, weak randomness
 - Path traversal, resource leaks
 - Android-specific vulnerabilities (intents, permissions)
+- Kotlin and Java code in `android/app/src/main/`
 
 **When it runs:**
 - Every push to `main`
@@ -76,7 +74,14 @@ Scans Java/Kotlin Android code for security vulnerabilities.
 - Weekly scheduled scan (Mondays)
 - Manual trigger via Actions tab
 
+**Configuration:** Custom config in `.github/codeql/codeql-config.yml`
+- Explicitly scans Java/Kotlin in Android directories
+- Uses `security-and-quality` and `security-extended` query packs
+- Ignores generated code and build directories
+
 **Results:** Settings → Security → Code scanning alerts
+
+**Note:** This custom workflow replaces GitHub's "Default" CodeQL setup to ensure proper Java/Kotlin detection.
 
 ---
 
