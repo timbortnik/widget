@@ -45,6 +45,13 @@ The app follows a standard Flutter architecture with clear separation of concern
 4. SVG files saved, paths stored via home_widget
 5. Native `MeteogramWidgetProvider` reads SVG, renders via AndroidSVG
 
+### Foreground App Updates
+1. Timer checks every minute while app is in foreground
+2. If data >15 minutes old: triggers full weather refresh
+3. If hour boundary crossed (e.g., 2:59 → 3:00): redraws chart to update "now" indicator position
+4. Also checks on first build (cold start) for immediate staleness detection
+5. On app resume: existing lifecycle handler checks widget sync
+
 ## State Management
 
 Using simple `setState` in StatefulWidget (no Provider/Riverpod):

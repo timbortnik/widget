@@ -16,10 +16,10 @@ A beautiful, modern weather widget for Android showing temperature forecasts as 
   - Current time indicator
 - **Home screen widget** with native SVG rendering via AndroidSVG
 - **Smart refresh**:
-  - 15 min auto-refresh in foreground
+  - Auto-refresh in foreground (timer checks every minute for stale data >15 min, redraws on hour boundary)
   - 30 min periodic background refresh
   - Event-driven updates (screen unlock, network change, locale/timezone change)
-  - Hourly alarm for precise updates
+  - Hourly alarm for precise widget updates
 - **Flexible location**:
   - GPS with reverse geocoding
   - City search (any city worldwide)
