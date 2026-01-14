@@ -34,6 +34,7 @@ class SvgChartPlatformView(
     }
 
     private var pendingSvg: String? = null
+    private var lastRenderedSvg: String? = null
     private var currentBitmap: Bitmap? = null
     private val isRendering = AtomicBoolean(false)
 
@@ -85,19 +86,21 @@ class SvgChartPlatformView(
 
         if (width <= 0 || height <= 0) return
 
-        // Skip if already rendering to prevent queue buildup
+        // Skip if already rendering - will re-check after current render completes
         if (!isRendering.compareAndSet(false, true)) {
-            Log.d(TAG, "Skipping render - already in progress")
+            Log.d(TAG, "Render in progress - will check for updates after completion")
             return
         }
 
+        // Track what we're rendering to detect changes during render
+        val svgToRender = svg
         Log.d(TAG, "Rendering at actual view size: ${width}x${height}px")
 
         // Render on background thread to avoid blocking UI
         renderExecutor.execute {
             var bitmap: Bitmap? = null
             try {
-                val parsedSvg = SVG.getFromInputStream(ByteArrayInputStream(svg.toByteArray()))
+                val parsedSvg = SVG.getFromInputStream(ByteArrayInputStream(svgToRender.toByteArray()))
                 parsedSvg.documentWidth = width.toFloat()
                 parsedSvg.documentHeight = height.toFloat()
 
@@ -112,7 +115,14 @@ class SvgChartPlatformView(
                     currentBitmap?.recycle()
                     currentBitmap = finalBitmap
                     imageView.setImageBitmap(finalBitmap)
+                    lastRenderedSvg = svgToRender
                     isRendering.set(false)
+
+                    // Check if SVG changed while we were rendering - if so, re-render
+                    if (pendingSvg != null && pendingSvg != lastRenderedSvg) {
+                        Log.d(TAG, "SVG changed during render - re-rendering")
+                        renderAtViewSize()
+                    }
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error rendering SVG", e)
