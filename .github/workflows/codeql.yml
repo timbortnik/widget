@@ -35,6 +35,15 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Get Flutter dependencies
+        run: flutter pub get
+
       - name: Autobuild
         uses: github/codeql-action/autobuild@v3
 
