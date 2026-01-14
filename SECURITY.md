@@ -13,7 +13,7 @@ We provide security updates for the following versions:
 If you discover a security vulnerability in this project, please report it by:
 
 1. **Do NOT open a public issue** - this could put users at risk
-2. **Email the maintainer directly** or use GitHub's [Security Advisory](https://github.com/YOUR_USERNAME/YOUR_REPO/security/advisories/new) feature
+2. **Email the maintainer directly** or use GitHub's [Security Advisory](https://github.com/timbortnik/widget/security/advisories/new) feature
 3. Include:
    - Description of the vulnerability
    - Steps to reproduce
@@ -94,8 +94,8 @@ The app requests these Android permissions:
 
 ## Security Contacts
 
-- **Project Maintainer**: [GitHub Issues](https://github.com/YOUR_USERNAME/meteogram-widget/issues) (for non-security issues)
-- **Security Reports**: Use [GitHub Security Advisories](https://github.com/YOUR_USERNAME/meteogram-widget/security/advisories/new)
+- **Project Maintainer**: [GitHub Issues](https://github.com/timbortnik/widget/issues) (for non-security issues)
+- **Security Reports**: Use [GitHub Security Advisories](https://github.com/timbortnik/widget/security/advisories/new)
 
 ## Acknowledgments
 

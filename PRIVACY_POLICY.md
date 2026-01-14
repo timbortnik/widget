@@ -92,7 +92,7 @@ We may update this Privacy Policy from time to time. Changes will be posted in t
 
 If you have questions about this Privacy Policy, please open an issue at:
 
-https://github.com/tbortnik/meteogram-widget/issues
+https://github.com/timbortnik/widget/issues
 
 Or contact: tim@bortnik.org
 
@@ -100,7 +100,7 @@ Or contact: tim@bortnik.org
 
 The App's source code is available under the Business Source License at:
 
-https://github.com/tbortnik/meteogram-widget
+https://github.com/timbortnik/widget
 
 You can review exactly what data the App collects and how it's used by examining the source code.
 

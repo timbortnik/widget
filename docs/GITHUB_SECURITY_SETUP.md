@@ -134,7 +134,7 @@ Allow private vulnerability reporting.
 - Work on fix before public disclosure
 - Publish security advisory when ready
 
-**Report URL:** `https://github.com/YOUR_USERNAME/meteogram-widget/security/advisories/new`
+**Report URL:** `https://github.com/timbortnik/widget/security/advisories/new`
 
 ---
 
