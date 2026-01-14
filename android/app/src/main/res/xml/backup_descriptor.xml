@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Backup rules for Android 11 and below (API < 31) -->
+<full-backup-content>
+    <!-- Include user preferences -->
+    <include domain="sharedpref" path="FlutterSharedPreferences.xml"/>
+
+    <!-- Exclude cache and temporary files -->
+    <exclude domain="file" path="."/>
+    <exclude domain="cache" path="."/>
+</full-backup-content>
