@@ -1,0 +1,52 @@
+# Dependabot configuration for automatic dependency updates and vulnerability scanning
+# https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+updates:
+  # Monitor pub (Dart/Flutter) dependencies
+  - package-ecosystem: "pub"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Europe/Kiev"
+    # Limit to security updates only (not feature updates)
+    open-pull-requests-limit: 5
+    # Reviewers to assign (update with your GitHub username)
+    # reviewers:
+    #   - "your-username"
+    labels:
+      - "dependencies"
+      - "security"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    # Ignore home_widget updates (intentionally pinned)
+    ignore:
+      - dependency-name: "home_widget"
+        # Ignore all versions - we're pinned to 0.8.0 for functional reasons
+        # See docs/HOME_WIDGET_VERSION_ISSUE.md
+    # Group all minor/patch updates into a single PR
+    groups:
+      dev-dependencies:
+        patterns:
+          - "flutter_test"
+          - "flutter_lints"
+          - "mocktail"
+      minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
+
+  # Monitor GitHub Actions for vulnerabilities
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Europe/Kiev"
+    labels:
+      - "ci"
+      - "security"
