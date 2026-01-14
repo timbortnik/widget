@@ -10,6 +10,9 @@ on:
     - cron: '0 9 * * 1'
   workflow_dispatch:  # Allow manual trigger
 
+permissions:
+  contents: read
+
 jobs:
   dependency-review:
     name: Dependency Review
