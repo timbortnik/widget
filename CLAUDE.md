@@ -131,6 +131,17 @@ make install-debug  # Build debug + install on emulator
 make clean          # Clean build artifacts
 ```
 
+## Pre-Commit Checklist
+
+**MANDATORY** before committing any code changes:
+
+```bash
+flutter analyze     # Must show "No issues found!"
+flutter test        # Must pass all tests
+```
+
+Do not commit code with analyzer warnings or test failures.
+
 ## Common Tasks
 
 ### Modify chart appearance
