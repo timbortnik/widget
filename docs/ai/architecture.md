@@ -73,10 +73,9 @@ class _HomeScreenState extends State<HomeScreen> {
 ### SvgChartGenerator (`lib/services/svg_chart_generator.dart`)
 Pure Dart SVG generation - no Flutter UI dependencies. Responsibilities:
 - Generate complete SVG string for meteogram
-- Sky gradient background based on solar elevation
 - Temperature line with gradient fill
 - Precipitation bars
-- Daylight intensity bars
+- Daylight intensity bars (computed from cloud cover + solar elevation)
 - Temperature labels (min/mid/max) with proper alignment
 - Time labels with locale-aware formatting (DateFormat.j)
 - Width-based font sizing for consistent proportions
@@ -139,8 +138,7 @@ WorkManager + HomeWidget integration. Responsibilities:
 ### MeteogramColors (`lib/theme/app_theme.dart`)
 Theme-aware color palette. Responsibilities:
 - Provide light/dark color variants
-- Color for temperature line, precipitation, now indicator
-- Sky gradient based on cloud cover
+- Color for temperature line, precipitation, daylight, now indicator
 - Card backgrounds and text colors
 
 ## File Structure
@@ -227,7 +225,7 @@ catch (e) {
 | workmanager | Background refresh scheduling |
 | geolocator | GPS location |
 | geocoding | Reverse geocoding (coordinates → city name) |
-| http | API requests (weather + IP geolocation) |
+| http | API requests (weather, city search) |
 | path_provider | App documents for SVG files |
 | shared_preferences | Settings storage |
 | flutter_localizations | i18n framework |

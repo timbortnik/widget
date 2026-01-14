@@ -12,7 +12,7 @@ A beautiful, modern weather widget for Android showing temperature forecasts as 
 - **Beautiful meteogram chart** with:
   - Temperature line with gradient fill
   - Precipitation bars
-  - Sunshine intensity (computed from cloud cover and sun position)
+  - Daylight intensity (computed from cloud cover and sun position)
   - Current time indicator
 - **Home screen widget** with native SVG rendering via AndroidSVG
 - **Smart refresh**:
@@ -42,7 +42,7 @@ The app features a modern, card-based design with:
 - Large temperature display
 - Pull-to-refresh
 - Smooth animations
-- Elegant color palette (coral red temp line, teal precipitation, yellow sunshine)
+- Elegant color palette (coral red temp line, teal precipitation, yellow daylight)
 
 ## Installation
 
@@ -142,7 +142,7 @@ Returns hourly data for:
 - `precipitation` - Rain/snow in mm
 - `cloud_cover` - Cloud coverage percentage (0-100)
 
-Sunshine intensity is computed from cloud cover and solar position (latitude + time).
+Daylight intensity is computed from cloud cover and solar position (latitude + time).
 
 ### City Search (Geocoding)
 ```
@@ -189,7 +189,7 @@ Edit `lib/theme/app_theme.dart`:
 static const light = MeteogramColors(
   temperatureLine: Color(0xFFFF6B6B),    // Coral red
   precipitationBar: Color(0xFF4ECDC4),   // Teal
-  sunshineBar: Color(0xFFFFF0AA),        // Light yellow
+  sunshineBar: Color(0xFFFFF0AA),        // Light yellow (daylight bars)
   nowIndicator: Color(0xFFFFE66D),       // Golden yellow
   // ...
 );
