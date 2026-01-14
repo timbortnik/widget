@@ -186,13 +186,6 @@ void main() {
     });
   });
 
-  group('LocationException', () {
-    test('toString returns message', () {
-      final exception = LocationException('GPS unavailable');
-      expect(exception.toString(), 'GPS unavailable');
-    });
-  });
-
   group('LocationService.searchCities', () {
     test('returns results for valid query', () async {
       final mockClient = MockClient((request) async {

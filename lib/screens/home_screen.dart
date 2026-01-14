@@ -389,9 +389,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
       // No cache available, show error
       setState(() {
-        if (e is LocationException) {
-          _error = e.message;
-        } else if (e is WeatherException) {
+        if (e is WeatherException) {
           _error = e.message;
         } else {
           _error = e.toString();

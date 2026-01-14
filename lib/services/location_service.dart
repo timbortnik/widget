@@ -391,15 +391,6 @@ class LocationData {
   bool get isGps => source == LocationSource.gps;
 }
 
-/// Exception thrown when location cannot be determined.
-class LocationException implements Exception {
-  final String message;
-  LocationException(this.message);
-
-  @override
-  String toString() => message;
-}
-
 /// City search result from geocoding API.
 class CitySearchResult {
   final String name;
