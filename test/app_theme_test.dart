@@ -214,8 +214,8 @@ void main() {
       );
       final colors = MeteogramColors.fromColorScheme(scheme, isDark: false);
 
-      expect(colors.temperatureGradientStart.alpha, 0x40);
-      expect(colors.temperatureGradientEnd.alpha, 0x00);
+      expect((colors.temperatureGradientStart.a * 255).round(), 0x40);
+      expect((colors.temperatureGradientEnd.a * 255).round(), 0x00);
     });
 
     test('dark mode gradient has 0x60 alpha', () {
@@ -225,8 +225,8 @@ void main() {
       );
       final colors = MeteogramColors.fromColorScheme(scheme, isDark: true);
 
-      expect(colors.temperatureGradientStart.alpha, 0x60);
-      expect(colors.temperatureGradientEnd.alpha, 0x00);
+      expect((colors.temperatureGradientStart.a * 255).round(), 0x60);
+      expect((colors.temperatureGradientEnd.a * 255).round(), 0x00);
     });
 
     test('preserves base preset colors', () {

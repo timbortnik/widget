@@ -125,8 +125,12 @@ void main() {
 /// Simple sine approximation for deterministic test data.
 double _sin(double x) {
   // Normalize to [-pi, pi]
-  while (x > 3.14159) x -= 2 * 3.14159;
-  while (x < -3.14159) x += 2 * 3.14159;
+  while (x > 3.14159) {
+    x -= 2 * 3.14159;
+  }
+  while (x < -3.14159) {
+    x += 2 * 3.14159;
+  }
 
   // Taylor series approximation
   final x2 = x * x;
@@ -145,9 +149,6 @@ Future<void> _compareGolden(String actual, String goldenFileName) async {
   if (updateGoldens || !goldenFile.existsSync()) {
     // Create/update golden file
     await goldenFile.writeAsString(actual);
-    if (!autoUpdateGoldenFiles) {
-      print('Created golden file: $goldenPath');
-    }
     return;
   }
 
