@@ -4,21 +4,10 @@ name: "CodeQL Config"
 languages:
   - java  # Covers both Java and Kotlin
 
-# Paths to analyze
-paths:
-  - android/app/src/main/kotlin
-  - android/app/src/main/java
-
-# Paths to ignore
-paths-ignore:
-  - android/build
-  - android/.gradle
-  - "**/GeneratedPluginRegistrant.java"
+# Note: Java/Kotlin does not support path-based filtering (paths/paths-ignore)
+# CodeQL scans all Java/Kotlin files in the repository automatically
 
 # Run additional security queries
 queries:
   - uses: security-and-quality
   - uses: security-extended
-
-# Build mode for compiled languages
-# For Android/Flutter, we need to build the project
