@@ -12,17 +12,24 @@ A beautiful, modern weather widget for Android showing temperature forecasts as 
 - **Beautiful meteogram chart** with:
   - Temperature line with gradient fill
   - Precipitation bars
+  - Sunshine intensity (computed from cloud cover and sun position)
   - Cloud cover sky gradient background
   - Current time indicator
-- **Home screen widget** with live chart
-- **Auto-refresh** every 30 minutes
+- **Home screen widget** with native SVG rendering via AndroidSVG
+- **Smart refresh**:
+  - 15 min auto-refresh in foreground
+  - 30 min periodic background refresh
+  - Event-driven updates (screen unlock, network change, locale/timezone change)
+  - Hourly alarm for precise updates
 - **Flexible location**:
   - GPS with reverse geocoding
   - IP geolocation fallback
   - City search (any city worldwide)
   - Recent cities remembered
+- **Material You** dynamic color support (Android 12+)
 - **Light/dark theme** following system preference
-- **Multi-language** support (English, German, French, Spanish, Italian, Ukrainian)
+- **36 languages** supported
+- **Locale-aware units** (°F for US/Liberia/Myanmar, °C elsewhere)
 - **Offline support** with smart caching:
   - Automatic cache fallback when offline
   - Fibonacci retry backoff (1, 2, 3, 5, 8 min) for background refresh
@@ -36,7 +43,7 @@ The app features a modern, card-based design with:
 - Large temperature display
 - Pull-to-refresh
 - Smooth animations
-- Elegant color palette (coral red temp line, teal precipitation)
+- Elegant color palette (coral red temp line, teal precipitation, yellow sunshine)
 
 ## Installation
 
@@ -75,13 +82,12 @@ make install-debug  # Build debug + install on emulator
 ```
 lib/
 ├── main.dart                 # App entry point
-├── l10n/                     # Localization files
-│   ├── app_en.arb           # English
-│   ├── app_de.arb           # German
-│   ├── app_fr.arb           # French
-│   ├── app_es.arb           # Spanish
-│   ├── app_it.arb           # Italian
-│   └── app_uk.arb           # Ukrainian
+├── l10n/                     # Localization files (36 languages)
+│   ├── app_en.arb           # English (template)
+│   └── app_*.arb            # ar, be, bg, bn, bs, cs, da, de, el, es,
+│                            # fi, fr, hi, hr, is, it, ja, jv, ka, ko,
+│                            # mk, nl, no, pa, pl, pt, ro, sk, sq, sv,
+│                            # ta, tr, uk, vi, zh
 ├── models/
 │   └── weather_data.dart    # Weather data models
 ├── screens/
@@ -90,21 +96,31 @@ lib/
 │   ├── weather_service.dart      # Open-Meteo API client
 │   ├── location_service.dart     # GPS/IP/manual location
 │   ├── widget_service.dart       # Home widget updates
-│   └── background_service.dart   # WorkManager refresh
+│   ├── background_service.dart   # WorkManager refresh
+│   ├── svg_chart_generator.dart  # Pure Dart SVG generation
+│   ├── native_svg_renderer.dart  # Native PNG rendering
+│   └── units_service.dart        # Temperature/precipitation units
 ├── theme/
-│   └── app_theme.dart       # Colors and themes
+│   └── app_theme.dart       # Colors, themes, Material You
 └── widgets/
     └── native_svg_chart_view.dart # Native SVG chart display
 
-android/
-├── app/src/main/
-│   ├── kotlin/.../
-│   │   ├── MainActivity.kt
-│   │   └── MeteogramWidgetProvider.kt  # Widget provider
-│   └── res/
-│       ├── layout/meteogram_widget.xml # Widget layout
-│       ├── xml/meteogram_widget_info.xml
-│       └── drawable/widget_background.xml
+android/app/src/main/
+├── kotlin/.../
+│   ├── MainActivity.kt              # Flutter activity
+│   ├── MeteogramApplication.kt      # App initialization, event receivers
+│   ├── MeteogramWidgetProvider.kt   # Widget provider
+│   ├── WidgetEventReceiver.kt       # System event handler
+│   ├── WidgetUtils.kt               # Widget helper functions
+│   ├── HourlyAlarmReceiver.kt       # Hourly refresh alarm
+│   ├── SvgChartPlatformView.kt      # Native SVG rendering
+│   ├── SvgChartViewFactory.kt       # PlatformView factory
+│   ├── MaterialYouColorExtractor.kt # Dynamic color extraction
+│   └── MaterialYouColorWorker.kt    # Background color updates
+└── res/
+    ├── layout/meteogram_widget.xml # Widget layout
+    ├── xml/meteogram_widget_info.xml
+    └── drawable/widget_background.xml
 ```
 
 ## API
@@ -117,7 +133,7 @@ GET https://api.open-meteo.com/v1/forecast
   ?latitude={lat}
   &longitude={lon}
   &hourly=temperature_2m,precipitation,cloud_cover
-  &timezone=auto
+  &timezone=UTC
   &past_hours=6
   &forecast_days=2
 ```
@@ -126,6 +142,8 @@ Returns hourly data for:
 - `temperature_2m` - Temperature in Celsius
 - `precipitation` - Rain/snow in mm
 - `cloud_cover` - Cloud coverage percentage (0-100)
+
+Sunshine intensity is computed from cloud cover and solar position (latitude + time).
 
 ### City Search (Geocoding)
 ```
@@ -144,8 +162,10 @@ Returns matching cities with coordinates, country, and region.
 The home screen widget uses:
 - `HomeWidgetProvider` from home_widget package
 - `RemoteViews` for native Android widget rendering
-- Chart captured as PNG image from Flutter
+- SVG chart rendered natively via AndroidSVG library
 - WorkManager for 30-minute background refresh
+- Hourly alarms for precise refresh timing
+- Event receivers for unlock/network/locale changes
 
 **RemoteViews Limitations:**
 - Only supports: TextView, ImageView, LinearLayout, RelativeLayout, FrameLayout
@@ -155,9 +175,10 @@ The home screen widget uses:
 
 1. App loads weather from Open-Meteo API
 2. SVG chart generated via `SvgChartGenerator` (pure Dart)
-3. In-app: SVG rendered via native Android PlatformView
-4. Widget: SVG saved to file, rendered by native provider
-5. WorkManager triggers refresh every 30 minutes
+3. In-app: SVG rendered via native Android PlatformView (AndroidSVG)
+4. Widget: SVG saved to file, rendered by native provider via AndroidSVG
+5. WorkManager + hourly alarms trigger periodic refresh
+6. Event receivers trigger refresh on unlock/network/locale changes
 
 ## Customization
 
@@ -169,6 +190,7 @@ Edit `lib/theme/app_theme.dart`:
 static const light = MeteogramColors(
   temperatureLine: Color(0xFFFF6B6B),    // Coral red
   precipitationBar: Color(0xFF4ECDC4),   // Teal
+  sunshineBar: Color(0xFFFFF0AA),        // Light yellow
   nowIndicator: Color(0xFFFFE66D),       // Golden yellow
   // ...
 );
@@ -190,14 +212,9 @@ Edit `android/app/src/main/res/drawable/widget_background.xml`:
 
 1. Create `lib/l10n/app_XX.arb` (copy from app_en.arb)
 2. Translate all strings
-3. Add locale to `lib/main.dart`:
-   ```dart
-   supportedLocales: const [
-     Locale('en'),
-     Locale('xx'),  // Add new locale
-   ],
-   ```
-4. Run `flutter gen-l10n`
+3. Run `flutter gen-l10n`
+
+Supported locales are auto-detected from ARB files.
 
 ## Dependencies
 
