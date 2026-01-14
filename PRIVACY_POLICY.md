@@ -94,8 +94,6 @@ If you have questions about this Privacy Policy, please open an issue at:
 
 https://github.com/timbortnik/widget/issues
 
-Or contact: tim@bortnik.org
-
 ## Open Source
 
 The App's source code is available under the Business Source License at:
