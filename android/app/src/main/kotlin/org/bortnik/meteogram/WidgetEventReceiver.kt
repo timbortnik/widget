@@ -62,9 +62,9 @@ class WidgetEventReceiver : BroadcastReceiver() {
         // Check for Material You color changes (Android 12+)
         // This catches changes made while app was force-closed
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            if (MaterialYouColorExtractor.checkAndUpdateColors(context)) {
+            if (MaterialYouColorExtractor.updateColorsIfChanged(context)) {
                 Log.d(TAG, "Material You colors changed - triggering re-render")
-                WidgetUtils.triggerChartReRender(context)
+                WidgetUtils.rerenderChart(context)
             }
         }
     }
@@ -74,7 +74,7 @@ class WidgetEventReceiver : BroadcastReceiver() {
     }
 
     private fun triggerReRender(context: Context) {
-        WidgetUtils.triggerChartReRender(context)
+        WidgetUtils.rerenderChart(context)
     }
 
     private fun isNetworkAvailable(context: Context): Boolean {

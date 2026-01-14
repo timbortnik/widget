@@ -28,7 +28,7 @@ object MaterialYouColorExtractor {
      *
      * @return true if colors changed and were saved (re-render needed), false otherwise
      */
-    fun checkAndUpdateColors(context: Context): Boolean {
+    fun updateColorsIfChanged(context: Context): Boolean {
         // Material You colors only available on Android 12+
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
             return false

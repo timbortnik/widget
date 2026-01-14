@@ -46,9 +46,9 @@ class MeteogramApplication : Application() {
             themeObserver = object : ContentObserver(Handler(Looper.getMainLooper())) {
                 override fun onChange(selfChange: Boolean) {
                     Log.d(TAG, "Theme customization changed (ContentObserver)")
-                    if (MaterialYouColorExtractor.checkAndUpdateColors(applicationContext)) {
+                    if (MaterialYouColorExtractor.updateColorsIfChanged(applicationContext)) {
                         Log.d(TAG, "Material You colors changed - triggering re-render")
-                        WidgetUtils.triggerChartReRender(applicationContext)
+                        WidgetUtils.rerenderChart(applicationContext)
                     }
                 }
             }

@@ -154,7 +154,7 @@ class MeteogramWidgetProvider : HomeWidgetProvider() {
             .commit()
 
         // Trigger chart re-render with new dimensions
-        WidgetUtils.triggerChartReRender(context)
+        WidgetUtils.rerenderChart(context)
     }
 
     override fun onUpdate(
@@ -168,9 +168,9 @@ class MeteogramWidgetProvider : HomeWidgetProvider() {
         // Check for Material You color changes (Android 12+)
         // This detects wallpaper/theme color changes and triggers SVG re-generation
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            if (MaterialYouColorExtractor.checkAndUpdateColors(context)) {
+            if (MaterialYouColorExtractor.updateColorsIfChanged(context)) {
                 Log.d(TAG, "Material You colors changed - triggering re-render")
-                WidgetUtils.triggerChartReRender(context)
+                WidgetUtils.rerenderChart(context)
                 // Continue with current render using old SVGs
                 // New SVGs will trigger another onUpdate when ready
             }

@@ -128,8 +128,8 @@ class HourlyAlarmReceiver : BroadcastReceiver() {
         }
 
         // We're past the hour boundary - safe to re-render
-        Log.d(TAG, "Hour boundary confirmed - triggering chart re-render")
-        triggerChartReRender(context)
+        Log.d(TAG, "Hour boundary confirmed - re-rendering chart")
+        rerenderChart(context)
 
         // Schedule next hourly alarm
         scheduleNextAlarm(context)
@@ -142,15 +142,15 @@ class HourlyAlarmReceiver : BroadcastReceiver() {
         scheduleNextAlarm(context)
     }
 
-    private fun triggerChartReRender(context: Context) {
+    private fun rerenderChart(context: Context) {
         // Check for Material You color changes (Android 12+)
         // This catches changes made while app was force-closed
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            if (MaterialYouColorExtractor.checkAndUpdateColors(context)) {
+            if (MaterialYouColorExtractor.updateColorsIfChanged(context)) {
                 Log.d(TAG, "Material You colors changed - will re-render with new colors")
             }
         }
 
-        WidgetUtils.triggerChartReRender(context)
+        WidgetUtils.rerenderChart(context)
     }
 }

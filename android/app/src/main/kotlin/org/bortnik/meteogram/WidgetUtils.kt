@@ -49,10 +49,10 @@ object WidgetUtils {
     }
 
     /**
-     * Trigger chart re-render via HomeWidget background intent.
+     * Re-render chart via HomeWidget background intent.
      * Passes dimensions and locale in URI for cold-start reliability.
      */
-    fun triggerChartReRender(context: Context) {
+    fun rerenderChart(context: Context) {
         try {
             val (widthPx, heightPx) = getWidgetDimensions(context)
             val localeStr = getLocaleString()
@@ -68,9 +68,9 @@ object WidgetUtils {
     }
 
     /**
-     * Trigger weather fetch via HomeWidget background intent.
+     * Fetch weather via HomeWidget background intent.
      */
-    fun triggerWeatherFetch(context: Context) {
+    fun fetchWeather(context: Context) {
         try {
             es.antonborri.home_widget.HomeWidgetBackgroundIntent.getBroadcast(
                 context,
@@ -103,8 +103,8 @@ object WidgetUtils {
      */
     fun fetchWeatherIfStale(context: Context) {
         if (isWeatherDataStale(context)) {
-            Log.d(TAG, "Data stale - triggering weather fetch")
-            triggerWeatherFetch(context)
+            Log.d(TAG, "Data stale - fetching weather")
+            fetchWeather(context)
         } else {
             Log.d(TAG, "Data fresh - skipping fetch")
         }
