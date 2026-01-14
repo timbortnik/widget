@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:intl/intl.dart';
 
+import '../constants.dart';
 import '../models/weather_data.dart';
 
 /// SVG color representation (no dart:ui Color dependency).
@@ -154,9 +155,9 @@ class SvgChartGenerator {
     }
 
     final svg = StringBuffer();
-    // Reserve space for time labels based on font size (width × 4% + padding)
-    final timeFontSize = width * 0.04;
-    final chartHeight = (height - timeFontSize * 1.5) * 0.95;
+    // Reserve space for time labels based on font size
+    final timeFontSize = width * ChartConstants.timeFontSizeRatio;
+    final chartHeight = (height - timeFontSize * 1.5) * ChartConstants.chartHeightRatio;
     final nowFraction = (nowIndex + 1) / data.length;
 
     svg.write('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${_n(width)} ${_n(height)}">');
@@ -243,9 +244,9 @@ class SvgChartGenerator {
   void _writeDaylightBars(StringBuffer svg, List<HourlyData> data,
       double latitude, SvgChartColors colors, double width, double chartHeight) {
     final slotWidth = width / data.length;
-    final barWidth = slotWidth * 0.7;
+    final barWidth = slotWidth * ChartConstants.barWidthRatio;
 
-    svg.write('<g opacity="0.8">');
+    svg.write('<g opacity="${ChartConstants.daylightBarOpacity}">');
     for (var i = 0; i < data.length; i++) {
       final daylight = _calculateDaylight(data[i], latitude);
       if (daylight <= 0) continue;
@@ -265,9 +266,9 @@ class SvgChartGenerator {
     if (maxPrecip == 0) return;
 
     final slotWidth = width / data.length;
-    final barWidth = slotWidth * 0.7;
+    final barWidth = slotWidth * ChartConstants.barWidthRatio;
 
-    svg.write('<g opacity="0.85">');
+    svg.write('<g opacity="${ChartConstants.precipitationBarOpacity}">');
     for (var i = 0; i < data.length; i++) {
       final precip = data[i].precipitation;
       if (precip <= 0) continue;
@@ -288,7 +289,7 @@ class SvgChartGenerator {
     final minTemp = temps.reduce((a, b) => a < b ? a : b);
     final maxTemp = temps.reduce((a, b) => a > b ? a : b);
     final tempRange = (maxTemp - minTemp).clamp(1.0, double.infinity);
-    final yPadding = tempRange * 0.10;
+    final yPadding = tempRange * ChartConstants.tempRangePaddingRatio;
 
     final points = <List<double>>[];
     for (var i = 0; i < data.length; i++) {
@@ -342,8 +343,8 @@ class SvgChartGenerator {
 
     final centerX = (nowFraction / 2.5) * width;
 
-    // Font size relative to width (4.5% of width)
-    final fontSize = (width * 0.045).round();
+    // Font size relative to width
+    final fontSize = (width * ChartConstants.tempFontSizeRatio).round();
     final style = 'fill="${colors.temperatureLine.toHex()}" font-size="$fontSize" font-weight="bold" font-family="sans-serif" text-anchor="middle"';
 
     // Align labels with actual temperature positions on the line
@@ -356,8 +357,8 @@ class SvgChartGenerator {
 
   void _writeTimeLabels(StringBuffer svg, List<HourlyData> data, int nowIndex,
       SvgChartColors colors, double width, double height, double chartHeight) {
-    // Font size relative to width (4% of width)
-    final fontSize = (width * 0.04).round();
+    // Font size relative to width
+    final fontSize = (width * ChartConstants.timeFontSizeRatio).round();
     // Position labels 60% down in the area below the chart
     final labelY = chartHeight + (height - chartHeight) * 0.6;
     final style = 'fill="${colors.timeLabel.toHex()}" font-size="$fontSize" font-weight="600" font-family="sans-serif" text-anchor="middle" dominant-baseline="middle"';

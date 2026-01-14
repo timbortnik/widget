@@ -24,10 +24,13 @@ class HourlyAlarmReceiver : BroadcastReceiver() {
         private const val TAG = "HourlyAlarmReceiver"
         const val ACTION_HOURLY_UPDATE = "org.bortnik.meteogram.HOURLY_UPDATE"
 
-        // Buffer after hour boundary to ensure we're always past it
+        // Buffer after hour boundary to ensure we're always past it (seconds)
+        // Matches lib/constants.dart:AlarmConstants.hourBoundaryBufferSeconds
         private const val HOUR_BUFFER_SECONDS = 15
+
         // Maximum minute value to consider "early in the hour" (past the boundary)
         // Inexact alarms can drift significantly, so we use a generous threshold
+        // Matches lib/constants.dart:AlarmConstants.maxValidMinute
         private const val MAX_VALID_MINUTE = 30
 
         /**

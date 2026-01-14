@@ -3,6 +3,7 @@ import 'dart:ui' show PlatformDispatcher;
 import 'package:flutter/material.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../constants.dart';
 import '../l10n/app_localizations.dart';
 import '../models/weather_data.dart';
 import '../services/weather_service.dart';
@@ -76,8 +77,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _initialize();
-    // Start periodic refresh timer (checks staleness every minute)
-    _refreshTimer = Timer.periodic(const Duration(minutes: 1), (_) {
+    // Start periodic refresh timer (checks staleness and hour boundaries)
+    _refreshTimer = Timer.periodic(kForegroundRefreshInterval, (_) {
       _refreshIfStale();
     });
   }
@@ -148,9 +149,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
     _lastRenderedHour ??= currentHour;
 
-    // Check if data is stale (>15 min old)
+    // Check if data is stale
     final age = now.difference(_weatherData!.fetchedAt);
-    if (age.inMinutes >= 15) {
+    if (age >= kWeatherStalenessThreshold) {
       debugPrint('Data is ${age.inMinutes} min old, refreshing...');
       _loadWeather(showLoadingIndicator: false);
     }

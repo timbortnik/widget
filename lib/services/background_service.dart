@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import '../constants.dart';
 import 'weather_service.dart';
 import 'location_service.dart';
 import 'svg_chart_generator.dart';
@@ -164,7 +165,7 @@ Future<void> _reRenderCharts([Uri? uri]) async {
     // Check if cached data is stale (>15 minutes old)
     final lastUpdate = await HomeWidget.getWidgetData<int>('last_weather_update') ?? 0;
     final ageMs = DateTime.now().millisecondsSinceEpoch - lastUpdate;
-    const staleThresholdMs = 15 * 60 * 1000; // 15 minutes
+    final staleThresholdMs = kWeatherStalenessThreshold.inMilliseconds;
 
     if (ageMs > staleThresholdMs) {
       _log('_reRenderCharts: cached data is stale (${ageMs ~/ 60000} min old), fetching fresh data');
