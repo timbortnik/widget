@@ -14,9 +14,7 @@
         android:label="Meteogram"
         android:name=".MeteogramApplication"
         android:icon="@mipmap/ic_launcher"
-        android:allowBackup="true"
-        android:fullBackupContent="@xml/backup_descriptor"
-        android:dataExtractionRules="@xml/backup_rules"
+        android:allowBackup="false"
         android:usesCleartextTraffic="true">
         <activity
             android:name=".MainActivity"
