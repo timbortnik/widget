@@ -4,7 +4,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Default fallback location (Berlin) when GPS and IP geolocation fail.
+/// Default fallback location (Berlin) when GPS is unavailable.
 const double kDefaultLatitude = 52.52;
 const double kDefaultLongitude = 13.405;
 const String kDefaultCity = 'Berlin';
@@ -35,12 +35,11 @@ class LocationService {
     }
   }
 
-  /// Get location from GPS, with fallback to IP geolocation.
+  /// Get location from GPS, with fallback to default location (Berlin).
   Future<LocationData> _getGpsLocation() async {
     // Check if location services are enabled
     final serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      // Fall back to IP geolocation
       return _getFallbackLocation();
     }
 
@@ -49,13 +48,11 @@ class LocationService {
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        // Fall back to IP geolocation
         return _getFallbackLocation();
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
-      // Fall back to IP geolocation
       return _getFallbackLocation();
     }
 

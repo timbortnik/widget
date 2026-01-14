@@ -100,10 +100,9 @@ API client for Open-Meteo. Responsibilities:
 **Data Range:** 4 hours past + 48 hours future (~52 hours total)
 
 ### LocationService (`lib/services/location_service.dart`)
-Device location handling with multi-level fallback. Responsibilities:
+Device location handling with fallback. Responsibilities:
 - Get GPS coordinates via geolocator
 - Handle permissions gracefully (no exceptions thrown)
-- IP geolocation fallback via ip-api.com
 - Reverse geocoding for city name resolution
 - City search via Open-Meteo geocoding API
 - Recent cities storage (last 5 selections)
@@ -113,8 +112,7 @@ Device location handling with multi-level fallback. Responsibilities:
 **Location Resolution Order:**
 1. GPS position → reverse geocode for localized city name
 2. Last known GPS position → reverse geocode
-3. IP geolocation (ip-api.com) → reverse geocode for localized city name
-4. Final fallback: Berlin (52.52, 13.405)
+3. Default fallback: Berlin (52.52, 13.405)
 
 All city names are localized via reverse geocoding based on device locale.
 

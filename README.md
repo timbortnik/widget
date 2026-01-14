@@ -22,9 +22,9 @@ A beautiful, modern weather widget for Android showing temperature forecasts as 
   - Hourly alarm for precise updates
 - **Flexible location**:
   - GPS with reverse geocoding
-  - IP geolocation fallback
   - City search (any city worldwide)
   - Recent cities remembered
+  - Berlin default when GPS unavailable
 - **Material You** dynamic color support (Android 12+)
 - **Light/dark theme** following system preference
 - **36 languages** supported
