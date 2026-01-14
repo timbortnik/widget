@@ -6,6 +6,7 @@ import 'package:home_widget/home_widget.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import '../constants.dart';
+import '../utils/locale_utils.dart';
 import 'weather_service.dart';
 import 'location_service.dart';
 import 'svg_chart_generator.dart';
@@ -22,20 +23,7 @@ void _log(String message) {
 Locale _getSystemLocale() {
   final localeName = Platform.localeName;
   _log('System locale: $localeName');
-
-  // Parse locale string (formats: "en", "en_US", "en-US", "en_US.UTF-8")
-  final cleaned = localeName.split('.').first; // Remove .UTF-8 suffix
-  final parts = cleaned.split(RegExp(r'[_-]')).where((p) => p.isNotEmpty).toList();
-
-  if (parts.isEmpty) {
-    _log('Invalid locale format, defaulting to en');
-    return const Locale('en');
-  }
-
-  if (parts.length >= 2) {
-    return Locale(parts[0], parts[1].toUpperCase());
-  }
-  return Locale(parts[0]);
+  return LocaleUtils.getSystemLocale();
 }
 
 // Default fallback dimensions - must match WidgetUtils.kt

@@ -67,7 +67,7 @@ void main() {
         throwsA(isA<WeatherException>().having(
           (e) => e.message,
           'message',
-          contains('404'),
+          contains('Failed to load weather data'),
         )),
       );
     });
@@ -84,7 +84,7 @@ void main() {
         throwsA(isA<WeatherException>().having(
           (e) => e.message,
           'message',
-          contains('500'),
+          contains('Failed to load weather data'),
         )),
       );
     });

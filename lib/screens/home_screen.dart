@@ -12,24 +12,8 @@ import '../services/widget_service.dart';
 import '../services/svg_chart_generator.dart';
 import '../services/units_service.dart';
 import '../theme/app_theme.dart';
+import '../utils/locale_utils.dart';
 import '../widgets/native_svg_chart_view.dart';
-
-/// Parse a locale string (e.g., "en_US", "en-US", "en") into a Locale.
-/// Returns Locale('en') if the input is empty or invalid.
-Locale parseLocaleString(String localeStr) {
-  if (localeStr.isEmpty) return const Locale('en');
-
-  // Handle formats: "en_US", "en-US", "en_US.UTF-8"
-  final cleaned = localeStr.split('.').first; // Remove .UTF-8 suffix
-  final parts = cleaned.split(RegExp(r'[_-]')).where((p) => p.isNotEmpty).toList();
-
-  if (parts.isEmpty || parts[0].isEmpty) return const Locale('en');
-
-  if (parts.length >= 2) {
-    return Locale(parts[0].toLowerCase(), parts[1].toUpperCase());
-  }
-  return Locale(parts[0].toLowerCase());
-}
 
 /// Main home screen displaying the meteogram.
 class HomeScreen extends StatefulWidget {
@@ -189,7 +173,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       await _widgetService.updateWidget(
         weatherData: _weatherData!,
         locationName: _locationName,
-        locale: parseLocaleString(_locale),
+        locale: LocaleUtils.parseLocaleString(_locale),
       );
 
       debugPrint('Widget updated on app background');
@@ -332,7 +316,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       await _widgetService.updateWidget(
         weatherData: weather,
         locationName: _locationName,
-        locale: parseLocaleString(_locale),
+        locale: LocaleUtils.parseLocaleString(_locale),
       );
       // Also generate SVG charts for background widget updates
       await _widgetService.generateAndSaveSvgCharts(

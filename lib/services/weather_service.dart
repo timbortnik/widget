@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/weather_data.dart';
@@ -111,9 +112,9 @@ class WeatherService {
       } else if (response.statusCode == 429) {
         throw WeatherException('Rate limited. Please try again later.');
       } else {
-        throw WeatherException(
-          'Failed to load weather data: ${response.statusCode}',
-        );
+        // Log detailed error for debugging, show generic message to user
+        debugPrint('Weather API error: ${response.statusCode} ${response.body}');
+        throw WeatherException('Failed to load weather data. Please try again later.');
       }
     } on SocketException {
       throw WeatherException('No internet connection');
