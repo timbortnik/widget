@@ -64,9 +64,6 @@ class MeteogramColors {
   final Color labelText;
   final Color primaryText;
   final Color secondaryText;
-  final Color clearSky;
-  final Color partlyCloudySky;
-  final Color overcastSky;
   final Color chartTempLabel;
   final Color sunshineBar;
   final Color sunshineGradient;
@@ -86,9 +83,6 @@ class MeteogramColors {
     required this.labelText,
     required this.primaryText,
     required this.secondaryText,
-    required this.clearSky,
-    required this.partlyCloudySky,
-    required this.overcastSky,
     required this.chartTempLabel,
     required this.sunshineBar,
     required this.sunshineGradient,
@@ -110,9 +104,6 @@ class MeteogramColors {
     labelText: Color(0xFF4A5568),
     primaryText: Color(0xFF2D3436),
     secondaryText: Color(0xFF636E72),
-    clearSky: Color(0xFF74B9FF),
-    partlyCloudySky: Color(0xFFA0C4E8),
-    overcastSky: Color(0xFFB2BEC3),
     chartTempLabel: Color(0xFF1A1A2E),
     sunshineBar: Color(0xFFFFF0AA),      // Light pastel yellow
     sunshineGradient: Color(0xFFFFD580),  // Light pastel orange
@@ -134,9 +125,6 @@ class MeteogramColors {
     labelText: Color(0xFFE0E0E0),
     primaryText: Color(0xFFFFFFFF),
     secondaryText: Color(0xFFB2BEC3),
-    clearSky: Color(0xFF2D5A7B),
-    partlyCloudySky: Color(0xFF3D6B8C),
-    overcastSky: Color(0xFF4A5568),
     chartTempLabel: Color(0xFFF0F0F0),
     sunshineBar: Color(0xFFFFF0AA),      // Light pastel yellow
     sunshineGradient: Color(0xFFFFD080),  // Light pastel orange
@@ -190,9 +178,6 @@ class MeteogramColors {
       labelText: labelText,
       primaryText: primaryText,
       secondaryText: secondaryText,
-      clearSky: clearSky,
-      partlyCloudySky: partlyCloudySky,
-      overcastSky: overcastSky,
       chartTempLabel: chartTempLabel,
       sunshineBar: sunshineBar,
       sunshineGradient: sunshineGradient,
@@ -201,54 +186,4 @@ class MeteogramColors {
     );
   }
 
-  /// Get sky color based on cloud cover percentage with smooth gradient.
-  Color getSkyColor(int cloudCover) {
-    if (cloudCover < 30) {
-      return Color.lerp(clearSky, partlyCloudySky, cloudCover / 30)!;
-    } else {
-      return Color.lerp(partlyCloudySky, overcastSky, (cloudCover - 30) / 70)!;
-    }
-  }
-}
-
-/// Gradient presets for widget backgrounds.
-class WeatherGradients {
-  /// Clear day gradient
-  static const clearDay = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [Color(0xFF74B9FF), Color(0xFF0984E3)],
-  );
-
-  /// Clear night gradient
-  static const clearNight = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [Color(0xFF2D3436), Color(0xFF0D1B2A)],
-  );
-
-  /// Cloudy gradient
-  static const cloudy = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [Color(0xFF636E72), Color(0xFF2D3436)],
-  );
-
-  /// Rainy gradient
-  static const rainy = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [Color(0xFF4A5568), Color(0xFF2D3748)],
-  );
-
-  /// Get gradient based on weather conditions
-  static LinearGradient forConditions({
-    required int cloudCover,
-    required double precipitation,
-    required bool isDaytime,
-  }) {
-    if (precipitation > 0.5) return rainy;
-    if (cloudCover > 60) return cloudy;
-    return isDaytime ? clearDay : clearNight;
-  }
 }

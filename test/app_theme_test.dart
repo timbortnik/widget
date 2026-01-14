@@ -69,53 +69,6 @@ void main() {
     });
   });
 
-  group('MeteogramColors.getSkyColor', () {
-    test('returns clear sky color for 0% cloud cover', () {
-      final color = MeteogramColors.light.getSkyColor(0);
-      expect(color, MeteogramColors.light.clearSky);
-    });
-
-    test('returns partly cloudy for 30% cloud cover', () {
-      final color = MeteogramColors.light.getSkyColor(30);
-      expect(color, MeteogramColors.light.partlyCloudySky);
-    });
-
-    test('returns overcast for 100% cloud cover', () {
-      final color = MeteogramColors.light.getSkyColor(100);
-      expect(color, MeteogramColors.light.overcastSky);
-    });
-
-    test('interpolates between clear and partly cloudy (15%)', () {
-      final color = MeteogramColors.light.getSkyColor(15);
-      // Should be halfway between clear and partly cloudy
-      final expected = Color.lerp(
-        MeteogramColors.light.clearSky,
-        MeteogramColors.light.partlyCloudySky,
-        0.5,
-      );
-      expect(color, expected);
-    });
-
-    test('interpolates between partly cloudy and overcast (65%)', () {
-      final color = MeteogramColors.light.getSkyColor(65);
-      // (65 - 30) / 70 = 0.5
-      final expected = Color.lerp(
-        MeteogramColors.light.partlyCloudySky,
-        MeteogramColors.light.overcastSky,
-        0.5,
-      );
-      expect(color, expected);
-    });
-
-    test('works with dark theme colors', () {
-      final clearColor = MeteogramColors.dark.getSkyColor(0);
-      final overcastColor = MeteogramColors.dark.getSkyColor(100);
-
-      expect(clearColor, MeteogramColors.dark.clearSky);
-      expect(overcastColor, MeteogramColors.dark.overcastSky);
-    });
-  });
-
   group('MeteogramColors.copyWith', () {
     test('copies with new background', () {
       const newBg = Color(0xFF123456);
@@ -161,7 +114,6 @@ void main() {
       expect(copied.gridLine, MeteogramColors.light.gridLine);
       expect(copied.labelText, MeteogramColors.light.labelText);
       expect(copied.primaryText, MeteogramColors.light.primaryText);
-      expect(copied.clearSky, MeteogramColors.light.clearSky);
       expect(copied.sunshineBar, MeteogramColors.light.sunshineBar);
     });
   });
@@ -239,117 +191,6 @@ void main() {
       // These should come from the light preset
       expect(colors.precipitationBar, MeteogramColors.light.precipitationBar);
       expect(colors.nowIndicator, MeteogramColors.light.nowIndicator);
-      expect(colors.clearSky, MeteogramColors.light.clearSky);
-    });
-  });
-
-  group('WeatherGradients', () {
-    test('clearDay has blue colors', () {
-      expect(WeatherGradients.clearDay.colors.first, const Color(0xFF74B9FF));
-      expect(WeatherGradients.clearDay.colors.last, const Color(0xFF0984E3));
-    });
-
-    test('clearNight has dark colors', () {
-      expect(WeatherGradients.clearNight.colors.first, const Color(0xFF2D3436));
-      expect(WeatherGradients.clearNight.colors.last, const Color(0xFF0D1B2A));
-    });
-
-    test('cloudy has gray colors', () {
-      expect(WeatherGradients.cloudy.colors.first, const Color(0xFF636E72));
-    });
-
-    test('rainy has dark gray colors', () {
-      expect(WeatherGradients.rainy.colors.first, const Color(0xFF4A5568));
-    });
-
-    test('all gradients have topLeft to bottomRight alignment', () {
-      expect(WeatherGradients.clearDay.begin, Alignment.topLeft);
-      expect(WeatherGradients.clearDay.end, Alignment.bottomRight);
-      expect(WeatherGradients.clearNight.begin, Alignment.topLeft);
-      expect(WeatherGradients.cloudy.begin, Alignment.topLeft);
-      expect(WeatherGradients.rainy.begin, Alignment.topLeft);
-    });
-  });
-
-  group('WeatherGradients.forConditions', () {
-    test('returns rainy for high precipitation', () {
-      final gradient = WeatherGradients.forConditions(
-        cloudCover: 0,
-        precipitation: 1.0,
-        isDaytime: true,
-      );
-      expect(gradient, WeatherGradients.rainy);
-    });
-
-    test('returns rainy for precipitation > 0.5', () {
-      final gradient = WeatherGradients.forConditions(
-        cloudCover: 0,
-        precipitation: 0.6,
-        isDaytime: true,
-      );
-      expect(gradient, WeatherGradients.rainy);
-    });
-
-    test('returns cloudy for high cloud cover', () {
-      final gradient = WeatherGradients.forConditions(
-        cloudCover: 80,
-        precipitation: 0.0,
-        isDaytime: true,
-      );
-      expect(gradient, WeatherGradients.cloudy);
-    });
-
-    test('returns cloudy for cloud cover > 60', () {
-      final gradient = WeatherGradients.forConditions(
-        cloudCover: 61,
-        precipitation: 0.0,
-        isDaytime: true,
-      );
-      expect(gradient, WeatherGradients.cloudy);
-    });
-
-    test('returns clearDay for clear daytime', () {
-      final gradient = WeatherGradients.forConditions(
-        cloudCover: 30,
-        precipitation: 0.0,
-        isDaytime: true,
-      );
-      expect(gradient, WeatherGradients.clearDay);
-    });
-
-    test('returns clearNight for clear nighttime', () {
-      final gradient = WeatherGradients.forConditions(
-        cloudCover: 30,
-        precipitation: 0.0,
-        isDaytime: false,
-      );
-      expect(gradient, WeatherGradients.clearNight);
-    });
-
-    test('precipitation takes priority over cloud cover', () {
-      // Even with 0% cloud cover, high precipitation = rainy
-      final gradient = WeatherGradients.forConditions(
-        cloudCover: 0,
-        precipitation: 1.0,
-        isDaytime: true,
-      );
-      expect(gradient, WeatherGradients.rainy);
-    });
-
-    test('cloud cover takes priority over time of day', () {
-      // High cloud cover = cloudy regardless of day/night
-      final gradientDay = WeatherGradients.forConditions(
-        cloudCover: 80,
-        precipitation: 0.0,
-        isDaytime: true,
-      );
-      final gradientNight = WeatherGradients.forConditions(
-        cloudCover: 80,
-        precipitation: 0.0,
-        isDaytime: false,
-      );
-      expect(gradientDay, WeatherGradients.cloudy);
-      expect(gradientNight, WeatherGradients.cloudy);
     });
   });
 }
