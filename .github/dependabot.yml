@@ -1,5 +1,6 @@
 # Dependabot configuration for automatic dependency updates and vulnerability scanning
 # https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+# Last updated: 2026-01-14
 
 version: 2
 updates:
