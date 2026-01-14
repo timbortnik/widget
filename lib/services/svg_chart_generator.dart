@@ -376,36 +376,116 @@ class SvgChartGenerator {
     }
   }
 
+  /// Calculate solar elevation angle using simplified solar position algorithm.
+  ///
+  /// This determines how high the sun is above the horizon at a given time and location.
+  /// Uses a simplified approximation suitable for daylight visualization (not precision astronomy).
+  ///
+  /// Algorithm:
+  /// 1. Calculate solar declination (sun's position relative to equator) using day of year
+  /// 2. Calculate hour angle (sun's position in daily rotation)
+  /// 3. Apply spherical trigonometry to get elevation angle
+  ///
+  /// Based on NOAA Solar Calculator simplified formulas.
+  /// Reference: https://www.esrl.noaa.gov/gmd/grad/solcalc/
+  ///
+  /// @param latitude Geographic latitude in degrees (-90 to +90)
+  /// @param time UTC time for calculation
+  /// @return Solar elevation angle in degrees (negative = below horizon, 0 = horizon, positive = above)
   double _solarElevation(double latitude, DateTime time) {
     final dayOfYear = time.difference(DateTime(time.year, 1, 1)).inDays + 1;
     final hour = time.hour + time.minute / 60.0;
+
+    // Solar declination: angle between sun's rays and equatorial plane
+    // Varies from -23.45° (winter solstice) to +23.45° (summer solstice)
     final declination = 23.45 * math.sin(2 * math.pi / 365 * (284 + dayOfYear));
+
+    // Hour angle: angular distance sun travels (15° per hour)
     final hourAngle = 15.0 * (hour - 12);
+
+    // Convert to radians for trigonometry
     final latRad = latitude * math.pi / 180;
     final decRad = declination * math.pi / 180;
     final haRad = hourAngle * math.pi / 180;
+
+    // Spherical trigonometry formula for solar elevation
     final sinElevation = math.sin(latRad) * math.sin(decRad) + math.cos(latRad) * math.cos(decRad) * math.cos(haRad);
     return math.asin(sinElevation.clamp(-1.0, 1.0)) * 180 / math.pi;
   }
 
+  /// Calculate clear-sky illuminance at ground level in lux.
+  ///
+  /// Estimates how bright daylight would be with perfectly clear skies (no clouds).
+  /// Uses atmospheric scattering model to account for sunlight attenuation through atmosphere.
+  ///
+  /// Algorithm based on CIE (International Commission on Illumination) clear sky model:
+  /// - Below -6° elevation: Astronomical twilight, negligible illuminance (0 lux)
+  /// - At horizon (0°): ~400 lux (civil twilight)
+  /// - At zenith (90°): ~120,000 lux (full daylight)
+  ///
+  /// The formula accounts for:
+  /// - Atmospheric mass (path length through atmosphere)
+  /// - Rayleigh scattering (blue sky effect)
+  /// - Direct and diffuse components of sunlight
+  ///
+  /// @param elevation Solar elevation angle in degrees (from _solarElevation)
+  /// @return Illuminance in lux (0 to ~133,000)
   double _clearSkyIlluminance(double elevation) {
-    if (elevation < -6) return 0;
+    if (elevation < -6) return 0; // Below astronomical twilight
+
     final elevRad = elevation * math.pi / 180;
     final u = math.sin(elevRad);
-    const x = 753.66156;
+
+    // Atmospheric mass approximation (relative path length through atmosphere)
+    const x = 753.66156; // Empirical constant for atmospheric model
     final s = math.asin((x * math.cos(elevRad) / (x + 1)).clamp(-1.0, 1.0));
     final m = x * (math.cos(s) - u) + math.cos(s);
+
+    // Atmospheric extinction and scattering
     final factor = math.exp(-0.2 * m) * u + 0.0289 * math.exp(-0.042 * m) * (1 + (elevation + 90) * u / 57.29577951);
+
+    // Scale to typical clear-sky maximum (~133,775 lux)
     return 133775 * factor.clamp(0.0, double.infinity);
   }
 
+  /// Calculate effective daylight intensity (0.0 to 1.0) for display as bar height.
+  ///
+  /// Combines solar position, cloud cover, and precipitation to estimate
+  /// how bright it actually feels outside at a given time.
+  ///
+  /// Algorithm:
+  /// 1. Calculate solar position → potential illuminance (0-133k lux)
+  /// 2. Normalize to 0-1 range (using 130k lux as typical max daylight)
+  /// 3. Attenuate by cloud cover:
+  ///    - 0% clouds: divisor = 1 (no reduction)
+  ///    - 50% clouds: divisor = 3.16 (68% reduction)
+  ///    - 100% clouds: divisor = 10 (90% reduction)
+  /// 4. Attenuate by precipitation (rain/snow reduces perceived brightness)
+  /// 5. Apply sqrt for perceptual scaling (human brightness perception is non-linear)
+  ///
+  /// Result is normalized 0-1 value where:
+  /// - 0.0 = Night or heavily overcast
+  /// - 0.5 = Partly cloudy day
+  /// - 1.0 = Clear sunny day at solar noon
+  ///
+  /// @param data Hourly weather data (cloud cover, precipitation)
+  /// @param latitude Geographic latitude for solar position calculation
+  /// @return Normalized daylight intensity (0.0 to 1.0) for bar visualization
   double _calculateDaylight(HourlyData data, double latitude) {
     final elevation = _solarElevation(latitude, data.time);
     final clearSkyLux = _clearSkyIlluminance(elevation);
-    if (clearSkyLux <= 0) return 0;
+    if (clearSkyLux <= 0) return 0; // Sun below horizon
+
+    // Normalize to 0-1 range (130k lux = typical bright day)
     final potential = (clearSkyLux / 130000.0).clamp(0.0, 1.0);
+
+    // Attenuate by cloud cover (exponential: 100% clouds = 90% reduction)
     final cloudDivisor = math.pow(10, data.cloudCover / 100.0);
+
+    // Attenuate by precipitation (rain/snow darkens perception)
     final precipDivisor = 1 + 0.5 * math.pow(data.precipitation, 0.6);
+
+    // Apply sqrt for perceptual brightness (Weber-Fechner law approximation)
     return math.sqrt(potential / cloudDivisor / precipDivisor);
   }
 }
