@@ -28,7 +28,7 @@
   "weatherDataBy": "{provider} 날씨 데이터 (CC BY 4.0)",
   "daylightDerived": "일광 계산값",
 
-  "sourceCode": "Open source on GitHub",
+  "sourceCode": "GitHub의 오픈 소스",
   "@sourceCode": {
     "description": "Link text for source code repository in footer"
   },

@@ -28,7 +28,7 @@
   "weatherDataBy": "Podaci o vremenu od {provider} (CC BY 4.0)",
   "daylightDerived": "Dnevno svjetlo izračunato",
 
-  "sourceCode": "Open source on GitHub",
+  "sourceCode": "Otvoreni kod na GitHubu",
   "@sourceCode": {
     "description": "Link text for source code repository in footer"
   },

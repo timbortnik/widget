@@ -28,7 +28,7 @@
   "weatherDataBy": "Δεδομένα καιρού από {provider} (CC BY 4.0)",
   "daylightDerived": "Φως ημέρας υπολογισμένο",
 
-  "sourceCode": "Open source on GitHub",
+  "sourceCode": "Ανοιχτός κώδικας στο GitHub",
   "@sourceCode": {
     "description": "Link text for source code repository in footer"
   },

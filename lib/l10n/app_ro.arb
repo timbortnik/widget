@@ -28,7 +28,7 @@
   "weatherDataBy": "Date meteo de la {provider} (CC BY 4.0)",
   "daylightDerived": "Lumina zilei calculată",
 
-  "sourceCode": "Open source on GitHub",
+  "sourceCode": "Sursă deschisă pe GitHub",
   "@sourceCode": {
     "description": "Link text for source code repository in footer"
   },

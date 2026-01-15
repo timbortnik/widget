@@ -28,7 +28,7 @@
   "weatherDataBy": "Dữ liệu thời tiết từ {provider} (CC BY 4.0)",
   "daylightDerived": "Ánh sáng tính toán",
 
-  "sourceCode": "Open source on GitHub",
+  "sourceCode": "Mã nguồn mở trên GitHub",
   "@sourceCode": {
     "description": "Link text for source code repository in footer"
   },

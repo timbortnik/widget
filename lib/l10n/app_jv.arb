@@ -28,7 +28,7 @@
   "weatherDataBy": "Data cuaca saka {provider} (CC BY 4.0)",
   "daylightDerived": "Cahya awan dietung",
 
-  "sourceCode": "Open source on GitHub",
+  "sourceCode": "Open source ing GitHub",
   "@sourceCode": {
     "description": "Link text for source code repository in footer"
   },

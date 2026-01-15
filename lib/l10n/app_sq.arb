@@ -28,7 +28,7 @@
   "weatherDataBy": "Të dhënat e motit nga {provider} (CC BY 4.0)",
   "daylightDerived": "Drita e ditës e llogaritur",
 
-  "sourceCode": "Open source on GitHub",
+  "sourceCode": "Kod i hapur në GitHub",
   "@sourceCode": {
     "description": "Link text for source code repository in footer"
   },

@@ -28,7 +28,7 @@
   "weatherDataBy": "Dados meteorológicos de {provider} (CC BY 4.0)",
   "daylightDerived": "Luz do dia calculada",
 
-  "sourceCode": "Open source on GitHub",
+  "sourceCode": "Código aberto no GitHub",
   "@sourceCode": {
     "description": "Link text for source code repository in footer"
   },

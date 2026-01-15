@@ -28,7 +28,7 @@
   "weatherDataBy": "Метео данни от {provider} (CC BY 4.0)",
   "daylightDerived": "Дневна светлина изчислена",
 
-  "sourceCode": "Open source on GitHub",
+  "sourceCode": "Отворен код в GitHub",
   "@sourceCode": {
     "description": "Link text for source code repository in footer"
   },
