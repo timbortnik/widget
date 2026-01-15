@@ -27,6 +27,11 @@
   "daylight": "Ánh sáng ban ngày",
   "weatherDataBy": "Dữ liệu thời tiết từ {provider} (CC BY 4.0)",
   "daylightDerived": "Ánh sáng tính toán",
+
+  "sourceCode": "Open source on GitHub",
+  "@sourceCode": {
+    "description": "Link text for source code repository in footer"
+  },
   "offlineRefreshError": "Không thể làm mới - hiển thị dữ liệu đã lưu",
   "loadingWeather": "Đang tải thời tiết...",
   "unableToLoadWeather": "Không thể tải thời tiết",

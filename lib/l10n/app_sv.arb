@@ -27,6 +27,11 @@
   "daylight": "Dagsljus",
   "weatherDataBy": "Väderdata från {provider} (CC BY 4.0)",
   "daylightDerived": "Dagsljus beräknat",
+
+  "sourceCode": "Open source on GitHub",
+  "@sourceCode": {
+    "description": "Link text for source code repository in footer"
+  },
   "offlineRefreshError": "Kan inte uppdatera - visar cachad data",
   "loadingWeather": "Laddar väder...",
   "unableToLoadWeather": "Kan inte ladda väder",

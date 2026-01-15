@@ -27,6 +27,11 @@
   "daylight": "일광",
   "weatherDataBy": "{provider} 날씨 데이터 (CC BY 4.0)",
   "daylightDerived": "일광 계산값",
+
+  "sourceCode": "Open source on GitHub",
+  "@sourceCode": {
+    "description": "Link text for source code repository in footer"
+  },
   "offlineRefreshError": "새로고침 불가 - 캐시된 데이터 표시 중",
   "loadingWeather": "날씨 로딩 중...",
   "unableToLoadWeather": "날씨를 불러올 수 없음",

@@ -27,6 +27,11 @@
   "daylight": "Światło dzienne",
   "weatherDataBy": "Dane pogodowe od {provider} (CC BY 4.0)",
   "daylightDerived": "Światło dzienne obliczone",
+
+  "sourceCode": "Open source on GitHub",
+  "@sourceCode": {
+    "description": "Link text for source code repository in footer"
+  },
   "offlineRefreshError": "Nie można odświeżyć - wyświetlam dane z pamięci podręcznej",
   "loadingWeather": "Ładowanie pogody...",
   "unableToLoadWeather": "Nie można załadować pogody",

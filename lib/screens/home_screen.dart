@@ -730,6 +730,17 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   ],
                 ),
               ),
+              const SizedBox(height: 8),
+              GestureDetector(
+                onTap: () => launchUrl(Uri.parse('https://github.com/timbortnik/widget')),
+                child: Text(
+                  l10n.sourceCode,
+                  style: TextStyle(
+                    color: colors.secondaryText,
+                    fontSize: 11,
+                  ),
+                ),
+              ),
             ],
           ),
         ),

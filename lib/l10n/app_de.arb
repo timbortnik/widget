@@ -27,6 +27,11 @@
   "daylight": "Tageslicht",
   "weatherDataBy": "Wetterdaten von {provider} (CC BY 4.0)",
   "daylightDerived": "Tageslicht berechnet",
+
+  "sourceCode": "Open source on GitHub",
+  "@sourceCode": {
+    "description": "Link text for source code repository in footer"
+  },
   "offlineRefreshError": "Aktualisierung fehlgeschlagen - zeige zwischengespeicherte Daten",
   "loadingWeather": "Wetter wird geladen...",
   "unableToLoadWeather": "Wetter konnte nicht geladen werden",

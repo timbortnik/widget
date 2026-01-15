@@ -27,6 +27,11 @@
   "daylight": "Lumina zilei",
   "weatherDataBy": "Date meteo de la {provider} (CC BY 4.0)",
   "daylightDerived": "Lumina zilei calculată",
+
+  "sourceCode": "Open source on GitHub",
+  "@sourceCode": {
+    "description": "Link text for source code repository in footer"
+  },
   "offlineRefreshError": "Nu se poate reîmprospăta - se afișează date din cache",
   "loadingWeather": "Se încarcă vremea...",
   "unableToLoadWeather": "Nu se poate încărca vremea",

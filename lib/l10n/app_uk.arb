@@ -129,6 +129,11 @@
   "daylight": "Денне світло",
   "weatherDataBy": "Дані погоди від {provider} (CC BY 4.0)",
   "daylightDerived": "Денне світло розраховано",
+
+  "sourceCode": "Open source on GitHub",
+  "@sourceCode": {
+    "description": "Link text for source code repository in footer"
+  },
   "offlineRefreshError": "Не вдалося оновити - показуються кешовані дані",
   "loadingWeather": "Завантаження погоди...",
   "unableToLoadWeather": "Не вдалося завантажити погоду",

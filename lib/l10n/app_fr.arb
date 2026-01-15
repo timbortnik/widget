@@ -27,6 +27,11 @@
   "daylight": "Lumière du jour",
   "weatherDataBy": "Données météo de {provider} (CC BY 4.0)",
   "daylightDerived": "Lumière du jour calculée",
+
+  "sourceCode": "Open source on GitHub",
+  "@sourceCode": {
+    "description": "Link text for source code repository in footer"
+  },
   "offlineRefreshError": "Impossible d'actualiser - affichage des données en cache",
   "loadingWeather": "Chargement de la météo...",
   "unableToLoadWeather": "Impossible de charger la météo",

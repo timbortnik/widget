@@ -27,6 +27,11 @@
   "daylight": "Daglicht",
   "weatherDataBy": "Weergegevens van {provider} (CC BY 4.0)",
   "daylightDerived": "Daglicht berekend",
+
+  "sourceCode": "Open source on GitHub",
+  "@sourceCode": {
+    "description": "Link text for source code repository in footer"
+  },
   "offlineRefreshError": "Kan niet vernieuwen - toont opgeslagen gegevens",
   "loadingWeather": "Weer laden...",
   "unableToLoadWeather": "Kan weer niet laden",

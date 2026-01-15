@@ -27,6 +27,11 @@
   "daylight": "பகல் ஒளி",
   "weatherDataBy": "{provider} வானிலை தரவு (CC BY 4.0)",
   "daylightDerived": "பகல் ஒளி கணக்கிடப்பட்டது",
+
+  "sourceCode": "Open source on GitHub",
+  "@sourceCode": {
+    "description": "Link text for source code repository in footer"
+  },
   "offlineRefreshError": "புதுப்பிக்க இயலவில்லை - தற்காலிகமாக சேமிக்கப்பட்ட தரவைக் காட்டுகிறது",
   "loadingWeather": "வானிலை ஏற்றப்படுகிறது...",
   "unableToLoadWeather": "வானிலையை ஏற்ற இயலவில்லை",

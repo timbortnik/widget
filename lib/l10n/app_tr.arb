@@ -27,6 +27,11 @@
   "daylight": "Gün ışığı",
   "weatherDataBy": "{provider} hava durumu verileri (CC BY 4.0)",
   "daylightDerived": "Gün ışığı hesaplanmış",
+
+  "sourceCode": "Open source on GitHub",
+  "@sourceCode": {
+    "description": "Link text for source code repository in footer"
+  },
   "offlineRefreshError": "Yenilenemiyor - önbelleğe alınmış veriler gösteriliyor",
   "loadingWeather": "Hava durumu yükleniyor...",
   "unableToLoadWeather": "Hava durumu yüklenemiyor",

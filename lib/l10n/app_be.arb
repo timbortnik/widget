@@ -27,6 +27,11 @@
   "daylight": "Дзённае святло",
   "weatherDataBy": "Даныя надвор'я ад {provider} (CC BY 4.0)",
   "daylightDerived": "Дзённае святло разлічана",
+
+  "sourceCode": "Open source on GitHub",
+  "@sourceCode": {
+    "description": "Link text for source code repository in footer"
+  },
   "offlineRefreshError": "Немагчыма абнавіць - паказваюцца кэшаваныя даныя",
   "loadingWeather": "Загрузка надвор'я...",
   "unableToLoadWeather": "Немагчыма загрузіць надвор'е",

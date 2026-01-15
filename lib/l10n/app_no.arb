@@ -27,6 +27,11 @@
   "daylight": "Dagslys",
   "weatherDataBy": "Værdata fra {provider} (CC BY 4.0)",
   "daylightDerived": "Dagslys beregnet",
+
+  "sourceCode": "Open source on GitHub",
+  "@sourceCode": {
+    "description": "Link text for source code repository in footer"
+  },
   "offlineRefreshError": "Kan ikke oppdatere - viser bufrede data",
   "loadingWeather": "Laster vær...",
   "unableToLoadWeather": "Kan ikke laste vær",

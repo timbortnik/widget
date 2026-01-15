@@ -27,6 +27,11 @@
   "daylight": "Päivänvalo",
   "weatherDataBy": "Säätiedot: {provider} (CC BY 4.0)",
   "daylightDerived": "Päivänvalo laskettu",
+
+  "sourceCode": "Open source on GitHub",
+  "@sourceCode": {
+    "description": "Link text for source code repository in footer"
+  },
   "offlineRefreshError": "Päivitys epäonnistui - näytetään välimuistissa olevat tiedot",
   "loadingWeather": "Ladataan säätä...",
   "unableToLoadWeather": "Säätä ei voida ladata",

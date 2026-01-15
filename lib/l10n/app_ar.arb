@@ -27,6 +27,11 @@
   "daylight": "ضوء النهار",
   "weatherDataBy": "بيانات الطقس من {provider} (CC BY 4.0)",
   "daylightDerived": "ضوء النهار محسوب",
+
+  "sourceCode": "Open source on GitHub",
+  "@sourceCode": {
+    "description": "Link text for source code repository in footer"
+  },
   "offlineRefreshError": "تعذر التحديث - يتم عرض البيانات المخزنة مؤقتًا",
   "loadingWeather": "جارٍ تحميل الطقس...",
   "unableToLoadWeather": "تعذر تحميل الطقس",

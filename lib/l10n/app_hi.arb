@@ -27,6 +27,11 @@
   "daylight": "दिन का प्रकाश",
   "weatherDataBy": "{provider} से मौसम डेटा (CC BY 4.0)",
   "daylightDerived": "दिन का प्रकाश गणना",
+
+  "sourceCode": "Open source on GitHub",
+  "@sourceCode": {
+    "description": "Link text for source code repository in footer"
+  },
   "offlineRefreshError": "रीफ्रेश नहीं हो सका - कैश्ड डेटा दिखाया जा रहा है",
   "loadingWeather": "मौसम लोड हो रहा है...",
   "unableToLoadWeather": "मौसम लोड नहीं हो सका",

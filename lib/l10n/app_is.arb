@@ -27,6 +27,11 @@
   "daylight": "Dagsbirta",
   "weatherDataBy": "Veðurgögn frá {provider} (CC BY 4.0)",
   "daylightDerived": "Dagsbirta reiknuð",
+
+  "sourceCode": "Open source on GitHub",
+  "@sourceCode": {
+    "description": "Link text for source code repository in footer"
+  },
   "offlineRefreshError": "Ekki tókst að uppfæra - sýni vistuð gögn",
   "loadingWeather": "Hleð veðri...",
   "unableToLoadWeather": "Ekki tókst að hlaða veðri",

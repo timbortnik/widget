@@ -27,6 +27,11 @@
   "daylight": "Cahya awan",
   "weatherDataBy": "Data cuaca saka {provider} (CC BY 4.0)",
   "daylightDerived": "Cahya awan dietung",
+
+  "sourceCode": "Open source on GitHub",
+  "@sourceCode": {
+    "description": "Link text for source code repository in footer"
+  },
   "offlineRefreshError": "Ora bisa nganyari - nuduhake data sing disimpen",
   "loadingWeather": "Ngunggah cuaca...",
   "unableToLoadWeather": "Ora bisa ngunggah cuaca",

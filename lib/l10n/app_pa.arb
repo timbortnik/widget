@@ -27,6 +27,11 @@
   "daylight": "ਦਿਨ ਦੀ ਰੌਸ਼ਨੀ",
   "weatherDataBy": "{provider} ਤੋਂ ਮੌਸਮ ਡਾਟਾ (CC BY 4.0)",
   "daylightDerived": "ਦਿਨ ਦੀ ਰੌਸ਼ਨੀ ਗਣਨਾ",
+
+  "sourceCode": "Open source on GitHub",
+  "@sourceCode": {
+    "description": "Link text for source code repository in footer"
+  },
   "offlineRefreshError": "ਤਾਜ਼ਾ ਨਹੀਂ ਹੋ ਸਕਦਾ - ਕੈਸ਼ ਕੀਤਾ ਡਾਟਾ ਦਿਖਾ ਰਿਹਾ ਹੈ",
   "loadingWeather": "ਮੌਸਮ ਲੋਡ ਹੋ ਰਿਹਾ ਹੈ...",
   "unableToLoadWeather": "ਮੌਸਮ ਲੋਡ ਨਹੀਂ ਹੋ ਸਕਦਾ",

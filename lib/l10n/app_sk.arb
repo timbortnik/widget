@@ -27,6 +27,11 @@
   "daylight": "Denné svetlo",
   "weatherDataBy": "Údaje o počasí od {provider} (CC BY 4.0)",
   "daylightDerived": "Denné svetlo vypočítané",
+
+  "sourceCode": "Open source on GitHub",
+  "@sourceCode": {
+    "description": "Link text for source code repository in footer"
+  },
   "offlineRefreshError": "Nie je možné obnoviť - zobrazujú sa uložené údaje",
   "loadingWeather": "Načítava sa počasie...",
   "unableToLoadWeather": "Nie je možné načítať počasie",

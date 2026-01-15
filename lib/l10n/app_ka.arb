@@ -27,6 +27,11 @@
   "daylight": "დღის სინათლე",
   "weatherDataBy": "ამინდის მონაცემები {provider}-დან (CC BY 4.0)",
   "daylightDerived": "დღის სინათლე გამოთვლილი",
+
+  "sourceCode": "Open source on GitHub",
+  "@sourceCode": {
+    "description": "Link text for source code repository in footer"
+  },
   "offlineRefreshError": "განახლება ვერ მოხერხდა - ნაჩვენებია ქეშირებული მონაცემები",
   "loadingWeather": "ამინდის ჩატვირთვა...",
   "unableToLoadWeather": "ამინდის ჩატვირთვა ვერ მოხერხდა",

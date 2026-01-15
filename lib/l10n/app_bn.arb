@@ -27,6 +27,11 @@
   "daylight": "দিনের আলো",
   "weatherDataBy": "{provider} থেকে আবহাওয়া ডেটা (CC BY 4.0)",
   "daylightDerived": "দিনের আলো গণনাকৃত",
+
+  "sourceCode": "Open source on GitHub",
+  "@sourceCode": {
+    "description": "Link text for source code repository in footer"
+  },
   "offlineRefreshError": "রিফ্রেশ করা যাচ্ছে না - ক্যাশ করা ডেটা দেখানো হচ্ছে",
   "loadingWeather": "আবহাওয়া লোড হচ্ছে...",
   "unableToLoadWeather": "আবহাওয়া লোড করা যাচ্ছে না",

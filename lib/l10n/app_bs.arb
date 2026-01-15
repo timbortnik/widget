@@ -27,6 +27,11 @@
   "daylight": "Dnevno svjetlo",
   "weatherDataBy": "Podaci o vremenu od {provider} (CC BY 4.0)",
   "daylightDerived": "Dnevno svjetlo izračunato",
+
+  "sourceCode": "Open source on GitHub",
+  "@sourceCode": {
+    "description": "Link text for source code repository in footer"
+  },
   "offlineRefreshError": "Nije moguće osvježiti - prikazuju se keširani podaci",
   "loadingWeather": "Učitavanje vremena...",
   "unableToLoadWeather": "Nije moguće učitati vrijeme",

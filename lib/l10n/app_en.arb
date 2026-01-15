@@ -182,6 +182,11 @@
     "description": "Note indicating daylight values are calculated from cloud data (CC BY 4.0 modification disclosure)"
   },
 
+  "sourceCode": "Open source on GitHub",
+  "@sourceCode": {
+    "description": "Link text for source code repository in footer"
+  },
+
   "offlineRefreshError": "Unable to refresh - showing cached data",
   "@offlineRefreshError": {
     "description": "Snackbar message when refresh fails but cached data is available"

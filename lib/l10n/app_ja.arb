@@ -27,6 +27,11 @@
   "daylight": "日光",
   "weatherDataBy": "{provider}の気象データ (CC BY 4.0)",
   "daylightDerived": "日光は計算値",
+
+  "sourceCode": "Open source on GitHub",
+  "@sourceCode": {
+    "description": "Link text for source code repository in footer"
+  },
   "offlineRefreshError": "更新できません - キャッシュデータを表示中",
   "loadingWeather": "天気を読み込み中...",
   "unableToLoadWeather": "天気を読み込めません",
