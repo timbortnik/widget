@@ -561,11 +561,9 @@ void main() {
   group('LocationService retry with fallback language', () {
     test('retries with default language when detected language returns no results', () async {
       int requestCount = 0;
-      String? capturedLanguage;
 
       final mockClient = MockClient((request) async {
         requestCount++;
-        capturedLanguage = request.url.queryParameters['language'];
 
         // First request (detected language) returns no results
         if (requestCount == 1) {
@@ -691,7 +689,8 @@ void main() {
       final service = LocationService(client: MockClient((r) async => http.Response('', 200)));
 
       // Should not throw
-      expect(() => service.dispose(), returnsNormally);
+      service.dispose();
+      // If we got here without exception, the test passes
     });
   });
 }

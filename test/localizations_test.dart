@@ -6,7 +6,7 @@ void main() {
   group('Localizations', () {
     test('all supported locales can be loaded', () async {
       // Get all supported locales from AppLocalizations
-      final supportedLocales = AppLocalizations.supportedLocales;
+      const supportedLocales = AppLocalizations.supportedLocales;
 
       expect(supportedLocales.length, greaterThan(30),
         reason: 'Should support 30+ languages');
@@ -30,7 +30,7 @@ void main() {
     });
 
     test('all locales have required strings', () async {
-      final supportedLocales = AppLocalizations.supportedLocales;
+      const supportedLocales = AppLocalizations.supportedLocales;
 
       for (final locale in supportedLocales) {
         final l10n = await AppLocalizations.delegate.load(locale);
@@ -58,7 +58,7 @@ void main() {
     });
 
     test('sourceCode string includes license identifier', () async {
-      final supportedLocales = AppLocalizations.supportedLocales;
+      const supportedLocales = AppLocalizations.supportedLocales;
 
       for (final locale in supportedLocales) {
         final l10n = await AppLocalizations.delegate.load(locale);
@@ -70,7 +70,7 @@ void main() {
     });
 
     test('weatherDataBy includes license identifier', () async {
-      final supportedLocales = AppLocalizations.supportedLocales;
+      const supportedLocales = AppLocalizations.supportedLocales;
 
       for (final locale in supportedLocales) {
         final l10n = await AppLocalizations.delegate.load(locale);
@@ -85,10 +85,10 @@ void main() {
 
     test('specific locale translations are correct', () async {
       // Test a few key languages to ensure translations are actually different
-      final enLocale = const Locale('en');
-      final deLocale = const Locale('de');
-      final ukLocale = const Locale('uk');
-      final jaLocale = const Locale('ja');
+      const enLocale = Locale('en');
+      const deLocale = Locale('de');
+      const ukLocale = Locale('uk');
+      const jaLocale = Locale('ja');
 
       final en = await AppLocalizations.delegate.load(enLocale);
       final de = await AppLocalizations.delegate.load(deLocale);
@@ -110,7 +110,7 @@ void main() {
     });
 
     test('all locales have consistent placeholder usage', () async {
-      final supportedLocales = AppLocalizations.supportedLocales;
+      const supportedLocales = AppLocalizations.supportedLocales;
 
       for (final locale in supportedLocales) {
         final l10n = await AppLocalizations.delegate.load(locale);
