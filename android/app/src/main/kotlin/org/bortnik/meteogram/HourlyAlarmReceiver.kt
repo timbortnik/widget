@@ -61,22 +61,26 @@ class HourlyAlarmReceiver : BroadcastReceiver() {
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
 
-            // Use setAndAllowWhileIdle for battery-efficient scheduling
+            // Use setWindow for inexact alarm (no SCHEDULE_EXACT_ALARM permission needed)
+            // Fires within a window after the target time (5 minutes requested)
+            // Note: Android may enforce minimum window (e.g., 10 min on Android 12+)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                alarmManager.setAndAllowWhileIdle(
+                val windowLengthMs = 5 * 60 * 1000L // 5 minute window (may be clipped to 10 min by system)
+                alarmManager.setWindow(
                     AlarmManager.RTC_WAKEUP,
                     calendar.timeInMillis,
+                    windowLengthMs,
                     pendingIntent
                 )
+                Log.d(TAG, "Scheduled inexact hourly alarm for ${calendar.time} (±5min window, may be adjusted by system)")
             } else {
                 alarmManager.set(
                     AlarmManager.RTC_WAKEUP,
                     calendar.timeInMillis,
                     pendingIntent
                 )
+                Log.d(TAG, "Scheduled hourly alarm for ${calendar.time}")
             }
-
-            Log.d(TAG, "Scheduled next hourly alarm for ${calendar.time}")
         }
 
         /**
