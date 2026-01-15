@@ -264,13 +264,21 @@ class LocationService {
         return [];
       }
 
-      return results.map((r) => CitySearchResult(
-        name: (r['name'] as String?) ?? 'Unknown',
-        country: (r['country'] as String?) ?? '',
-        admin1: r['admin1'] as String?,
-        latitude: ((r['latitude'] as num?) ?? 0.0).toDouble(),
-        longitude: ((r['longitude'] as num?) ?? 0.0).toDouble(),
-      )).toList();
+      return results
+        .where((r) {
+          // Filter out invalid results (missing required fields)
+          return r['name'] != null &&
+                 r['latitude'] != null &&
+                 r['longitude'] != null;
+        })
+        .map((r) => CitySearchResult(
+          name: r['name'] as String,
+          country: (r['country'] as String?) ?? '',
+          admin1: r['admin1'] as String?,
+          latitude: (r['latitude'] as num).toDouble(),
+          longitude: (r['longitude'] as num).toDouble(),
+        ))
+        .toList();
     }
     return [];
   }
@@ -325,13 +333,21 @@ class LocationService {
       final results = data['results'] as List<dynamic>?;
       if (results == null) return [];
 
-      return results.map((r) => CitySearchResult(
-        name: (r['name'] as String?) ?? 'Unknown',
-        country: (r['country'] as String?) ?? '',
-        admin1: r['admin1'] as String?,
-        latitude: ((r['latitude'] as num?) ?? 0.0).toDouble(),
-        longitude: ((r['longitude'] as num?) ?? 0.0).toDouble(),
-      )).toList();
+      return results
+        .where((r) {
+          // Filter out invalid results (missing required fields)
+          return r['name'] != null &&
+                 r['latitude'] != null &&
+                 r['longitude'] != null;
+        })
+        .map((r) => CitySearchResult(
+          name: r['name'] as String,
+          country: (r['country'] as String?) ?? '',
+          admin1: r['admin1'] as String?,
+          latitude: (r['latitude'] as num).toDouble(),
+          longitude: (r['longitude'] as num).toDouble(),
+        ))
+        .toList();
     }
     return [];
   }

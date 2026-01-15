@@ -601,16 +601,22 @@ void main() {
   });
 
   group('LocationService error handling', () {
-    test('handles null values in API response gracefully', () async {
+    test('filters out results with null name', () async {
       final mockClient = MockClient((request) async {
         return http.Response(
           jsonEncode({
             'results': [
               {
-                'name': null,  // Null name
+                'name': null,  // Invalid - null name
                 'country': 'Test',
-                'latitude': 0.0,
-                'longitude': 0.0,
+                'latitude': 50.0,
+                'longitude': 10.0,
+              },
+              {
+                'name': 'Valid City',  // Valid result
+                'country': 'Test',
+                'latitude': 51.0,
+                'longitude': 11.0,
               }
             ]
           }),
@@ -621,21 +627,27 @@ void main() {
       final service = LocationService(client: mockClient);
       final results = await service.searchCities('test');
 
-      // Should handle null gracefully with fallback
+      // Should filter out invalid result, keep only valid one
       expect(results.length, 1);
-      expect(results[0].name, 'Unknown'); // Defensive null check
+      expect(results[0].name, 'Valid City');
     });
 
-    test('handles null latitude/longitude gracefully', () async {
+    test('filters out results with null coordinates', () async {
       final mockClient = MockClient((request) async {
         return http.Response(
           jsonEncode({
             'results': [
               {
-                'name': 'Test',
+                'name': 'Invalid City',
                 'country': 'Test',
-                'latitude': null,
+                'latitude': null,  // Invalid coordinates
                 'longitude': null,
+              },
+              {
+                'name': 'Valid City',
+                'country': 'Test',
+                'latitude': 51.0,
+                'longitude': 11.0,
               }
             ]
           }),
@@ -646,10 +658,31 @@ void main() {
       final service = LocationService(client: mockClient);
       final results = await service.searchCities('test');
 
-      // Should fallback to 0.0 for null coordinates
+      // Should filter out result with null coordinates
       expect(results.length, 1);
-      expect(results[0].latitude, 0.0);
-      expect(results[0].longitude, 0.0);
+      expect(results[0].name, 'Valid City');
+      expect(results[0].latitude, 51.0);
+      expect(results[0].longitude, 11.0);
+    });
+
+    test('returns empty list when all results are invalid', () async {
+      final mockClient = MockClient((request) async {
+        return http.Response(
+          jsonEncode({
+            'results': [
+              {'name': null, 'latitude': 0.0, 'longitude': 0.0},
+              {'name': 'Test', 'latitude': null, 'longitude': 0.0},
+            ]
+          }),
+          200,
+        );
+      });
+
+      final service = LocationService(client: mockClient);
+      final results = await service.searchCities('test');
+
+      // All results invalid - should return empty list
+      expect(results, isEmpty);
     });
   });
 
