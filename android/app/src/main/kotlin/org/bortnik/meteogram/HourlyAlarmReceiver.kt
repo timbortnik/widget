@@ -10,42 +10,44 @@ import android.util.Log
 import java.util.Calendar
 
 /**
- * BroadcastReceiver that triggers widget chart re-render at hour boundaries.
- * This updates the "now" indicator position without fetching new weather data.
+ * BroadcastReceiver that triggers widget chart re-render at half-hour marks.
+ * The "now" indicator snaps to the nearest hour at :30, so we re-render then.
  *
- * Uses a buffer + verification approach to ensure the alarm always fires
- * AFTER the hour change, never before:
- * 1. Schedule alarm for XX:00:15 (15 seconds after the hour)
- * 2. When alarm fires, verify minute <= MAX_VALID_MINUTE (early in hour = past boundary)
- * 3. If fired early (minute > 30, still in previous hour), retry after a short delay
+ * Uses a buffer + verification approach to ensure the alarm fires AFTER :30:
+ * 1. Schedule alarm for XX:30:15 (15 seconds after the half-hour)
+ * 2. When alarm fires, verify minute >= 30 (past the :30 boundary)
+ * 3. If fired early (minute < 30), retry after a short delay
  */
 class HourlyAlarmReceiver : BroadcastReceiver() {
     companion object {
         private const val TAG = "HourlyAlarmReceiver"
         const val ACTION_HOURLY_UPDATE = "org.bortnik.meteogram.HOURLY_UPDATE"
 
-        // Buffer after hour boundary to ensure we're always past it (seconds)
-        // Matches lib/constants.dart:AlarmConstants.hourBoundaryBufferSeconds
+        // Buffer after half-hour boundary to ensure we're always past it (seconds)
         private const val HOUR_BUFFER_SECONDS = 15
 
-        // Maximum minute value to consider "early in the hour" (past the boundary)
-        // Inexact alarms can drift significantly, so we use a generous threshold
-        // Matches lib/constants.dart:AlarmConstants.maxValidMinute
-        private const val MAX_VALID_MINUTE = 30
-
         /**
-         * Schedule the next hourly alarm shortly after the next hour boundary.
-         * Uses a 15-second buffer to ensure we're always past the hour change.
+         * Schedule the next alarm at the half-hour mark (XX:30).
+         * The "now" indicator snaps to nearest hour at :30, so we re-render then.
+         * Uses a 15-second buffer to ensure we're past the boundary.
          */
         fun scheduleNextAlarm(context: Context) {
             val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-            // Calculate next hour boundary + buffer
+            // Calculate next half-hour boundary + buffer
+            // The "now" indicator snaps at :30, so we re-render then
             val calendar = Calendar.getInstance().apply {
-                set(Calendar.MINUTE, 0)
+                val currentMinute = get(Calendar.MINUTE)
+                if (currentMinute < 30) {
+                    // Next half-hour is :30 of current hour
+                    set(Calendar.MINUTE, 30)
+                } else {
+                    // Next half-hour is :30 of next hour
+                    set(Calendar.MINUTE, 30)
+                    add(Calendar.HOUR_OF_DAY, 1)
+                }
                 set(Calendar.SECOND, HOUR_BUFFER_SECONDS)
                 set(Calendar.MILLISECOND, 0)
-                add(Calendar.HOUR_OF_DAY, 1)
             }
 
             val intent = Intent(ACTION_HOURLY_UPDATE).apply {
@@ -70,19 +72,19 @@ class HourlyAlarmReceiver : BroadcastReceiver() {
                     windowLengthMs,
                     pendingIntent
                 )
-                Log.d(TAG, "Scheduled inexact hourly alarm for ${calendar.time} (±5min window, may be adjusted by system)")
+                Log.d(TAG, "Scheduled half-hour alarm for ${calendar.time} (±5min window, may be adjusted by system)")
             } else {
                 alarmManager.set(
                     AlarmManager.RTC_WAKEUP,
                     calendar.timeInMillis,
                     pendingIntent
                 )
-                Log.d(TAG, "Scheduled hourly alarm for ${calendar.time}")
+                Log.d(TAG, "Scheduled half-hour alarm for ${calendar.time}")
             }
         }
 
         /**
-         * Cancel any pending hourly alarm.
+         * Cancel any pending alarm.
          */
         fun cancelAlarm(context: Context) {
             val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
@@ -96,7 +98,7 @@ class HourlyAlarmReceiver : BroadcastReceiver() {
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
             alarmManager.cancel(pendingIntent)
-            Log.d(TAG, "Cancelled hourly alarm")
+            Log.d(TAG, "Cancelled half-hour alarm")
         }
     }
 
@@ -106,7 +108,7 @@ class HourlyAlarmReceiver : BroadcastReceiver() {
                 handleHourlyUpdate(context)
             }
             Intent.ACTION_BOOT_COMPLETED -> {
-                Log.d(TAG, "Device booted - scheduling hourly alarm")
+                Log.d(TAG, "Device booted - scheduling half-hour alarm")
                 scheduleNextAlarm(context)
             }
         }
@@ -117,21 +119,21 @@ class HourlyAlarmReceiver : BroadcastReceiver() {
         val minute = calendar.get(Calendar.MINUTE)
         val second = calendar.get(Calendar.SECOND)
 
-        Log.d(TAG, "Hourly alarm fired at ${calendar.time} (minute=$minute, second=$second)")
+        Log.d(TAG, "Half-hour alarm fired at ${calendar.time} (minute=$minute, second=$second)")
 
-        // Verify we're actually past the hour boundary
-        // If minute > MAX_VALID_MINUTE, we likely fired early (still in previous hour)
-        if (minute > MAX_VALID_MINUTE) {
-            Log.w(TAG, "Alarm fired early (minute=$minute > $MAX_VALID_MINUTE) - scheduling retry")
+        // Verify we're past the :30 boundary
+        // If minute < 30, we fired early (before the target XX:30)
+        if (minute < 30) {
+            Log.w(TAG, "Alarm fired early (minute=$minute < 30) - scheduling retry")
             scheduleRetry(context)
             return
         }
 
-        // We're past the hour boundary - safe to re-render
-        Log.d(TAG, "Hour boundary confirmed - re-rendering chart")
+        // We're past the :30 boundary - safe to re-render
+        Log.d(TAG, "Half-hour boundary confirmed - re-rendering chart")
         rerenderChart(context)
 
-        // Schedule next hourly alarm
+        // Schedule next half-hour alarm
         scheduleNextAlarm(context)
     }
 

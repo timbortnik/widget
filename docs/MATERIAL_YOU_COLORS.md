@@ -24,7 +24,7 @@ The widget detects color changes through multiple layered mechanisms:
 | **ContentObserver** | Immediate | App process alive (in background) |
 | **WorkManager ContentUriTrigger** | Delayed (batched) | Fallback when app killed |
 | **USER_PRESENT broadcast** | On unlock | App was force-closed |
-| **HourlyAlarmReceiver** | ≤1 hour | Backup/fallback |
+| **HourlyAlarmReceiver** | ≤30 min | Backup/fallback |
 | **onUpdate()** | On interaction | Widget resize/tap |
 
 **Primary mechanism:** ContentObserver in `MeteogramApplication` fires instantly when `Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES` changes. This works as long as the app process is alive (even in background).
@@ -40,7 +40,7 @@ The widget detects color changes through multiple layered mechanisms:
 | `MaterialYouColorWorker.kt` | WorkManager fallback with content URI trigger |
 | `MeteogramWidgetProvider.kt` | Checks colors in onUpdate() |
 | `WidgetEventReceiver.kt` | Checks colors on USER_PRESENT |
-| `HourlyAlarmReceiver.kt` | Checks colors on hourly alarm |
+| `HourlyAlarmReceiver.kt` | Checks colors on half-hour alarm |
 
 ## Data Flow
 
@@ -153,4 +153,4 @@ Note: This is separate from home_widget's WorkManager usage (which we avoid due 
 
 1. **App in background**: Change colors → widget updates immediately
 2. **App force-closed**: Change colors → lock/unlock phone → widget updates
-3. **Fallback**: Change colors → wait up to 1 hour → widget updates on hourly alarm
+3. **Fallback**: Change colors → wait up to 30 min → widget updates on half-hour alarm

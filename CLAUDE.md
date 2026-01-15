@@ -23,7 +23,7 @@ This file provides context for AI assistants working on this project.
 - **Data:** Temperature (line with gradient fill), precipitation (bars), daylight (computed from cloud cover)
 - **Theme:** System light/dark mode with custom color palette
 - **Units:** Locale-aware (°F for US/Liberia/Myanmar, °C elsewhere)
-- **Update:** Timer checks every minute in foreground (refreshes if data >15 min old, redraws on hour boundary), 30 min periodic in background, event-driven (unlock, network, locale/timezone change)
+- **Update:** Timer checks every minute in foreground (refreshes if data >15 min old, redraws at half-hour when "now" indicator snaps), 30 min periodic in background, event-driven (unlock, network, locale/timezone change)
 - **Languages:** 30+ languages via ARB files
 - **Widget:** SVG rendered natively via AndroidSVG for pixel-perfect display
 

@@ -16,10 +16,10 @@ A beautiful, modern weather widget for Android showing temperature forecasts as 
   - Current time indicator
 - **Home screen widget** with native SVG rendering via AndroidSVG
 - **Smart refresh**:
-  - Auto-refresh in foreground (timer checks every minute for stale data >15 min, redraws on hour boundary)
+  - Auto-refresh in foreground (timer checks every minute for stale data >15 min, redraws at half-hour)
   - 30 min periodic background refresh
   - Event-driven updates (screen unlock, network change, locale/timezone change)
-  - Hourly alarm for precise widget updates
+  - Half-hour alarm for widget updates (synced with "now" indicator snapping)
 - **Flexible location**:
   - GPS with reverse geocoding
   - City search (any city worldwide)
@@ -111,7 +111,7 @@ android/app/src/main/
 │   ├── MeteogramWidgetProvider.kt   # Widget provider
 │   ├── WidgetEventReceiver.kt       # System event handler
 │   ├── WidgetUtils.kt               # Widget helper functions
-│   ├── HourlyAlarmReceiver.kt       # Hourly refresh alarm
+│   ├── HourlyAlarmReceiver.kt       # Half-hour refresh alarm
 │   ├── SvgChartPlatformView.kt      # Native SVG rendering
 │   ├── SvgChartViewFactory.kt       # PlatformView factory
 │   ├── MaterialYouColorExtractor.kt # Dynamic color extraction
@@ -163,7 +163,7 @@ The home screen widget uses:
 - `RemoteViews` for native Android widget rendering
 - SVG chart rendered natively via AndroidSVG library
 - WorkManager for 30-minute background refresh
-- Hourly alarms for precise refresh timing
+- Half-hour alarms synced with "now" indicator snapping
 - Event receivers for unlock/network/locale changes
 
 **RemoteViews Limitations:**
@@ -176,7 +176,7 @@ The home screen widget uses:
 2. SVG chart generated via `SvgChartGenerator` (pure Dart)
 3. In-app: SVG rendered via native Android PlatformView (AndroidSVG)
 4. Widget: SVG saved to file, rendered by native provider via AndroidSVG
-5. WorkManager + hourly alarms trigger periodic refresh
+5. WorkManager + half-hour alarms trigger periodic refresh
 6. Event receivers trigger refresh on unlock/network/locale changes
 
 ## Customization

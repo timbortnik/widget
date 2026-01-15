@@ -48,7 +48,7 @@ The app follows a standard Flutter architecture with clear separation of concern
 ### Foreground App Updates
 1. Timer checks every minute while app is in foreground
 2. If data >15 minutes old: triggers full weather refresh
-3. If hour boundary crossed (e.g., 2:59 → 3:00): redraws chart to update "now" indicator position
+3. If half-hour boundary crossed (e.g., 2:29 → 2:30): redraws chart as "now" indicator snaps to next hour
 4. Also checks on first build (cold start) for immediate staleness detection
 5. On app resume: existing lifecycle handler checks widget sync
 

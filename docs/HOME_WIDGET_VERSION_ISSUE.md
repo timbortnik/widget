@@ -17,7 +17,7 @@ In version 0.9.0, the library switched from `JobIntentService` to `WorkManager` 
 
 - **Widget resize**: When user resizes the widget, `onAppWidgetOptionsChanged` triggers `WidgetUtils.triggerChartReRender()` which sends a `HomeWidgetBackgroundIntent`. With 0.9.0, the Flutter callback may not execute promptly.
 
-- **Hourly updates**: Similar issue affects `HourlyAlarmReceiver` triggering chart re-renders.
+- **Half-hour updates**: Similar issue affects `HourlyAlarmReceiver` triggering chart re-renders at :30.
 
 - **Theme/locale changes**: `WidgetEventReceiver` broadcasts may also be affected.
 

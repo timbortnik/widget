@@ -32,12 +32,12 @@ class ChartConstants {
   static const double precipitationBarOpacity = 0.85;
 }
 
-/// Hourly alarm timing constants.
+/// Half-hour alarm timing constants.
+/// The "now" indicator snaps to nearest hour at :30, so alarms fire then.
 class AlarmConstants {
-  /// Buffer after hour boundary to ensure alarm fires after hour change (seconds).
-  static const int hourBoundaryBufferSeconds = 15;
+  /// Buffer after half-hour boundary to ensure alarm fires after :30 (seconds).
+  static const int halfHourBoundaryBufferSeconds = 15;
 
-  /// Maximum minute value to consider "early in the hour" (past boundary).
-  /// Inexact alarms can drift, so we use a generous threshold.
-  static const int maxValidMinute = 30;
+  /// Minute threshold for "now" indicator rounding (>= this rounds up to next hour).
+  static const int nowIndicatorRoundingMinute = 30;
 }

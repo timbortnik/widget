@@ -85,13 +85,15 @@ class WeatherData {
   }
 
   /// Get the index of "now" in the display data.
-  /// Finds the hour slot matching current time by comparing UTC timestamps.
+  /// Snaps to the nearest hour (rounds at 30 minutes) for visual cleanliness.
   int getNowIndex() {
     final nowUtc = DateTime.now().toUtc();
-    // Truncate to hour precision for comparison
-    final nowHour = DateTime.utc(nowUtc.year, nowUtc.month, nowUtc.day, nowUtc.hour);
+    // Round to nearest hour: if minute >= 30, use next hour
+    final roundedHour = nowUtc.minute >= 30
+        ? DateTime.utc(nowUtc.year, nowUtc.month, nowUtc.day, nowUtc.hour + 1)
+        : DateTime.utc(nowUtc.year, nowUtc.month, nowUtc.day, nowUtc.hour);
 
-    // Find the hour slot that matches current time
+    // Find the hour slot that matches rounded time
     for (var i = 0; i < hourly.length; i++) {
       final entryHour = DateTime.utc(
         hourly[i].time.year,
@@ -99,7 +101,7 @@ class WeatherData {
         hourly[i].time.day,
         hourly[i].time.hour,
       );
-      if (entryHour == nowHour) {
+      if (entryHour == roundedHour) {
         return i;
       }
     }

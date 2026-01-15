@@ -53,8 +53,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   // Periodic timer for foreground auto-refresh (every minute)
   Timer? _refreshTimer;
-  // Track last hour for detecting hour boundary crossings
-  int? _lastRenderedHour;
+  // Track last display hour for detecting half-hour boundary crossings
+  // The "now" indicator snaps to nearest hour at :30, so we track that
+  int? _lastDisplayHour;
 
   @override
   void initState() {
@@ -94,7 +95,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           );
         }
         _loading = false;
-        _lastRenderedHour = DateTime.now().hour;
+        _lastDisplayHour = DateTime.now().minute >= 30 ? (DateTime.now().hour + 1) % 24 : DateTime.now().hour;
       });
       debugPrint('Showing cached data immediately: ${cached.fetchedAt}');
     }
@@ -117,21 +118,23 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     super.dispose();
   }
 
-  /// Refresh weather data if stale (>15 min old) or redraw on hour boundary.
+  /// Refresh weather data if stale (>15 min old) or redraw on half-hour boundary.
   /// Called periodically by _refreshTimer and on first build.
   void _refreshIfStale() {
     if (_weatherData == null || _loading) return;
 
     final now = DateTime.now();
-    final currentHour = now.hour;
+    // The "now" indicator snaps to nearest hour at :30
+    // So displayHour is the rounded hour (same logic as getNowIndex)
+    final displayHour = now.minute >= 30 ? (now.hour + 1) % 24 : now.hour;
 
-    // Check if we've crossed an hour boundary
-    if (_lastRenderedHour != null && _lastRenderedHour != currentHour) {
-      debugPrint('Hour boundary crossed ($_lastRenderedHour -> $currentHour), redrawing chart...');
-      _lastRenderedHour = currentHour;
+    // Check if we've crossed a half-hour boundary (display hour changed)
+    if (_lastDisplayHour != null && _lastDisplayHour != displayHour) {
+      debugPrint('Half-hour boundary crossed ($_lastDisplayHour -> $displayHour), redrawing chart...');
+      _lastDisplayHour = displayHour;
       setState(() {}); // Trigger rebuild to update "now" indicator position
     }
-    _lastRenderedHour ??= currentHour;
+    _lastDisplayHour ??= displayHour;
 
     // Check if data is stale
     final age = now.difference(_weatherData!.fetchedAt);
@@ -289,7 +292,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         setState(() {
           _weatherData = cached;
           _locationName = cachedCity;
-          _lastRenderedHour = DateTime.now().hour;
+          _lastDisplayHour = DateTime.now().minute >= 30 ? (DateTime.now().hour + 1) % 24 : DateTime.now().hour;
         });
         // Update widget after frame is rendered
         WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -364,7 +367,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         _locationName = location.city;
         _locationSource = location.source;
         _loading = false;
-        _lastRenderedHour = DateTime.now().hour;
+        _lastDisplayHour = DateTime.now().minute >= 30 ? (DateTime.now().hour + 1) % 24 : DateTime.now().hour;
       });
 
       // Cache location info for offline use
@@ -390,7 +393,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             );
           }
           _loading = false;
-          _lastRenderedHour = DateTime.now().hour;
+          _lastDisplayHour = DateTime.now().minute >= 30 ? (DateTime.now().hour + 1) % 24 : DateTime.now().hour;
         });
 
         // Update widget with cached data

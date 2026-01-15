@@ -351,7 +351,7 @@ The widget responds to system events via broadcast receivers.
 | Widget resize | `onAppWidgetOptionsChanged` | N/A | Re-render immediately |
 | Locale change | `ACTION_LOCALE_CHANGED` | Manifest | Re-render (no fetch) |
 | Timezone change | `ACTION_TIMEZONE_CHANGED` | Manifest | Re-render (no fetch) |
-| Hour boundary | `HourlyAlarmReceiver` | Manifest | Re-render (no fetch) |
+| Half-hour (:30) | `HourlyAlarmReceiver` | Manifest | Re-render (no fetch) |
 
 **Important:** `LOCALE_CHANGED` and `TIMEZONE_CHANGED` use manifest-declared receivers because the app process is killed when locale/timezone changes. Runtime-registered receivers are lost when the process dies. These broadcasts are exempt from Android 8.0+ implicit broadcast restrictions.
 
@@ -483,36 +483,40 @@ private fun fetchWeatherIfStale(context: Context) {
 - `USER_PRESENT`, `CONNECTIVITY_CHANGE`: Require runtime registration (Android 8.0+ restriction)
 - `LOCALE_CHANGED`, `TIMEZONE_CHANGED`: Use manifest declaration (app process killed on change, runtime receivers lost; these are exempt from 8.0+ restrictions)
 
-#### Hourly Alarm for "Now" Indicator
+#### Half-Hour Alarm for "Now" Indicator
 
-The widget uses `AlarmManager` to re-render the chart at each hour boundary, keeping the "now" indicator current.
+The "now" indicator snaps to the nearest hour at the 30-minute mark (e.g., 2:29 shows "now" at 2:00, 2:30 shows "now" at 3:00). The widget uses `AlarmManager` to re-render the chart at XX:30 when this snap occurs.
 
 **Buffer + Verification Approach:**
-To ensure the alarm always fires AFTER the hour change (never before):
+To ensure the alarm fires AFTER the :30 boundary:
 
-1. Schedule alarm for XX:00:15 (15-second buffer after the hour)
-2. When alarm fires, verify minute <= 30 (early in hour = past the boundary)
-3. If fired early (minute > 30), calculate delay to next hour boundary and retry
+1. Schedule alarm for XX:30:15 (15-second buffer after the half-hour)
+2. When alarm fires, verify minute >= 30 (past the :30 boundary)
+3. If fired early (minute < 30), reschedule for the next half-hour
 
 ```kotlin
 // HourlyAlarmReceiver.kt
 private const val HOUR_BUFFER_SECONDS = 15
-private const val MAX_VALID_MINUTE = 30  // If minute > 30, we're still in previous hour
 
 fun scheduleNextAlarm(context: Context) {
     val calendar = Calendar.getInstance().apply {
-        set(Calendar.MINUTE, 0)
+        val currentMinute = get(Calendar.MINUTE)
+        if (currentMinute < 30) {
+            set(Calendar.MINUTE, 30)
+        } else {
+            set(Calendar.MINUTE, 30)
+            add(Calendar.HOUR_OF_DAY, 1)
+        }
         set(Calendar.SECOND, HOUR_BUFFER_SECONDS)
-        add(Calendar.HOUR_OF_DAY, 1)
     }
-    alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent)
+    alarmManager.setWindow(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, windowMs, pendingIntent)
 }
 
 fun handleHourlyUpdate(context: Context) {
     val minute = Calendar.getInstance().get(Calendar.MINUTE)
-    if (minute > MAX_VALID_MINUTE) {
-        // Fired early - schedule retry at next hour boundary + buffer
-        scheduleRetry(context)
+    if (minute < 30) {
+        // Fired early - reschedule
+        scheduleNextAlarm(context)
         return
     }
     // Safe to re-render
@@ -521,7 +525,7 @@ fun handleHourlyUpdate(context: Context) {
 }
 ```
 
-The alarm triggers `chartReRender` (no weather fetch), updating only the "now" indicator position.
+The alarm triggers `chartReRender` (no weather fetch), updating only the "now" indicator position. Additionally, `USER_PRESENT` always re-renders to ensure the indicator is current when users unlock their phone.
 
 ### main.dart setup
 ```dart
