@@ -557,4 +557,109 @@ void main() {
       expect(kDefaultCity, 'Berlin');
     });
   });
+
+  group('LocationService retry with fallback language', () {
+    test('retries with default language when detected language returns no results', () async {
+      int requestCount = 0;
+      String? capturedLanguage;
+
+      final mockClient = MockClient((request) async {
+        requestCount++;
+        capturedLanguage = request.url.queryParameters['language'];
+
+        // First request (detected language) returns no results
+        if (requestCount == 1) {
+          return utf8Response(jsonEncode({'results': null}), 200);
+        }
+
+        // Second request (fallback to device language) returns results
+        return utf8Response(
+          jsonEncode({
+            'results': [
+              {
+                'name': 'Kyiv',
+                'country': 'Ukraine',
+                'latitude': 50.45,
+                'longitude': 30.52,
+              }
+            ]
+          }),
+          200,
+        );
+      });
+
+      final service = LocationService(client: mockClient);
+
+      // Search with Ukrainian text, passing 'en' as device language
+      final results = await service.searchCities('Київ', language: 'en');
+
+      // Should have made 2 requests (detected 'uk', then fallback to 'en')
+      expect(requestCount, 2);
+      expect(results.length, 1);
+      expect(results[0].name, 'Kyiv');
+    });
+  });
+
+  group('LocationService error handling', () {
+    test('handles null values in API response gracefully', () async {
+      final mockClient = MockClient((request) async {
+        return http.Response(
+          jsonEncode({
+            'results': [
+              {
+                'name': null,  // Null name
+                'country': 'Test',
+                'latitude': 0.0,
+                'longitude': 0.0,
+              }
+            ]
+          }),
+          200,
+        );
+      });
+
+      final service = LocationService(client: mockClient);
+      final results = await service.searchCities('test');
+
+      // Should handle null gracefully with fallback
+      expect(results.length, 1);
+      expect(results[0].name, 'Unknown'); // Defensive null check
+    });
+
+    test('handles null latitude/longitude gracefully', () async {
+      final mockClient = MockClient((request) async {
+        return http.Response(
+          jsonEncode({
+            'results': [
+              {
+                'name': 'Test',
+                'country': 'Test',
+                'latitude': null,
+                'longitude': null,
+              }
+            ]
+          }),
+          200,
+        );
+      });
+
+      final service = LocationService(client: mockClient);
+      final results = await service.searchCities('test');
+
+      // Should fallback to 0.0 for null coordinates
+      expect(results.length, 1);
+      expect(results[0].latitude, 0.0);
+      expect(results[0].longitude, 0.0);
+    });
+  });
+
+  group('LocationService dispose', () {
+    test('closes HTTP client', () async {
+      final service = LocationService(client: MockClient((r) async => http.Response('', 200)));
+
+      // Should not throw
+      expect(() => service.dispose(), returnsNormally);
+    });
+  });
 }
+
