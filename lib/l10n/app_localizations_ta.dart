@@ -104,6 +104,9 @@ class AppLocalizationsTa extends AppLocalizations {
   String get daylightDerived => 'பகல் ஒளி கணக்கிடப்பட்டது';
 
   @override
+  String get sourceCode => 'GitHub இல் திறந்த மூலம் (BSL 1.1)';
+
+  @override
   String get offlineRefreshError =>
       'புதுப்பிக்க இயலவில்லை - தற்காலிகமாக சேமிக்கப்பட்ட தரவைக் காட்டுகிறது';
 

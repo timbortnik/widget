@@ -104,6 +104,9 @@ class AppLocalizationsIs extends AppLocalizations {
   String get daylightDerived => 'Dagsbirta reiknuð';
 
   @override
+  String get sourceCode => 'Opinn kóði á GitHub (BSL 1.1)';
+
+  @override
   String get offlineRefreshError => 'Ekki tókst að uppfæra - sýni vistuð gögn';
 
   @override

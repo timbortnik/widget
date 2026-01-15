@@ -104,6 +104,9 @@ class AppLocalizationsBs extends AppLocalizations {
   String get daylightDerived => 'Dnevno svjetlo izračunato';
 
   @override
+  String get sourceCode => 'Otvoreni kod na GitHubu (BSL 1.1)';
+
+  @override
   String get offlineRefreshError =>
       'Nije moguće osvježiti - prikazuju se keširani podaci';
 

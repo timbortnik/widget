@@ -104,6 +104,9 @@ class AppLocalizationsKa extends AppLocalizations {
   String get daylightDerived => 'დღის სინათლე გამოთვლილი';
 
   @override
+  String get sourceCode => 'ღია კოდი GitHub-ზე (BSL 1.1)';
+
+  @override
   String get offlineRefreshError =>
       'განახლება ვერ მოხერხდა - ნაჩვენებია ქეშირებული მონაცემები';
 

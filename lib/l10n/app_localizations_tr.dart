@@ -104,6 +104,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get daylightDerived => 'Gün ışığı hesaplanmış';
 
   @override
+  String get sourceCode => 'GitHub\'da açık kaynak (BSL 1.1)';
+
+  @override
   String get offlineRefreshError =>
       'Yenilenemiyor - önbelleğe alınmış veriler gösteriliyor';
 

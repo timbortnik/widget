@@ -104,6 +104,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get daylightDerived => 'Ánh sáng tính toán';
 
   @override
+  String get sourceCode => 'Mã nguồn mở trên GitHub (BSL 1.1)';
+
+  @override
   String get offlineRefreshError =>
       'Không thể làm mới - hiển thị dữ liệu đã lưu';
 

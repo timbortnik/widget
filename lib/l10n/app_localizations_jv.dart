@@ -104,6 +104,9 @@ class AppLocalizationsJv extends AppLocalizations {
   String get daylightDerived => 'Cahya awan dietung';
 
   @override
+  String get sourceCode => 'Open source ing GitHub (BSL 1.1)';
+
+  @override
   String get offlineRefreshError =>
       'Ora bisa nganyari - nuduhake data sing disimpen';
 

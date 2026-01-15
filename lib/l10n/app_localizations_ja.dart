@@ -104,6 +104,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get daylightDerived => '日光は計算値';
 
   @override
+  String get sourceCode => 'GitHubでオープンソース (BSL 1.1)';
+
+  @override
   String get offlineRefreshError => '更新できません - キャッシュデータを表示中';
 
   @override

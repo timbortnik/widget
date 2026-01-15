@@ -104,6 +104,9 @@ class AppLocalizationsSk extends AppLocalizations {
   String get daylightDerived => 'Denné svetlo vypočítané';
 
   @override
+  String get sourceCode => 'Open source na GitHube (BSL 1.1)';
+
+  @override
   String get offlineRefreshError =>
       'Nie je možné obnoviť - zobrazujú sa uložené údaje';
 

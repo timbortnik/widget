@@ -104,6 +104,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get daylightDerived => '日光为计算值';
 
   @override
+  String get sourceCode => 'GitHub上的开源项目 (BSL 1.1)';
+
+  @override
   String get offlineRefreshError => '无法刷新 - 显示缓存数据';
 
   @override

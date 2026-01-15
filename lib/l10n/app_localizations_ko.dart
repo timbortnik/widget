@@ -104,6 +104,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get daylightDerived => '일광 계산값';
 
   @override
+  String get sourceCode => 'GitHub의 오픈 소스 (BSL 1.1)';
+
+  @override
   String get offlineRefreshError => '새로고침 불가 - 캐시된 데이터 표시 중';
 
   @override

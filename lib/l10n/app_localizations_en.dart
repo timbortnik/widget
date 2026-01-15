@@ -104,6 +104,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get daylightDerived => 'Daylight derived';
 
   @override
+  String get sourceCode => 'Open source on GitHub (BSL 1.1)';
+
+  @override
   String get offlineRefreshError => 'Unable to refresh - showing cached data';
 
   @override

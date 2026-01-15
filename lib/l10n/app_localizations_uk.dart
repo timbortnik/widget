@@ -104,6 +104,9 @@ class AppLocalizationsUk extends AppLocalizations {
   String get daylightDerived => 'Денне світло розраховано';
 
   @override
+  String get sourceCode => 'Відкритий код на GitHub (BSL 1.1)';
+
+  @override
   String get offlineRefreshError =>
       'Не вдалося оновити - показуються кешовані дані';
 

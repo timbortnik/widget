@@ -328,6 +328,12 @@ abstract class AppLocalizations {
   /// **'Daylight derived'**
   String get daylightDerived;
 
+  /// Link text for source code repository in footer with license
+  ///
+  /// In en, this message translates to:
+  /// **'Open source on GitHub (BSL 1.1)'**
+  String get sourceCode;
+
   /// Snackbar message when refresh fails but cached data is available
   ///
   /// In en, this message translates to:

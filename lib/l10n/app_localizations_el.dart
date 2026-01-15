@@ -104,6 +104,9 @@ class AppLocalizationsEl extends AppLocalizations {
   String get daylightDerived => 'Φως ημέρας υπολογισμένο';
 
   @override
+  String get sourceCode => 'Ανοιχτός κώδικας στο GitHub (BSL 1.1)';
+
+  @override
   String get offlineRefreshError =>
       'Αδυναμία ανανέωσης - εμφανίζονται αποθηκευμένα δεδομένα';
 

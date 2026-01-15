@@ -104,6 +104,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get daylightDerived => 'ضوء النهار محسوب';
 
   @override
+  String get sourceCode => 'مفتوح المصدر على GitHub (BSL 1.1)';
+
+  @override
   String get offlineRefreshError =>
       'تعذر التحديث - يتم عرض البيانات المخزنة مؤقتًا';
 

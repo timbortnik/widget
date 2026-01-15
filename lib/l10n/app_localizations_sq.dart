@@ -104,6 +104,9 @@ class AppLocalizationsSq extends AppLocalizations {
   String get daylightDerived => 'Drita e ditës e llogaritur';
 
   @override
+  String get sourceCode => 'Kod i hapur në GitHub (BSL 1.1)';
+
+  @override
   String get offlineRefreshError =>
       'Nuk mund të rifreskoj - po shfaq të dhëna të ruajtura';
 

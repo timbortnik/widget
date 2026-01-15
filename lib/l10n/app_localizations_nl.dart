@@ -104,6 +104,9 @@ class AppLocalizationsNl extends AppLocalizations {
   String get daylightDerived => 'Daglicht berekend';
 
   @override
+  String get sourceCode => 'Open source op GitHub (BSL 1.1)';
+
+  @override
   String get offlineRefreshError =>
       'Kan niet vernieuwen - toont opgeslagen gegevens';
 

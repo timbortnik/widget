@@ -104,6 +104,9 @@ class AppLocalizationsCs extends AppLocalizations {
   String get daylightDerived => 'Denní světlo vypočteno';
 
   @override
+  String get sourceCode => 'Open source na GitHubu (BSL 1.1)';
+
+  @override
   String get offlineRefreshError => 'Nelze obnovit - zobrazují se uložená data';
 
   @override

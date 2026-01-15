@@ -104,6 +104,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get daylightDerived => 'Lumière du jour calculée';
 
   @override
+  String get sourceCode => 'Open source sur GitHub (BSL 1.1)';
+
+  @override
   String get offlineRefreshError =>
       'Impossible d\'actualiser - affichage des données en cache';
 

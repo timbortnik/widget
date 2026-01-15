@@ -104,6 +104,9 @@ class AppLocalizationsFi extends AppLocalizations {
   String get daylightDerived => 'Päivänvalo laskettu';
 
   @override
+  String get sourceCode => 'Avoin lähdekoodi GitHubissa (BSL 1.1)';
+
+  @override
   String get offlineRefreshError =>
       'Päivitys epäonnistui - näytetään välimuistissa olevat tiedot';
 

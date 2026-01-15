@@ -104,6 +104,9 @@ class AppLocalizationsRo extends AppLocalizations {
   String get daylightDerived => 'Lumina zilei calculată';
 
   @override
+  String get sourceCode => 'Sursă deschisă pe GitHub (BSL 1.1)';
+
+  @override
   String get offlineRefreshError =>
       'Nu se poate reîmprospăta - se afișează date din cache';
 

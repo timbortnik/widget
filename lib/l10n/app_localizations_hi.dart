@@ -104,6 +104,9 @@ class AppLocalizationsHi extends AppLocalizations {
   String get daylightDerived => 'दिन का प्रकाश गणना';
 
   @override
+  String get sourceCode => 'GitHub पर ओपन सोर्स (BSL 1.1)';
+
+  @override
   String get offlineRefreshError =>
       'रीफ्रेश नहीं हो सका - कैश्ड डेटा दिखाया जा रहा है';
 

@@ -104,6 +104,9 @@ class AppLocalizationsPa extends AppLocalizations {
   String get daylightDerived => 'ਦਿਨ ਦੀ ਰੌਸ਼ਨੀ ਗਣਨਾ';
 
   @override
+  String get sourceCode => 'GitHub \'ਤੇ ਓਪਨ ਸੋਰਸ (BSL 1.1)';
+
+  @override
   String get offlineRefreshError =>
       'ਤਾਜ਼ਾ ਨਹੀਂ ਹੋ ਸਕਦਾ - ਕੈਸ਼ ਕੀਤਾ ਡਾਟਾ ਦਿਖਾ ਰਿਹਾ ਹੈ';
 

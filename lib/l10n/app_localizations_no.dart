@@ -104,6 +104,9 @@ class AppLocalizationsNo extends AppLocalizations {
   String get daylightDerived => 'Dagslys beregnet';
 
   @override
+  String get sourceCode => 'Åpen kildekode på GitHub (BSL 1.1)';
+
+  @override
   String get offlineRefreshError => 'Kan ikke oppdatere - viser bufrede data';
 
   @override

@@ -104,6 +104,9 @@ class AppLocalizationsPl extends AppLocalizations {
   String get daylightDerived => 'Światło dzienne obliczone';
 
   @override
+  String get sourceCode => 'Otwarte źródło na GitHub (BSL 1.1)';
+
+  @override
   String get offlineRefreshError =>
       'Nie można odświeżyć - wyświetlam dane z pamięci podręcznej';
 

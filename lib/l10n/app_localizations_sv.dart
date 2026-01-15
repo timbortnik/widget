@@ -104,6 +104,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get daylightDerived => 'Dagsljus beräknat';
 
   @override
+  String get sourceCode => 'Öppen källkod på GitHub (BSL 1.1)';
+
+  @override
   String get offlineRefreshError => 'Kan inte uppdatera - visar cachad data';
 
   @override

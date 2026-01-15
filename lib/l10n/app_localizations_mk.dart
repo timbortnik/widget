@@ -105,6 +105,9 @@ class AppLocalizationsMk extends AppLocalizations {
   String get daylightDerived => 'Дневна светлина пресметана';
 
   @override
+  String get sourceCode => 'Отворен код на GitHub (BSL 1.1)';
+
+  @override
   String get offlineRefreshError =>
       'Не може да се освежи - се прикажуваат кеширани податоци';
 
