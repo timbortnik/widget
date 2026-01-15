@@ -296,6 +296,16 @@ Future<void> _generateSvgCharts(WeatherData weather, double latitude, {int? uriW
     await HomeWidget.saveWidgetData<String>('svg_path_dark', darkPath);
   } catch (e, stack) {
     _log('_generateSvgCharts failed: $e\n$stack');
+
+    // Clean up orphaned temp files on failure
+    try {
+      final docsDir = await getApplicationDocumentsDirectory();
+      await File('${docsDir.path}/$kLightSvgFileName.tmp').delete();
+      await File('${docsDir.path}/$kDarkSvgFileName.tmp').delete();
+    } catch (_) {
+      // Ignore cleanup errors (files may not exist)
+    }
+
     rethrow; // Propagate error so caller knows chart generation failed
   }
 }

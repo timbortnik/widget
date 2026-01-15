@@ -150,6 +150,16 @@ class WidgetService {
       return true;
     } catch (e) {
       debugPrint('Error generating SVG charts: $e');
+
+      // Clean up orphaned temp files on failure
+      try {
+        final docsDir = await getApplicationDocumentsDirectory();
+        await File('${docsDir.path}/$kLightSvgFileName.tmp').delete();
+        await File('${docsDir.path}/$kDarkSvgFileName.tmp').delete();
+      } catch (_) {
+        // Ignore cleanup errors (files may not exist)
+      }
+
       return false;
     }
   }
@@ -158,6 +168,25 @@ class WidgetService {
   static Future<void> initialize() async {
     // Set app group ID for iOS
     await HomeWidget.setAppGroupId('group.org.bortnik.meteogram');
+
+    // Clean up any orphaned .tmp files from previous crashes
+    try {
+      final docsDir = await getApplicationDocumentsDirectory();
+      final tmpFiles = [
+        File('${docsDir.path}/$kLightSvgFileName.tmp'),
+        File('${docsDir.path}/$kDarkSvgFileName.tmp'),
+      ];
+      for (final file in tmpFiles) {
+        try {
+          await file.delete();
+          debugPrint('Cleaned up orphaned temp file: ${file.path}');
+        } catch (_) {
+          // File doesn't exist - nothing to clean up
+        }
+      }
+    } catch (e) {
+      debugPrint('Error cleaning up temp files: $e');
+    }
   }
 
   /// Trigger a native widget update (to check theme mismatch and show indicator).
