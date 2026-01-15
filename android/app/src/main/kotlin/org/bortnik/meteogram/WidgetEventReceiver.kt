@@ -33,9 +33,11 @@ class WidgetEventReceiver : BroadcastReceiver() {
 
         when (intent.action) {
             Intent.ACTION_USER_PRESENT -> {
-                // Screen unlocked - check for Material You color changes and fetch if stale
-                Log.d(TAG, "User present - checking colors and staleness")
-                checkMaterialYouColors(context)
+                // Screen unlocked - always re-render to update "now" indicator position
+                // Check Material You colors first (updates stored colors if changed)
+                Log.d(TAG, "User present - re-rendering chart and checking staleness")
+                updateMaterialYouColors(context)
+                WidgetUtils.rerenderChart(context)
                 fetchWeatherIfStale(context)
             }
             Intent.ACTION_LOCALE_CHANGED -> {
@@ -58,13 +60,12 @@ class WidgetEventReceiver : BroadcastReceiver() {
         }
     }
 
-    private fun checkMaterialYouColors(context: Context) {
-        // Check for Material You color changes (Android 12+)
-        // This catches changes made while app was force-closed
+    private fun updateMaterialYouColors(context: Context) {
+        // Update Material You colors if changed (Android 12+)
+        // Does NOT trigger re-render - caller handles that
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             if (MaterialYouColorExtractor.updateColorsIfChanged(context)) {
-                Log.d(TAG, "Material You colors changed - triggering re-render")
-                WidgetUtils.rerenderChart(context)
+                Log.d(TAG, "Material You colors updated")
             }
         }
     }
