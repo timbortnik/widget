@@ -28,7 +28,7 @@
   "weatherDataBy": "بيانات الطقس من {provider} (CC BY 4.0)",
   "daylightDerived": "ضوء النهار محسوب",
 
-  "sourceCode": "مفتوح المصدر على GitHub",
+  "sourceCode": "مفتوح المصدر على GitHub (BSL 1.1)",
   "@sourceCode": {
     "description": "Link text for source code repository in footer"
   },

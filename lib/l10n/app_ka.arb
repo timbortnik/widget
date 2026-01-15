@@ -28,7 +28,7 @@
   "weatherDataBy": "ამინდის მონაცემები {provider}-დან (CC BY 4.0)",
   "daylightDerived": "დღის სინათლე გამოთვლილი",
 
-  "sourceCode": "ღია კოდი GitHub-ზე",
+  "sourceCode": "ღია კოდი GitHub-ზე (BSL 1.1)",
   "@sourceCode": {
     "description": "Link text for source code repository in footer"
   },

@@ -28,7 +28,7 @@
   "weatherDataBy": "{provider} hava durumu verileri (CC BY 4.0)",
   "daylightDerived": "Gün ışığı hesaplanmış",
 
-  "sourceCode": "GitHub'da açık kaynak",
+  "sourceCode": "GitHub'da açık kaynak (BSL 1.1)",
   "@sourceCode": {
     "description": "Link text for source code repository in footer"
   },

@@ -28,7 +28,7 @@
   "weatherDataBy": "{provider}の気象データ (CC BY 4.0)",
   "daylightDerived": "日光は計算値",
 
-  "sourceCode": "GitHubでオープンソース",
+  "sourceCode": "GitHubでオープンソース (BSL 1.1)",
   "@sourceCode": {
     "description": "Link text for source code repository in footer"
   },

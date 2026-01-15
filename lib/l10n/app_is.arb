@@ -28,7 +28,7 @@
   "weatherDataBy": "Veðurgögn frá {provider} (CC BY 4.0)",
   "daylightDerived": "Dagsbirta reiknuð",
 
-  "sourceCode": "Opinn kóði á GitHub",
+  "sourceCode": "Opinn kóði á GitHub (BSL 1.1)",
   "@sourceCode": {
     "description": "Link text for source code repository in footer"
   },

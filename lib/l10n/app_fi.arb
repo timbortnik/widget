@@ -28,7 +28,7 @@
   "weatherDataBy": "Säätiedot: {provider} (CC BY 4.0)",
   "daylightDerived": "Päivänvalo laskettu",
 
-  "sourceCode": "Avoin lähdekoodi GitHubissa",
+  "sourceCode": "Avoin lähdekoodi GitHubissa (BSL 1.1)",
   "@sourceCode": {
     "description": "Link text for source code repository in footer"
   },

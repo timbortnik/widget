@@ -28,7 +28,7 @@
   "weatherDataBy": "Väderdata från {provider} (CC BY 4.0)",
   "daylightDerived": "Dagsljus beräknat",
 
-  "sourceCode": "Öppen källkod på GitHub",
+  "sourceCode": "Öppen källkod på GitHub (BSL 1.1)",
   "@sourceCode": {
     "description": "Link text for source code repository in footer"
   },

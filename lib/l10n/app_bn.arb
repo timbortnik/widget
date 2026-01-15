@@ -28,7 +28,7 @@
   "weatherDataBy": "{provider} থেকে আবহাওয়া ডেটা (CC BY 4.0)",
   "daylightDerived": "দিনের আলো গণনাকৃত",
 
-  "sourceCode": "GitHub এ ওপেন সোর্স",
+  "sourceCode": "GitHub এ ওপেন সোর্স (BSL 1.1)",
   "@sourceCode": {
     "description": "Link text for source code repository in footer"
   },

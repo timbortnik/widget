@@ -28,7 +28,7 @@
   "weatherDataBy": "{provider} வானிலை தரவு (CC BY 4.0)",
   "daylightDerived": "பகல் ஒளி கணக்கிடப்பட்டது",
 
-  "sourceCode": "GitHub இல் திறந்த மூலம்",
+  "sourceCode": "GitHub இல் திறந்த மூலம் (BSL 1.1)",
   "@sourceCode": {
     "description": "Link text for source code repository in footer"
   },

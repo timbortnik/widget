@@ -130,7 +130,7 @@
   "weatherDataBy": "Дані погоди від {provider} (CC BY 4.0)",
   "daylightDerived": "Денне світло розраховано",
 
-  "sourceCode": "Відкритий код на GitHub",
+  "sourceCode": "Відкритий код на GitHub (BSL 1.1)",
   "@sourceCode": {
     "description": "Link text for source code repository in footer"
   },

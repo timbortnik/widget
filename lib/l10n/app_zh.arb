@@ -28,7 +28,7 @@
   "weatherDataBy": "天气数据由 {provider} 提供 (CC BY 4.0)",
   "daylightDerived": "日光为计算值",
 
-  "sourceCode": "GitHub上的开源项目",
+  "sourceCode": "GitHub上的开源项目 (BSL 1.1)",
   "@sourceCode": {
     "description": "Link text for source code repository in footer"
   },
