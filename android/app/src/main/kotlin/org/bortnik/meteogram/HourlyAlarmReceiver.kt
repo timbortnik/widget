@@ -48,9 +48,8 @@ class HourlyAlarmReceiver : BroadcastReceiver() {
                 add(Calendar.HOUR_OF_DAY, 1)
             }
 
-            val intent = Intent(context, HourlyAlarmReceiver::class.java).apply {
-                action = ACTION_HOURLY_UPDATE
-                setPackage(context.packageName)
+            val intent = Intent(ACTION_HOURLY_UPDATE).apply {
+                setClassName(context.packageName, HourlyAlarmReceiver::class.java.name)
             }
 
             val pendingIntent = PendingIntent.getBroadcast(
@@ -87,9 +86,8 @@ class HourlyAlarmReceiver : BroadcastReceiver() {
          */
         fun cancelAlarm(context: Context) {
             val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-            val intent = Intent(context, HourlyAlarmReceiver::class.java).apply {
-                action = ACTION_HOURLY_UPDATE
-                setPackage(context.packageName)
+            val intent = Intent(ACTION_HOURLY_UPDATE).apply {
+                setClassName(context.packageName, HourlyAlarmReceiver::class.java.name)
             }
             val pendingIntent = PendingIntent.getBroadcast(
                 context,
