@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_description">기온, 강수량, 일조량을 보여주는 기상도</string>
+</resources>

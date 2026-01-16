@@ -78,8 +78,8 @@ class SvgChartColors {
     temperatureGradientEnd: SvgColor(0xFF, 0x76, 0x75, 0x00),
     precipitationBar: SvgColor(0x00, 0xCE, 0xC9),
     precipitationGradient: SvgColor(0x00, 0xCE, 0xC9, 0x80),
-    daylightBar: SvgColor(0xFF, 0xF0, 0xAA),
-    daylightGradient: SvgColor(0xFF, 0xD0, 0x80),
+    daylightBar: SvgColor(0xC9, 0xA8, 0x6C),        // Muted gold (was bright yellow)
+    daylightGradient: SvgColor(0xA8, 0x8B, 0x5A),  // Darker amber
     nowIndicator: SvgColor(0xE0, 0xE0, 0xE0),
     timeLabel: SvgColor(0xE0, 0xE0, 0xE0),
     cardBackground: SvgColor(0x1B, 0x28, 0x38),
@@ -315,7 +315,8 @@ class SvgChartGenerator {
     final areaPath = '$path L ${_n(width)} ${_n(chartHeight)} L 0 ${_n(chartHeight)} Z';
     svg.write('<path d="$areaPath" fill="url(#tempGradient)" stroke="none"/>');
 
-    // Temperature line
+    // Temperature line with dark outline for visibility on daylight bars
+    svg.write('<path d="$path" fill="none" stroke="#000000" stroke-width="${_strokeWidth(5)}" stroke-opacity="0.3" stroke-linecap="round" stroke-linejoin="round"/>');
     svg.write('<path d="$path" fill="none" stroke="${colors.temperatureLine.toHex()}" stroke-width="${_strokeWidth(3)}" stroke-linecap="round" stroke-linejoin="round"/>');
   }
 

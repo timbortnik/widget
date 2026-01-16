@@ -12,5 +12,5 @@
     android:updatePeriodMillis="1800000"
     android:initialLayout="@layout/meteogram_widget"
     android:widgetCategory="home_screen"
-    android:previewLayout="@layout/meteogram_widget"
+    android:previewLayout="@layout/meteogram_widget_preview"
     android:description="@string/widget_description" />
