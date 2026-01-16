@@ -216,16 +216,16 @@ class SvgChartGenerator {
     svg.write('<stop offset="100%" stop-color="${colors.temperatureLine.toHex()}" stop-opacity="${colors.temperatureGradientEnd.opacity.toStringAsFixed(2)}"/>');
     svg.write('</linearGradient>');
 
-    // Daylight bar gradient (vertical: orange at top to yellow at bottom)
+    // Daylight bar gradient (vertical: solid at top, fades at bottom - sunlight from above)
     svg.write('<linearGradient id="daylightGradient" x1="0" y1="0" x2="0" y2="1">');
-    svg.write('<stop offset="0%" stop-color="${colors.daylightGradient.toHex()}"/>');
-    svg.write('<stop offset="100%" stop-color="${colors.daylightBar.toHex()}"/>');
+    svg.write('<stop offset="0%" stop-color="${colors.daylightBar.toHex()}" stop-opacity="1"/>');
+    svg.write('<stop offset="100%" stop-color="${colors.daylightBar.toHex()}" stop-opacity="0.3"/>');
     svg.write('</linearGradient>');
 
-    // Precipitation bar gradient (vertical: semi-transparent at top to solid at bottom)
+    // Precipitation bar gradient (vertical: fades at top, semi-solid at bottom - allows daylight to show through)
     svg.write('<linearGradient id="precipGradient" x1="0" y1="0" x2="0" y2="1">');
-    svg.write('<stop offset="0%" stop-color="${colors.precipitationBar.toHex()}" stop-opacity="${colors.precipitationGradient.opacity.toStringAsFixed(2)}"/>');
-    svg.write('<stop offset="100%" stop-color="${colors.precipitationBar.toHex()}" stop-opacity="1"/>');
+    svg.write('<stop offset="0%" stop-color="${colors.precipitationBar.toHex()}" stop-opacity="0.3"/>');
+    svg.write('<stop offset="100%" stop-color="${colors.precipitationBar.toHex()}" stop-opacity="0.7"/>');
     svg.write('</linearGradient>');
 
     // Past-time fade mask (horizontal gradient: faded on left, full opacity at now line)
