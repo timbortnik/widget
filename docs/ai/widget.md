@@ -25,9 +25,8 @@ Android `RemoteViews` only supports a limited set of views:
 ### pubspec.yaml
 ```yaml
 dependencies:
-  home_widget: ^0.4.0
-  workmanager: ^0.5.0
-  path_provider: ^2.0.0
+  home_widget: ^0.8.0
+  path_provider: ^2.1.0
 ```
 
 ## Android Configuration
@@ -306,40 +305,33 @@ class NativeSvgChartView extends StatefulWidget {
 
 ## Background Refresh
 
-### Periodic Updates (WorkManager)
-```dart
-import 'package:workmanager/workmanager.dart';
+### Periodic Updates (AlarmManager)
 
-@pragma('vm:entry-point')
-void callbackDispatcher() {
-  Workmanager().executeTask((task, inputData) async {
-    switch (task) {
-      case 'weatherUpdateTask':
-      case 'periodicWeatherTask':
-        await _updateWeatherData();  // Fetch + render
-        return true;
-      case 'chartRenderTask':
-        await _reRenderCharts();     // Render only, no fetch
-        return true;
-      default:
-        return true;
+Background refresh uses Android's `AlarmManager` via `HourlyAlarmReceiver`, not WorkManager:
+
+```kotlin
+// HourlyAlarmReceiver.kt - schedules alarms at :30 marks
+fun scheduleNextAlarm(context: Context) {
+    val calendar = Calendar.getInstance().apply {
+        val currentMinute = get(Calendar.MINUTE)
+        if (currentMinute < 30) {
+            set(Calendar.MINUTE, 30)
+        } else {
+            set(Calendar.MINUTE, 30)
+            add(Calendar.HOUR_OF_DAY, 1)
+        }
+        set(Calendar.SECOND, 15)  // Buffer to ensure past :30
     }
-  });
+    alarmManager.setWindow(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, windowMs, pendingIntent)
 }
+```
 
+### BackgroundService Initialization
+```dart
 class BackgroundService {
   static Future<void> initialize() async {
-    await Workmanager().initialize(callbackDispatcher);
+    // Register HomeWidget callback for native events
     await HomeWidget.registerInteractivityCallback(homeWidgetBackgroundCallback);
-  }
-
-  static Future<void> registerPeriodicTask() async {
-    await Workmanager().registerPeriodicTask(
-      'periodicWeatherTask',
-      'periodicWeatherTask',
-      frequency: const Duration(minutes: 30),
-      constraints: Constraints(networkType: NetworkType.connected),
-    );
   }
 }
 ```
@@ -539,7 +531,6 @@ The alarm triggers `chartReRender` (no weather fetch), updating only the "now" i
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await BackgroundService.initialize();
-  await BackgroundService.registerPeriodicTask();
   runApp(const MyApp());
 }
 ```
@@ -736,7 +727,7 @@ adb logcat | grep -i "HomeWidget"
 | "Can't load widget" | Unsupported view in layout | Remove View/Space elements |
 | Widget shows placeholder | Image path not saved | Check saveWidgetData call |
 | Temperature shows "--°" | No weather data | Check API call |
-| Widget not updating | WorkManager not registered | Call registerPeriodicTask |
+| Widget not updating | Alarm not scheduled | Check HourlyAlarmReceiver.scheduleNextAlarm |
 
 ## iOS Widget (Not Implemented)
 

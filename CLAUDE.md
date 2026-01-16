@@ -2,6 +2,13 @@
 
 This file provides context for AI assistants working on this project.
 
+**Detailed documentation:** See `docs/ai/` for in-depth guides:
+- `architecture.md` - System architecture, data flow, component responsibilities
+- `widget.md` - Home screen widget implementation, background refresh, event handling
+- `api.md` - Open-Meteo API integration
+- `design.md` - UI design principles
+- `i18n.md` - Localization setup
+
 ## Project Overview
 
 **Meteogram Widget** - A Flutter mobile app with Android home screen widget displaying weather forecasts as a meteogram (temperature line + precipitation bars + daylight intensity).
@@ -13,7 +20,7 @@ This file provides context for AI assistants working on this project.
 | Framework | Flutter 3.x |
 | Weather API | Open-Meteo (free, no key) |
 | Charting | Native SVG (SvgChartGenerator + AndroidSVG) |
-| Widget package | home_widget + workmanager |
+| Widget package | home_widget |
 | i18n | flutter_localizations + intl (ARB files) |
 | License | BSL 1.1 (converts to MIT 2029) |
 
@@ -23,7 +30,7 @@ This file provides context for AI assistants working on this project.
 - **Data:** Temperature (line with gradient fill), precipitation (bars), daylight (computed from cloud cover)
 - **Theme:** System light/dark mode with custom color palette
 - **Units:** Locale-aware (°F for US/Liberia/Myanmar, °C elsewhere)
-- **Update:** Timer checks every minute in foreground (refreshes if data >15 min old, redraws at half-hour when "now" indicator snaps), 30 min periodic in background, event-driven (unlock, network, locale/timezone change)
+- **Update:** Timer checks every minute in foreground (refreshes if data >15 min old, redraws at half-hour boundary), half-hour alarms (AlarmManager) in background, event-driven (unlock, network, locale/timezone change)
 - **Languages:** 30+ languages via ARB files
 - **Widget:** SVG rendered natively via AndroidSVG for pixel-perfect display
 
@@ -42,7 +49,7 @@ lib/
 │   ├── weather_service.dart      # Open-Meteo API client
 │   ├── location_service.dart     # Geolocator wrapper with fallback
 │   ├── widget_service.dart       # home_widget integration
-│   ├── background_service.dart   # WorkManager periodic tasks
+│   ├── background_service.dart   # home_widget callbacks for background updates
 │   └── svg_chart_generator.dart  # Pure Dart SVG generation
 ├── theme/
 │   └── app_theme.dart       # MeteogramColors, WeatherGradients
@@ -54,17 +61,24 @@ lib/
 android/app/src/main/
 ├── kotlin/.../
 │   ├── MainActivity.kt
-│   ├── MeteogramApplication.kt     # Registers event receivers
-│   ├── WidgetEventReceiver.kt      # Handles system broadcasts
-│   └── MeteogramWidgetProvider.kt  # Extends HomeWidgetProvider
+│   ├── MeteogramApplication.kt       # Registers event receivers
+│   ├── MeteogramWidgetProvider.kt    # Extends HomeWidgetProvider
+│   ├── WidgetEventReceiver.kt        # Handles system broadcasts
+│   ├── WidgetUtils.kt                # Widget helper functions
+│   ├── HourlyAlarmReceiver.kt        # Half-hour refresh alarms
+│   ├── MaterialYouColorExtractor.kt  # Native Material You color extraction
+│   ├── SvgChartPlatformView.kt       # Native SVG rendering for in-app
+│   └── SvgChartViewFactory.kt        # PlatformView factory
 └── res/
-    ├── layout/meteogram_widget.xml  # RemoteViews layout
-    ├── xml/meteogram_widget_info.xml # Widget config (4x2, 30min)
-    ├── drawable/widget_background.xml # Gradient + rounded corners
+    ├── layout/meteogram_widget.xml   # RemoteViews layout
+    ├── xml/meteogram_widget_info.xml # Widget config
+    ├── drawable/widget_background.xml
     └── values/strings.xml
 ```
 
 ## Color Palette
+
+Default fallback colors (Material You overrides these on Android 12+):
 
 ```dart
 // Light mode
@@ -78,8 +92,7 @@ overcastSky: Color(0xFFB2BEC3)          // Gray
 temperatureLine: Color(0xFFFF7675)
 precipitationBar: Color(0xFF00CEC9)
 nowIndicator: Color(0xFFFDCB6E)
-background: Color(0xFF0D1B2A)           // Deep navy
-cardBackground: Color(0xFF1B2838)       // Dark slate
+cardBackground: Color(0xFF2D2D2D)       // Neutral gray
 ```
 
 ## API Reference
@@ -89,7 +102,7 @@ GET https://api.open-meteo.com/v1/forecast
   ?latitude={lat}
   &longitude={lon}
   &hourly=temperature_2m,precipitation,cloud_cover
-  &timezone=auto
+  &timezone=UTC
   &past_hours=6
   &forecast_days=2
 ```
@@ -112,14 +125,9 @@ Android widgets use RemoteViews which only support:
 4. `MeteogramWidgetProvider.kt` reads SVG file, renders via AndroidSVG → ImageView
 
 ### Background Refresh
-```dart
-// background_service.dart
-Workmanager().registerPeriodicTask(
-  'periodicWeatherTask',
-  'periodicWeatherTask',
-  frequency: Duration(minutes: 30),
-);
-```
+- **Half-hour alarms**: `HourlyAlarmReceiver.kt` schedules AlarmManager alarms at :30 marks
+- **Event-driven**: `WidgetEventReceiver.kt` handles unlock, network, locale changes
+- **home_widget callbacks**: `background_service.dart` handles `weatherUpdate` and `chartReRender` URIs
 
 ## Build Commands
 
@@ -174,10 +182,11 @@ adb logcat | grep -i "Error inflating"
 |------|---------|
 | `lib/services/svg_chart_generator.dart` | Pure Dart SVG generation (core chart) |
 | `lib/widgets/native_svg_chart_view.dart` | In-app SVG display via PlatformView |
-| `lib/services/background_service.dart` | WorkManager + event callbacks |
+| `lib/services/background_service.dart` | home_widget callbacks for background updates |
 | `lib/theme/app_theme.dart` | All colors and gradients |
 | `android/.../MeteogramWidgetProvider.kt` | Native widget code |
-| `android/.../SvgChartPlatformView.kt` | Native SVG rendering for in-app |
+| `android/.../HourlyAlarmReceiver.kt` | Half-hour refresh alarms |
+| `android/.../MaterialYouColorExtractor.kt` | Native Material You color extraction |
 | `android/.../WidgetEventReceiver.kt` | System event handler |
 
 ## Gotchas

@@ -39,11 +39,12 @@ The app follows a standard Flutter architecture with clear separation of concern
 6. Widget: SVG saved to file, native provider renders via AndroidSVG
 
 ### Widget Updates
-1. Android: WorkManager triggers background update every 30 minutes
-2. Background service fetches new weather data
-3. SVG charts generated via `SvgChartGenerator` (works in isolate - no UI needed)
-4. SVG files saved, paths stored via home_widget
-5. Native `MeteogramWidgetProvider` reads SVG, renders via AndroidSVG
+1. Android: Half-hour alarms (AlarmManager) trigger chart re-render at :30 marks
+2. Event receivers trigger refresh on unlock/network/locale changes
+3. Background service fetches weather if stale (>15 min), or re-renders from cache
+4. SVG charts generated via `SvgChartGenerator` (works in isolate - no UI needed)
+5. SVG files saved, paths stored via home_widget
+6. Native `MeteogramWidgetProvider` reads SVG, renders via AndroidSVG
 
 ### Foreground App Updates
 1. Timer checks every minute while app is in foreground
@@ -135,12 +136,11 @@ Home widget data management. Responsibilities:
 - Trigger native widget update
 
 ### BackgroundService (`lib/services/background_service.dart`)
-WorkManager + HomeWidget integration. Responsibilities:
-- Initialize WorkManager for periodic tasks
+HomeWidget callback integration. Responsibilities:
 - Register HomeWidget interactivity callback for event-driven updates
 - Execute background weather fetch (with caching)
 - Re-render charts from cached data (no network call)
-- Handle two task types: `weatherUpdateTask` (fetch+render) and `chartRenderTask` (render only)
+- Handle two URI hosts: `weatherUpdate` (fetch+render) and `chartReRender` (render only)
 
 ### MeteogramColors (`lib/theme/app_theme.dart`)
 Theme-aware color palette. Responsibilities:
@@ -166,7 +166,7 @@ lib/
 │   ├── weather_service.dart     # Open-Meteo API client
 │   ├── location_service.dart    # GPS/fallback location
 │   ├── widget_service.dart      # Home widget updates
-│   ├── background_service.dart  # WorkManager refresh
+│   ├── background_service.dart  # home_widget callbacks
 │   └── svg_chart_generator.dart # Pure Dart SVG generation
 ├── theme/
 │   └── app_theme.dart           # Colors, light/dark themes
@@ -174,12 +174,15 @@ lib/
     └── native_svg_chart_view.dart # PlatformView SVG display
 
 android/app/src/main/kotlin/.../
-├── MainActivity.kt              # Registers PlatformView factory
+├── MainActivity.kt              # Registers PlatformView factory, extracts Material You colors
 ├── MeteogramApplication.kt      # Application class, registers event receiver
+├── MeteogramWidgetProvider.kt   # Home screen widget provider
 ├── WidgetEventReceiver.kt       # Handles system broadcasts (unlock, network, locale)
+├── WidgetUtils.kt               # Widget helper functions
+├── HourlyAlarmReceiver.kt       # Half-hour refresh alarms (AlarmManager)
+├── MaterialYouColorExtractor.kt # Native Material You color extraction
 ├── SvgChartViewFactory.kt       # Creates PlatformView instances
-├── SvgChartPlatformView.kt      # Native ImageView + AndroidSVG rendering
-└── MeteogramWidgetProvider.kt   # Home screen widget provider
+└── SvgChartPlatformView.kt      # Native ImageView + AndroidSVG rendering
 ```
 
 ## Platform-Specific
@@ -229,7 +232,6 @@ catch (e) {
 | Package | Purpose |
 |---------|---------|
 | home_widget | Flutter ↔ native widget bridge |
-| workmanager | Background refresh scheduling |
 | geolocator | GPS location |
 | geocoding | Reverse geocoding (coordinates → city name) |
 | http | API requests (weather, city search) |
@@ -237,7 +239,8 @@ catch (e) {
 | shared_preferences | Settings storage |
 | flutter_localizations | i18n framework |
 | intl | Locale-aware time formatting (DateFormat.j) |
-| dynamic_color | Material You theming |
+
+Material You theming uses native Android color extraction (`MaterialYouColorExtractor.kt`).
 
 ### Android Native
 | Library | Purpose |

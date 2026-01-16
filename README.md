@@ -17,9 +17,8 @@ A beautiful, modern weather widget for Android showing temperature forecasts as 
 - **Home screen widget** with native SVG rendering via AndroidSVG
 - **Smart refresh**:
   - Auto-refresh in foreground (timer checks every minute for stale data >15 min, redraws at half-hour)
-  - 30 min periodic background refresh
+  - Half-hour alarms for background widget updates (synced with "now" indicator snapping)
   - Event-driven updates (screen unlock, network change, locale/timezone change)
-  - Half-hour alarm for widget updates (synced with "now" indicator snapping)
 - **Flexible location**:
   - GPS with reverse geocoding
   - City search (any city worldwide)
@@ -162,8 +161,7 @@ The home screen widget uses:
 - `HomeWidgetProvider` from home_widget package
 - `RemoteViews` for native Android widget rendering
 - SVG chart rendered natively via AndroidSVG library
-- WorkManager for 30-minute background refresh
-- Half-hour alarms synced with "now" indicator snapping
+- Half-hour alarms (AlarmManager) for periodic refresh, synced with "now" indicator snapping
 - Event receivers for unlock/network/locale changes
 
 **RemoteViews Limitations:**
@@ -176,7 +174,7 @@ The home screen widget uses:
 2. SVG chart generated via `SvgChartGenerator` (pure Dart)
 3. In-app: SVG rendered via native Android PlatformView (AndroidSVG)
 4. Widget: SVG saved to file, rendered by native provider via AndroidSVG
-5. WorkManager + half-hour alarms trigger periodic refresh
+5. Half-hour alarms (AlarmManager) trigger periodic refresh
 6. Event receivers trigger refresh on unlock/network/locale changes
 
 ## Customization
@@ -220,14 +218,14 @@ Supported locales are auto-detected from ARB files.
 | Package | Purpose |
 |---------|---------|
 | home_widget | Android/iOS widget support |
-| workmanager | Background refresh |
 | geolocator | GPS location |
 | geocoding | Reverse geocoding (city names) |
 | http | API requests |
 | path_provider | File storage |
 | shared_preferences | Settings storage |
-| dynamic_color | Material You theming |
 | intl | Locale-aware formatting |
+
+Material You theming uses native Android color extraction (`MaterialYouColorExtractor.kt`).
 
 ## License
 

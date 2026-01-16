@@ -15,7 +15,7 @@ No API key required. Free for non-commercial use.
 | `latitude` | float | Location latitude |
 | `longitude` | float | Location longitude |
 | `hourly` | string | Comma-separated variables |
-| `timezone` | `auto` | Auto-detect from coordinates |
+| `timezone` | `UTC` | Use UTC for consistent time handling |
 | `past_hours` | `6` | Hours of historical data |
 | `forecast_days` | `2` | Days of forecast |
 
@@ -34,7 +34,7 @@ https://api.open-meteo.com/v1/forecast
   ?latitude=52.52
   &longitude=13.41
   &hourly=temperature_2m,precipitation,cloud_cover
-  &timezone=auto
+  &timezone=UTC
   &past_hours=6
   &forecast_days=2
 ```
