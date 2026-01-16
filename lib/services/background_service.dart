@@ -327,7 +327,7 @@ Future<void> _generateSvgCharts(WeatherData weather, double latitude, double lon
 class BackgroundService {
   static Future<void> initialize() async {
     // Register HomeWidget background callback for native event handling
-    // Note: Periodic weather updates are handled by native HourlyAlarmReceiver
+    // Note: Periodic weather updates are handled by native WeatherUpdateWorker (WorkManager)
     await HomeWidget.registerInteractivityCallback(homeWidgetBackgroundCallback);
   }
 }

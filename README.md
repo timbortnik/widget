@@ -17,7 +17,7 @@ A beautiful, modern weather widget for Android showing temperature forecasts as 
 - **Home screen widget** with native SVG rendering via AndroidSVG
 - **Smart refresh**:
   - Auto-refresh in foreground (timer checks every minute for stale data >15 min, redraws at half-hour)
-  - Half-hour alarms for background widget updates (synced with "now" indicator snapping)
+  - WorkManager periodic task (~30 min) for background updates (battery-efficient)
   - Event-driven updates (screen unlock, network change, locale/timezone change)
 - **Flexible location**:
   - GPS with reverse geocoding
@@ -110,7 +110,7 @@ android/app/src/main/
 │   ├── MeteogramWidgetProvider.kt   # Widget provider
 │   ├── WidgetEventReceiver.kt       # System event handler
 │   ├── WidgetUtils.kt               # Widget helper functions
-│   ├── HourlyAlarmReceiver.kt       # Half-hour refresh alarm
+│   ├── WeatherUpdateWorker.kt       # WorkManager periodic refresh
 │   ├── SvgChartPlatformView.kt      # Native SVG rendering
 │   ├── SvgChartViewFactory.kt       # PlatformView factory
 │   ├── MaterialYouColorExtractor.kt # Dynamic color extraction
@@ -161,7 +161,7 @@ The home screen widget uses:
 - `HomeWidgetProvider` from home_widget package
 - `RemoteViews` for native Android widget rendering
 - SVG chart rendered natively via AndroidSVG library
-- Half-hour alarms (AlarmManager) for periodic refresh, synced with "now" indicator snapping
+- WorkManager periodic task for background refresh (battery-efficient)
 - Event receivers for unlock/network/locale changes
 
 **RemoteViews Limitations:**
@@ -174,7 +174,7 @@ The home screen widget uses:
 2. SVG chart generated via `SvgChartGenerator` (pure Dart)
 3. In-app: SVG rendered via native Android PlatformView (AndroidSVG)
 4. Widget: SVG saved to file, rendered by native provider via AndroidSVG
-5. Half-hour alarms (AlarmManager) trigger periodic refresh
+5. WorkManager periodic task triggers background refresh (~30 min)
 6. Event receivers trigger refresh on unlock/network/locale changes
 
 ## Customization

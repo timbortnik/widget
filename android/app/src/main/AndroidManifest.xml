@@ -71,17 +71,6 @@
             android:permission="android.permission.BIND_JOB_SERVICE"
             android:exported="false" />
 
-        <!-- Hourly alarm receiver for updating "now" indicator at hour boundaries -->
-        <!-- exported="true" required to receive BOOT_COMPLETED from system -->
-        <receiver
-            android:name=".HourlyAlarmReceiver"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="org.bortnik.meteogram.HOURLY_UPDATE" />
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-            </intent-filter>
-        </receiver>
-
         <!-- Widget event receiver for system broadcasts that trigger widget updates -->
         <!-- LOCALE_CHANGED and TIMEZONE_CHANGED are exempt from Android 8.0+ restrictions -->
         <!-- USER_PRESENT and CONNECTIVITY_CHANGE are registered at runtime in MeteogramApplication -->

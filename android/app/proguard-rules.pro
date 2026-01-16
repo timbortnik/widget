@@ -21,7 +21,7 @@
 # Keep widget provider and related classes
 -keep class org.bortnik.meteogram.MeteogramWidgetProvider { *; }
 -keep class org.bortnik.meteogram.WidgetEventReceiver { *; }
--keep class org.bortnik.meteogram.HourlyAlarmReceiver { *; }
+-keep class org.bortnik.meteogram.WeatherUpdateWorker { *; }
 -keep class org.bortnik.meteogram.MeteogramApplication { *; }
 
 # Keep platform views

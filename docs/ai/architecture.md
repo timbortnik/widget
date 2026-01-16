@@ -39,7 +39,7 @@ The app follows a standard Flutter architecture with clear separation of concern
 6. Widget: SVG saved to file, native provider renders via AndroidSVG
 
 ### Widget Updates
-1. Android: Half-hour alarms (AlarmManager) trigger chart re-render at :30 marks
+1. Android: WorkManager periodic task runs ~30 min (battery-efficient, OS batches work)
 2. Event receivers trigger refresh on unlock/network/locale changes
 3. Background service fetches weather if stale (>15 min), or re-renders from cache
 4. SVG charts generated via `SvgChartGenerator` (works in isolate - no UI needed)
@@ -179,7 +179,7 @@ android/app/src/main/kotlin/.../
 ├── MeteogramWidgetProvider.kt   # Home screen widget provider
 ├── WidgetEventReceiver.kt       # Handles system broadcasts (unlock, network, locale)
 ├── WidgetUtils.kt               # Widget helper functions
-├── HourlyAlarmReceiver.kt       # Half-hour refresh alarms (AlarmManager)
+├── WeatherUpdateWorker.kt       # WorkManager periodic weather refresh
 ├── MaterialYouColorExtractor.kt # Native Material You color extraction
 ├── SvgChartViewFactory.kt       # Creates PlatformView instances
 └── SvgChartPlatformView.kt      # Native ImageView + AndroidSVG rendering

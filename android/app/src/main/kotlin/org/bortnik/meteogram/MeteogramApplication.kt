@@ -30,7 +30,7 @@ class MeteogramApplication : Application() {
         registerEventReceiver()
         registerThemeObserver()
         enqueueMaterialYouColorObserver()
-        scheduleHourlyAlarm()
+        enqueuePeriodicWeatherUpdate()
     }
 
     /**
@@ -64,8 +64,10 @@ class MeteogramApplication : Application() {
         MaterialYouColorWorker.enqueue(this)
     }
 
-    private fun scheduleHourlyAlarm() {
-        HourlyAlarmReceiver.scheduleNextAlarm(this)
+    private fun enqueuePeriodicWeatherUpdate() {
+        // WorkManager periodic task for background weather updates
+        // More battery-efficient than AlarmManager - OS batches work
+        WeatherUpdateWorker.enqueue(this)
     }
 
     private fun registerEventReceiver() {

@@ -30,7 +30,7 @@ This file provides context for AI assistants working on this project.
 - **Data:** Temperature (line with gradient fill), precipitation (bars), daylight (computed from cloud cover)
 - **Theme:** System light/dark mode with custom color palette
 - **Units:** Locale-aware (°F for US/Liberia/Myanmar, °C elsewhere)
-- **Update:** Timer checks every minute in foreground (refreshes if data >15 min old, redraws at half-hour boundary), half-hour alarms (AlarmManager) in background, event-driven (unlock, network, locale/timezone change)
+- **Update:** Timer checks every minute in foreground (refreshes if data >15 min old, redraws at half-hour boundary), WorkManager periodic task (~30 min) in background, event-driven (unlock, network, locale/timezone change)
 - **Languages:** 30+ languages via ARB files
 - **Widget:** SVG rendered natively via AndroidSVG for pixel-perfect display
 
@@ -65,7 +65,7 @@ android/app/src/main/
 │   ├── MeteogramWidgetProvider.kt    # Extends HomeWidgetProvider
 │   ├── WidgetEventReceiver.kt        # Handles system broadcasts
 │   ├── WidgetUtils.kt                # Widget helper functions
-│   ├── HourlyAlarmReceiver.kt        # Half-hour refresh alarms
+│   ├── WeatherUpdateWorker.kt        # WorkManager periodic refresh
 │   ├── MaterialYouColorExtractor.kt  # Native Material You color extraction
 │   ├── SvgChartPlatformView.kt       # Native SVG rendering for in-app
 │   └── SvgChartViewFactory.kt        # PlatformView factory
@@ -125,7 +125,7 @@ Android widgets use RemoteViews which only support:
 4. `MeteogramWidgetProvider.kt` reads SVG file, renders via AndroidSVG → ImageView
 
 ### Background Refresh
-- **Half-hour alarms**: `HourlyAlarmReceiver.kt` schedules AlarmManager alarms at :30 marks
+- **WorkManager periodic**: `WeatherUpdateWorker.kt` runs ~30 min (battery-efficient, OS batches work)
 - **Event-driven**: `WidgetEventReceiver.kt` handles unlock, network, locale changes
 - **home_widget callbacks**: `background_service.dart` handles `weatherUpdate` and `chartReRender` URIs
 
@@ -185,7 +185,7 @@ adb logcat | grep -i "Error inflating"
 | `lib/services/background_service.dart` | home_widget callbacks for background updates |
 | `lib/theme/app_theme.dart` | All colors and gradients |
 | `android/.../MeteogramWidgetProvider.kt` | Native widget code |
-| `android/.../HourlyAlarmReceiver.kt` | Half-hour refresh alarms |
+| `android/.../WeatherUpdateWorker.kt` | WorkManager periodic refresh |
 | `android/.../MaterialYouColorExtractor.kt` | Native Material You color extraction |
 | `android/.../WidgetEventReceiver.kt` | System event handler |
 

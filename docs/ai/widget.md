@@ -305,24 +305,39 @@ class NativeSvgChartView extends StatefulWidget {
 
 ## Background Refresh
 
-### Periodic Updates (AlarmManager)
+### Periodic Updates (WorkManager)
 
-Background refresh uses Android's `AlarmManager` via `HourlyAlarmReceiver`, not WorkManager:
+Background refresh uses WorkManager for battery efficiency - the OS batches work with other apps:
 
 ```kotlin
-// HourlyAlarmReceiver.kt - schedules alarms at :30 marks
-fun scheduleNextAlarm(context: Context) {
-    val calendar = Calendar.getInstance().apply {
-        val currentMinute = get(Calendar.MINUTE)
-        if (currentMinute < 30) {
-            set(Calendar.MINUTE, 30)
-        } else {
-            set(Calendar.MINUTE, 30)
-            add(Calendar.HOUR_OF_DAY, 1)
+// WeatherUpdateWorker.kt - periodic weather refresh
+class WeatherUpdateWorker(context: Context, params: WorkerParameters) : Worker(context, params) {
+    companion object {
+        fun enqueue(context: Context) {
+            val constraints = Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build()
+
+            val workRequest = PeriodicWorkRequestBuilder<WeatherUpdateWorker>(
+                30, TimeUnit.MINUTES  // OS may batch/delay for battery
+            ).setConstraints(constraints).build()
+
+            WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+                "periodic_weather_update",
+                ExistingPeriodicWorkPolicy.KEEP,
+                workRequest
+            )
         }
-        set(Calendar.SECOND, 15)  // Buffer to ensure past :30
     }
-    alarmManager.setWindow(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, windowMs, pendingIntent)
+
+    override fun doWork(): Result {
+        if (WidgetUtils.isWeatherDataStale(applicationContext)) {
+            WidgetUtils.fetchWeather(applicationContext)
+        } else {
+            WidgetUtils.rerenderChart(applicationContext)
+        }
+        return Result.success()
+    }
 }
 ```
 
@@ -349,7 +364,7 @@ The widget responds to system events via broadcast receivers.
 | Widget resize | `onAppWidgetOptionsChanged` | N/A | Re-render immediately |
 | Locale change | `ACTION_LOCALE_CHANGED` | Manifest | Re-render (no fetch) |
 | Timezone change | `ACTION_TIMEZONE_CHANGED` | Manifest | Re-render (no fetch) |
-| Half-hour (:30) | `HourlyAlarmReceiver` | Manifest | Re-render (no fetch) |
+| Periodic (~30 min) | `WeatherUpdateWorker` | WorkManager | Fetch if stale, re-render |
 
 **Important:** `LOCALE_CHANGED` and `TIMEZONE_CHANGED` use manifest-declared receivers because the app process is killed when locale/timezone changes. Runtime-registered receivers are lost when the process dies. These broadcasts are exempt from Android 8.0+ implicit broadcast restrictions.
 
@@ -482,49 +497,15 @@ private fun fetchWeatherIfStale(context: Context) {
 - `USER_PRESENT`, `CONNECTIVITY_CHANGE`: Require runtime registration (Android 8.0+ restriction)
 - `LOCALE_CHANGED`, `TIMEZONE_CHANGED`: Use manifest declaration (app process killed on change, runtime receivers lost; these are exempt from 8.0+ restrictions)
 
-#### Half-Hour Alarm for "Now" Indicator
+#### "Now" Indicator Updates
 
-The "now" indicator snaps to the nearest hour at the 30-minute mark (e.g., 2:29 shows "now" at 2:00, 2:30 shows "now" at 3:00). The widget uses `AlarmManager` to re-render the chart at XX:30 when this snap occurs.
+The "now" indicator snaps to the nearest hour at the 30-minute mark (e.g., 2:29 shows "now" at 2:00, 2:30 shows "now" at 3:00).
 
-**Buffer + Verification Approach:**
-To ensure the alarm fires AFTER the :30 boundary:
+Updates happen via:
+1. **USER_PRESENT** - Always re-renders on unlock to ensure indicator is current
+2. **WorkManager periodic** - Runs ~30 min (timing not precise, but battery-efficient)
 
-1. Schedule alarm for XX:30:15 (15-second buffer after the half-hour)
-2. When alarm fires, verify minute >= 30 (past the :30 boundary)
-3. If fired early (minute < 30), reschedule for the next half-hour
-
-```kotlin
-// HourlyAlarmReceiver.kt
-private const val HOUR_BUFFER_SECONDS = 15
-
-fun scheduleNextAlarm(context: Context) {
-    val calendar = Calendar.getInstance().apply {
-        val currentMinute = get(Calendar.MINUTE)
-        if (currentMinute < 30) {
-            set(Calendar.MINUTE, 30)
-        } else {
-            set(Calendar.MINUTE, 30)
-            add(Calendar.HOUR_OF_DAY, 1)
-        }
-        set(Calendar.SECOND, HOUR_BUFFER_SECONDS)
-    }
-    alarmManager.setWindow(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, windowMs, pendingIntent)
-}
-
-fun handleHourlyUpdate(context: Context) {
-    val minute = Calendar.getInstance().get(Calendar.MINUTE)
-    if (minute < 30) {
-        // Fired early - reschedule
-        scheduleNextAlarm(context)
-        return
-    }
-    // Safe to re-render
-    triggerChartReRender(context)
-    scheduleNextAlarm(context)
-}
-```
-
-The alarm triggers `chartReRender` (no weather fetch), updating only the "now" indicator position. Additionally, `USER_PRESENT` always re-renders to ensure the indicator is current when users unlock their phone.
+The slight imprecision in WorkManager timing is acceptable because USER_PRESENT ensures the widget is always fresh when the user actually looks at it.
 
 ### main.dart setup
 ```dart
@@ -727,7 +708,7 @@ adb logcat | grep -i "HomeWidget"
 | "Can't load widget" | Unsupported view in layout | Remove View/Space elements |
 | Widget shows placeholder | Image path not saved | Check saveWidgetData call |
 | Temperature shows "--°" | No weather data | Check API call |
-| Widget not updating | Alarm not scheduled | Check HourlyAlarmReceiver.scheduleNextAlarm |
+| Widget not updating | WorkManager not enqueued | Check WeatherUpdateWorker.enqueue in MeteogramApplication |
 
 ## iOS Widget (Not Implemented)
 

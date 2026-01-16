@@ -24,7 +24,7 @@ The widget detects color changes through multiple layered mechanisms:
 | **ContentObserver** | Immediate | App process alive (in background) |
 | **WorkManager ContentUriTrigger** | Delayed (batched) | Fallback when app killed |
 | **USER_PRESENT broadcast** | On unlock | App was force-closed |
-| **HourlyAlarmReceiver** | ≤30 min | Backup/fallback |
+| **WeatherUpdateWorker** | ~30 min | Periodic WorkManager task |
 | **onUpdate()** | On interaction | Widget resize/tap |
 
 **Primary mechanism:** ContentObserver in `MeteogramApplication` fires instantly when `Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES` changes. This works as long as the app process is alive (even in background).
@@ -38,9 +38,9 @@ The widget detects color changes through multiple layered mechanisms:
 | `MeteogramApplication.kt` | Registers ContentObserver for immediate detection |
 | `MaterialYouColorExtractor.kt` | Extracts colors from system, compares with cached values |
 | `MaterialYouColorWorker.kt` | WorkManager fallback with content URI trigger |
+| `WeatherUpdateWorker.kt` | Periodic WorkManager task, checks colors |
 | `MeteogramWidgetProvider.kt` | Checks colors in onUpdate() |
 | `WidgetEventReceiver.kt` | Checks colors on USER_PRESENT |
-| `HourlyAlarmReceiver.kt` | Checks colors on half-hour alarm |
 
 ## Data Flow
 
