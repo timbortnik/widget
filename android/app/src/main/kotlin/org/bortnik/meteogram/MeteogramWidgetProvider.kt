@@ -21,6 +21,55 @@ import java.io.FileInputStream
 class MeteogramWidgetProvider : HomeWidgetProvider() {
     companion object {
         private const val TAG = "MeteogramWidget"
+        private const val KEY_WIDGET_IDS = "widget_ids"
+    }
+
+    /**
+     * Save widget dimensions for a specific widget ID.
+     */
+    private fun saveWidgetDimensions(prefs: SharedPreferences, widgetId: Int, widthPx: Int, heightPx: Int, density: Float) {
+        prefs.edit()
+            .putInt("widget_${widgetId}_width_px", widthPx)
+            .putInt("widget_${widgetId}_height_px", heightPx)
+            .putFloat("widget_${widgetId}_density", density)
+            .commit()
+    }
+
+    /**
+     * Get widget dimensions for a specific widget ID.
+     * Returns null if not found.
+     */
+    private fun getWidgetDimensions(prefs: SharedPreferences, widgetId: Int): Pair<Int, Int>? {
+        val width = prefs.getInt("widget_${widgetId}_width_px", 0)
+        val height = prefs.getInt("widget_${widgetId}_height_px", 0)
+        return if (width > 0 && height > 0) Pair(width, height) else null
+    }
+
+    /**
+     * Update the list of active widget IDs.
+     */
+    private fun updateWidgetIdsList(context: Context, widgetIds: IntArray) {
+        val prefs = context.getSharedPreferences(WidgetUtils.PREFS_NAME, Context.MODE_PRIVATE)
+        val idsString = widgetIds.joinToString(",")
+        prefs.edit().putString(KEY_WIDGET_IDS, idsString).commit()
+        Log.d(TAG, "Updated widget IDs list: $idsString")
+    }
+
+    /**
+     * Remove dimensions for deleted widgets.
+     */
+    private fun cleanupDeletedWidgets(context: Context, deletedIds: IntArray) {
+        val prefs = context.getSharedPreferences(WidgetUtils.PREFS_NAME, Context.MODE_PRIVATE)
+        val editor = prefs.edit()
+        for (widgetId in deletedIds) {
+            editor.remove("widget_${widgetId}_width_px")
+            editor.remove("widget_${widgetId}_height_px")
+            editor.remove("widget_${widgetId}_density")
+            editor.remove("svg_path_light_$widgetId")
+            editor.remove("svg_path_dark_$widgetId")
+            Log.d(TAG, "Cleaned up data for deleted widget $widgetId")
+        }
+        editor.commit()
     }
 
     /**
@@ -109,20 +158,23 @@ class MeteogramWidgetProvider : HomeWidgetProvider() {
         appWidgetId: Int,
         newOptions: Bundle
     ) {
-        Log.d(TAG, "Widget resized")
+        Log.d(TAG, "Widget $appWidgetId resized")
 
-        // Save new dimensions
+        // Save new dimensions for this specific widget
         val minWidth = newOptions.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH)
         val maxHeight = newOptions.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT)
         val density = context.resources.displayMetrics.density
         val widthPx = (minWidth * density).toInt()
         val heightPx = (maxHeight * density).toInt()
 
-        Log.d(TAG, "New dimensions: ${minWidth}dp x ${maxHeight}dp = ${widthPx}px x ${heightPx}px")
+        Log.d(TAG, "Widget $appWidgetId new dimensions: ${minWidth}dp x ${maxHeight}dp = ${widthPx}px x ${heightPx}px")
 
-        // Update SharedPreferences with new dimensions (commit synchronously before triggering callback)
-        // Also set widget_resized flag so Flutter app knows to reload dimensions when resumed
         val prefs = context.getSharedPreferences(WidgetUtils.PREFS_NAME, Context.MODE_PRIVATE)
+
+        // Save per-widget dimensions
+        saveWidgetDimensions(prefs, appWidgetId, widthPx, heightPx, density)
+
+        // Also save as "current" dimensions for backward compatibility and app preview
         prefs.edit()
             .putInt(WidgetUtils.KEY_WIDGET_WIDTH_PX, widthPx)
             .putInt(WidgetUtils.KEY_WIDGET_HEIGHT_PX, heightPx)
@@ -130,8 +182,14 @@ class MeteogramWidgetProvider : HomeWidgetProvider() {
             .putBoolean("widget_resized", true)
             .commit()
 
-        // Trigger chart re-render with new dimensions
-        WidgetUtils.rerenderChart(context)
+        // Trigger chart re-render for this widget
+        WidgetUtils.rerenderChartForWidget(context, appWidgetId, widthPx, heightPx)
+    }
+
+    override fun onDeleted(context: Context, appWidgetIds: IntArray) {
+        super.onDeleted(context, appWidgetIds)
+        Log.d(TAG, "Widgets deleted: ${appWidgetIds.joinToString()}")
+        cleanupDeletedWidgets(context, appWidgetIds)
     }
 
     override fun onUpdate(
@@ -140,14 +198,17 @@ class MeteogramWidgetProvider : HomeWidgetProvider() {
         appWidgetIds: IntArray,
         widgetData: SharedPreferences
     ) {
-        Log.d(TAG, "onUpdate called for ${appWidgetIds.size} widgets")
+        Log.d(TAG, "onUpdate called for ${appWidgetIds.size} widgets: ${appWidgetIds.joinToString()}")
+
+        // Update list of active widget IDs
+        updateWidgetIdsList(context, appWidgetIds)
 
         // Check for Material You color changes (Android 12+)
         // This detects wallpaper/theme color changes and triggers SVG re-generation
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             if (MaterialYouColorExtractor.updateColorsIfChanged(context)) {
-                Log.d(TAG, "Material You colors changed - triggering re-render")
-                WidgetUtils.rerenderChart(context)
+                Log.d(TAG, "Material You colors changed - triggering re-render for all widgets")
+                WidgetUtils.rerenderAllWidgets(context)
                 // Skip rendering with old SVGs - wait for background service to generate new ones
                 // The re-render will trigger another onUpdate with correct colors
                 return
@@ -157,7 +218,7 @@ class MeteogramWidgetProvider : HomeWidgetProvider() {
         for (appWidgetId in appWidgetIds) {
             val views = RemoteViews(context.packageName, R.layout.meteogram_widget)
 
-            // Get widget dimensions and save to SharedPreferences for Flutter
+            // Get widget dimensions
             val options = appWidgetManager.getAppWidgetOptions(appWidgetId)
             val minWidth = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH)
             val maxHeight = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT)
@@ -167,30 +228,36 @@ class MeteogramWidgetProvider : HomeWidgetProvider() {
             var widthPx = (minWidth * density).toInt()
             var heightPx = (maxHeight * density).toInt()
 
-            Log.d(TAG, "Widget dimensions from options: ${minWidth}dp x ${maxHeight}dp = ${widthPx}px x ${heightPx}px (density: $density)")
+            Log.d(TAG, "Widget $appWidgetId dimensions: ${minWidth}dp x ${maxHeight}dp = ${widthPx}px x ${heightPx}px")
 
-            // Save dimensions to SharedPreferences for Flutter to read (only if valid)
-            // getAppWidgetOptions can return 0 in some scenarios - don't overwrite valid dimensions
-            // Use commit() (synchronous) to ensure dimensions are saved before any callbacks
+            // Save per-widget dimensions (only if valid)
             if (widthPx > 0 && heightPx > 0) {
+                saveWidgetDimensions(widgetData, appWidgetId, widthPx, heightPx, density)
+                // Also save as "current" for backward compatibility
                 widgetData.edit()
                     .putInt(WidgetUtils.KEY_WIDGET_WIDTH_PX, widthPx)
                     .putInt(WidgetUtils.KEY_WIDGET_HEIGHT_PX, heightPx)
                     .putFloat("widget_density", density)
                     .commit()
             } else {
-                // getAppWidgetOptions returned invalid dimensions - use saved or default
-                Log.d(TAG, "Invalid dimensions from options - using saved/default")
-                val (savedWidth, savedHeight) = WidgetUtils.getWidgetDimensions(context)
-                widthPx = savedWidth
-                heightPx = savedHeight
-                Log.d(TAG, "Using fallback dimensions: ${widthPx}x${heightPx}px")
+                // Try to use saved per-widget dimensions first
+                val savedDims = getWidgetDimensions(widgetData, appWidgetId)
+                if (savedDims != null) {
+                    widthPx = savedDims.first
+                    heightPx = savedDims.second
+                    Log.d(TAG, "Widget $appWidgetId using saved dimensions: ${widthPx}x${heightPx}px")
+                } else {
+                    // Fall back to global default
+                    val (defaultWidth, defaultHeight) = WidgetUtils.getWidgetDimensions(context)
+                    widthPx = defaultWidth
+                    heightPx = defaultHeight
+                    Log.d(TAG, "Widget $appWidgetId using default dimensions: ${widthPx}x${heightPx}px")
+                }
             }
 
             // Set up tap to open app
             val intent = android.content.Intent(context, MainActivity::class.java).apply {
                 flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP
-                // Explicitly set component for security (prevents intent interception)
                 component = android.content.ComponentName(context, MainActivity::class.java)
             }
             val pendingIntent = PendingIntent.getActivity(
@@ -201,33 +268,29 @@ class MeteogramWidgetProvider : HomeWidgetProvider() {
             )
             views.setOnClickPendingIntent(R.id.widget_root, pendingIntent)
 
-            // Get chart sources - prefer SVG, fall back to PNG
-            val svgLightPath = widgetData.getString("svg_path_light", null)
-            val svgDarkPath = widgetData.getString("svg_path_dark", null)
-            val pngLightPath = widgetData.getString("meteogram_image_light", null)
-            val pngDarkPath = widgetData.getString("meteogram_image_dark", null)
-            Log.d(TAG, "SVG paths - light: $svgLightPath, dark: $svgDarkPath")
-            Log.d(TAG, "PNG paths - light: $pngLightPath, dark: $pngDarkPath")
+            // Get chart sources - prefer widget-specific SVG, fall back to generic
+            val svgLightPath = widgetData.getString("svg_path_light_$appWidgetId", null)
+                ?: widgetData.getString("svg_path_light", null)
+            val svgDarkPath = widgetData.getString("svg_path_dark_$appWidgetId", null)
+                ?: widgetData.getString("svg_path_dark", null)
+            Log.d(TAG, "Widget $appWidgetId SVG paths - light: $svgLightPath, dark: $svgDarkPath")
 
             var hasChart = false
 
-            // Load light theme chart (prefer SVG)
-            val lightBitmap = loadChartBitmap(svgLightPath, pngLightPath, widthPx, heightPx)
+            // Load light theme chart
+            val lightBitmap = loadChartBitmap(svgLightPath, null, widthPx, heightPx)
             if (lightBitmap != null) {
                 views.setImageViewBitmap(R.id.widget_chart_light, lightBitmap)
-                // Don't recycle - RemoteViews needs bitmap during IPC serialization
-                // Let GC handle cleanup after RemoteViews is done with it
                 hasChart = true
-                Log.d(TAG, "Light chart loaded")
+                Log.d(TAG, "Widget $appWidgetId light chart loaded")
             }
 
-            // Load dark theme chart (prefer SVG)
-            val darkBitmap = loadChartBitmap(svgDarkPath, pngDarkPath, widthPx, heightPx)
+            // Load dark theme chart
+            val darkBitmap = loadChartBitmap(svgDarkPath, null, widthPx, heightPx)
             if (darkBitmap != null) {
                 views.setImageViewBitmap(R.id.widget_chart_dark, darkBitmap)
-                // Don't recycle - let GC handle cleanup
                 hasChart = true
-                Log.d(TAG, "Dark chart loaded")
+                Log.d(TAG, "Widget $appWidgetId dark chart loaded")
             }
 
             // Show placeholder if no charts available
@@ -237,7 +300,6 @@ class MeteogramWidgetProvider : HomeWidgetProvider() {
                 views.setViewVisibility(R.id.widget_placeholder, View.GONE)
             }
 
-            // Hide refresh indicator - with dual charts, theme switching is automatic
             views.setViewVisibility(R.id.widget_refresh_indicator, View.GONE)
 
             appWidgetManager.updateAppWidget(appWidgetId, views)

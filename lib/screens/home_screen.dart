@@ -39,7 +39,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   bool _loading = true;
   String? _error;
   LocationSource _locationSource = LocationSource.gps;
-  double _chartAspectRatio = 2.0; // Default 2:1, updated from widget dimensions
+  static const double _chartAspectRatio = 2.0; // Fixed 2:1 for in-app display
   Brightness? _lastRenderedBrightness; // Track theme for re-render on change
   String _locale = 'en'; // Cached locale for widget generation
   bool _usesFahrenheit = false; // Cached Fahrenheit preference
@@ -239,16 +239,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     });
   }
 
-  /// Load widget dimensions and update chart aspect ratio.
-  Future<void> _loadWidgetDimensions() async {
-    final dimensions = await _widgetService.getWidgetDimensions();
-    if (dimensions != null && dimensions.widthPx > 0 && dimensions.heightPx > 0) {
-      setState(() {
-        _chartAspectRatio = dimensions.widthPx / dimensions.heightPx;
-      });
-      debugPrint('Chart aspect ratio updated to: $_chartAspectRatio');
-    }
-  }
 
   /// Update cached Material You colors for widget SVG generation.
   /// Called from build() when context is available.
@@ -278,10 +268,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   Future<void> _checkAndSyncWidget() async {
     // Check if widget was resized - if so, force re-render
     final wasResized = await _widgetService.checkAndClearResizeFlag();
-
-    // Always load dimensions on startup/resume to pick up any changes
-    // (native code may have updated dimensions while app was killed)
-    await _loadWidgetDimensions();
 
     // Check if theme changed since last render
     final currentBrightness = WidgetsBinding.instance.platformDispatcher.platformBrightness;

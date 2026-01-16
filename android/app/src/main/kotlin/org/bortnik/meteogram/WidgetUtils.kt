@@ -51,6 +51,7 @@ object WidgetUtils {
     /**
      * Re-render chart via HomeWidget background intent.
      * Passes dimensions and locale in URI for cold-start reliability.
+     * This renders the generic chart (for backward compatibility).
      */
     fun rerenderChart(context: Context) {
         try {
@@ -64,6 +65,41 @@ object WidgetUtils {
             Log.d(TAG, "Chart re-render triggered (${widthPx}x${heightPx}, locale=$localeStr)")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to trigger chart re-render", e)
+        }
+    }
+
+    /**
+     * Re-render chart for a specific widget with its dimensions.
+     */
+    fun rerenderChartForWidget(context: Context, widgetId: Int, widthPx: Int, heightPx: Int) {
+        try {
+            val localeStr = getLocaleString()
+
+            es.antonborri.home_widget.HomeWidgetBackgroundIntent.getBroadcast(
+                context,
+                android.net.Uri.parse("homewidget://chartReRender?widgetId=$widgetId&width=$widthPx&height=$heightPx&locale=$localeStr")
+            ).send()
+            Log.d(TAG, "Chart re-render triggered for widget $widgetId (${widthPx}x${heightPx}, locale=$localeStr)")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to trigger chart re-render for widget $widgetId", e)
+        }
+    }
+
+    /**
+     * Re-render charts for all widgets.
+     * Triggers a single background intent that will iterate through all widget IDs.
+     */
+    fun rerenderAllWidgets(context: Context) {
+        try {
+            val localeStr = getLocaleString()
+
+            es.antonborri.home_widget.HomeWidgetBackgroundIntent.getBroadcast(
+                context,
+                android.net.Uri.parse("homewidget://chartReRenderAll?locale=$localeStr")
+            ).send()
+            Log.d(TAG, "Chart re-render triggered for all widgets (locale=$localeStr)")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to trigger chart re-render for all widgets", e)
         }
     }
 

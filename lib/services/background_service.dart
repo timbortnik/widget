@@ -53,8 +53,14 @@ Future<void> homeWidgetBackgroundCallback(Uri? uri) async {
     case 'chartrerender':
       // Re-render charts from cached data (no network call)
       // Dimensions may be passed in URI query params for cold-start reliability
+      // Optional widgetId param targets a specific widget
       _log('homeWidgetBackgroundCallback: executing chartReRender');
       await _reRenderCharts(uri);
+      break;
+    case 'chartrerenderall':
+      // Re-render charts for all widgets (iterate through widget IDs)
+      _log('homeWidgetBackgroundCallback: executing chartReRenderAll');
+      await _reRenderAllWidgets(uri);
       break;
     default:
       _log('homeWidgetBackgroundCallback: unknown host ${uri.host}');
@@ -119,9 +125,21 @@ Future<void> _updateWeatherData() async {
     await HomeWidget.saveWidgetData<String>('location_name', location.city ?? '');
     _log('Saved temperature: $tempString');
 
-    // Generate SVG charts for widget display
+    // Generate SVG charts for all widgets
     _log('Generating SVG charts...');
-    await _generateSvgCharts(weather, location.latitude, location.longitude);
+    final widgetIdsStr = await HomeWidget.getWidgetData<String>('widget_ids');
+    if (widgetIdsStr != null && widgetIdsStr.isNotEmpty) {
+      final widgetIds = widgetIdsStr.split(',').map((s) => int.tryParse(s.trim())).whereType<int>().toList();
+      _log('Generating SVGs for ${widgetIds.length} widgets: $widgetIds');
+      for (final widgetId in widgetIds) {
+        final widthPx = await HomeWidget.getWidgetData<int>('widget_${widgetId}_width_px');
+        final heightPx = await HomeWidget.getWidgetData<int>('widget_${widgetId}_height_px');
+        await _generateSvgCharts(weather, location.latitude, location.longitude, uriWidth: widthPx, uriHeight: heightPx, widgetId: widgetId);
+      }
+    } else {
+      // No widget IDs tracked yet, generate generic SVG for backward compatibility
+      await _generateSvgCharts(weather, location.latitude, location.longitude);
+    }
     _log('SVG charts generated');
 
     _log('Updating widget...');
@@ -139,6 +157,7 @@ Future<void> _updateWeatherData() async {
 /// Re-render charts from cached weather data (no network call).
 /// Used for locale/timezone/theme changes where data doesn't need refreshing.
 /// Dimensions and locale can be passed in URI query params for cold-start reliability.
+/// If widgetId is provided, only renders for that specific widget.
 /// If cached data is stale (>15 min old), fetches fresh data instead.
 Future<void> _reRenderCharts([Uri? uri]) async {
   _log('_reRenderCharts started with uri: $uri');
@@ -147,11 +166,13 @@ Future<void> _reRenderCharts([Uri? uri]) async {
   int? uriWidth;
   int? uriHeight;
   String? uriLocale;
+  int? widgetId;
   if (uri != null) {
     uriWidth = int.tryParse(uri.queryParameters['width'] ?? '');
     uriHeight = int.tryParse(uri.queryParameters['height'] ?? '');
     uriLocale = uri.queryParameters['locale'];
-    _log('_reRenderCharts: URI dimensions=${uriWidth}x$uriHeight, locale=$uriLocale');
+    widgetId = int.tryParse(uri.queryParameters['widgetId'] ?? '');
+    _log('_reRenderCharts: widgetId=$widgetId, dimensions=${uriWidth}x$uriHeight, locale=$uriLocale');
   }
 
   try {
@@ -184,7 +205,7 @@ Future<void> _reRenderCharts([Uri? uri]) async {
     _log('_reRenderCharts: loaded weather with ${weather.hourly.length} hours, nowIndex=$nowIndex (${ageMs ~/ 60000} min old)');
 
     // Regenerate SVG charts (pass URI params if available)
-    await _generateSvgCharts(weather, latitude, longitude, uriWidth: uriWidth, uriHeight: uriHeight, uriLocale: uriLocale);
+    await _generateSvgCharts(weather, latitude, longitude, uriWidth: uriWidth, uriHeight: uriHeight, uriLocale: uriLocale, widgetId: widgetId);
 
     // Update widget
     await HomeWidget.updateWidget(
@@ -198,9 +219,88 @@ Future<void> _reRenderCharts([Uri? uri]) async {
   }
 }
 
+/// Re-render charts for all widgets (e.g., after Material You color change).
+/// Reads widget IDs from storage and generates SVG for each.
+Future<void> _reRenderAllWidgets([Uri? uri]) async {
+  _log('_reRenderAllWidgets started with uri: $uri');
+
+  // Extract locale from URI if provided
+  String? uriLocale;
+  if (uri != null) {
+    uriLocale = uri.queryParameters['locale'];
+    _log('_reRenderAllWidgets: locale=$uriLocale');
+  }
+
+  try {
+    // Initialize locale data for DateFormat (required in background isolate)
+    await initializeDateFormatting();
+
+    // Check if cached data is stale
+    final lastUpdate = await HomeWidget.getWidgetData<int>('last_weather_update') ?? 0;
+    final ageMs = DateTime.now().millisecondsSinceEpoch - lastUpdate;
+    final staleThresholdMs = kWeatherStalenessThreshold.inMilliseconds;
+
+    if (ageMs > staleThresholdMs) {
+      _log('_reRenderAllWidgets: cached data is stale, fetching fresh data');
+      await _updateWeatherData();
+      return;
+    }
+
+    // Load cached weather data
+    final cachedJson = await HomeWidget.getWidgetData<String>('cached_weather');
+    if (cachedJson == null) {
+      _log('_reRenderAllWidgets: no cached weather data, fetching fresh');
+      await _updateWeatherData();
+      return;
+    }
+
+    final weather = WeatherData.fromJson(jsonDecode(cachedJson) as Map<String, dynamic>);
+    final latitude = await HomeWidget.getWidgetData<double>('cached_latitude') ?? 0.0;
+    final longitude = await HomeWidget.getWidgetData<double>('cached_longitude') ?? 0.0;
+
+    // Get list of widget IDs (stored as comma-separated string by native code)
+    final widgetIdsStr = await HomeWidget.getWidgetData<String>('widget_ids');
+    if (widgetIdsStr == null || widgetIdsStr.isEmpty) {
+      _log('_reRenderAllWidgets: no widget IDs found, generating generic SVG');
+      await _generateSvgCharts(weather, latitude, longitude, uriLocale: uriLocale);
+    } else {
+      final widgetIds = widgetIdsStr.split(',').map((s) => int.tryParse(s.trim())).whereType<int>().toList();
+      _log('_reRenderAllWidgets: rendering for ${widgetIds.length} widgets: $widgetIds');
+
+      for (final widgetId in widgetIds) {
+        // Get per-widget dimensions from storage
+        final widthPx = await HomeWidget.getWidgetData<int>('widget_${widgetId}_width_px');
+        final heightPx = await HomeWidget.getWidgetData<int>('widget_${widgetId}_height_px');
+        _log('_reRenderAllWidgets: widget $widgetId dimensions=${widthPx}x$heightPx');
+
+        await _generateSvgCharts(
+          weather,
+          latitude,
+          longitude,
+          uriWidth: widthPx,
+          uriHeight: heightPx,
+          uriLocale: uriLocale,
+          widgetId: widgetId,
+        );
+      }
+    }
+
+    // Update widget
+    await HomeWidget.updateWidget(
+      androidName: 'MeteogramWidgetProvider',
+      iOSName: 'MeteogramWidget',
+    );
+    _log('_reRenderAllWidgets: widget updated');
+  } catch (e, stack) {
+    _log('_reRenderAllWidgets failed: $e\n$stack');
+    rethrow;
+  }
+}
+
 /// Generate SVG chart images for the widget.
 /// Optional uriWidth/uriHeight/uriLocale can be passed for cold-start reliability.
-Future<void> _generateSvgCharts(WeatherData weather, double latitude, double longitude, {int? uriWidth, int? uriHeight, String? uriLocale}) async {
+/// If widgetId is provided, saves widget-specific SVG files (e.g., meteogram_light_42.svg).
+Future<void> _generateSvgCharts(WeatherData weather, double latitude, double longitude, {int? uriWidth, int? uriHeight, String? uriLocale, int? widgetId}) async {
   try {
     final generator = SvgChartGenerator();
     final displayData = weather.getDisplayRange();
@@ -304,12 +404,16 @@ Future<void> _generateSvgCharts(WeatherData weather, double latitude, double lon
     // Save SVG files to app documents directory using atomic writes
     // (write to temp file, then rename to avoid race conditions with native reader)
     final docsDir = await getApplicationDocumentsDirectory();
-    final lightPath = '${docsDir.path}/$kLightSvgFileName';
-    final darkPath = '${docsDir.path}/$kDarkSvgFileName';
-    final lightTempPath = '${docsDir.path}/$kLightSvgFileName.tmp';
-    final darkTempPath = '${docsDir.path}/$kDarkSvgFileName.tmp';
 
-    _log('Writing SVG files to $lightPath');
+    // Use widget-specific file names if widgetId provided, otherwise generic names
+    final lightFileName = widgetId != null ? 'meteogram_light_$widgetId.svg' : kLightSvgFileName;
+    final darkFileName = widgetId != null ? 'meteogram_dark_$widgetId.svg' : kDarkSvgFileName;
+    final lightPath = '${docsDir.path}/$lightFileName';
+    final darkPath = '${docsDir.path}/$darkFileName';
+    final lightTempPath = '$lightPath.tmp';
+    final darkTempPath = '$darkPath.tmp';
+
+    _log('Writing SVG files to $lightPath (widgetId=$widgetId)');
 
     // Write to temp files first
     await File(lightTempPath).writeAsString(svgLight);
@@ -322,16 +426,25 @@ Future<void> _generateSvgCharts(WeatherData weather, double latitude, double lon
     _log('SVG files written successfully');
 
     // Store paths for native widget to read
-    await HomeWidget.saveWidgetData<String>('svg_path_light', lightPath);
-    await HomeWidget.saveWidgetData<String>('svg_path_dark', darkPath);
+    // Use widget-specific keys if widgetId provided
+    if (widgetId != null) {
+      await HomeWidget.saveWidgetData<String>('svg_path_light_$widgetId', lightPath);
+      await HomeWidget.saveWidgetData<String>('svg_path_dark_$widgetId', darkPath);
+    } else {
+      // Generic paths for backward compatibility
+      await HomeWidget.saveWidgetData<String>('svg_path_light', lightPath);
+      await HomeWidget.saveWidgetData<String>('svg_path_dark', darkPath);
+    }
   } catch (e, stack) {
     _log('_generateSvgCharts failed: $e\n$stack');
 
     // Clean up orphaned temp files on failure
     try {
       final docsDir = await getApplicationDocumentsDirectory();
-      await File('${docsDir.path}/$kLightSvgFileName.tmp').delete();
-      await File('${docsDir.path}/$kDarkSvgFileName.tmp').delete();
+      final lightFileName = widgetId != null ? 'meteogram_light_$widgetId.svg' : kLightSvgFileName;
+      final darkFileName = widgetId != null ? 'meteogram_dark_$widgetId.svg' : kDarkSvgFileName;
+      await File('${docsDir.path}/$lightFileName.tmp').delete();
+      await File('${docsDir.path}/$darkFileName.tmp').delete();
     } catch (_) {
       // Ignore cleanup errors (files may not exist)
     }
