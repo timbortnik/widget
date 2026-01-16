@@ -5,7 +5,6 @@ import android.appwidget.AppWidgetManager
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
-import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.os.Build
 import android.graphics.BitmapFactory
@@ -103,30 +102,6 @@ class MeteogramWidgetProvider : HomeWidgetProvider() {
     // Note: System events (USER_PRESENT, LOCALE_CHANGED, etc.) are handled
     // by WidgetEventReceiver which is registered at runtime in MeteogramApplication.
     // Implicit broadcasts cannot be received via manifest-declared receivers on Android 8.0+.
-
-    private fun checkThemeMismatchAndShowIndicator(context: Context) {
-        val prefs = context.getSharedPreferences("HomeWidgetPreferences", Context.MODE_PRIVATE)
-        val imagePath = prefs.getString("meteogram_image", null)
-        if (imagePath == null) return
-
-        val currentNightMode = context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
-        val isCurrentlyDark = currentNightMode == Configuration.UI_MODE_NIGHT_YES
-        val renderedDark = prefs.getBoolean("rendered_dark_mode", false)
-
-        if (isCurrentlyDark != renderedDark) {
-            Log.d(TAG, "Theme mismatch detected: current=$isCurrentlyDark, rendered=$renderedDark")
-            val views = RemoteViews(context.packageName, R.layout.meteogram_widget)
-            views.setViewVisibility(R.id.widget_refresh_indicator, View.VISIBLE)
-
-            val appWidgetManager = AppWidgetManager.getInstance(context)
-            val componentName = android.content.ComponentName(context, MeteogramWidgetProvider::class.java)
-            val widgetIds = appWidgetManager.getAppWidgetIds(componentName)
-            for (id in widgetIds) {
-                appWidgetManager.partiallyUpdateAppWidget(id, views)
-            }
-            Log.d(TAG, "Theme mismatch indicator shown")
-        }
-    }
 
     override fun onAppWidgetOptionsChanged(
         context: Context,

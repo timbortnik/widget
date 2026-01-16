@@ -51,14 +51,6 @@ class WeatherUpdateWorker(
             )
             Log.d(TAG, "Periodic weather update work enqueued (30 min interval)")
         }
-
-        /**
-         * Cancel periodic weather update work.
-         */
-        fun cancel(context: Context) {
-            WorkManager.getInstance(context).cancelUniqueWork(WORK_NAME)
-            Log.d(TAG, "Periodic weather update work cancelled")
-        }
     }
 
     override fun doWork(): Result {

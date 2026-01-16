@@ -267,21 +267,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
     // Check if theme changed since last render
     final currentBrightness = WidgetsBinding.instance.platformDispatcher.platformBrightness;
-    final isCurrentlyDark = currentBrightness == Brightness.dark;
-
-    // On fresh start, _lastRenderedBrightness is null - read from storage
-    bool themeChanged = false;
-    if (_lastRenderedBrightness != null) {
-      themeChanged = _lastRenderedBrightness != currentBrightness;
-    } else {
-      // Check stored theme from last render
-      final storedDark = await _widgetService.getRenderedTheme();
-      if (storedDark != null && storedDark != isCurrentlyDark) {
-        themeChanged = true;
-        debugPrint('Theme mismatch on startup: stored=${storedDark ? "dark" : "light"}, current=${isCurrentlyDark ? "dark" : "light"}');
-      }
-    }
-
+    final themeChanged = _lastRenderedBrightness != null && _lastRenderedBrightness != currentBrightness;
     if (themeChanged) {
       debugPrint('Theme changed since last render: $_lastRenderedBrightness -> $currentBrightness');
     }

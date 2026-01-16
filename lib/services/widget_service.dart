@@ -67,20 +67,6 @@ class WidgetService {
     }
   }
 
-  /// Save chart image for a specific theme and return file path.
-  Future<String?> saveChartImage(Uint8List imageBytes, {required bool isDark}) async {
-    try {
-      final directory = await getApplicationDocumentsDirectory();
-      final suffix = isDark ? 'dark' : 'light';
-      final file = File('${directory.path}/meteogram_chart_$suffix.png');
-      await file.writeAsBytes(imageBytes);
-      return file.path;
-    } catch (e) {
-      debugPrint('Error saving chart image: $e');
-      return null;
-    }
-  }
-
   /// Generate and save SVG charts for the widget.
   /// This runs in the main isolate and complements PNG generation.
   ///
@@ -202,28 +188,6 @@ class WidgetService {
       debugPrint('Triggered widget update for theme check');
     } catch (e) {
       debugPrint('Error triggering widget update: $e');
-    }
-  }
-
-  /// Save the theme (dark/light) used for the last render.
-  /// Native widget uses this to show refresh indicator on theme mismatch.
-  Future<void> saveRenderedTheme(bool isDark) async {
-    try {
-      await HomeWidget.saveWidgetData<bool>('rendered_dark_mode', isDark);
-      debugPrint('Saved rendered theme: ${isDark ? "dark" : "light"}');
-    } catch (e) {
-      debugPrint('Error saving rendered theme: $e');
-    }
-  }
-
-  /// Get the theme used for the last render.
-  /// Returns null if no render has happened yet.
-  Future<bool?> getRenderedTheme() async {
-    try {
-      return await HomeWidget.getWidgetData<bool>('rendered_dark_mode');
-    } catch (e) {
-      debugPrint('Error getting rendered theme: $e');
-      return null;
     }
   }
 

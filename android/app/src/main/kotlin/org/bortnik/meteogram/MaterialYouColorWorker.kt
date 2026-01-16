@@ -67,14 +67,6 @@ class MaterialYouColorWorker(
                 Log.e(TAG, "Failed to enqueue color observer", e)
             }
         }
-
-        /**
-         * Cancel the color observer.
-         */
-        fun cancel(context: Context) {
-            WorkManager.getInstance(context).cancelUniqueWork(WORK_NAME)
-            Log.d(TAG, "Material You color observer cancelled")
-        }
     }
 
     override fun doWork(): Result {
