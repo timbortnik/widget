@@ -13,6 +13,10 @@ class MainActivity : FlutterActivity() {
     private val CHANNEL = "org.bortnik.meteogram/svg"
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
+        // Extract Material You colors BEFORE Flutter engine starts
+        // This ensures colors are in storage when Flutter's main() reads them
+        MaterialYouColorExtractor.updateColorsIfChanged(this)
+
         super.configureFlutterEngine(flutterEngine)
 
         // Register PlatformView for native SVG chart rendering

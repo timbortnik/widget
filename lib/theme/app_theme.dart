@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../services/material_you_service.dart';
+
 // =============================================================================
 // IMPORTANT: NO HARDCODED COLORS
 // =============================================================================
@@ -16,36 +18,64 @@ import 'package:flutter/material.dart';
 // =============================================================================
 
 /// App theme configuration with light and dark modes.
-/// Supports Material You dynamic colors when available.
+/// Supports Material You dynamic colors extracted from native Android code.
 class AppTheme {
-  // Fallback seed color when dynamic colors unavailable
-  static const _fallbackSeed = Color(0xFF5B8DEF);
+  // Fallback seed color when dynamic colors unavailable (neutral gray)
+  static const _fallbackSeed = Color(0xFF808080);
 
-  /// Light theme - uses dynamic ColorScheme if provided.
-  static ThemeData light([ColorScheme? dynamicScheme]) {
-    final colorScheme = dynamicScheme ?? ColorScheme.fromSeed(
-      seedColor: _fallbackSeed,
-      brightness: Brightness.light,
-    );
+  /// Light theme - uses native Material You colors if provided.
+  static ThemeData light([MaterialYouThemeColors? nativeColors]) {
+    final ColorScheme colorScheme;
+    if (nativeColors != null) {
+      // Build ColorScheme from native colors
+      colorScheme = ColorScheme.fromSeed(
+        seedColor: nativeColors.primary,
+        brightness: Brightness.light,
+      ).copyWith(
+        primary: nativeColors.primary,
+        onPrimaryContainer: nativeColors.onPrimaryContainer,
+        tertiary: nativeColors.tertiary,
+        surface: nativeColors.surface,
+        onSurface: nativeColors.onSurface,
+      );
+    } else {
+      colorScheme = ColorScheme.fromSeed(
+        seedColor: _fallbackSeed,
+        brightness: Brightness.light,
+      );
+    }
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
       colorScheme: colorScheme,
-      // No explicit scaffoldBackgroundColor - Material 3 uses colorScheme automatically
     );
   }
 
-  /// Dark theme - uses dynamic ColorScheme if provided.
-  static ThemeData dark([ColorScheme? dynamicScheme]) {
-    final colorScheme = dynamicScheme ?? ColorScheme.fromSeed(
-      seedColor: _fallbackSeed,
-      brightness: Brightness.dark,
-    );
+  /// Dark theme - uses native Material You colors if provided.
+  static ThemeData dark([MaterialYouThemeColors? nativeColors]) {
+    final ColorScheme colorScheme;
+    if (nativeColors != null) {
+      // Build ColorScheme from native colors
+      colorScheme = ColorScheme.fromSeed(
+        seedColor: nativeColors.primary,
+        brightness: Brightness.dark,
+      ).copyWith(
+        primary: nativeColors.primary,
+        onPrimaryContainer: nativeColors.onPrimaryContainer,
+        tertiary: nativeColors.tertiary,
+        surface: nativeColors.surface,
+        onSurface: nativeColors.onSurface,
+      );
+    } else {
+      colorScheme = ColorScheme.fromSeed(
+        seedColor: _fallbackSeed,
+        brightness: Brightness.dark,
+      );
+    }
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
       colorScheme: colorScheme,
-      // No explicit scaffoldBackgroundColor - Material 3 uses colorScheme automatically
     );
   }
 }
@@ -92,7 +122,7 @@ class MeteogramColors {
 
   /// Light mode - clean, airy design
   static const light = MeteogramColors(
-    background: Color(0xFFF5F7FA),
+    background: Color(0xFFFAFAFA),       // Neutral light gray (fallback)
     cardBackground: Color(0xFFFFFFFF),
     temperatureLine: Color(0xFFFF6B6B),
     temperatureGradientStart: Color(0x40FF6B6B),
@@ -113,8 +143,8 @@ class MeteogramColors {
 
   /// Dark mode - rich, elegant design
   static const dark = MeteogramColors(
-    background: Color(0xFF0D1B2A),
-    cardBackground: Color(0xFF1B2838),
+    background: Color(0xFF121212),       // Neutral dark gray (fallback)
+    cardBackground: Color(0xFF2D2D2D),   // Elevated surface (fallback)
     temperatureLine: Color(0xFFFF7675),
     temperatureGradientStart: Color(0x60FF7675),
     temperatureGradientEnd: Color(0x00FF7675),
@@ -133,23 +163,38 @@ class MeteogramColors {
   );
 
   /// Get colors based on theme, using Material You colors.
-  static MeteogramColors of(BuildContext context) {
+  static MeteogramColors of(BuildContext context, {MaterialYouThemeColors? nativeColors}) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    return fromColorScheme(theme.colorScheme, isDark: isDark);
+    return fromNativeColors(
+      nativeColors: nativeColors,
+      colorScheme: theme.colorScheme,
+      isDark: isDark,
+    );
   }
 
-  /// Create colors from a specific ColorScheme.
-  /// Used for generating widget SVGs with both light and dark Material You colors.
-  static MeteogramColors fromColorScheme(ColorScheme colorScheme, {required bool isDark}) {
+  /// Create colors from native Material You colors with ColorScheme fallback.
+  /// Native colors provide proper surface container variants that Flutter's
+  /// dynamic_color package fails to extract correctly.
+  static MeteogramColors fromNativeColors({
+    required MaterialYouThemeColors? nativeColors,
+    required ColorScheme colorScheme,
+    required bool isDark,
+  }) {
     // Use Material You colors with appropriate contrast for each theme:
     // - Light mode: onPrimaryContainer (darker, better contrast on light bg)
     // - Dark mode: primary (brighter, better contrast on dark bg)
     final tempColor = isDark ? colorScheme.primary : colorScheme.onPrimaryContainer;
 
     final base = isDark ? dark : light;
+
+    // Use native surface container colors (properly extracted from Android)
+    // Fall back to generated surfaceContainerHigh if native colors unavailable
+    final cardColor = nativeColors?.surfaceContainerHigh ?? colorScheme.surfaceContainerHigh;
+
     return base.copyWith(
       background: colorScheme.surface,
+      cardBackground: cardColor,
       temperatureLine: tempColor,
       temperatureGradientStart: tempColor.withAlpha(isDark ? 0x60 : 0x40),
       temperatureGradientEnd: tempColor.withAlpha(0x00),
@@ -157,9 +202,19 @@ class MeteogramColors {
     );
   }
 
+  /// Create colors from a specific ColorScheme (legacy method for compatibility).
+  static MeteogramColors fromColorScheme(ColorScheme colorScheme, {required bool isDark}) {
+    return fromNativeColors(
+      nativeColors: null,
+      colorScheme: colorScheme,
+      isDark: isDark,
+    );
+  }
+
   /// Create a copy with overridden values.
   MeteogramColors copyWith({
     Color? background,
+    Color? cardBackground,
     Color? temperatureLine,
     Color? temperatureGradientStart,
     Color? temperatureGradientEnd,
@@ -167,7 +222,7 @@ class MeteogramColors {
   }) {
     return MeteogramColors(
       background: background ?? this.background,
-      cardBackground: cardBackground,
+      cardBackground: cardBackground ?? this.cardBackground,
       temperatureLine: temperatureLine ?? this.temperatureLine,
       temperatureGradientStart: temperatureGradientStart ?? this.temperatureGradientStart,
       temperatureGradientEnd: temperatureGradientEnd ?? this.temperatureGradientEnd,

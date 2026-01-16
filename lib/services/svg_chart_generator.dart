@@ -82,7 +82,7 @@ class SvgChartColors {
     daylightGradient: SvgColor(0xA8, 0x8B, 0x5A),  // Darker amber
     nowIndicator: SvgColor(0xE0, 0xE0, 0xE0),
     timeLabel: SvgColor(0xE0, 0xE0, 0xE0),
-    cardBackground: SvgColor(0x1B, 0x28, 0x38),
+    cardBackground: SvgColor(0x2D, 0x2D, 0x2D),    // Neutral gray (matches MeteogramColors.dark)
     primaryText: SvgColor(0xFF, 0xFF, 0xFF),
   );
 

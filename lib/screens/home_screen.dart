@@ -11,19 +11,18 @@ import '../services/location_service.dart';
 import '../services/widget_service.dart';
 import '../services/svg_chart_generator.dart';
 import '../services/units_service.dart';
+import '../services/material_you_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/locale_utils.dart';
 import '../widgets/native_svg_chart_view.dart';
 
 /// Main home screen displaying the meteogram.
 class HomeScreen extends StatefulWidget {
-  final ColorScheme? lightColorScheme;
-  final ColorScheme? darkColorScheme;
+  final MaterialYouColors? materialYouColors;
 
   const HomeScreen({
     super.key,
-    this.lightColorScheme,
-    this.darkColorScheme,
+    this.materialYouColors,
   });
 
   @override
@@ -61,11 +60,32 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    // Initialize Material You colors immediately so widget generation uses them
+    _initializeMaterialYouColors();
     _initialize();
     // Start periodic refresh timer (checks staleness and hour boundaries)
     _refreshTimer = Timer.periodic(kForegroundRefreshInterval, (_) {
       _refreshIfStale();
     });
+  }
+
+  /// Initialize Material You colors from native extraction.
+  /// Called in initState so colors are available before first build.
+  void _initializeMaterialYouColors() {
+    if (widget.materialYouColors != null) {
+      // Use native colors directly for widget SVG generation
+      // Light mode: onPrimaryContainer for temperature (darker, better contrast)
+      // Dark mode: primary for temperature (brighter, better contrast)
+      // Must match background_service.dart color selection
+      _materialYouLightColors = SvgChartColors.light.withDynamicColors(
+        temperatureLine: SvgColor.fromArgb(widget.materialYouColors!.light.onPrimaryContainer.toARGB32()),
+        timeLabel: SvgColor.fromArgb(widget.materialYouColors!.light.tertiary.toARGB32()),
+      );
+      _materialYouDarkColors = SvgChartColors.dark.withDynamicColors(
+        temperatureLine: SvgColor.fromArgb(widget.materialYouColors!.dark.primary.toARGB32()),
+        timeLabel: SvgColor.fromArgb(widget.materialYouColors!.dark.tertiary.toARGB32()),
+      );
+    }
   }
 
   /// Combined initialization: load dimensions first, then data.
@@ -214,36 +234,24 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   /// Update cached Material You colors for widget SVG generation.
   /// Called from build() when context is available.
   void _updateMaterialYouColors(BuildContext context) {
-    // Get dynamic colors from Material You color schemes (if available)
-    // Fall back to static colors if no dynamic colors
-    final lightMeteogram = widget.lightColorScheme != null
-        ? MeteogramColors.fromColorScheme(widget.lightColorScheme!, isDark: false)
-        : MeteogramColors.light;
-    final darkMeteogram = widget.darkColorScheme != null
-        ? MeteogramColors.fromColorScheme(widget.darkColorScheme!, isDark: true)
-        : MeteogramColors.dark;
-
-    // Get ARGB values for persistence
-    final lightTempColor = lightMeteogram.temperatureLine.toARGB32();
-    final lightTimeColor = lightMeteogram.timeLabel.toARGB32();
-    final darkTempColor = darkMeteogram.temperatureLine.toARGB32();
-    final darkTimeColor = darkMeteogram.timeLabel.toARGB32();
-
-    // Apply dynamic colors to SVG chart colors
-    _materialYouLightColors = SvgChartColors.light.withDynamicColors(
-      temperatureLine: SvgColor.fromArgb(lightTempColor),
-      timeLabel: SvgColor.fromArgb(lightTimeColor),
-    );
-    _materialYouDarkColors = SvgChartColors.dark.withDynamicColors(
-      temperatureLine: SvgColor.fromArgb(darkTempColor),
-      timeLabel: SvgColor.fromArgb(darkTimeColor),
-    );
-
-    // Persist colors for background service (async, fire-and-forget)
-    HomeWidget.saveWidgetData<int>('material_you_light_temp', lightTempColor);
-    HomeWidget.saveWidgetData<int>('material_you_light_time', lightTimeColor);
-    HomeWidget.saveWidgetData<int>('material_you_dark_temp', darkTempColor);
-    HomeWidget.saveWidgetData<int>('material_you_dark_time', darkTimeColor);
+    // Use native colors directly for widget SVG generation
+    // Must match _initializeMaterialYouColors() and background_service.dart
+    if (widget.materialYouColors != null) {
+      // Light mode: onPrimaryContainer for temperature (darker, better contrast)
+      // Dark mode: primary for temperature (brighter, better contrast)
+      _materialYouLightColors = SvgChartColors.light.withDynamicColors(
+        temperatureLine: SvgColor.fromArgb(widget.materialYouColors!.light.onPrimaryContainer.toARGB32()),
+        timeLabel: SvgColor.fromArgb(widget.materialYouColors!.light.tertiary.toARGB32()),
+      );
+      _materialYouDarkColors = SvgChartColors.dark.withDynamicColors(
+        temperatureLine: SvgColor.fromArgb(widget.materialYouColors!.dark.primary.toARGB32()),
+        timeLabel: SvgColor.fromArgb(widget.materialYouColors!.dark.tertiary.toARGB32()),
+      );
+    } else {
+      // Fall back to default colors when Material You not available
+      _materialYouLightColors = SvgChartColors.light;
+      _materialYouDarkColors = SvgChartColors.dark;
+    }
   }
 
   /// Quick check on startup to sync widget state with cache age.
@@ -435,10 +443,17 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     );
   }
 
+  /// Get the native Material You colors for the current theme brightness.
+  MaterialYouThemeColors? _getNativeColorsForTheme(BuildContext context) {
+    if (widget.materialYouColors == null) return null;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return isDark ? widget.materialYouColors!.dark : widget.materialYouColors!.light;
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final colors = MeteogramColors.of(context);
+    final colors = MeteogramColors.of(context, nativeColors: _getNativeColorsForTheme(context));
 
     // Update cached Material You colors for widget SVG generation
     _updateMaterialYouColors(context);
@@ -680,7 +695,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     final deviceHeight = constraints.maxHeight * dpr;
 
                     // Apply Material You dynamic colors
-                    final meteogramColors = MeteogramColors.of(context);
+                    final meteogramColors = MeteogramColors.of(context, nativeColors: _getNativeColorsForTheme(context));
                     final baseColors = isLight ? SvgChartColors.light : SvgChartColors.dark;
                     final colors = baseColors.withDynamicColors(
                       temperatureLine: SvgColor.fromArgb(meteogramColors.temperatureLine.toARGB32()),
@@ -778,7 +793,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   void _showLocationPicker() {
-    final colors = MeteogramColors.of(context);
+    final colors = MeteogramColors.of(context, nativeColors: _getNativeColorsForTheme(context));
     final locale = Localizations.localeOf(context);
 
     showModalBottomSheet<void>(

@@ -1,53 +1,53 @@
 import 'package:flutter/material.dart';
-import 'package:dynamic_color/dynamic_color.dart';
 import 'l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'screens/home_screen.dart';
 import 'services/widget_service.dart';
 import 'services/background_service.dart';
+import 'services/material_you_service.dart';
 import 'theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await WidgetService.initialize();
   await BackgroundService.initialize();
-  runApp(const MeteogramApp());
+
+  // Load Material You colors from native Android code
+  final materialYouColors = await MaterialYouService.getColors();
+
+  runApp(MeteogramApp(materialYouColors: materialYouColors));
 }
 
 class MeteogramApp extends StatelessWidget {
-  const MeteogramApp({super.key});
+  final MaterialYouColors? materialYouColors;
+
+  const MeteogramApp({super.key, this.materialYouColors});
 
   @override
   Widget build(BuildContext context) {
-    // Use DynamicColorBuilder to get Material You colors from system
-    return DynamicColorBuilder(
-      builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
-        return MaterialApp(
-          title: 'Meteogram',
-          debugShowCheckedModeBanner: false,
+    return MaterialApp(
+      title: 'Meteogram',
+      debugShowCheckedModeBanner: false,
 
-          // Theme - use dynamic colors if available
-          theme: AppTheme.light(lightDynamic),
-          darkTheme: AppTheme.dark(darkDynamic),
-          themeMode: ThemeMode.system,
+      // Theme - use native Material You colors if available
+      theme: AppTheme.light(materialYouColors?.light),
+      darkTheme: AppTheme.dark(materialYouColors?.dark),
+      themeMode: ThemeMode.system,
 
-          // Localization
-          localizationsDelegates: const [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          supportedLocales: AppLocalizations.supportedLocales,
+      // Localization
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: AppLocalizations.supportedLocales,
 
-          // Pass both color schemes for widget rendering
-          home: HomeScreen(
-            lightColorScheme: lightDynamic,
-            darkColorScheme: darkDynamic,
-          ),
-        );
-      },
+      // Pass colors for widget rendering
+      home: HomeScreen(
+        materialYouColors: materialYouColors,
+      ),
     );
   }
 }

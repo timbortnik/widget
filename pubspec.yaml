@@ -33,9 +33,6 @@ dependencies:
   flutter_localizations:
     sdk: flutter
 
-  # UI
-  dynamic_color: ^1.7.0
-
   # API & Data
   http: ^1.2.0
   shared_preferences: ^2.3.0

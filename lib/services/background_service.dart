@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:developer' as developer;
 import 'dart:io';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -229,26 +229,35 @@ Future<void> _generateSvgCharts(WeatherData weather, double latitude, double lon
     final usesFahrenheit = UnitsService.usesFahrenheit(systemLocale);
     _log('_generateSvgCharts: locale=$locale, usesFahrenheit=$usesFahrenheit');
 
-    // Get persisted Material You colors (fall back to defaults if not set)
-    final lightTempColor = await HomeWidget.getWidgetData<int>('material_you_light_temp');
-    final lightTimeColor = await HomeWidget.getWidgetData<int>('material_you_light_time');
-    final darkTempColor = await HomeWidget.getWidgetData<int>('material_you_dark_temp');
-    final darkTimeColor = await HomeWidget.getWidgetData<int>('material_you_dark_time');
+    // Get native-extracted Material You colors directly from storage
+    // Must use the SAME native colors as the app (not derived from ColorScheme.fromSeed)
+    // App's AppTheme overrides ColorScheme with native values, so we must do the same
+    final lightOnPrimaryContainer = await HomeWidget.getWidgetData<int>('material_you_light_on_primary_container');
+    final lightTertiary = await HomeWidget.getWidgetData<int>('material_you_light_tertiary');
+    final darkPrimary = await HomeWidget.getWidgetData<int>('material_you_dark_primary');
+    final darkTertiary = await HomeWidget.getWidgetData<int>('material_you_dark_tertiary');
 
-    // Apply Material You colors if available
-    final lightColors = (lightTempColor != null && lightTimeColor != null)
-        ? SvgChartColors.light.withDynamicColors(
-            temperatureLine: SvgColor.fromArgb(lightTempColor),
-            timeLabel: SvgColor.fromArgb(lightTimeColor),
-          )
-        : SvgChartColors.light;
+    // Apply native Material You colors to SVG chart colors
+    SvgChartColors lightColors = SvgChartColors.light;
+    SvgChartColors darkColors = SvgChartColors.dark;
 
-    final darkColors = (darkTempColor != null && darkTimeColor != null)
-        ? SvgChartColors.dark.withDynamicColors(
-            temperatureLine: SvgColor.fromArgb(darkTempColor),
-            timeLabel: SvgColor.fromArgb(darkTimeColor),
-          )
-        : SvgChartColors.dark;
+    // Light mode: temperature uses onPrimaryContainer (darker, better contrast)
+    // Must match MeteogramColors.fromNativeColors() which uses colorScheme.onPrimaryContainer
+    if (lightOnPrimaryContainer != null && lightTertiary != null) {
+      lightColors = SvgChartColors.light.withDynamicColors(
+        temperatureLine: SvgColor.fromArgb(lightOnPrimaryContainer),
+        timeLabel: SvgColor.fromArgb(lightTertiary),
+      );
+    }
+
+    // Dark mode: temperature uses primary (brighter, better contrast)
+    // Must match MeteogramColors.fromNativeColors() which uses colorScheme.primary
+    if (darkPrimary != null && darkTertiary != null) {
+      darkColors = SvgChartColors.dark.withDynamicColors(
+        temperatureLine: SvgColor.fromArgb(darkPrimary),
+        timeLabel: SvgColor.fromArgb(darkTertiary),
+      );
+    }
 
     // Generate light and dark theme SVGs
     final svgLight = generator.generate(

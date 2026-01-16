@@ -171,8 +171,9 @@ class MeteogramWidgetProvider : HomeWidgetProvider() {
             if (MaterialYouColorExtractor.updateColorsIfChanged(context)) {
                 Log.d(TAG, "Material You colors changed - triggering re-render")
                 WidgetUtils.rerenderChart(context)
-                // Continue with current render using old SVGs
-                // New SVGs will trigger another onUpdate when ready
+                // Skip rendering with old SVGs - wait for background service to generate new ones
+                // The re-render will trigger another onUpdate with correct colors
+                return
             }
         }
 

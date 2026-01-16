@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:meteogram_widget/services/material_you_service.dart';
 import 'package:meteogram_widget/theme/app_theme.dart';
 
 void main() {
@@ -24,22 +25,32 @@ void main() {
       expect(theme.useMaterial3, isTrue);
     });
 
-    test('light theme accepts dynamic color scheme', () {
-      final dynamicScheme = ColorScheme.fromSeed(
-        seedColor: Colors.purple,
-        brightness: Brightness.light,
+    test('light theme accepts native Material You colors', () {
+      const nativeColors = MaterialYouThemeColors(
+        primary: Colors.purple,
+        onPrimaryContainer: Colors.deepPurple,
+        tertiary: Colors.teal,
+        surface: Colors.white,
+        surfaceContainer: Color(0xFFEEEEEE),
+        surfaceContainerHigh: Color(0xFFE0E0E0),
+        onSurface: Colors.black,
       );
-      final theme = AppTheme.light(dynamicScheme);
-      expect(theme.colorScheme.primary, dynamicScheme.primary);
+      final theme = AppTheme.light(nativeColors);
+      expect(theme.colorScheme.primary, nativeColors.primary);
     });
 
-    test('dark theme accepts dynamic color scheme', () {
-      final dynamicScheme = ColorScheme.fromSeed(
-        seedColor: Colors.purple,
-        brightness: Brightness.dark,
+    test('dark theme accepts native Material You colors', () {
+      const nativeColors = MaterialYouThemeColors(
+        primary: Colors.purpleAccent,
+        onPrimaryContainer: Colors.purple,
+        tertiary: Colors.tealAccent,
+        surface: Color(0xFF121212),
+        surfaceContainer: Color(0xFF1E1E1E),
+        surfaceContainerHigh: Color(0xFF2D2D2D),
+        onSurface: Colors.white,
       );
-      final theme = AppTheme.dark(dynamicScheme);
-      expect(theme.colorScheme.primary, dynamicScheme.primary);
+      final theme = AppTheme.dark(nativeColors);
+      expect(theme.colorScheme.primary, nativeColors.primary);
     });
   });
 
@@ -49,7 +60,7 @@ void main() {
     });
 
     test('dark preset has dark card background', () {
-      expect(MeteogramColors.dark.cardBackground, const Color(0xFF1B2838));
+      expect(MeteogramColors.dark.cardBackground, const Color(0xFF2D2D2D));
     });
 
     test('light preset has coral temperature line', () {
