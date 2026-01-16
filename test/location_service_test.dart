@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -16,8 +17,35 @@ http.Response utf8Response(String body, int statusCode) {
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  // Mock HomeWidget method channel
+  final Map<String, dynamic> homeWidgetData = {};
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+      .setMockMethodCallHandler(const MethodChannel('home_widget'), (call) async {
+    if (call.method == 'saveWidgetData') {
+      final args = call.arguments as Map;
+      final id = args['id'] as String?;
+      final data = args['data'];
+      if (id != null) {
+        if (data == null) {
+          homeWidgetData.remove(id);
+        } else {
+          homeWidgetData[id] = data;
+        }
+      }
+      return true;
+    } else if (call.method == 'getWidgetData') {
+      final args = call.arguments as Map;
+      final id = args['id'] as String?;
+      return id != null ? homeWidgetData[id] : null;
+    }
+    return null;
+  });
+
   setUp(() {
     SharedPreferences.setMockInitialValues({});
+    homeWidgetData.clear();
   });
 
   group('CitySearchResult', () {

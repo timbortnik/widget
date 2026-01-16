@@ -121,11 +121,13 @@ class MeteogramWidgetProvider : HomeWidgetProvider() {
         Log.d(TAG, "New dimensions: ${minWidth}dp x ${maxHeight}dp = ${widthPx}px x ${heightPx}px")
 
         // Update SharedPreferences with new dimensions (commit synchronously before triggering callback)
+        // Also set widget_resized flag so Flutter app knows to reload dimensions when resumed
         val prefs = context.getSharedPreferences(WidgetUtils.PREFS_NAME, Context.MODE_PRIVATE)
         prefs.edit()
             .putInt(WidgetUtils.KEY_WIDGET_WIDTH_PX, widthPx)
             .putInt(WidgetUtils.KEY_WIDGET_HEIGHT_PX, heightPx)
             .putFloat("widget_density", density)
+            .putBoolean("widget_resized", true)
             .commit()
 
         // Trigger chart re-render with new dimensions

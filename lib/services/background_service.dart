@@ -73,8 +73,15 @@ Future<void> _updateWeatherData() async {
 
   try {
     _log('Getting location...');
-    final location = await locationService.getLocation();
-    _log('Location: ${location.latitude}, ${location.longitude} (${location.city})');
+    // Try HomeWidget storage first (more reliable in background isolates)
+    // Falls back to SharedPreferences via getLocation() if not available
+    var location = await locationService.getSavedLocationFromWidget();
+    if (location != null) {
+      _log('Using saved location from HomeWidget: ${location.latitude}, ${location.longitude} (${location.city})');
+    } else {
+      location = await locationService.getLocation();
+      _log('Location from getLocation(): ${location.latitude}, ${location.longitude} (${location.city})');
+    }
 
     _log('Fetching weather...');
     final weather = await weatherService.fetchWeatherWithRetry(
@@ -208,8 +215,9 @@ Future<void> _generateSvgCharts(WeatherData weather, double latitude, double lon
     if (heightPx <= 0) heightPx = kDefaultHeightPx;
     _log('_generateSvgCharts: using dimensions=${widthPx}x$heightPx (uri=${uriWidth}x$uriHeight)');
 
-    // Get locale - prefer URI param (reliable when native passes it), fallback to Platform.localeName
+    // Get locale - prefer URI param, then HomeWidget storage, fallback to Platform.localeName
     Locale systemLocale;
+    bool? storedUsesFahrenheit;
     if (uriLocale != null && uriLocale.isNotEmpty) {
       // Parse locale from URI (format: "en_US" or "uk_UA")
       final parts = uriLocale.split('_').where((p) => p.isNotEmpty).toList();
@@ -222,11 +230,20 @@ Future<void> _generateSvgCharts(WeatherData weather, double latitude, double lon
       }
       _log('_generateSvgCharts: using URI locale: $uriLocale -> $systemLocale');
     } else {
-      systemLocale = _getSystemLocale();
-      _log('_generateSvgCharts: using Platform locale: $systemLocale');
+      // Try HomeWidget storage first (saved by app at startup)
+      final storedLocale = await HomeWidget.getWidgetData<String>('locale');
+      storedUsesFahrenheit = await HomeWidget.getWidgetData<bool>('usesFahrenheit');
+      if (storedLocale != null && storedLocale.isNotEmpty) {
+        systemLocale = LocaleUtils.parseLocaleString(storedLocale);
+        _log('_generateSvgCharts: using stored locale: $storedLocale -> $systemLocale');
+      } else {
+        systemLocale = _getSystemLocale();
+        _log('_generateSvgCharts: using Platform locale: $systemLocale');
+      }
     }
     final locale = systemLocale.toLanguageTag();
-    final usesFahrenheit = UnitsService.usesFahrenheit(systemLocale);
+    // Use stored value if available (more reliable), fallback to computing from locale
+    final usesFahrenheit = storedUsesFahrenheit ?? UnitsService.usesFahrenheit(systemLocale);
     _log('_generateSvgCharts: locale=$locale, usesFahrenheit=$usesFahrenheit');
 
     // Get native-extracted Material You colors directly from storage

@@ -91,10 +91,29 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   /// Combined initialization: load dimensions first, then data.
   /// Ensures chart renders with correct aspect ratio from the start.
   Future<void> _initialize() async {
-    // Load widget dimensions first (needed for chart aspect ratio)
-    await _loadWidgetDimensions();
+    // Save locale/units early for background service
+    await _saveLocaleAndUnits();
+    // Check for widget resize and load dimensions
+    // This handles both fresh launch and resume scenarios
+    await _checkAndSyncWidget();
     // Then initialize weather data
     await _initializeData();
+  }
+
+  /// Save locale and units preferences to HomeWidget for background service.
+  /// Called early in initialization so background can use correct settings.
+  Future<void> _saveLocaleAndUnits() async {
+    final platformLocale = PlatformDispatcher.instance.locale;
+    final locale = platformLocale.toString();
+    final usesFahrenheit = UnitsService.usesFahrenheit(platformLocale);
+
+    _locale = locale;
+    _usesFahrenheit = usesFahrenheit;
+
+    await HomeWidget.saveWidgetData<String>('locale', locale);
+    await HomeWidget.saveWidgetData<bool>('usesFahrenheit', usesFahrenheit);
+
+    debugPrint('Saved locale/units at startup: $locale, usesFahrenheit=$usesFahrenheit');
   }
 
   /// Initialize data on cold start.
@@ -260,10 +279,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     // Check if widget was resized - if so, force re-render
     final wasResized = await _widgetService.checkAndClearResizeFlag();
 
-    // Reload dimensions if resized
-    if (wasResized) {
-      await _loadWidgetDimensions();
-    }
+    // Always load dimensions on startup/resume to pick up any changes
+    // (native code may have updated dimensions while app was killed)
+    await _loadWidgetDimensions();
 
     // Check if theme changed since last render
     final currentBrightness = WidgetsBinding.instance.platformDispatcher.platformBrightness;
@@ -655,60 +673,67 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                       ),
                       const SizedBox(height: 16),
                       // Meteogram chart - Native PlatformView for exact widget match
-              AspectRatio(
-                aspectRatio: _chartAspectRatio,
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    // Check staleness on first build (cold start after long time)
-                    _refreshIfStale();
+                      // Use LayoutBuilder to get full width and calculate height from aspect ratio
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          // Check staleness on first build (cold start after long time)
+                          _refreshIfStale();
 
-                    final isLight = Theme.of(context).brightness == Brightness.light;
-                    final mediaQuery = MediaQuery.of(context);
-                    final dpr = mediaQuery.devicePixelRatio;
-                    // Get locale for time formatting and temperature units
-                    // Use platform locale (not Flutter's resolved locale) to get country code for unit preferences
-                    final platformLocale = PlatformDispatcher.instance.locale;
-                    final locale = platformLocale.toString();
-                    final usesFahrenheit = UnitsService.usesFahrenheit(platformLocale);
-                    _locale = locale;
-                    _usesFahrenheit = usesFahrenheit;
-                    // Save for background service
-                    HomeWidget.saveWidgetData<String>('locale', locale);
-                    HomeWidget.saveWidgetData<bool>('usesFahrenheit', usesFahrenheit);
+                          // Calculate height from width and widget aspect ratio
+                          // This ensures the chart always fills available width
+                          final chartWidth = constraints.maxWidth;
+                          final chartHeight = chartWidth / _chartAspectRatio;
 
-                    // Generate SVG at device pixel dimensions - same as widget approach
-                    final deviceWidth = constraints.maxWidth * dpr;
-                    final deviceHeight = constraints.maxHeight * dpr;
+                          final isLight = Theme.of(context).brightness == Brightness.light;
+                          final mediaQuery = MediaQuery.of(context);
+                          final dpr = mediaQuery.devicePixelRatio;
+                          // Get locale for time formatting and temperature units
+                          // Use platform locale (not Flutter's resolved locale) to get country code for unit preferences
+                          final platformLocale = PlatformDispatcher.instance.locale;
+                          final locale = platformLocale.toString();
+                          final usesFahrenheit = UnitsService.usesFahrenheit(platformLocale);
+                          _locale = locale;
+                          _usesFahrenheit = usesFahrenheit;
+                          // Save for background service
+                          HomeWidget.saveWidgetData<String>('locale', locale);
+                          HomeWidget.saveWidgetData<bool>('usesFahrenheit', usesFahrenheit);
 
-                    // Apply Material You dynamic colors
-                    final meteogramColors = MeteogramColors.of(context, nativeColors: _getNativeColorsForTheme(context));
-                    final baseColors = isLight ? SvgChartColors.light : SvgChartColors.dark;
-                    final colors = baseColors.withDynamicColors(
-                      temperatureLine: SvgColor.fromArgb(meteogramColors.temperatureLine.toARGB32()),
-                      timeLabel: SvgColor.fromArgb(meteogramColors.timeLabel.toARGB32()),
-                    );
+                          // Generate SVG at device pixel dimensions
+                          final deviceWidth = chartWidth * dpr;
+                          final deviceHeight = chartHeight * dpr;
 
-                    final generator = SvgChartGenerator();
-                    final svgString = generator.generate(
-                      data: displayData,
-                      nowIndex: nowIndex,
-                      latitude: _weatherData!.latitude,
-                      longitude: _weatherData!.longitude,
-                      colors: colors,
-                      width: deviceWidth,
-                      height: deviceHeight,
-                      locale: locale,
-                      usesFahrenheit: usesFahrenheit,
-                    );
+                          // Apply Material You dynamic colors
+                          final meteogramColors = MeteogramColors.of(context, nativeColors: _getNativeColorsForTheme(context));
+                          final baseColors = isLight ? SvgChartColors.light : SvgChartColors.dark;
+                          final colors = baseColors.withDynamicColors(
+                            temperatureLine: SvgColor.fromArgb(meteogramColors.temperatureLine.toARGB32()),
+                            timeLabel: SvgColor.fromArgb(meteogramColors.timeLabel.toARGB32()),
+                          );
 
-                    return NativeSvgChartView(
-                      svgString: svgString,
-                      width: deviceWidth,
-                      height: deviceHeight,
-                    );
-                  },
-                ),
-              ),
+                          final generator = SvgChartGenerator();
+                          final svgString = generator.generate(
+                            data: displayData,
+                            nowIndex: nowIndex,
+                            latitude: _weatherData!.latitude,
+                            longitude: _weatherData!.longitude,
+                            colors: colors,
+                            width: deviceWidth,
+                            height: deviceHeight,
+                            locale: locale,
+                            usesFahrenheit: usesFahrenheit,
+                          );
+
+                          return SizedBox(
+                            width: chartWidth,
+                            height: chartHeight,
+                            child: NativeSvgChartView(
+                              svgString: svgString,
+                              width: deviceWidth,
+                              height: deviceHeight,
+                            ),
+                          );
+                        },
+                      ),
                     ],
                   ),
                 ),

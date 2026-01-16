@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:home_widget/home_widget.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -180,6 +181,7 @@ class LocationService {
   }
 
   /// Save a location with its source.
+  /// Saves to both SharedPreferences (for app) and HomeWidget (for background service).
   Future<void> saveLocation(
     double latitude,
     double longitude, {
@@ -194,18 +196,63 @@ class LocationService {
     }
     await prefs.setString(_sourceKey, source.name);
     await prefs.setBool(_useGpsKey, false);
+
+    // Also save to HomeWidget for background service access
+    await HomeWidget.saveWidgetData<double>('saved_latitude', latitude);
+    await HomeWidget.saveWidgetData<double>('saved_longitude', longitude);
+    if (city != null) {
+      await HomeWidget.saveWidgetData<String>('saved_city', city);
+    }
+    await HomeWidget.saveWidgetData<String>('location_source', source.name);
+    await HomeWidget.saveWidgetData<bool>('use_gps', false);
   }
 
   /// Switch to using GPS location.
+  /// Saves to both SharedPreferences (for app) and HomeWidget (for background service).
   Future<void> useGpsLocation() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_useGpsKey, true);
+
+    // Also save to HomeWidget for background service access
+    await HomeWidget.saveWidgetData<bool>('use_gps', true);
+    await HomeWidget.saveWidgetData<String>('location_source', LocationSource.gps.name);
   }
 
   /// Check if using GPS.
   Future<bool> isUsingGps() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getBool(_useGpsKey) ?? true;
+  }
+
+  /// Get saved location from HomeWidget storage (for background service).
+  /// Returns null if no location is saved or if using GPS.
+  /// This is more reliable than SharedPreferences in background isolates.
+  Future<LocationData?> getSavedLocationFromWidget() async {
+    final useGps = await HomeWidget.getWidgetData<bool>('use_gps') ?? true;
+    if (useGps) {
+      return null; // GPS mode, no saved location
+    }
+
+    final lat = await HomeWidget.getWidgetData<double>('saved_latitude');
+    final lon = await HomeWidget.getWidgetData<double>('saved_longitude');
+    final city = await HomeWidget.getWidgetData<String>('saved_city');
+    final sourceName = await HomeWidget.getWidgetData<String>('location_source');
+
+    if (lat == null || lon == null) {
+      return null;
+    }
+
+    final source = LocationSource.values.firstWhere(
+      (s) => s.name == sourceName,
+      orElse: () => LocationSource.manual,
+    );
+
+    return LocationData(
+      latitude: lat,
+      longitude: lon,
+      source: source,
+      city: city,
+    );
   }
 
   /// Request GPS permission explicitly.
