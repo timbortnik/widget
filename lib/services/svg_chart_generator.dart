@@ -139,6 +139,7 @@ class SvgChartGenerator {
     required List<HourlyData> data,
     required int nowIndex,
     required double latitude,
+    required double longitude,
     required SvgChartColors colors,
     required double width,
     required double height,
@@ -177,7 +178,7 @@ class SvgChartGenerator {
     }
 
     // Daylight bars (with gradient)
-    _writeDaylightBars(svg, data, latitude, colors, width, chartHeight);
+    _writeDaylightBars(svg, data, latitude, longitude, colors, width, chartHeight);
 
     // Precipitation bars (with gradient)
     _writePrecipitationBars(svg, data, colors, width, chartHeight);
@@ -242,13 +243,13 @@ class SvgChartGenerator {
   }
 
   void _writeDaylightBars(StringBuffer svg, List<HourlyData> data,
-      double latitude, SvgChartColors colors, double width, double chartHeight) {
+      double latitude, double longitude, SvgChartColors colors, double width, double chartHeight) {
     final slotWidth = width / data.length;
     final barWidth = slotWidth * ChartConstants.barWidthRatio;
 
     svg.write('<g opacity="${ChartConstants.daylightBarOpacity}">');
     for (var i = 0; i < data.length; i++) {
-      final daylight = _calculateDaylight(data[i], latitude);
+      final daylight = _calculateDaylight(data[i], latitude, longitude);
       if (daylight <= 0) continue;
 
       final barHeight = daylight * chartHeight;
@@ -383,25 +384,31 @@ class SvgChartGenerator {
   ///
   /// Algorithm:
   /// 1. Calculate solar declination (sun's position relative to equator) using day of year
-  /// 2. Calculate hour angle (sun's position in daily rotation)
+  /// 2. Calculate hour angle (sun's position in daily rotation), corrected for longitude
   /// 3. Apply spherical trigonometry to get elevation angle
   ///
   /// Based on NOAA Solar Calculator simplified formulas.
   /// Reference: https://www.esrl.noaa.gov/gmd/grad/solcalc/
   ///
   /// @param latitude Geographic latitude in degrees (-90 to +90)
+  /// @param longitude Geographic longitude in degrees (-180 to +180, positive = East)
   /// @param time UTC time for calculation
   /// @return Solar elevation angle in degrees (negative = below horizon, 0 = horizon, positive = above)
-  double _solarElevation(double latitude, DateTime time) {
+  double _solarElevation(double latitude, double longitude, DateTime time) {
     final dayOfYear = time.difference(DateTime(time.year, 1, 1)).inDays + 1;
-    final hour = time.hour + time.minute / 60.0;
+    final utcHour = time.toUtc().hour + time.toUtc().minute / 60.0;
 
     // Solar declination: angle between sun's rays and equatorial plane
     // Varies from -23.45° (winter solstice) to +23.45° (summer solstice)
     final declination = 23.45 * math.sin(2 * math.pi / 365 * (284 + dayOfYear));
 
-    // Hour angle: angular distance sun travels (15° per hour)
-    final hourAngle = 15.0 * (hour - 12);
+    // Convert UTC to local solar time using longitude
+    // Longitude correction: 15° = 1 hour (Earth rotates 360° in 24 hours)
+    // Positive longitude (East) = sun rises earlier = add to UTC
+    final solarHour = utcHour + longitude / 15.0;
+
+    // Hour angle: angular distance from solar noon (15° per hour)
+    final hourAngle = 15.0 * (solarHour - 12);
 
     // Convert to radians for trigonometry
     final latRad = latitude * math.pi / 180;
@@ -470,9 +477,10 @@ class SvgChartGenerator {
   ///
   /// @param data Hourly weather data (cloud cover, precipitation)
   /// @param latitude Geographic latitude for solar position calculation
+  /// @param longitude Geographic longitude for solar time correction
   /// @return Normalized daylight intensity (0.0 to 1.0) for bar visualization
-  double _calculateDaylight(HourlyData data, double latitude) {
-    final elevation = _solarElevation(latitude, data.time);
+  double _calculateDaylight(HourlyData data, double latitude, double longitude) {
+    final elevation = _solarElevation(latitude, longitude, data.time);
     final clearSkyLux = _clearSkyIlluminance(elevation);
     if (clearSkyLux <= 0) return 0; // Sun below horizon
 

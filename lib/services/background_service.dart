@@ -89,6 +89,7 @@ Future<void> _updateWeatherData() async {
       jsonEncode(weather.toJson()),
     );
     await HomeWidget.saveWidgetData<double>('cached_latitude', location.latitude);
+    await HomeWidget.saveWidgetData<double>('cached_longitude', location.longitude);
 
     // Save timestamp for staleness checks
     await HomeWidget.saveWidgetData<int>(
@@ -113,7 +114,7 @@ Future<void> _updateWeatherData() async {
 
     // Generate SVG charts for widget display
     _log('Generating SVG charts...');
-    await _generateSvgCharts(weather, location.latitude);
+    await _generateSvgCharts(weather, location.latitude, location.longitude);
     _log('SVG charts generated');
 
     _log('Updating widget...');
@@ -171,11 +172,12 @@ Future<void> _reRenderCharts([Uri? uri]) async {
 
     final weather = WeatherData.fromJson(jsonDecode(cachedJson) as Map<String, dynamic>);
     final latitude = await HomeWidget.getWidgetData<double>('cached_latitude') ?? 0.0;
+    final longitude = await HomeWidget.getWidgetData<double>('cached_longitude') ?? 0.0;
     final nowIndex = weather.getNowIndex();
     _log('_reRenderCharts: loaded weather with ${weather.hourly.length} hours, nowIndex=$nowIndex (${ageMs ~/ 60000} min old)');
 
     // Regenerate SVG charts (pass URI params if available)
-    await _generateSvgCharts(weather, latitude, uriWidth: uriWidth, uriHeight: uriHeight, uriLocale: uriLocale);
+    await _generateSvgCharts(weather, latitude, longitude, uriWidth: uriWidth, uriHeight: uriHeight, uriLocale: uriLocale);
 
     // Update widget
     await HomeWidget.updateWidget(
@@ -191,7 +193,7 @@ Future<void> _reRenderCharts([Uri? uri]) async {
 
 /// Generate SVG chart images for the widget.
 /// Optional uriWidth/uriHeight/uriLocale can be passed for cold-start reliability.
-Future<void> _generateSvgCharts(WeatherData weather, double latitude, {int? uriWidth, int? uriHeight, String? uriLocale}) async {
+Future<void> _generateSvgCharts(WeatherData weather, double latitude, double longitude, {int? uriWidth, int? uriHeight, String? uriLocale}) async {
   try {
     final generator = SvgChartGenerator();
     final displayData = weather.getDisplayRange();
@@ -253,6 +255,7 @@ Future<void> _generateSvgCharts(WeatherData weather, double latitude, {int? uriW
       data: displayData,
       nowIndex: nowIndex,
       latitude: latitude,
+      longitude: longitude,
       colors: lightColors,
       width: widthPx.toDouble(),
       height: heightPx.toDouble(),
@@ -264,6 +267,7 @@ Future<void> _generateSvgCharts(WeatherData weather, double latitude, {int? uriW
       data: displayData,
       nowIndex: nowIndex,
       latitude: latitude,
+      longitude: longitude,
       colors: darkColors,
       width: widthPx.toDouble(),
       height: heightPx.toDouble(),

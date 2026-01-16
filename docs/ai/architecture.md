@@ -82,7 +82,7 @@ Pure Dart SVG generation - no Flutter UI dependencies. Responsibilities:
 - Generate complete SVG string for meteogram
 - Temperature line with gradient fill
 - Precipitation bars
-- Daylight intensity bars (computed from cloud cover + solar elevation)
+- Daylight intensity bars (computed from cloud cover + solar elevation using latitude and longitude)
 - Temperature labels (min/mid/max) with proper alignment
 - Time labels with locale-aware formatting (DateFormat.j)
 - Width-based font sizing for consistent proportions

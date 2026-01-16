@@ -225,6 +225,7 @@ class SvgChartGenerator {
     required List<HourlyData> data,
     required int nowIndex,
     required double latitude,
+    required double longitude,
     required SvgChartColors colors,
     required double width,
     required double height,
@@ -234,7 +235,7 @@ class SvgChartGenerator {
     // - NO background rect (transparent - uses system widget background)
     // - Temperature line with gradient fill
     // - Precipitation bars
-    // - Daylight intensity bars
+    // - Daylight intensity bars (requires latitude + longitude for solar position)
     // - Temperature labels (min/mid/max)
     // - Time labels (locale-aware via DateFormat.j())
   }
@@ -247,6 +248,7 @@ Future<void> generateAndSaveSvgCharts({
   required List<HourlyData> displayData,
   required int nowIndex,
   required double latitude,
+  required double longitude,
   String locale = 'en',
 }) async {
   final generator = SvgChartGenerator();
@@ -255,6 +257,8 @@ Future<void> generateAndSaveSvgCharts({
   // Generate both light and dark theme SVGs
   final svgLight = generator.generate(
     data: displayData,
+    latitude: latitude,
+    longitude: longitude,
     colors: SvgChartColors.light,
     width: dimensions.widthPx,
     height: dimensions.heightPx,
@@ -263,6 +267,8 @@ Future<void> generateAndSaveSvgCharts({
 
   final svgDark = generator.generate(
     data: displayData,
+    latitude: latitude,
+    longitude: longitude,
     colors: SvgChartColors.dark,
     // ... same dimensions
   );
@@ -388,8 +394,9 @@ Future<void> _reRenderCharts([Uri? uri]) async {
 
   final weather = WeatherData.fromJson(jsonDecode(cachedJson));
   final latitude = await HomeWidget.getWidgetData<double>('cached_latitude') ?? 0.0;
+  final longitude = await HomeWidget.getWidgetData<double>('cached_longitude') ?? 0.0;
 
-  await _generateSvgCharts(weather, latitude,
+  await _generateSvgCharts(weather, latitude, longitude,
     uriWidth: uriWidth, uriHeight: uriHeight, uriLocale: uriLocale);
   await HomeWidget.updateWidget(androidName: 'MeteogramWidgetProvider');
 }
@@ -586,13 +593,19 @@ The meteogram displays daylight intensity as yellow bars, calculated using scien
 
 ### Solar Elevation (Astronomical)
 
-Sun's angle above the horizon, based on latitude, time of day, and day of year:
+Sun's angle above the horizon, based on latitude, longitude, time of day, and day of year:
 
 ```
 δ = 23.45° × sin(360/365 × (284 + dayOfYear))   // Solar declination
-h = 15° × (hour - 12)                            // Hour angle
+solarHour = utcHour + longitude/15              // Convert UTC to local solar time
+h = 15° × (solarHour - 12)                      // Hour angle
 sin(α) = sin(lat)×sin(δ) + cos(lat)×cos(δ)×cos(h)  // Elevation angle
 ```
+
+**Longitude correction:** Solar noon (when h=0) occurs at 12:00 local solar time, not 12:00 UTC. For every 15° of longitude east, solar noon shifts 1 hour earlier in UTC. For example:
+- At longitude 0° (Greenwich): solar noon at 12:00 UTC
+- At longitude 30°E (Kyiv): solar noon at ~10:00 UTC
+- At longitude 120°E (Beijing): solar noon at ~04:00 UTC
 
 - α < -6°: Below civil twilight (no visible light)
 - α = 0°: Sunrise/sunset (~400-800 lux)

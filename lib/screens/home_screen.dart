@@ -166,6 +166,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         displayData: _weatherData!.getDisplayRange(),
         nowIndex: _weatherData!.getNowIndex(),
         latitude: _weatherData!.latitude,
+        longitude: _weatherData!.longitude,
         locale: _locale,
         usesFahrenheit: _usesFahrenheit,
         lightColors: _materialYouLightColors,
@@ -296,7 +297,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         });
         // Update widget after frame is rendered
         WidgetsBinding.instance.addPostFrameCallback((_) async {
-          await _updateWidgetWithData(cached, cached.latitude);
+          await _updateWidgetWithData(cached);
         });
       }
     }
@@ -304,7 +305,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   /// Safely update the home widget with weather data.
   /// Prevents concurrent updates that could cause race conditions.
-  Future<void> _updateWidgetWithData(WeatherData weather, double latitude) async {
+  Future<void> _updateWidgetWithData(WeatherData weather) async {
     // Skip if already updating to prevent race conditions
     if (_isUpdatingWidget) {
       debugPrint('Widget update already in progress, skipping');
@@ -325,7 +326,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       await _widgetService.generateAndSaveSvgCharts(
         displayData: weather.getDisplayRange(),
         nowIndex: weather.getNowIndex(),
-        latitude: latitude,
+        latitude: weather.latitude,
+        longitude: weather.longitude,
         locale: _locale,
         usesFahrenheit: _usesFahrenheit,
         lightColors: _materialYouLightColors,
@@ -375,7 +377,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
       // Update widget after frame is rendered
       WidgetsBinding.instance.addPostFrameCallback((_) async {
-        await _updateWidgetWithData(weather, location.latitude);
+        await _updateWidgetWithData(weather);
       });
     } catch (e) {
       // Try to use cached weather data on any failure
@@ -398,7 +400,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
         // Update widget with cached data
         WidgetsBinding.instance.addPostFrameCallback((_) async {
-          await _updateWidgetWithData(cached, cached.latitude);
+          await _updateWidgetWithData(cached);
         });
 
         // Notify user if they triggered the refresh
@@ -690,6 +692,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                       data: displayData,
                       nowIndex: nowIndex,
                       latitude: _weatherData!.latitude,
+                      longitude: _weatherData!.longitude,
                       colors: colors,
                       width: deviceWidth,
                       height: deviceHeight,
