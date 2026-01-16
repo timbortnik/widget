@@ -36,9 +36,7 @@ class SvgChartColors {
   final SvgColor temperatureGradientStart;
   final SvgColor temperatureGradientEnd;
   final SvgColor precipitationBar;
-  final SvgColor precipitationGradient;
   final SvgColor daylightBar;
-  final SvgColor daylightGradient;
   final SvgColor nowIndicator;
   final SvgColor timeLabel;
   final SvgColor cardBackground;
@@ -49,9 +47,7 @@ class SvgChartColors {
     required this.temperatureGradientStart,
     required this.temperatureGradientEnd,
     required this.precipitationBar,
-    required this.precipitationGradient,
     required this.daylightBar,
-    required this.daylightGradient,
     required this.nowIndicator,
     required this.timeLabel,
     required this.cardBackground,
@@ -63,9 +59,7 @@ class SvgChartColors {
     temperatureGradientStart: SvgColor(0xFF, 0x6B, 0x6B, 0x40),
     temperatureGradientEnd: SvgColor(0xFF, 0x6B, 0x6B, 0x00),
     precipitationBar: SvgColor(0x4E, 0xCD, 0xC4),
-    precipitationGradient: SvgColor(0x4E, 0xCD, 0xC4, 0x80),
-    daylightBar: SvgColor(0xFF, 0xF0, 0xAA),
-    daylightGradient: SvgColor(0xFF, 0xD5, 0x80),
+    daylightBar: SvgColor(0xFF, 0x8F, 0x00),      // Dark amber (visible on white)
     nowIndicator: SvgColor(0x4A, 0x55, 0x68),
     timeLabel: SvgColor(0x4A, 0x55, 0x68),
     cardBackground: SvgColor(0xFF, 0xFF, 0xFF),
@@ -77,9 +71,7 @@ class SvgChartColors {
     temperatureGradientStart: SvgColor(0xFF, 0x76, 0x75, 0x60),
     temperatureGradientEnd: SvgColor(0xFF, 0x76, 0x75, 0x00),
     precipitationBar: SvgColor(0x00, 0xCE, 0xC9),
-    precipitationGradient: SvgColor(0x00, 0xCE, 0xC9, 0x80),
-    daylightBar: SvgColor(0xC9, 0xA8, 0x6C),        // Muted gold (was bright yellow)
-    daylightGradient: SvgColor(0xA8, 0x8B, 0x5A),  // Darker amber
+    daylightBar: SvgColor(0xFF, 0xFF, 0x00),        // Pure yellow
     nowIndicator: SvgColor(0xE0, 0xE0, 0xE0),
     timeLabel: SvgColor(0xE0, 0xE0, 0xE0),
     cardBackground: SvgColor(0x2D, 0x2D, 0x2D),    // Neutral gray (matches MeteogramColors.dark)
@@ -107,9 +99,7 @@ class SvgChartColors {
         0x00,
       ),
       precipitationBar: precipitationBar,
-      precipitationGradient: precipitationGradient,
       daylightBar: daylightBar,
-      daylightGradient: daylightGradient,
       nowIndicator: nowIndicator,
       timeLabel: timeLabel,
       cardBackground: cardBackground,
@@ -216,9 +206,9 @@ class SvgChartGenerator {
     svg.write('<stop offset="100%" stop-color="${colors.temperatureLine.toHex()}" stop-opacity="${colors.temperatureGradientEnd.opacity.toStringAsFixed(2)}"/>');
     svg.write('</linearGradient>');
 
-    // Daylight bar gradient (vertical: solid at top, fades at bottom - sunlight from above)
+    // Daylight bar gradient (vertical: fades at top, semi-solid at bottom - matches precipitation style inverted)
     svg.write('<linearGradient id="daylightGradient" x1="0" y1="0" x2="0" y2="1">');
-    svg.write('<stop offset="0%" stop-color="${colors.daylightBar.toHex()}" stop-opacity="1"/>');
+    svg.write('<stop offset="0%" stop-color="${colors.daylightBar.toHex()}" stop-opacity="0.7"/>');
     svg.write('<stop offset="100%" stop-color="${colors.daylightBar.toHex()}" stop-opacity="0.3"/>');
     svg.write('</linearGradient>');
 

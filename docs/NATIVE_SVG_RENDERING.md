@@ -249,7 +249,7 @@ class SvgColor {
 class SvgChartColors {
   static const light = SvgChartColors(
     temperatureLine: SvgColor(0xFF, 0x6B, 0x6B),      // Coral red
-    daylightBar: SvgColor(0xFF, 0xF0, 0xAA),          // Pastel yellow
+    daylightBar: SvgColor(0xFF, 0x8F, 0x00),          // Dark amber
     precipitationBar: SvgColor(0x4E, 0xCD, 0xC4),     // Teal
     cardBackground: SvgColor(0xFF, 0xFF, 0xFF),       // White
     // ...
@@ -257,9 +257,9 @@ class SvgChartColors {
 
   static const dark = SvgChartColors(
     temperatureLine: SvgColor(0xFF, 0x76, 0x75),      // Coral
-    daylightBar: SvgColor(0xFF, 0xF0, 0xAA),          // Pastel yellow
+    daylightBar: SvgColor(0xFF, 0xFF, 0x00),          // Pure yellow
     precipitationBar: SvgColor(0x00, 0xCE, 0xC9),     // Cyan
-    cardBackground: SvgColor(0x1B, 0x28, 0x38),       // Dark blue-gray
+    cardBackground: SvgColor(0x2D, 0x2D, 0x2D),       // Neutral gray
     // ...
   );
 }

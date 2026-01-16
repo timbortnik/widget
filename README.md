@@ -187,7 +187,7 @@ Edit `lib/theme/app_theme.dart`:
 static const light = MeteogramColors(
   temperatureLine: Color(0xFFFF6B6B),    // Coral red
   precipitationBar: Color(0xFF4ECDC4),   // Teal
-  daylightBar: Color(0xFFFFF0AA),        // Light yellow (daylight bars)
+  daylightBar: Color(0xFFFF8F00),        // Dark amber (daylight bars)
   nowIndicator: Color(0xFFFFE66D),       // Golden yellow
   // ...
 );

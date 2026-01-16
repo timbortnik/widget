@@ -88,7 +88,6 @@ class MeteogramColors {
   final Color temperatureGradientStart;
   final Color temperatureGradientEnd;
   final Color precipitationBar;
-  final Color precipitationGradient;
   final Color nowIndicator;
   final Color gridLine;
   final Color labelText;
@@ -96,7 +95,6 @@ class MeteogramColors {
   final Color secondaryText;
   final Color chartTempLabel;
   final Color daylightBar;
-  final Color daylightGradient;
   final Color daylightIcon;
   final Color timeLabel;
 
@@ -107,7 +105,6 @@ class MeteogramColors {
     required this.temperatureGradientStart,
     required this.temperatureGradientEnd,
     required this.precipitationBar,
-    required this.precipitationGradient,
     required this.nowIndicator,
     required this.gridLine,
     required this.labelText,
@@ -115,7 +112,6 @@ class MeteogramColors {
     required this.secondaryText,
     required this.chartTempLabel,
     required this.daylightBar,
-    required this.daylightGradient,
     required this.daylightIcon,
     required this.timeLabel,
   });
@@ -128,16 +124,14 @@ class MeteogramColors {
     temperatureGradientStart: Color(0x40FF6B6B),
     temperatureGradientEnd: Color(0x00FF6B6B),
     precipitationBar: Color(0xFF4ECDC4),
-    precipitationGradient: Color(0x804ECDC4),
     nowIndicator: Color(0xFFFFE66D),
     gridLine: Color(0x20000000),
     labelText: Color(0xFF4A5568),
     primaryText: Color(0xFF2D3436),
     secondaryText: Color(0xFF636E72),
     chartTempLabel: Color(0xFF1A1A2E),
-    daylightBar: Color(0xFFFFF0AA),      // Light pastel yellow
-    daylightGradient: Color(0xFFFFD580),  // Light pastel orange
-    daylightIcon: Color(0xFFD49A00),      // Darker amber for light backgrounds
+    daylightBar: Color(0xFFFF8F00),      // Dark amber (visible on white)
+    daylightIcon: Color(0xFFFF8F00),      // Dark amber (matches daylightBar)
     timeLabel: Color(0xFF4A5568),         // Fallback - overridden by Material You tertiary
   );
 
@@ -149,16 +143,14 @@ class MeteogramColors {
     temperatureGradientStart: Color(0x60FF7675),
     temperatureGradientEnd: Color(0x00FF7675),
     precipitationBar: Color(0xFF00CEC9),
-    precipitationGradient: Color(0x8000CEC9),
     nowIndicator: Color(0xFFFDCB6E),
     gridLine: Color(0x30FFFFFF),
     labelText: Color(0xFFE0E0E0),
     primaryText: Color(0xFFFFFFFF),
     secondaryText: Color(0xFFB2BEC3),
     chartTempLabel: Color(0xFFF0F0F0),
-    daylightBar: Color(0xFFFFF0AA),      // Light pastel yellow
-    daylightGradient: Color(0xFFFFD080),  // Light pastel orange
-    daylightIcon: Color(0xFFFFD93D),      // Bright yellow for dark backgrounds
+    daylightBar: Color(0xFFFFFF00),      // Pure yellow
+    daylightIcon: Color(0xFFFFFF00),      // Pure yellow (matches daylightBar)
     timeLabel: Color(0xFFE0E0E0),         // Fallback - overridden by Material You tertiary
   );
 
@@ -189,8 +181,8 @@ class MeteogramColors {
     final base = isDark ? dark : light;
 
     // Use native surface container colors (properly extracted from Android)
-    // Fall back to generated surfaceContainerHigh if native colors unavailable
-    final cardColor = nativeColors?.surfaceContainerHigh ?? colorScheme.surfaceContainerHigh;
+    // Fall back to generated surfaceContainer if native colors unavailable
+    final cardColor = nativeColors?.surfaceContainer ?? colorScheme.surfaceContainer;
 
     return base.copyWith(
       background: colorScheme.surface,
@@ -227,7 +219,6 @@ class MeteogramColors {
       temperatureGradientStart: temperatureGradientStart ?? this.temperatureGradientStart,
       temperatureGradientEnd: temperatureGradientEnd ?? this.temperatureGradientEnd,
       precipitationBar: precipitationBar,
-      precipitationGradient: precipitationGradient,
       nowIndicator: nowIndicator,
       gridLine: gridLine,
       labelText: labelText,
@@ -235,7 +226,6 @@ class MeteogramColors {
       secondaryText: secondaryText,
       chartTempLabel: chartTempLabel,
       daylightBar: daylightBar,
-      daylightGradient: daylightGradient,
       daylightIcon: daylightIcon,
       timeLabel: timeLabel ?? this.timeLabel,
     );
