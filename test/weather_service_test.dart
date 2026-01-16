@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -8,9 +9,36 @@ import 'package:meteogram_widget/services/weather_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  // Mock HomeWidget method channel
+  final Map<String, dynamic> homeWidgetData = {};
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+      .setMockMethodCallHandler(const MethodChannel('home_widget'), (call) async {
+    if (call.method == 'saveWidgetData') {
+      final args = call.arguments as Map;
+      final id = args['id'] as String?;
+      final data = args['data'];
+      if (id != null) {
+        if (data == null) {
+          homeWidgetData.remove(id);
+        } else {
+          homeWidgetData[id] = data;
+        }
+      }
+      return true;
+    } else if (call.method == 'getWidgetData') {
+      final args = call.arguments as Map;
+      final id = args['id'] as String?;
+      return id != null ? homeWidgetData[id] : null;
+    }
+    return null;
+  });
+
   // Set up SharedPreferences mock for all tests
   setUp(() {
     SharedPreferences.setMockInitialValues({});
+    homeWidgetData.clear();
   });
 
   group('WeatherService API responses', () {
@@ -200,8 +228,9 @@ void main() {
     });
 
     test('returns null for wrong location cache', () async {
+      // Pre-populate HomeWidget cache
+      homeWidgetData['cached_weather'] = jsonEncode(_validWeatherResponse());
       SharedPreferences.setMockInitialValues({
-        'cached_weather_data': jsonEncode(_validWeatherResponse()),
         'cached_weather_location': '40.71,-74.01', // New York
       });
 
@@ -213,8 +242,9 @@ void main() {
     });
 
     test('clearCache removes cached data', () async {
+      // Pre-populate HomeWidget cache
+      homeWidgetData['cached_weather'] = jsonEncode(_validWeatherResponse());
       SharedPreferences.setMockInitialValues({
-        'cached_weather_data': jsonEncode(_validWeatherResponse()),
         'cached_weather_location': '52.52,13.41',
       });
 
@@ -241,8 +271,9 @@ void main() {
       final freshResponse = _validWeatherResponse();
       freshResponse['fetchedAt'] = DateTime.now().toIso8601String();
 
+      // Pre-populate HomeWidget cache
+      homeWidgetData['cached_weather'] = jsonEncode(freshResponse);
       SharedPreferences.setMockInitialValues({
-        'cached_weather_data': jsonEncode(freshResponse),
         'cached_weather_location': '52.52,13.41',
       });
 
@@ -256,8 +287,9 @@ void main() {
           .subtract(const Duration(hours: 2))
           .toIso8601String();
 
+      // Pre-populate HomeWidget cache
+      homeWidgetData['cached_weather'] = jsonEncode(oldResponse);
       SharedPreferences.setMockInitialValues({
-        'cached_weather_data': jsonEncode(oldResponse),
         'cached_weather_location': '52.52,13.41',
       });
 

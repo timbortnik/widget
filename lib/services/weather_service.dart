@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:home_widget/home_widget.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/weather_data.dart';
@@ -10,7 +11,6 @@ import '../models/weather_data.dart';
 /// Includes caching and retry with Fibonacci backoff.
 class WeatherService {
   static const String _baseUrl = 'https://api.open-meteo.com/v1/forecast';
-  static const String _cacheKey = 'cached_weather_data';
   static const String _cacheLocationKey = 'cached_weather_location';
   static const String _cacheCityNameKey = 'cached_city_name';
   static const String _cacheLocationSourceKey = 'cached_location_source';
@@ -123,10 +123,17 @@ class WeatherService {
     }
   }
 
-  /// Cache weather data to SharedPreferences.
+  /// Cache weather data to HomeWidget shared preferences.
+  /// Uses the same keys as background_service.dart for unified cache.
   Future<void> _cacheData(WeatherData data, String locationKey) async {
+    // Save to HomeWidget (shared with background service)
+    await HomeWidget.saveWidgetData<String>('cached_weather', jsonEncode(data.toJson()));
+    await HomeWidget.saveWidgetData<double>('cached_latitude', data.latitude);
+    await HomeWidget.saveWidgetData<double>('cached_longitude', data.longitude);
+    await HomeWidget.saveWidgetData<int>('last_weather_update', DateTime.now().millisecondsSinceEpoch);
+
+    // Also save location key for location-specific cache validation
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_cacheKey, jsonEncode(data.toJson()));
     await prefs.setString(_cacheLocationKey, locationKey);
   }
 
@@ -155,15 +162,16 @@ class WeatherService {
 
   /// Get cached weather data if available and for the same location.
   Future<WeatherData?> getCachedWeather([String? locationKey]) async {
-    final prefs = await SharedPreferences.getInstance();
-    final cachedJson = prefs.getString(_cacheKey);
-    final cachedLocation = prefs.getString(_cacheLocationKey);
-
+    final cachedJson = await HomeWidget.getWidgetData<String>('cached_weather');
     if (cachedJson == null) return null;
 
     // If location key provided, check it matches
-    if (locationKey != null && cachedLocation != locationKey) {
-      return null;
+    if (locationKey != null) {
+      final prefs = await SharedPreferences.getInstance();
+      final cachedLocation = prefs.getString(_cacheLocationKey);
+      if (cachedLocation != locationKey) {
+        return null;
+      }
     }
 
     try {
@@ -183,8 +191,14 @@ class WeatherService {
 
   /// Clear cached weather data.
   Future<void> clearCache() async {
+    // Clear from HomeWidget
+    await HomeWidget.saveWidgetData<String?>('cached_weather', null);
+    await HomeWidget.saveWidgetData<double?>('cached_latitude', null);
+    await HomeWidget.saveWidgetData<double?>('cached_longitude', null);
+    await HomeWidget.saveWidgetData<int?>('last_weather_update', null);
+
+    // Clear location key
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_cacheKey);
     await prefs.remove(_cacheLocationKey);
   }
 
