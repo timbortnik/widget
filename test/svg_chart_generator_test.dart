@@ -98,7 +98,7 @@ void main() {
     });
 
     test('dark preset has dark card background', () {
-      expect(SvgChartColors.dark.cardBackground.toHex(), '#1b2838');
+      expect(SvgChartColors.dark.cardBackground.toHex(), '#2d2d2d');
     });
 
     test('withDynamicColors replaces temperature line color', () {
