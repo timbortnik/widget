@@ -53,26 +53,6 @@ object WidgetUtils {
     }
 
     /**
-     * Re-render chart via HomeWidget background intent.
-     * Passes dimensions and locale in URI for cold-start reliability.
-     * This renders the generic chart (for backward compatibility).
-     */
-    fun rerenderChart(context: Context) {
-        try {
-            val (widthPx, heightPx) = getWidgetDimensions(context)
-            val localeStr = getLocaleString()
-
-            es.antonborri.home_widget.HomeWidgetBackgroundIntent.getBroadcast(
-                context,
-                android.net.Uri.parse("homewidget://chartReRender?width=$widthPx&height=$heightPx&locale=$localeStr")
-            ).send()
-            Log.d(TAG, "Chart re-render triggered (${widthPx}x${heightPx}, locale=$localeStr)")
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to trigger chart re-render", e)
-        }
-    }
-
-    /**
      * Re-render chart for a specific widget with its dimensions.
      */
     fun rerenderChartForWidget(context: Context, widgetId: Int, widthPx: Int, heightPx: Int) {

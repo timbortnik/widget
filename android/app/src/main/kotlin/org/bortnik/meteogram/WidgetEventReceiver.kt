@@ -76,7 +76,7 @@ class WidgetEventReceiver : BroadcastReceiver() {
     }
 
     private fun triggerReRender(context: Context) {
-        WidgetUtils.rerenderChart(context)
+        WidgetUtils.rerenderAllWidgets(context)
     }
 
     private fun isNetworkAvailable(context: Context): Boolean {

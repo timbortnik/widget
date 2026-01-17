@@ -75,8 +75,8 @@ class MaterialYouColorWorker(
         try {
             // Check if colors actually changed
             if (MaterialYouColorExtractor.updateColorsIfChanged(applicationContext)) {
-                Log.d(TAG, "Material You colors changed - triggering re-render")
-                WidgetUtils.rerenderChart(applicationContext)
+                Log.d(TAG, "Material You colors changed - triggering re-render for all widgets")
+                WidgetUtils.rerenderAllWidgets(applicationContext)
             } else {
                 Log.d(TAG, "Colors unchanged or already up to date")
             }

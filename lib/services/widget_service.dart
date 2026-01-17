@@ -85,74 +85,136 @@ class WidgetService {
   }) async {
     try {
       final generator = SvgChartGenerator();
-
-      // Get widget dimensions (use consistent defaults across all code paths)
-      final dimensions = await getWidgetDimensions();
-      final widthPx = dimensions?.widthPx ?? kDefaultWidthPx;
-      final heightPx = dimensions?.heightPx ?? kDefaultHeightPx;
-
-      // Generate light and dark SVGs with provided or default colors
-      final svgLight = generator.generate(
-        data: displayData,
-        nowIndex: nowIndex,
-        latitude: latitude,
-        longitude: longitude,
-        colors: lightColors ?? SvgChartColors.light,
-        width: widthPx.toDouble(),
-        height: heightPx.toDouble(),
-        locale: locale,
-        usesFahrenheit: usesFahrenheit,
-      );
-
-      final svgDark = generator.generate(
-        data: displayData,
-        nowIndex: nowIndex,
-        latitude: latitude,
-        longitude: longitude,
-        colors: darkColors ?? SvgChartColors.dark,
-        width: widthPx.toDouble(),
-        height: heightPx.toDouble(),
-        locale: locale,
-        usesFahrenheit: usesFahrenheit,
-      );
-
-      // Save SVG files using atomic writes (write to temp, then rename)
       final docsDir = await getApplicationDocumentsDirectory();
-      final lightPath = '${docsDir.path}/$kLightSvgFileName';
-      final darkPath = '${docsDir.path}/$kDarkSvgFileName';
-      final lightTempPath = '${docsDir.path}/$kLightSvgFileName.tmp';
-      final darkTempPath = '${docsDir.path}/$kDarkSvgFileName.tmp';
+      final effectiveLightColors = lightColors ?? SvgChartColors.light;
+      final effectiveDarkColors = darkColors ?? SvgChartColors.dark;
 
-      // Write to temp files first
-      await File(lightTempPath).writeAsString(svgLight);
-      await File(darkTempPath).writeAsString(svgDark);
+      // Get list of widget IDs (stored as comma-separated string by native code)
+      final widgetIdsStr = await HomeWidget.getWidgetData<String>('widget_ids');
 
-      // Atomic rename to final paths
-      await File(lightTempPath).rename(lightPath);
-      await File(darkTempPath).rename(darkPath);
+      if (widgetIdsStr != null && widgetIdsStr.isNotEmpty) {
+        // Generate per-widget SVGs at each widget's dimensions
+        final widgetIds = widgetIdsStr.split(',').map((s) => int.tryParse(s.trim())).whereType<int>().toList();
+        debugPrint('Generating SVGs for ${widgetIds.length} widgets: $widgetIds');
 
-      // Save paths for native widget
-      await HomeWidget.saveWidgetData<String>('svg_path_light', lightPath);
-      await HomeWidget.saveWidgetData<String>('svg_path_dark', darkPath);
+        for (final widgetId in widgetIds) {
+          final widthPx = await HomeWidget.getWidgetData<int>('widget_${widgetId}_width_px') ?? kDefaultWidthPx;
+          final heightPx = await HomeWidget.getWidgetData<int>('widget_${widgetId}_height_px') ?? kDefaultHeightPx;
+
+          await _generateAndSaveSvgPair(
+            generator: generator,
+            docsDir: docsDir,
+            displayData: displayData,
+            nowIndex: nowIndex,
+            latitude: latitude,
+            longitude: longitude,
+            widthPx: widthPx,
+            heightPx: heightPx,
+            locale: locale,
+            usesFahrenheit: usesFahrenheit,
+            lightColors: effectiveLightColors,
+            darkColors: effectiveDarkColors,
+            widgetId: widgetId,
+          );
+        }
+      } else {
+        // No widget IDs tracked yet, generate generic SVG for backward compatibility
+        final dimensions = await getWidgetDimensions();
+        final widthPx = dimensions?.widthPx ?? kDefaultWidthPx;
+        final heightPx = dimensions?.heightPx ?? kDefaultHeightPx;
+
+        await _generateAndSaveSvgPair(
+          generator: generator,
+          docsDir: docsDir,
+          displayData: displayData,
+          nowIndex: nowIndex,
+          latitude: latitude,
+          longitude: longitude,
+          widthPx: widthPx,
+          heightPx: heightPx,
+          locale: locale,
+          usesFahrenheit: usesFahrenheit,
+          lightColors: effectiveLightColors,
+          darkColors: effectiveDarkColors,
+          widgetId: null,
+        );
+      }
 
       // Update last render time for conditional re-render on unlock
       await HomeWidget.saveWidgetData<int>('last_render_time', DateTime.now().millisecondsSinceEpoch);
 
-      debugPrint('SVG charts generated: $lightPath, $darkPath');
       return true;
     } catch (e) {
       debugPrint('Error generating SVG charts: $e');
-
-      // Clean up orphaned temp files on failure
-      try {
-        final docsDir = await getApplicationDocumentsDirectory();
-        await File('${docsDir.path}/$kLightSvgFileName.tmp').delete();
-        await File('${docsDir.path}/$kDarkSvgFileName.tmp').delete();
-      } catch (_) {
-        // Ignore cleanup errors (files may not exist)
-      }
-
       return false;
+    }
+  }
+
+  /// Helper to generate and save a pair of light/dark SVG files.
+  Future<void> _generateAndSaveSvgPair({
+    required SvgChartGenerator generator,
+    required Directory docsDir,
+    required List<HourlyData> displayData,
+    required int nowIndex,
+    required double latitude,
+    required double longitude,
+    required int widthPx,
+    required int heightPx,
+    required String locale,
+    required bool usesFahrenheit,
+    required SvgChartColors lightColors,
+    required SvgChartColors darkColors,
+    required int? widgetId,
+  }) async {
+    final svgLight = generator.generate(
+      data: displayData,
+      nowIndex: nowIndex,
+      latitude: latitude,
+      longitude: longitude,
+      colors: lightColors,
+      width: widthPx.toDouble(),
+      height: heightPx.toDouble(),
+      locale: locale,
+      usesFahrenheit: usesFahrenheit,
+    );
+
+    final svgDark = generator.generate(
+      data: displayData,
+      nowIndex: nowIndex,
+      latitude: latitude,
+      longitude: longitude,
+      colors: darkColors,
+      width: widthPx.toDouble(),
+      height: heightPx.toDouble(),
+      locale: locale,
+      usesFahrenheit: usesFahrenheit,
+    );
+
+    // Use widget-specific file names if widgetId provided
+    final lightFileName = widgetId != null ? 'meteogram_light_$widgetId.svg' : kLightSvgFileName;
+    final darkFileName = widgetId != null ? 'meteogram_dark_$widgetId.svg' : kDarkSvgFileName;
+    final lightPath = '${docsDir.path}/$lightFileName';
+    final darkPath = '${docsDir.path}/$darkFileName';
+    final lightTempPath = '$lightPath.tmp';
+    final darkTempPath = '$darkPath.tmp';
+
+    // Write to temp files first
+    await File(lightTempPath).writeAsString(svgLight);
+    await File(darkTempPath).writeAsString(svgDark);
+
+    // Atomic rename to final paths
+    await File(lightTempPath).rename(lightPath);
+    await File(darkTempPath).rename(darkPath);
+
+    // Save paths for native widget
+    if (widgetId != null) {
+      await HomeWidget.saveWidgetData<String>('svg_path_light_$widgetId', lightPath);
+      await HomeWidget.saveWidgetData<String>('svg_path_dark_$widgetId', darkPath);
+      debugPrint('SVG charts generated for widget $widgetId: $lightPath');
+    } else {
+      await HomeWidget.saveWidgetData<String>('svg_path_light', lightPath);
+      await HomeWidget.saveWidgetData<String>('svg_path_dark', darkPath);
+      debugPrint('SVG charts generated: $lightPath, $darkPath');
     }
   }
 

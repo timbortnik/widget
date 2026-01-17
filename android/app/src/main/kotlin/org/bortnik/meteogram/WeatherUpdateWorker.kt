@@ -69,8 +69,8 @@ class WeatherUpdateWorker(
                 Log.d(TAG, "Weather data stale - fetching fresh data")
                 WidgetUtils.fetchWeather(applicationContext)
             } else {
-                Log.d(TAG, "Weather data fresh - re-rendering chart")
-                WidgetUtils.rerenderChart(applicationContext)
+                Log.d(TAG, "Weather data fresh - re-rendering all widgets")
+                WidgetUtils.rerenderAllWidgets(applicationContext)
             }
 
             return Result.success()

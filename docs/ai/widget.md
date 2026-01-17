@@ -251,37 +251,41 @@ Future<void> generateAndSaveSvgCharts({
   String locale = 'en',
 }) async {
   final generator = SvgChartGenerator();
-  final dimensions = await getWidgetDimensions();
 
-  // Generate both light and dark theme SVGs
-  final svgLight = generator.generate(
-    data: displayData,
-    latitude: latitude,
-    longitude: longitude,
-    colors: SvgChartColors.light,
-    width: dimensions.widthPx,
-    height: dimensions.heightPx,
-    locale: locale,
-  );
+  // Get list of widget IDs (stored by native code)
+  final widgetIdsStr = await HomeWidget.getWidgetData<String>('widget_ids');
 
-  final svgDark = generator.generate(
-    data: displayData,
-    latitude: latitude,
-    longitude: longitude,
-    colors: SvgChartColors.dark,
-    // ... same dimensions
-  );
+  if (widgetIdsStr != null && widgetIdsStr.isNotEmpty) {
+    // Generate per-widget SVGs at each widget's dimensions
+    final widgetIds = widgetIdsStr.split(',').map(int.tryParse).whereType<int>();
+    for (final widgetId in widgetIds) {
+      final widthPx = await HomeWidget.getWidgetData<int>('widget_${widgetId}_width_px');
+      final heightPx = await HomeWidget.getWidgetData<int>('widget_${widgetId}_height_px');
+      await _generateSvgPair(generator, widgetId, widthPx, heightPx, ...);
+    }
+  } else {
+    // Fallback: generate generic SVG for backward compatibility
+    await _generateSvgPair(generator, null, defaultWidth, defaultHeight, ...);
+  }
+}
 
-  // Save SVG files using atomic writes (write to .tmp, then rename)
-  // This prevents race conditions when native widget reads while Flutter writes
+// Helper generates light+dark SVGs, saves with widget-specific paths
+Future<void> _generateSvgPair(..., int? widgetId, ...) async {
+  // Generate SVGs...
+
+  // Use widget-specific file names if widgetId provided
+  final lightFileName = widgetId != null ? 'meteogram_light_$widgetId.svg' : 'meteogram_light.svg';
+
+  // Atomic write (temp file then rename)
   await File('$lightPath.tmp').writeAsString(svgLight);
-  await File('$darkPath.tmp').writeAsString(svgDark);
   await File('$lightPath.tmp').rename(lightPath);
-  await File('$darkPath.tmp').rename(darkPath);
 
-  // Store paths for native widget
-  await HomeWidget.saveWidgetData<String>('svg_path_light', lightPath);
-  await HomeWidget.saveWidgetData<String>('svg_path_dark', darkPath);
+  // Store paths for native widget (widget-specific or generic)
+  if (widgetId != null) {
+    await HomeWidget.saveWidgetData<String>('svg_path_light_$widgetId', lightPath);
+  } else {
+    await HomeWidget.saveWidgetData<String>('svg_path_light', lightPath);
+  }
 }
 ```
 
@@ -334,7 +338,7 @@ class WeatherUpdateWorker(context: Context, params: WorkerParameters) : Worker(c
         if (WidgetUtils.isWeatherDataStale(applicationContext)) {
             WidgetUtils.fetchWeather(applicationContext)
         } else {
-            WidgetUtils.rerenderChart(applicationContext)
+            WidgetUtils.rerenderAllWidgets(applicationContext)
         }
         return Result.success()
     }
@@ -359,12 +363,14 @@ The widget responds to system events via broadcast receivers.
 
 | Event | Android Action | Registration | Response |
 |-------|----------------|--------------|----------|
-| Screen unlock | `ACTION_USER_PRESENT` | Runtime | Fetch if stale (>15 min) |
+| Screen unlock | `ACTION_USER_PRESENT` | Runtime | Re-render if needed*, fetch if stale (>15 min) |
 | Network restored | `CONNECTIVITY_CHANGE` | Runtime | Fetch if stale (>15 min) |
 | Widget resize | `onAppWidgetOptionsChanged` | N/A | Re-render immediately |
-| Locale change | `ACTION_LOCALE_CHANGED` | Manifest | Re-render (no fetch) |
-| Timezone change | `ACTION_TIMEZONE_CHANGED` | Manifest | Re-render (no fetch) |
-| Periodic (~30 min) | `WeatherUpdateWorker` | WorkManager | Fetch if stale, re-render |
+| Locale change | `ACTION_LOCALE_CHANGED` | Manifest | Re-render all widgets (no fetch) |
+| Timezone change | `ACTION_TIMEZONE_CHANGED` | Manifest | Re-render all widgets (no fetch) |
+| Periodic (~30 min) | `WeatherUpdateWorker` | WorkManager | Fetch if stale, re-render all widgets |
+
+*Re-render on unlock only if 30-min boundary crossed or weather data updated since last render.
 
 **Important:** `LOCALE_CHANGED` and `TIMEZONE_CHANGED` use manifest-declared receivers because the app process is killed when locale/timezone changes. Runtime-registered receivers are lost when the process dies. These broadcasts are exempt from Android 8.0+ implicit broadcast restrictions.
 
@@ -502,10 +508,12 @@ private fun fetchWeatherIfStale(context: Context) {
 The "now" indicator snaps to the nearest hour at the 30-minute mark (e.g., 2:29 shows "now" at 2:00, 2:30 shows "now" at 3:00).
 
 Updates happen via:
-1. **USER_PRESENT** - Always re-renders on unlock to ensure indicator is current
+1. **USER_PRESENT** - Re-renders on unlock only if needed (crossed 30-min boundary or weather updated)
 2. **WorkManager periodic** - Runs ~30 min (timing not precise, but battery-efficient)
 
-The slight imprecision in WorkManager timing is acceptable because USER_PRESENT ensures the widget is always fresh when the user actually looks at it.
+The conditional re-render on unlock saves battery by skipping unnecessary Flutter engine spin-ups when nothing has changed visually. Re-render is triggered only when:
+- A 30-minute boundary was crossed since last render (indicator position changed)
+- Weather data was updated while phone was locked (background fetch completed)
 
 ### main.dart setup
 ```dart
