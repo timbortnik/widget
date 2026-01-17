@@ -32,8 +32,8 @@ object WidgetAlarmScheduler {
     fun schedule(context: Context) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-        // Explicit intent with package restriction for security
-        val intent = Intent(context, WidgetAlarmReceiver::class.java).apply {
+        // Explicit intent with class and package set for CodeQL recognition
+        val intent = Intent().setClass(context, WidgetAlarmReceiver::class.java).apply {
             action = WidgetAlarmReceiver.ACTION_ALARM_UPDATE
             setPackage(context.packageName)
         }
@@ -65,7 +65,7 @@ object WidgetAlarmScheduler {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
         // Must match the intent used in schedule() for cancellation to work
-        val intent = Intent(context, WidgetAlarmReceiver::class.java).apply {
+        val intent = Intent().setClass(context, WidgetAlarmReceiver::class.java).apply {
             action = WidgetAlarmReceiver.ACTION_ALARM_UPDATE
             setPackage(context.packageName)
         }
