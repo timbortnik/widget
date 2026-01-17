@@ -36,7 +36,7 @@ class MeteogramApplication : Application() {
     /**
      * Register ContentObserver for immediate Material You color change detection.
      * This fires instantly when colors change (while app process is alive).
-     * WorkManager and USER_PRESENT provide fallback when app is killed.
+     * WorkManager provides fallback when app is killed.
      */
     private fun registerThemeObserver() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return
@@ -75,15 +75,15 @@ class MeteogramApplication : Application() {
 
         // LOCALE_CHANGED and TIMEZONE_CHANGED are handled by manifest-declared receiver
         // (required because app process is killed on locale change)
-        // USER_PRESENT and CONNECTIVITY_CHANGE require runtime registration
+        // CONNECTIVITY_CHANGE requires runtime registration
+        // Note: USER_PRESENT removed - it only works when app is running, causing inconsistent behavior
         val filter = IntentFilter().apply {
-            addAction(Intent.ACTION_USER_PRESENT)
             addAction("android.net.conn.CONNECTIVITY_CHANGE")
         }
 
-        // Use RECEIVER_EXPORTED to receive system broadcasts (USER_PRESENT, etc.)
+        // Use RECEIVER_EXPORTED to receive system broadcasts
         registerReceiver(widgetEventReceiver, filter, RECEIVER_EXPORTED)
         receiverRegistered = true
-        Log.d(TAG, "Widget event receiver registered (runtime: USER_PRESENT, CONNECTIVITY_CHANGE)")
+        Log.d(TAG, "Widget event receiver registered (runtime: CONNECTIVITY_CHANGE)")
     }
 }

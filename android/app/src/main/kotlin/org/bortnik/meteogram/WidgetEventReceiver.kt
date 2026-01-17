@@ -5,21 +5,21 @@ import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import android.os.Build
 import android.util.Log
 
 /**
  * BroadcastReceiver for system events that trigger widget updates.
  *
  * Registration:
- * - USER_PRESENT, CONNECTIVITY_CHANGE: Runtime (in MeteogramApplication)
+ * - CONNECTIVITY_CHANGE: Runtime (in MeteogramApplication)
  * - LOCALE_CHANGED, TIMEZONE_CHANGED: Manifest (app killed on change)
+ *
+ * Note: USER_PRESENT was removed because it only works when app process is running,
+ * causing inconsistent behavior. Widget updates rely on updatePeriodMillis (30 min)
+ * and WorkManager for consistent behavior regardless of app state.
  *
  * Note: CONNECTIVITY_CHANGE is deprecated since Android 7.0 (API 24).
  * On newer devices, connectivity changes may be delayed or batched.
- * For more reliable network monitoring, consider using:
- * - ConnectivityManager.registerNetworkCallback() for API 21+
- * - WorkManager with NetworkType.CONNECTED constraint
  * Current implementation uses WorkManager periodic task as primary mechanism,
  * with CONNECTIVITY_CHANGE as supplementary for faster response on older devices.
  */
@@ -32,15 +32,6 @@ class WidgetEventReceiver : BroadcastReceiver() {
         Log.d(TAG, "Received broadcast: ${intent.action}")
 
         when (intent.action) {
-            Intent.ACTION_USER_PRESENT -> {
-                // Screen unlocked - re-render only if needed:
-                // 1. Crossed 30-min boundary (now indicator moved)
-                // 2. Weather data updated while locked (background fetch)
-                Log.d(TAG, "User present - checking if re-render needed")
-                updateMaterialYouColors(context)
-                WidgetUtils.rerenderAllWidgetsIfNeeded(context)
-                fetchWeatherIfStale(context)
-            }
             Intent.ACTION_LOCALE_CHANGED -> {
                 // Locale changed - re-render with new units/format
                 Log.d(TAG, "Locale changed - triggering re-render")
@@ -57,16 +48,6 @@ class WidgetEventReceiver : BroadcastReceiver() {
                     Log.d(TAG, "Network available - checking staleness")
                     fetchWeatherIfStale(context)
                 }
-            }
-        }
-    }
-
-    private fun updateMaterialYouColors(context: Context) {
-        // Update Material You colors if changed (Android 12+)
-        // Does NOT trigger re-render - caller handles that
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            if (MaterialYouColorExtractor.updateColorsIfChanged(context)) {
-                Log.d(TAG, "Material You colors updated")
             }
         }
     }
