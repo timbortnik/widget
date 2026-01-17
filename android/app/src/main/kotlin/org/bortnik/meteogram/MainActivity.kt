@@ -107,6 +107,7 @@ class MainActivity : FlutterActivity() {
 
     /**
      * Generate SVG string from cached weather data.
+     * Also updates current_temperature_celsius in SharedPreferences to match nowIndex.
      */
     private fun generateSvgFromCache(
         width: Int,
@@ -122,6 +123,16 @@ class MainActivity : FlutterActivity() {
 
         val displayData = weatherData.getDisplayRange()
         val nowIndex = weatherData.getNowIndex()
+
+        // Update current temperature to match nowIndex (keeps Dart in sync as time passes)
+        // Store as string for home_widget compatibility (Dart reads via HomeWidget.getWidgetData)
+        val currentTemp = weatherData.getCurrentTemperature()
+        if (currentTemp != null) {
+            getSharedPreferences(WidgetUtils.PREFS_NAME, MODE_PRIVATE)
+                .edit()
+                .putString("current_temperature_celsius", currentTemp.toString())
+                .apply()
+        }
 
         // Get colors with Material You support
         val colors = getChartColors(isLight)

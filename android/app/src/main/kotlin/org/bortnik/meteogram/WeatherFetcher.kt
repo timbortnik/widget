@@ -9,6 +9,7 @@ import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Locale
 import java.util.TimeZone
 import java.util.concurrent.Executors
@@ -85,17 +86,102 @@ object WeatherFetcher {
         }
 
         // Save to SharedPreferences
+        // Note: Values read by Dart via home_widget must be stored as strings
         val prefs = context.getSharedPreferences(WidgetUtils.PREFS_NAME, Context.MODE_PRIVATE)
         val now = System.currentTimeMillis()
+
+        // Extract current temperature using same logic as Dart's getNowIndex()
+        val currentTemp = extractCurrentTemperature(cachedJson)
+
         prefs.edit()
             .putString("cached_weather", cachedJson.toString())
             .putFloat("cached_latitude", latitude.toFloat())
             .putFloat("cached_longitude", longitude.toFloat())
-            .putLong(WidgetUtils.KEY_LAST_WEATHER_UPDATE, now)
+            // Store as string for home_widget compatibility (Dart reads via HomeWidget.getWidgetData)
+            .putString(WidgetUtils.KEY_LAST_WEATHER_UPDATE, now.toString())
+            .apply {
+                if (currentTemp != null) {
+                    // Store as string for home_widget compatibility
+                    putString("current_temperature_celsius", currentTemp.toString())
+                }
+            }
             .apply()
 
-        Log.d(TAG, "Weather data cached successfully")
+        Log.d(TAG, "Weather data cached successfully, current temp: $currentTemp°C")
         return true
+    }
+
+    /**
+     * Extract current temperature from cached JSON using Dart-compatible getNowIndex logic.
+     * Rounds to nearest hour (at :30 boundary) to find the current hour's temperature.
+     */
+    private fun extractCurrentTemperature(cachedJson: JSONObject): Double? {
+        return try {
+            val hourly = cachedJson.getJSONObject("hourly")
+            val times = hourly.getJSONArray("time")
+            val temperatures = hourly.getJSONArray("temperature_2m")
+
+            // Get current time rounded to nearest hour (same logic as Dart's getNowIndex)
+            val calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+            val minute = calendar.get(Calendar.MINUTE)
+            if (minute >= 30) {
+                calendar.add(Calendar.HOUR_OF_DAY, 1)
+            }
+            calendar.set(Calendar.MINUTE, 0)
+            calendar.set(Calendar.SECOND, 0)
+            calendar.set(Calendar.MILLISECOND, 0)
+            val roundedHourMs = calendar.timeInMillis
+
+            // Find matching hour in the data
+            for (i in 0 until times.length()) {
+                val timeStr = times.getString(i)
+                val timeMs = parseIso8601ToMillis(timeStr)
+                // Compare just the hour (within same hour window)
+                if (kotlin.math.abs(timeMs - roundedHourMs) < 30 * 60 * 1000) {
+                    return temperatures.getDouble(i)
+                }
+            }
+
+            // Fallback: use PAST_HOURS index (6)
+            if (temperatures.length() > PAST_HOURS) {
+                temperatures.getDouble(PAST_HOURS)
+            } else if (temperatures.length() > 0) {
+                temperatures.getDouble(0)
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error extracting current temperature", e)
+            null
+        }
+    }
+
+    /**
+     * Parse ISO 8601 timestamp to milliseconds.
+     */
+    private fun parseIso8601ToMillis(str: String): Long {
+        var normalized = str.removeSuffix("Z")
+        val dotIndex = normalized.lastIndexOf('.')
+        if (dotIndex > 0 && normalized.length - dotIndex > 4) {
+            normalized = normalized.substring(0, dotIndex + 4)
+        }
+
+        val formats = listOf(
+            "yyyy-MM-dd'T'HH:mm:ss.SSS",
+            "yyyy-MM-dd'T'HH:mm:ss",
+            "yyyy-MM-dd'T'HH:mm"
+        )
+
+        for (pattern in formats) {
+            try {
+                val format = SimpleDateFormat(pattern, Locale.US)
+                format.timeZone = TimeZone.getTimeZone("UTC")
+                return format.parse(normalized)?.time ?: continue
+            } catch (e: Exception) {
+                // Try next format
+            }
+        }
+        return 0L
     }
 
     /**

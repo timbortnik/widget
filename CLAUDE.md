@@ -38,13 +38,11 @@ This file provides context for AI assistants working on this project.
 
 ```
 lib/
-├── main.dart                 # Entry point, widget/background init
+├── main.dart                 # Entry point, widget init
 ├── l10n/                     # Generated + source ARB files
 │   ├── app_en.arb           # English (template)
 │   ├── app_*.arb            # Other languages
 │   └── app_localizations.dart # Generated
-├── models/
-│   └── weather_data.dart    # WeatherData, HourlyData classes
 ├── services/
 │   ├── location_service.dart     # Geolocator wrapper with fallback
 │   ├── widget_service.dart       # home_widget integration
@@ -165,10 +163,10 @@ Edit `android/app/src/main/res/layout/meteogram_widget.xml`
 - Test on device after changes
 
 ### Add new weather data
-1. Add field to `HourlyData` class
-2. Update `WeatherData.fromJson()` parsing
-3. Add to API query in `weather_service.dart`
-4. Display in chart or UI
+1. Add to API query in `WeatherFetcher.kt` buildUrl()
+2. Parse in `WeatherDataParser.kt` and add to `HourlyData` data class
+3. Display in `SvgChartGenerator.kt` chart rendering
+4. If needed in Dart, save to SharedPreferences in `WeatherFetcher.kt`
 
 ### Debug widget issues
 ```bash

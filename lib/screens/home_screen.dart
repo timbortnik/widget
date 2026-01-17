@@ -5,7 +5,6 @@ import 'package:home_widget/home_widget.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../constants.dart';
 import '../l10n/app_localizations.dart';
-import '../models/weather_data.dart';
 import '../services/location_service.dart';
 import '../services/widget_service.dart';
 import '../services/native_svg_service.dart';
@@ -31,7 +30,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   final _locationService = LocationService();
   final _widgetService = WidgetService();
 
-  WeatherData? _weatherData;
+  // Weather data (simplified - Kotlin owns the full data, Dart just displays)
+  DateTime? _weatherFetchedAt;
+  double? _currentTemperatureCelsius;
   String? _locationName;
   bool _loading = true;
   String? _error;
@@ -94,12 +95,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   /// Shows cached data immediately while fetching fresh in background.
   Future<void> _initializeData() async {
     // First, immediately show cached data if available (same as widget)
-    final cached = await NativeSvgService.getCachedWeather();
-    if (cached != null) {
+    final hasCached = await NativeSvgService.hasWeatherData();
+    if (hasCached) {
+      final cachedTemp = await NativeSvgService.getCurrentTemperatureCelsius();
+      final cachedTime = await NativeSvgService.getLastWeatherUpdate();
       final cachedCity = await NativeSvgService.getCachedCityName();
       final cachedSource = await NativeSvgService.getCachedLocationSource();
       setState(() {
-        _weatherData = cached;
+        _currentTemperatureCelsius = cachedTemp;
+        _weatherFetchedAt = cachedTime;
         _locationName = cachedCity;
         if (cachedSource != null) {
           _locationSource = LocationSource.values.firstWhere(
@@ -111,12 +115,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         _lastDisplayHour = DateTime.now().minute >= 30 ? (DateTime.now().hour + 1) % 24 : DateTime.now().hour;
         _cachedSvgString = null; // Invalidate cache for new data
       });
-      debugPrint('Showing cached data immediately: ${cached.fetchedAt}');
+      debugPrint('Showing cached data immediately: $_weatherFetchedAt');
     }
 
     // Then try to fetch fresh data in background
     unawaited(
-      _loadWeather(showLoadingIndicator: cached == null).catchError((Object error) {
+      _loadWeather(showLoadingIndicator: !hasCached).catchError((Object error) {
         debugPrint('Background weather fetch failed: $error');
         // Cached data is already displayed, so just log the error
       }),
@@ -134,7 +138,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   /// Refresh weather data if stale (>15 min old) or redraw on half-hour boundary.
   /// Called periodically by _refreshTimer and on first build.
   void _refreshIfStale() {
-    if (_weatherData == null || _loading) return;
+    if (_weatherFetchedAt == null || _loading) return;
 
     final now = DateTime.now();
     // The "now" indicator snaps to nearest hour at :30
@@ -151,7 +155,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     _lastDisplayHour ??= displayHour;
 
     // Check if data is stale
-    final age = now.difference(_weatherData!.fetchedAt);
+    final age = now.difference(_weatherFetchedAt!);
     if (age >= kWeatherStalenessThreshold) {
       debugPrint('Data is ${age.inMinutes} min old, refreshing...');
       _loadWeather(showLoadingIndicator: false);
@@ -172,16 +176,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   /// Update widget when app goes to background.
   /// Triggers native widget update which generates fresh SVG.
   Future<void> _updateWidgetOnBackground() async {
-    if (_weatherData == null) return;
+    if (_currentTemperatureCelsius == null) return;
 
     try {
       // Save current data for widget display
-      final currentHour = _weatherData!.getCurrentHour();
-      if (currentHour != null) {
-        await _widgetService.saveCurrentTemperature(
-          UnitsService.formatTemperature(currentHour.temperature, PlatformDispatcher.instance.locale),
-        );
-      }
+      await _widgetService.saveCurrentTemperature(
+        UnitsService.formatTemperatureFromBool(_currentTemperatureCelsius!, UnitsService.usesFahrenheit(PlatformDispatcher.instance.locale)),
+      );
       await _widgetService.saveLocationName(_locationName);
 
       // Trigger native widget update - SVG is generated natively
@@ -222,34 +223,36 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
 
     // Check if cache has newer data than in-memory (background service may have updated)
-    final cached = await NativeSvgService.getCachedWeather();
-    final cacheIsNewer = cached != null &&
-        (_weatherData == null || cached.fetchedAt.isAfter(_weatherData!.fetchedAt));
+    final cachedTime = await NativeSvgService.getLastWeatherUpdate();
+    final cacheIsNewer = cachedTime != null &&
+        (_weatherFetchedAt == null || cachedTime.isAfter(_weatherFetchedAt!));
 
     final isStale = await NativeSvgService.isCacheStale();
     if (isStale || wasResized || themeChanged || cacheIsNewer) {
+      final cachedTemp = await NativeSvgService.getCurrentTemperatureCelsius();
       final cachedCity = await NativeSvgService.getCachedCityName();
-      if (cached != null) {
+      if (cachedTime != null) {
         if (cacheIsNewer) {
-          debugPrint('Cache is newer than in-memory data, syncing: ${cached.fetchedAt} > ${_weatherData?.fetchedAt}');
+          debugPrint('Cache is newer than in-memory data, syncing: $cachedTime > $_weatherFetchedAt');
         }
         setState(() {
-          _weatherData = cached;
+          _currentTemperatureCelsius = cachedTemp;
+          _weatherFetchedAt = cachedTime;
           _locationName = cachedCity;
           _lastDisplayHour = DateTime.now().minute >= 30 ? (DateTime.now().hour + 1) % 24 : DateTime.now().hour;
           _cachedSvgString = null; // Invalidate cache for new data
         });
         // Update widget after frame is rendered
         WidgetsBinding.instance.addPostFrameCallback((_) async {
-          await _updateWidgetWithData(cached);
+          await _updateWidget();
         });
       }
     }
   }
 
-  /// Safely update the home widget with weather data.
+  /// Safely update the home widget.
   /// Prevents concurrent updates that could cause race conditions.
-  Future<void> _updateWidgetWithData(WeatherData weather) async {
+  Future<void> _updateWidget() async {
     // Skip if already updating to prevent race conditions
     if (_isUpdatingWidget) {
       debugPrint('Widget update already in progress, skipping');
@@ -262,10 +265,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       _lastRenderedBrightness = WidgetsBinding.instance.platformDispatcher.platformBrightness;
 
       // Save current data for widget display
-      final currentHour = weather.getCurrentHour();
-      if (currentHour != null) {
+      if (_currentTemperatureCelsius != null) {
         await _widgetService.saveCurrentTemperature(
-          UnitsService.formatTemperature(currentHour.temperature, PlatformDispatcher.instance.locale),
+          UnitsService.formatTemperatureFromBool(_currentTemperatureCelsius!, UnitsService.usesFahrenheit(PlatformDispatcher.instance.locale)),
         );
       }
       await _widgetService.saveLocationName(_locationName);
@@ -309,14 +311,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         throw Exception('Failed to fetch weather data');
       }
 
-      // Read the cached weather data
-      final weather = await NativeSvgService.getCachedWeather();
-      if (weather == null) {
-        throw Exception('Weather data not available after fetch');
-      }
+      // Read the cached values (Kotlin saves current temp and timestamp)
+      final temp = await NativeSvgService.getCurrentTemperatureCelsius();
+      final fetchedAt = await NativeSvgService.getLastWeatherUpdate();
 
       setState(() {
-        _weatherData = weather;
+        _currentTemperatureCelsius = temp;
+        _weatherFetchedAt = fetchedAt;
         _locationName = location.city;
         _locationSource = location.source;
         _loading = false;
@@ -329,16 +330,19 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
       // Update widget after frame is rendered
       WidgetsBinding.instance.addPostFrameCallback((_) async {
-        await _updateWidgetWithData(weather);
+        await _updateWidget();
       });
     } catch (e) {
       // Try to use cached weather data on any failure
-      final cached = await NativeSvgService.getCachedWeather();
-      if (cached != null) {
+      final hasCached = await NativeSvgService.hasWeatherData();
+      if (hasCached) {
+        final cachedTemp = await NativeSvgService.getCurrentTemperatureCelsius();
+        final cachedTime = await NativeSvgService.getLastWeatherUpdate();
         final cachedCity = await NativeSvgService.getCachedCityName();
         final cachedSource = await NativeSvgService.getCachedLocationSource();
         setState(() {
-          _weatherData = cached;
+          _currentTemperatureCelsius = cachedTemp;
+          _weatherFetchedAt = cachedTime;
           _locationName = cachedCity;
           if (cachedSource != null) {
             _locationSource = LocationSource.values.firstWhere(
@@ -353,7 +357,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
         // Update widget with cached data
         WidgetsBinding.instance.addPostFrameCallback((_) async {
-          await _updateWidgetWithData(cached);
+          await _updateWidget();
         });
 
         // Notify user if they triggered the refresh
@@ -392,7 +396,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   /// Generate SVG asynchronously using native Kotlin generator.
-  /// Updates cached SVG and triggers rebuild when complete.
+  /// Updates cached SVG and current temperature, triggers rebuild when complete.
   Future<void> _generateSvgAsync({
     required int width,
     required int height,
@@ -408,11 +412,17 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       );
 
       if (svgString != null && mounted) {
+        // Kotlin updates current_temperature_celsius during generateSvg to match nowIndex
+        final updatedTemp = await NativeSvgService.getCurrentTemperatureCelsius();
+
         setState(() {
           _cachedSvgString = svgString;
           _cachedSvgWidth = width;
           _cachedSvgHeight = height;
           _cachedSvgIsLight = isLight;
+          if (updatedTemp != null) {
+            _currentTemperatureCelsius = updatedTemp;
+          }
         });
       }
     } catch (e) {
@@ -515,7 +525,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       );
     }
 
-    if (_weatherData == null) {
+    if (_currentTemperatureCelsius == null) {
       return Center(
         child: Text(
           l10n.errorLoadingData,
@@ -524,7 +534,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       );
     }
 
-    final currentHour = _weatherData!.getCurrentHour();
+    final currentTemp = _currentTemperatureCelsius!;
 
     return RefreshIndicator(
       onRefresh: () => _loadWeather(userTriggered: true),
@@ -573,8 +583,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               const SizedBox(height: 16),
 
               // Unified weather card: temperature + legend + chart
-              if (currentHour != null)
-                Container(
+              Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: colors.cardBackground,
@@ -600,7 +609,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 fit: BoxFit.scaleDown,
                                 alignment: Alignment.centerLeft,
                                 child: Text(
-                                  UnitsService.formatTemperature(currentHour.temperature, PlatformDispatcher.instance.locale),
+                                  UnitsService.formatTemperature(currentTemp, PlatformDispatcher.instance.locale),
                                   style: TextStyle(
                                     color: colors.temperatureLine,
                                     fontSize: 64,

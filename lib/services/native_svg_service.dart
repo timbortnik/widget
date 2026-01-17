@@ -1,8 +1,6 @@
-import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:home_widget/home_widget.dart';
-import '../models/weather_data.dart';
 
 /// Service for native Kotlin operations via method channel.
 /// Handles SVG generation, weather fetching, and cache management.
@@ -10,10 +8,10 @@ class NativeSvgService {
   static const _channel = MethodChannel('org.bortnik.meteogram/svg');
 
   // Cache keys (must match Kotlin WeatherFetcher constants)
-  static const _keyCachedWeather = 'cached_weather';
   static const _keyLastWeatherUpdate = 'last_weather_update';
   static const _keyCachedCityName = 'cached_city_name';
   static const _keyCachedLocationSource = 'cached_location_source';
+  static const _keyCurrentTempCelsius = 'current_temperature_celsius';
 
   /// Staleness threshold for weather data (15 minutes)
   static const _staleThreshold = Duration(minutes: 15);
@@ -41,18 +39,28 @@ class NativeSvgService {
 
   // ============ Cache Reading ============
 
-  /// Get cached weather data if available.
-  static Future<WeatherData?> getCachedWeather() async {
-    final jsonStr = await HomeWidget.getWidgetData<String>(_keyCachedWeather);
-    if (jsonStr == null) return null;
+  /// Get current temperature in Celsius (saved by Kotlin when weather is fetched).
+  static Future<double?> getCurrentTemperatureCelsius() async {
+    // Kotlin stores as string for home_widget compatibility
+    final tempStr = await HomeWidget.getWidgetData<String>(_keyCurrentTempCelsius);
+    if (tempStr == null) return null;
+    return double.tryParse(tempStr);
+  }
 
-    try {
-      final json = jsonDecode(jsonStr) as Map<String, dynamic>;
-      return WeatherData.fromJson(json);
-    } catch (e) {
-      debugPrint('Error parsing cached weather: $e');
-      return null;
-    }
+  /// Get timestamp of last weather update.
+  static Future<DateTime?> getLastWeatherUpdate() async {
+    // Kotlin stores as string for home_widget compatibility
+    final lastUpdateStr = await HomeWidget.getWidgetData<String>(_keyLastWeatherUpdate);
+    if (lastUpdateStr == null) return null;
+    final lastUpdate = int.tryParse(lastUpdateStr);
+    if (lastUpdate == null) return null;
+    return DateTime.fromMillisecondsSinceEpoch(lastUpdate);
+  }
+
+  /// Check if we have cached weather data.
+  static Future<bool> hasWeatherData() async {
+    final lastUpdateStr = await HomeWidget.getWidgetData<String>(_keyLastWeatherUpdate);
+    return lastUpdateStr != null;
   }
 
   /// Get cached city name.
@@ -67,7 +75,10 @@ class NativeSvgService {
 
   /// Check if cached data is stale (older than 15 minutes).
   static Future<bool> isCacheStale() async {
-    final lastUpdate = await HomeWidget.getWidgetData<int>(_keyLastWeatherUpdate);
+    // Kotlin stores as string for home_widget compatibility
+    final lastUpdateStr = await HomeWidget.getWidgetData<String>(_keyLastWeatherUpdate);
+    if (lastUpdateStr == null) return true;
+    final lastUpdate = int.tryParse(lastUpdateStr);
     if (lastUpdate == null) return true;
 
     final age = DateTime.now().millisecondsSinceEpoch - lastUpdate;

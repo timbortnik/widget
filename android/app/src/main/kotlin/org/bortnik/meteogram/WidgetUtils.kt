@@ -60,7 +60,8 @@ object WidgetUtils {
      */
     fun isWeatherDataStale(context: Context): Boolean {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val lastUpdate = prefs.getLong(KEY_LAST_WEATHER_UPDATE, 0)
+        // Read as string (stored for home_widget compatibility)
+        val lastUpdate = prefs.getString(KEY_LAST_WEATHER_UPDATE, null)?.toLongOrNull() ?: 0L
         val ageMs = System.currentTimeMillis() - lastUpdate
         val isStale = ageMs > STALE_THRESHOLD_MS
 
@@ -91,7 +92,8 @@ object WidgetUtils {
     fun isRerenderNeeded(context: Context): Boolean {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val lastRenderTime = prefs.getLong(KEY_LAST_RENDER_TIME, 0)
-        val lastWeatherUpdate = prefs.getLong(KEY_LAST_WEATHER_UPDATE, 0)
+        // Read as string (stored for home_widget compatibility)
+        val lastWeatherUpdate = prefs.getString(KEY_LAST_WEATHER_UPDATE, null)?.toLongOrNull() ?: 0L
         val now = System.currentTimeMillis()
 
         // Check if weather was updated since last render

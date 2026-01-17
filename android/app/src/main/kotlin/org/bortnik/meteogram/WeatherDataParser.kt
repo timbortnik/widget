@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import org.json.JSONObject
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Locale
 import java.util.TimeZone
 
@@ -40,11 +41,49 @@ data class WeatherData(
     }
 
     /**
-     * Get index of "now" in the display range.
-     * Returns PAST_HOURS (clamped to valid range).
+     * Get index of "now" in the hourly data.
+     * Rounds to nearest hour (at :30 boundary) to match chart display.
      */
     fun getNowIndex(): Int {
+        if (hourly.isEmpty()) return 0
+
+        // Get current time rounded to nearest hour (same logic as former Dart getNowIndex)
+        val calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+        val minute = calendar.get(Calendar.MINUTE)
+        if (minute >= 30) {
+            calendar.add(Calendar.HOUR_OF_DAY, 1)
+        }
+        calendar.set(Calendar.MINUTE, 0)
+        calendar.set(Calendar.SECOND, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
+        val roundedNowMs = calendar.timeInMillis
+
+        // Find matching hour in data
+        for (i in hourly.indices) {
+            // Compare truncated to hour (within 30 min window)
+            if (kotlin.math.abs(hourly[i].time - roundedNowMs) < 30 * 60 * 1000) {
+                return i
+            }
+        }
+
+        // Fallback: find closest hour before now
+        val nowMs = System.currentTimeMillis()
+        for (i in hourly.indices.reversed()) {
+            if (hourly[i].time < nowMs) {
+                return i
+            }
+        }
+
+        // Ultimate fallback
         return WeatherConstants.PAST_HOURS.coerceIn(0, hourly.size - 1)
+    }
+
+    /**
+     * Get current hour's temperature (at nowIndex).
+     */
+    fun getCurrentTemperature(): Double? {
+        val idx = getNowIndex()
+        return if (idx in hourly.indices) hourly[idx].temperature else null
     }
 }
 
