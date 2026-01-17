@@ -12,6 +12,7 @@ import '../services/units_service.dart';
 import '../services/material_you_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/native_svg_chart_view.dart';
+import '../generated/version.dart';
 
 /// Main home screen displaying the meteogram.
 class HomeScreen extends StatefulWidget {
@@ -715,15 +716,27 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 ),
               ),
               const SizedBox(height: 8),
-              GestureDetector(
-                onTap: () => launchUrl(Uri.parse('https://github.com/timbortnik/widget')),
-                child: Text(
-                  l10n.sourceCode,
-                  style: TextStyle(
-                    color: colors.secondaryText,
-                    fontSize: 11,
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  GestureDetector(
+                    onTap: () => launchUrl(Uri.parse('https://github.com/timbortnik/widget')),
+                    child: Text(
+                      l10n.sourceCode,
+                      style: TextStyle(
+                        color: colors.secondaryText,
+                        fontSize: 11,
+                      ),
+                    ),
                   ),
-                ),
+                  Text(
+                    ' ${AppVersion.version}',
+                    style: TextStyle(
+                      color: colors.secondaryText,
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

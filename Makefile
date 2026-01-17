@@ -2,26 +2,30 @@
 
 FLUTTER := ~/git/flutter/bin/flutter
 
-.PHONY: debug release release-all release-split bundle install install-debug clean
+.PHONY: debug release release-all release-split bundle install install-debug clean version
+
+# Generate version.dart from git info (tag or commit hash)
+version:
+	@./scripts/generate_version.sh
 
 # Debug build (x86_64 only for emulator)
-debug:
+debug: version
 	$(FLUTTER) build apk --debug --target-platform android-x64
 
 # Release build (arm64 only, ~19 MB)
-release:
+release: version
 	$(FLUTTER) build apk --release --target-platform android-arm64
 
 # Release build with all architectures (~52 MB)
-release-all:
+release-all: version
 	$(FLUTTER) build apk --release
 
 # Split APKs by architecture (for manual distribution)
-release-split:
+release-split: version
 	$(FLUTTER) build apk --release --split-per-abi
 
 # App Bundle for Play Store (Google optimizes delivery)
-bundle:
+bundle: version
 	$(FLUTTER) build appbundle --release
 
 # Install release APK on connected device
