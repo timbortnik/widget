@@ -36,17 +36,13 @@ dependencies:
   # API & Data
   http: ^1.2.0
   shared_preferences: ^2.3.0
-  path_provider: ^2.1.0
 
   # Location
   geolocator: ^14.0.2
   geocoding: ^4.0.0
 
-  # Home screen widget
-  # Pinned to 0.8.0 - last version with JobIntentService (immediate execution)
-  # Version 0.8.1+ uses WorkManager which delays background callbacks
-  # See docs/HOME_WIDGET_VERSION_ISSUE.md
-  home_widget: 0.8.0
+  # Home screen widget (SharedPreferences bridge + widget trigger)
+  home_widget: ^0.9.0
 
   # Internationalization
   intl: ^0.20.2

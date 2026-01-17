@@ -46,11 +46,9 @@ lib/
 ├── models/
 │   └── weather_data.dart    # WeatherData, HourlyData classes
 ├── services/
-│   ├── weather_service.dart      # Open-Meteo API client
 │   ├── location_service.dart     # Geolocator wrapper with fallback
 │   ├── widget_service.dart       # home_widget integration
-│   ├── background_service.dart   # home_widget callbacks for background updates
-│   └── svg_chart_generator.dart  # Pure Dart SVG generation
+│   └── native_svg_service.dart   # Method channel to native (weather fetch, SVG gen, cache)
 ├── theme/
 │   └── app_theme.dart       # MeteogramColors, WeatherGradients
 ├── widgets/
@@ -61,11 +59,14 @@ lib/
 android/app/src/main/
 ├── kotlin/.../
 │   ├── MainActivity.kt
-│   ├── MeteogramApplication.kt       # Registers event receivers
+│   ├── MeteogramApplication.kt       # Registers event receivers, theme observer
 │   ├── MeteogramWidgetProvider.kt    # Extends HomeWidgetProvider
 │   ├── WidgetEventReceiver.kt        # Handles system broadcasts
 │   ├── WidgetUtils.kt                # Widget helper functions
-│   ├── WeatherUpdateWorker.kt        # WorkManager periodic refresh
+│   ├── WeatherUpdateWorker.kt        # WorkManager periodic refresh (~30 min)
+│   ├── WeatherFetcher.kt             # Native HTTP client for Open-Meteo API
+│   ├── WeatherDataParser.kt          # Parse cached weather JSON
+│   ├── SvgChartGenerator.kt          # Native SVG generation (single source)
 │   ├── MaterialYouColorExtractor.kt  # Native Material You color extraction
 │   ├── SvgChartPlatformView.kt       # Native SVG rendering for in-app
 │   └── SvgChartViewFactory.kt        # PlatformView factory
@@ -119,15 +120,14 @@ Android widgets use RemoteViews which only support:
 **NOT supported:** View, Space, custom views, most Material widgets
 
 ### Data Flow
-1. `home_screen.dart` loads weather → generates SVG via `SvgChartGenerator`
-2. In-app: SVG rendered via `NativeSvgChartView` (Android PlatformView)
-3. Widget: SVG saved to file, `HomeWidget.updateWidget()` triggers native update
-4. `MeteogramWidgetProvider.kt` reads SVG file, renders via AndroidSVG → ImageView
+1. **In-app**: `home_screen.dart` gets location → calls `NativeSvgService.fetchWeather()` → Kotlin fetches from Open-Meteo → caches to SharedPreferences → Dart reads cache → Kotlin generates SVG → rendered via `NativeSvgChartView`
+2. **Widget**: Native code reads cached weather from SharedPreferences → `SvgChartGenerator.kt` generates SVG → AndroidSVG renders to bitmap → ImageView
 
-### Background Refresh
+### Background Refresh (fully native)
 - **WorkManager periodic**: `WeatherUpdateWorker.kt` runs ~30 min (battery-efficient, OS batches work)
-- **Event-driven**: `WidgetEventReceiver.kt` handles unlock, network, locale changes
-- **home_widget callbacks**: `background_service.dart` handles `weatherUpdate` and `chartReRender` URIs
+- **Weather fetching**: `WeatherFetcher.kt` calls Open-Meteo API directly (no Dart involved)
+- **Event-driven**: `WidgetEventReceiver.kt` handles unlock, network, locale/timezone changes
+- **Material You**: `ContentObserver` + `MaterialYouColorWorker.kt` detect theme changes
 
 ## Build Commands
 
@@ -153,10 +153,10 @@ Do not commit code with analyzer warnings or test failures.
 ## Common Tasks
 
 ### Modify chart appearance
-Edit `lib/services/svg_chart_generator.dart`:
-- `_writeTemperatureLine()` - line style, gradient fill
-- `_writePrecipitationBars()` - bar colors, width
-- `_writeSunshineBars()` - daylight intensity display
+Edit `android/.../SvgChartGenerator.kt`:
+- `writeTemperatureLine()` - line style, gradient fill
+- `writePrecipitationBars()` - bar colors, width
+- `writeSunshineBars()` - daylight intensity display
 - `SvgChartColors` - color definitions for light/dark themes
 
 ### Modify widget layout
@@ -180,14 +180,16 @@ adb logcat | grep -i "Error inflating"
 
 | File | Purpose |
 |------|---------|
-| `lib/services/svg_chart_generator.dart` | Pure Dart SVG generation (core chart) |
-| `lib/widgets/native_svg_chart_view.dart` | In-app SVG display via PlatformView |
-| `lib/services/background_service.dart` | home_widget callbacks for background updates |
-| `lib/theme/app_theme.dart` | All colors and gradients |
-| `android/.../MeteogramWidgetProvider.kt` | Native widget code |
-| `android/.../WeatherUpdateWorker.kt` | WorkManager periodic refresh |
+| `android/.../SvgChartGenerator.kt` | Native SVG generation (single source of truth) |
+| `android/.../WeatherFetcher.kt` | Native HTTP client for background weather fetching |
+| `android/.../WeatherDataParser.kt` | Parse cached weather JSON from SharedPreferences |
+| `android/.../MeteogramWidgetProvider.kt` | Widget update handling |
+| `android/.../WeatherUpdateWorker.kt` | WorkManager periodic refresh (~30 min) |
 | `android/.../MaterialYouColorExtractor.kt` | Native Material You color extraction |
-| `android/.../WidgetEventReceiver.kt` | System event handler |
+| `android/.../WidgetEventReceiver.kt` | System event handler (unlock, network, etc.) |
+| `lib/services/native_svg_service.dart` | Method channel to native (weather, SVG, cache) |
+| `lib/services/location_service.dart` | GPS/manual location with city search |
+| `lib/theme/app_theme.dart` | All colors and gradients |
 
 ## Gotchas
 

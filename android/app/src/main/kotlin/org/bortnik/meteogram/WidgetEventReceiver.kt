@@ -76,7 +76,8 @@ class WidgetEventReceiver : BroadcastReceiver() {
     }
 
     private fun triggerReRender(context: Context) {
-        WidgetUtils.rerenderAllWidgets(context)
+        // Use native widget update (no Dart/Flutter involved)
+        WidgetUtils.rerenderAllWidgetsNative(context)
     }
 
     private fun isNetworkAvailable(context: Context): Boolean {

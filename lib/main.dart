@@ -4,14 +4,12 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'screens/home_screen.dart';
 import 'services/widget_service.dart';
-import 'services/background_service.dart';
 import 'services/material_you_service.dart';
 import 'theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await WidgetService.initialize();
-  await BackgroundService.initialize();
 
   // Load Material You colors from native Android code
   final materialYouColors = await MaterialYouService.getColors();
