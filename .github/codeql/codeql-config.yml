@@ -11,3 +11,10 @@ languages:
 queries:
   - uses: security-and-quality
   - uses: security-extended
+
+# Suppress specific warnings
+query-filters:
+  # Certificate pinning not needed for public Open-Meteo API (no auth, public data)
+  # Pinning would break on certificate rotation with no security benefit
+  - exclude:
+      id: java/android/missing-certificate-pinning

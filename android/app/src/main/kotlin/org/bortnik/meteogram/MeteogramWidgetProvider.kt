@@ -312,9 +312,10 @@ class MeteogramWidgetProvider : HomeWidgetProvider() {
                 views.setViewVisibility(R.id.widget_placeholder, View.GONE)
                 views.setViewVisibility(R.id.widget_refresh_indicator, View.GONE)
 
-                // Set up tap to open app
+                // Set up tap to open app (explicit intent with package for security)
                 val intent = Intent(context, MainActivity::class.java).apply {
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    setPackage(context.packageName)
                 }
                 val pendingIntent = PendingIntent.getActivity(
                     context, 0, intent,
@@ -391,9 +392,10 @@ class MeteogramWidgetProvider : HomeWidgetProvider() {
                 }
             }
 
-            // Set up tap to open app
+            // Set up tap to open app (explicit intent with package for security)
             val intent = Intent(context, MainActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                setPackage(context.packageName)
             }
             val pendingIntent = PendingIntent.getActivity(
                 context, 0, intent,
