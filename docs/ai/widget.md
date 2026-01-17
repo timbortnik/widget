@@ -2,7 +2,7 @@
 
 ## Overview
 
-Using the `home_widget` package with native Android widget provider. The chart is rendered as SVG in Dart, then rendered natively using AndroidSVG library on the Android side. Both the widget and the in-app chart use the same SVG → AndroidSVG → Bitmap pipeline for pixel-perfect consistency.
+Using the `home_widget` package with native Android widget provider. The chart is generated as SVG natively in Kotlin (`SvgChartGenerator.kt`), then rendered using AndroidSVG library. Both the widget and the in-app chart use the same native SVG generation for consistency.
 
 See `docs/NATIVE_SVG_RENDERING.md` for detailed architecture.
 
@@ -363,14 +363,16 @@ The widget responds to system events via broadcast receivers.
 
 | Event | Android Action | Registration | Response |
 |-------|----------------|--------------|----------|
-| Screen unlock | `ACTION_USER_PRESENT` | Runtime | Re-render if needed*, fetch if stale (>15 min) |
-| Network restored | `CONNECTIVITY_CHANGE` | Runtime | Fetch if stale (>15 min) |
+| Device boot | `ACTION_BOOT_COMPLETED` | Manifest | Fetch if stale, re-render, schedule alarm |
+| Alarm (15 min) | Custom action | AlarmManager | Fetch if stale, re-render if needed |
+| Network restored | `CONNECTIVITY_CHANGE` | Runtime | Fetch if stale, re-render if needed |
 | Widget resize | `onAppWidgetOptionsChanged` | N/A | Re-render immediately |
 | Locale change | `ACTION_LOCALE_CHANGED` | Manifest | Re-render all widgets (no fetch) |
 | Timezone change | `ACTION_TIMEZONE_CHANGED` | Manifest | Re-render all widgets (no fetch) |
 | Periodic (~30 min) | `WeatherUpdateWorker` | WorkManager | Fetch if stale, re-render all widgets |
+| System fallback | `updatePeriodMillis` | Widget XML | Re-render (OEM-resistant) |
 
-*Re-render on unlock only if 30-min boundary crossed or weather data updated since last render.
+Note: `ACTION_USER_PRESENT` was removed - it only works when app process is running, causing inconsistent behavior.
 
 **Important:** `LOCALE_CHANGED` and `TIMEZONE_CHANGED` use manifest-declared receivers because the app process is killed when locale/timezone changes. Runtime-registered receivers are lost when the process dies. These broadcasts are exempt from Android 8.0+ implicit broadcast restrictions.
 
@@ -464,56 +466,63 @@ private fun fetchWeatherIfStale(context: Context) {
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                     MeteogramApplication                      │
-│  Registers WidgetEventReceiver at runtime for:                │
-│  - USER_PRESENT, CONNECTIVITY_CHANGE (require runtime reg)    │
+│  onCreate():                                                  │
+│  - Registers WidgetEventReceiver for CONNECTIVITY_CHANGE      │
+│  - Schedules WidgetAlarmScheduler (15-min inexact alarm)      │
+│  - Enqueues WeatherUpdateWorker (WorkManager)                 │
 └─────────────────────────────────────────────────────────────┘
-                              │
+
 ┌─────────────────────────────────────────────────────────────┐
 │                     AndroidManifest.xml                       │
-│  Declares WidgetEventReceiver for:                            │
-│  - LOCALE_CHANGED, TIMEZONE_CHANGED (app killed on change)    │
+│  Declares receivers for:                                      │
+│  - WidgetEventReceiver: LOCALE_CHANGED, TIMEZONE_CHANGED      │
+│  - WidgetAlarmReceiver: Custom alarm action                   │
+│  - BootCompletedReceiver: ACTION_BOOT_COMPLETED               │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│                 Update Trigger Sources                        │
+├─────────────────────────────────────────────────────────────┤
+│  BootCompletedReceiver    → Immediate refresh on boot         │
+│  WidgetAlarmReceiver      → Every ~15 min (catches up on wake)│
+│  WidgetEventReceiver      → CONNECTIVITY_CHANGE, locale/tz    │
+│  WeatherUpdateWorker      → Every ~30 min (network required)  │
+│  updatePeriodMillis       → Every 30 min (system fallback)    │
 └─────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                    WidgetEventReceiver                        │
-│  Handles: USER_PRESENT, CONNECTIVITY_CHANGE (runtime)         │
-│           LOCALE_CHANGED, TIMEZONE_CHANGED (manifest)         │
-│  Actions: fetchWeatherIfStale() or triggerReRender()          │
-│  Passes: width, height, locale via URI query params           │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│              HomeWidgetBackgroundIntent                       │
-│  URI: homewidget://chartReRender?width=X&height=Y&locale=Z    │
-│  URI: homewidget://weatherUpdate                              │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                background_service.dart                        │
-│  homeWidgetBackgroundCallback() → _updateWeatherData() or     │
-│                                   _reRenderCharts(uri)        │
-│  Parses URI params for dimensions and locale                  │
+│                       WidgetUtils                             │
+│  - isWeatherDataStale() → check 15-min threshold              │
+│  - fetchWeather() → WeatherFetcher → re-render on success     │
+│  - rerenderAllWidgetsIfNeeded() → check 30-min boundary       │
+│  - rerenderAllWidgetsNative() → trigger onUpdate()            │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 **Broadcast Registration Notes:**
-- `USER_PRESENT`, `CONNECTIVITY_CHANGE`: Require runtime registration (Android 8.0+ restriction)
-- `LOCALE_CHANGED`, `TIMEZONE_CHANGED`: Use manifest declaration (app process killed on change, runtime receivers lost; these are exempt from 8.0+ restrictions)
+- `CONNECTIVITY_CHANGE`: Runtime registration in MeteogramApplication
+- `LOCALE_CHANGED`, `TIMEZONE_CHANGED`: Manifest (app killed on change, exempt from 8.0+ restrictions)
+- `BOOT_COMPLETED`: Manifest (requires RECEIVE_BOOT_COMPLETED permission)
+- Custom alarm action: Manifest for WidgetAlarmReceiver
+
+**Note:** `ACTION_USER_PRESENT` was removed - it only works when app process is running (runtime registration required since Android 8.0), causing inconsistent widget behavior.
 
 #### "Now" Indicator Updates
 
 The "now" indicator snaps to the nearest hour at the 30-minute mark (e.g., 2:29 shows "now" at 2:00, 2:30 shows "now" at 3:00).
 
-Updates happen via:
-1. **USER_PRESENT** - Re-renders on unlock only if needed (crossed 30-min boundary or weather updated)
-2. **WorkManager periodic** - Runs ~30 min (timing not precise, but battery-efficient)
+Updates happen via layered mechanisms:
+1. **AlarmManager (15 min)** - Inexact alarm, catches up on wake if missed during sleep
+2. **WorkManager (~30 min)** - Network-dependent weather fetch
+3. **BOOT_COMPLETED** - Immediate refresh after device boot
+4. **updatePeriodMillis (30 min)** - System fallback, OEM-resistant
 
-The conditional re-render on unlock saves battery by skipping unnecessary Flutter engine spin-ups when nothing has changed visually. Re-render is triggered only when:
+Re-render is triggered only when needed:
 - A 30-minute boundary was crossed since last render (indicator position changed)
-- Weather data was updated while phone was locked (background fetch completed)
+- Weather data was updated (background fetch completed)
+
+This approach provides consistent behavior regardless of whether the app process is running.
 
 ### main.dart setup
 ```dart

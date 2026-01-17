@@ -12,18 +12,17 @@ The app follows a standard Flutter architecture with clear separation of concern
 │  │ (setState)  │  │NativeSvgChart│ │MeteogramColors│
 │  └─────────────┘  └─────────────┘  └─────────────┘  │
 ├─────────────────────────────────────────────────────┤
-│                     Services                         │
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌─────────┐│
-│  │ Weather  │ │ Location │ │  Widget  │ │Background││
-│  │ Service  │ │ Service  │ │ Service  │ │ Service ││
-│  └──────────┘ └──────────┘ └──────────┘ └─────────┘│
-│  ┌─────────────────────────────────────────────────┐│
-│  │           SvgChartGenerator (pure Dart)        ││
-│  └─────────────────────────────────────────────────┘│
+│                   Dart Services                      │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐            │
+│  │ Location │ │  Widget  │ │NativeSvg │            │
+│  │ Service  │ │ Service  │ │ Service  │            │
+│  └──────────┘ └──────────┘ └──────────┘            │
 ├─────────────────────────────────────────────────────┤
-│                      Models                          │
+│              Native Kotlin (android/)                │
 │  ┌─────────────────────────────────────────────────┐│
-│  │              WeatherData / HourlyData           ││
+│  │  WeatherFetcher, SvgChartGenerator, WidgetUtils ││
+│  │  AlarmScheduler, AlarmReceiver, BootReceiver    ││
+│  │  WeatherDataParser, MaterialYouColorExtractor   ││
 │  └─────────────────────────────────────────────────┘│
 └─────────────────────────────────────────────────────┘
 ```
@@ -39,12 +38,17 @@ The app follows a standard Flutter architecture with clear separation of concern
 6. Widget: SVG saved to file, native provider renders via AndroidSVG
 
 ### Widget Updates
-1. Android: WorkManager periodic task runs ~30 min (battery-efficient, OS batches work)
-2. Event receivers trigger refresh on unlock/network/locale changes
-3. Background service fetches weather if stale (>15 min), or re-renders from cache
-4. SVG charts generated via `SvgChartGenerator` (works in isolate - no UI needed)
-5. SVG files saved, paths stored via home_widget
-6. Native `MeteogramWidgetProvider` reads SVG, renders via AndroidSVG
+Background updates use layered mechanisms for reliability:
+1. **AlarmManager (15 min)**: Inexact alarm catches up on wake if missed during sleep
+2. **WorkManager (~30 min)**: Network-constrained periodic task
+3. **BOOT_COMPLETED**: Immediate refresh after device boot
+4. **CONNECTIVITY_CHANGE**: Refresh when network returns
+5. **updatePeriodMillis (30 min)**: System fallback, OEM-resistant
+
+All paths use the same native flow:
+1. Check staleness (>15 min) → fetch weather if needed via `WeatherFetcher`
+2. Check re-render needed (30-min boundary crossed) → generate SVG via `SvgChartGenerator.kt`
+3. Render via AndroidSVG → Bitmap → update widget ImageView
 
 ### Foreground App Updates
 1. Timer checks every minute while app is in foreground
@@ -78,17 +82,17 @@ class _HomeScreenState extends State<HomeScreen> {
 
 ## Key Components
 
-### SvgChartGenerator (`lib/services/svg_chart_generator.dart`)
-Pure Dart SVG generation - no Flutter UI dependencies. Responsibilities:
+### SvgChartGenerator (`android/.../SvgChartGenerator.kt`)
+Native Kotlin SVG generation - single source of truth for both widget and in-app. Responsibilities:
 - Generate complete SVG string for meteogram
 - Temperature line with gradient fill
 - Precipitation bars
-- Daylight intensity bars (computed from cloud cover + solar elevation using latitude and longitude)
+- Daylight intensity bars (computed from cloud cover + solar elevation)
 - Temperature labels (min/mid/max) with proper alignment
-- Time labels with locale-aware formatting (DateFormat.j)
+- Time labels with locale-aware formatting
 - Width-based font sizing for consistent proportions
 
-**Key benefit:** Works in background isolates without dart:ui
+**Key benefit:** Works in background without Dart/Flutter engine
 
 ### NativeSvgChartView (`lib/widgets/native_svg_chart_view.dart`)
 PlatformView wrapper for in-app SVG display. Responsibilities:
@@ -96,15 +100,17 @@ PlatformView wrapper for in-app SVG display. Responsibilities:
 - Pass SVG string to native side via MethodChannel
 - Bypass Flutter's image compositor for 1:1 pixel rendering
 
-### WeatherService (`lib/services/weather_service.dart`)
-API client for Open-Meteo. Responsibilities:
+### WeatherFetcher (`android/.../WeatherFetcher.kt`)
+Native HTTP client for Open-Meteo API. Responsibilities:
 - Build API URL with parameters
-- Request 4 hours of past data + 2 days forecast
-- Make HTTP request with timeout
-- Parse JSON response into WeatherData
+- Request 6 hours of past data + 2 days forecast
+- Make HTTP request with timeout (10s)
+- Parse JSON response and cache to SharedPreferences
 - Handle errors (network, API, parsing)
 
-**Data Range:** 4 hours past + 48 hours future (~52 hours total)
+**Data Range:** 6 hours past + 48 hours future (~54 hours total)
+
+**Key benefit:** Works without Dart/Flutter engine for true background updates
 
 ### LocationService (`lib/services/location_service.dart`)
 Device location handling with fallback. Responsibilities:
@@ -135,12 +141,14 @@ Home widget data management. Responsibilities:
 - Save widget data via HomeWidget.saveWidgetData
 - Trigger native widget update
 
-### BackgroundService (`lib/services/background_service.dart`)
-HomeWidget callback integration. Responsibilities:
-- Register HomeWidget interactivity callback for event-driven updates
-- Execute background weather fetch (with caching)
-- Re-render charts from cached data (no network call)
-- Handle two URI hosts: `weatherUpdate` (fetch+render) and `chartReRender` (render only)
+### Native Background Updates
+All background updates are handled natively in Kotlin (no Dart/Flutter involved):
+- `WidgetAlarmReceiver` - Handles 15-min alarm triggers
+- `BootCompletedReceiver` - Handles device boot
+- `WidgetEventReceiver` - Handles connectivity and locale changes
+- `WeatherUpdateWorker` - WorkManager periodic updates
+
+Each checks staleness (via `WidgetUtils.isWeatherDataStale()`) and triggers fetch/re-render as needed.
 
 ### MeteogramColors (`lib/theme/app_theme.dart`)
 Theme-aware color palette. Responsibilities:
@@ -152,37 +160,44 @@ Theme-aware color palette. Responsibilities:
 
 ```
 lib/
-├── main.dart                    # App entry, BackgroundService init
+├── main.dart                    # App entry point
+├── generated/
+│   └── version.dart             # Git version info (generated, gitignored)
 ├── l10n/                        # Localization ARB files (30+ languages)
 │   ├── app_en.arb               # English
 │   ├── app_de.arb               # German
 │   ├── app_ar.arb               # Arabic
 │   └── ...                      # 30+ locales
-├── models/
-│   └── weather_data.dart        # WeatherData, HourlyData models
 ├── screens/
 │   └── home_screen.dart         # Main screen with NativeSvgChartView
 ├── services/
-│   ├── weather_service.dart     # Open-Meteo API client
 │   ├── location_service.dart    # GPS/fallback location
-│   ├── widget_service.dart      # Home widget updates
-│   ├── background_service.dart  # home_widget callbacks
-│   └── svg_chart_generator.dart # Pure Dart SVG generation
+│   ├── widget_service.dart      # Home widget integration
+│   └── native_svg_service.dart  # Method channel to native
 ├── theme/
 │   └── app_theme.dart           # Colors, light/dark themes
 └── widgets/
     └── native_svg_chart_view.dart # PlatformView SVG display
 
 android/app/src/main/kotlin/.../
-├── MainActivity.kt              # Registers PlatformView factory, extracts Material You colors
-├── MeteogramApplication.kt      # Application class, registers event receiver
+├── MainActivity.kt              # PlatformView factory, Material You colors
+├── MeteogramApplication.kt      # Registers receivers, schedules alarm
 ├── MeteogramWidgetProvider.kt   # Home screen widget provider
-├── WidgetEventReceiver.kt       # Handles system broadcasts (unlock, network, locale)
+├── WidgetEventReceiver.kt       # Handles CONNECTIVITY_CHANGE, locale/timezone
+├── WidgetAlarmScheduler.kt      # Schedules 15-min inexact alarm
+├── WidgetAlarmReceiver.kt       # Handles alarm-triggered updates
+├── BootCompletedReceiver.kt     # Refreshes widget on device boot
 ├── WidgetUtils.kt               # Widget helper functions
 ├── WeatherUpdateWorker.kt       # WorkManager periodic weather refresh
+├── WeatherFetcher.kt            # Native HTTP client for Open-Meteo
+├── WeatherDataParser.kt         # Parse cached weather JSON
+├── SvgChartGenerator.kt         # Native SVG generation
 ├── MaterialYouColorExtractor.kt # Native Material You color extraction
 ├── SvgChartViewFactory.kt       # Creates PlatformView instances
 └── SvgChartPlatformView.kt      # Native ImageView + AndroidSVG rendering
+
+scripts/
+└── generate_version.sh          # Generates version.dart from git
 ```
 
 ## Platform-Specific

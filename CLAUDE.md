@@ -19,8 +19,8 @@ This file provides context for AI assistants working on this project.
 |--------|-------|
 | Framework | Flutter 3.x |
 | Weather API | Open-Meteo (free, no key) |
-| Charting | Native SVG (SvgChartGenerator + AndroidSVG) |
-| Widget package | home_widget |
+| Charting | Native SVG (SvgChartGenerator.kt + AndroidSVG) |
+| Widget package | home_widget + native receivers |
 | i18n | flutter_localizations + intl (ARB files) |
 | License | BSL 1.1 (converts to MIT 2029) |
 
@@ -30,7 +30,7 @@ This file provides context for AI assistants working on this project.
 - **Data:** Temperature (line with gradient fill), precipitation (bars), daylight (computed from cloud cover)
 - **Theme:** System light/dark mode with custom color palette
 - **Units:** Locale-aware (°F for US/Liberia/Myanmar, °C elsewhere)
-- **Update:** Timer checks every minute in foreground (refreshes if data >15 min old, redraws at half-hour boundary), WorkManager periodic task (~30 min) in background, event-driven (unlock, network, locale/timezone change)
+- **Update:** Timer checks every minute in foreground (refreshes if data >15 min old, redraws at half-hour boundary). Background: AlarmManager (15 min), WorkManager (~30 min), BOOT_COMPLETED, CONNECTIVITY_CHANGE, updatePeriodMillis (30 min fallback)
 - **Languages:** 30+ languages via ARB files
 - **Widget:** SVG rendered natively via AndroidSVG for pixel-perfect display
 
@@ -38,7 +38,9 @@ This file provides context for AI assistants working on this project.
 
 ```
 lib/
-├── main.dart                 # Entry point, widget init
+├── main.dart                 # Entry point
+├── generated/
+│   └── version.dart         # Generated git version info (gitignored)
 ├── l10n/                     # Generated + source ARB files
 │   ├── app_en.arb           # English (template)
 │   ├── app_*.arb            # Other languages
@@ -57,9 +59,12 @@ lib/
 android/app/src/main/
 ├── kotlin/.../
 │   ├── MainActivity.kt
-│   ├── MeteogramApplication.kt       # Registers event receivers, theme observer
+│   ├── MeteogramApplication.kt       # Registers receivers, theme observer, alarm
 │   ├── MeteogramWidgetProvider.kt    # Extends HomeWidgetProvider
-│   ├── WidgetEventReceiver.kt        # Handles system broadcasts
+│   ├── WidgetEventReceiver.kt        # Handles CONNECTIVITY_CHANGE, locale/timezone
+│   ├── WidgetAlarmScheduler.kt       # Schedules 15-min inexact alarm
+│   ├── WidgetAlarmReceiver.kt        # Handles alarm broadcasts
+│   ├── BootCompletedReceiver.kt      # Refreshes widget on device boot
 │   ├── WidgetUtils.kt                # Widget helper functions
 │   ├── WeatherUpdateWorker.kt        # WorkManager periodic refresh (~30 min)
 │   ├── WeatherFetcher.kt             # Native HTTP client for Open-Meteo API
@@ -73,6 +78,9 @@ android/app/src/main/
     ├── xml/meteogram_widget_info.xml # Widget config
     ├── drawable/widget_background.xml
     └── values/strings.xml
+
+scripts/
+└── generate_version.sh      # Generates version.dart from git tag/commit
 ```
 
 ## Color Palette
@@ -122,20 +130,28 @@ Android widgets use RemoteViews which only support:
 2. **Widget**: Native code reads cached weather from SharedPreferences → `SvgChartGenerator.kt` generates SVG → AndroidSVG renders to bitmap → ImageView
 
 ### Background Refresh (fully native)
-- **WorkManager periodic**: `WeatherUpdateWorker.kt` runs ~30 min (battery-efficient, OS batches work)
+- **AlarmManager**: `WidgetAlarmScheduler.kt` schedules 15-min inexact alarm (catches up on wake)
+- **WorkManager**: `WeatherUpdateWorker.kt` runs ~30 min with network constraint
+- **BOOT_COMPLETED**: `BootCompletedReceiver.kt` refreshes immediately after device boot
+- **CONNECTIVITY_CHANGE**: `WidgetEventReceiver.kt` refreshes when network returns
+- **updatePeriodMillis**: System-managed 30-min fallback (OEM-resistant)
 - **Weather fetching**: `WeatherFetcher.kt` calls Open-Meteo API directly (no Dart involved)
-- **Event-driven**: `WidgetEventReceiver.kt` handles unlock, network, locale/timezone changes
 - **Material You**: `ContentObserver` + `MaterialYouColorWorker.kt` detect theme changes
+
+Note: USER_PRESENT was removed - it only works when app process is running, causing inconsistent behavior.
 
 ## Build Commands
 
 ```bash
-make debug          # x86_64 only (68MB) - for emulator
-make release        # arm64 only (19MB) - for phones
+make version        # Generate lib/generated/version.dart from git
+make debug          # x86_64 only (68MB) - for emulator (runs version first)
+make release        # arm64 only (19MB) - for phones (runs version first)
 make install        # Build release + install on device
 make install-debug  # Build debug + install on emulator
 make clean          # Clean build artifacts
 ```
+
+Note: All build targets run `make version` first to embed git tag/commit hash.
 
 ## Pre-Commit Checklist
 
@@ -182,12 +198,16 @@ adb logcat | grep -i "Error inflating"
 | `android/.../WeatherFetcher.kt` | Native HTTP client for background weather fetching |
 | `android/.../WeatherDataParser.kt` | Parse cached weather JSON from SharedPreferences |
 | `android/.../MeteogramWidgetProvider.kt` | Widget update handling |
+| `android/.../WidgetAlarmScheduler.kt` | 15-min inexact alarm scheduling |
+| `android/.../WidgetAlarmReceiver.kt` | Handles alarm-triggered updates |
+| `android/.../BootCompletedReceiver.kt` | Refreshes widget on device boot |
 | `android/.../WeatherUpdateWorker.kt` | WorkManager periodic refresh (~30 min) |
 | `android/.../MaterialYouColorExtractor.kt` | Native Material You color extraction |
-| `android/.../WidgetEventReceiver.kt` | System event handler (unlock, network, etc.) |
+| `android/.../WidgetEventReceiver.kt` | System event handler (network, locale/timezone) |
 | `lib/services/native_svg_service.dart` | Method channel to native (weather, SVG, cache) |
 | `lib/services/location_service.dart` | GPS/manual location with city search |
 | `lib/theme/app_theme.dart` | All colors and gradients |
+| `scripts/generate_version.sh` | Generates version.dart from git tag/commit |
 
 ## Gotchas
 
