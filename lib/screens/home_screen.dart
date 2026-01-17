@@ -6,14 +6,12 @@ import 'package:url_launcher/url_launcher.dart';
 import '../constants.dart';
 import '../l10n/app_localizations.dart';
 import '../models/weather_data.dart';
-import '../services/weather_service.dart';
 import '../services/location_service.dart';
 import '../services/widget_service.dart';
-import '../services/svg_chart_generator.dart';
+import '../services/native_svg_service.dart';
 import '../services/units_service.dart';
 import '../services/material_you_service.dart';
 import '../theme/app_theme.dart';
-import '../utils/locale_utils.dart';
 import '../widgets/native_svg_chart_view.dart';
 
 /// Main home screen displaying the meteogram.
@@ -30,7 +28,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
-  final _weatherService = WeatherService();
   final _locationService = LocationService();
   final _widgetService = WidgetService();
 
@@ -41,14 +38,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   LocationSource _locationSource = LocationSource.gps;
   static const double _chartAspectRatio = 2.0; // Fixed 2:1 for in-app display
   Brightness? _lastRenderedBrightness; // Track theme for re-render on change
-  String _locale = 'en'; // Cached locale for widget generation
-  bool _usesFahrenheit = false; // Cached Fahrenheit preference
   bool _isUpdatingWidget = false; // Prevents concurrent widget updates
   bool _isLoadingWeather = false; // Prevents concurrent weather fetches
 
-  // Cached Material You colors for widget SVG generation
-  SvgChartColors? _materialYouLightColors;
-  SvgChartColors? _materialYouDarkColors;
+  // Cached SVG string for in-app chart display
+  String? _cachedSvgString;
+  // Parameters used to generate cached SVG (for invalidation)
+  int? _cachedSvgWidth;
+  int? _cachedSvgHeight;
+  bool? _cachedSvgIsLight;
 
   // Periodic timer for foreground auto-refresh (every minute)
   Timer? _refreshTimer;
@@ -60,32 +58,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    // Initialize Material You colors immediately so widget generation uses them
-    _initializeMaterialYouColors();
     _initialize();
     // Start periodic refresh timer (checks staleness and hour boundaries)
     _refreshTimer = Timer.periodic(kForegroundRefreshInterval, (_) {
       _refreshIfStale();
     });
-  }
-
-  /// Initialize Material You colors from native extraction.
-  /// Called in initState so colors are available before first build.
-  void _initializeMaterialYouColors() {
-    if (widget.materialYouColors != null) {
-      // Use native colors directly for widget SVG generation
-      // Light mode: onPrimaryContainer for temperature (darker, better contrast)
-      // Dark mode: primary for temperature (brighter, better contrast)
-      // Must match background_service.dart color selection
-      _materialYouLightColors = SvgChartColors.light.withDynamicColors(
-        temperatureLine: SvgColor.fromArgb(widget.materialYouColors!.light.onPrimaryContainer.toARGB32()),
-        timeLabel: SvgColor.fromArgb(widget.materialYouColors!.light.tertiary.toARGB32()),
-      );
-      _materialYouDarkColors = SvgChartColors.dark.withDynamicColors(
-        temperatureLine: SvgColor.fromArgb(widget.materialYouColors!.dark.primary.toARGB32()),
-        timeLabel: SvgColor.fromArgb(widget.materialYouColors!.dark.tertiary.toARGB32()),
-      );
-    }
   }
 
   /// Combined initialization: load dimensions first, then data.
@@ -107,9 +84,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final locale = platformLocale.toString();
     final usesFahrenheit = UnitsService.usesFahrenheit(platformLocale);
 
-    _locale = locale;
-    _usesFahrenheit = usesFahrenheit;
-
     await HomeWidget.saveWidgetData<String>('locale', locale);
     await HomeWidget.saveWidgetData<bool>('usesFahrenheit', usesFahrenheit);
 
@@ -120,10 +94,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   /// Shows cached data immediately while fetching fresh in background.
   Future<void> _initializeData() async {
     // First, immediately show cached data if available (same as widget)
-    final cached = await _weatherService.getCachedWeather();
+    final cached = await NativeSvgService.getCachedWeather();
     if (cached != null) {
-      final cachedCity = await _weatherService.getCachedCityName();
-      final cachedSource = await _weatherService.getCachedLocationSource();
+      final cachedCity = await NativeSvgService.getCachedCityName();
+      final cachedSource = await NativeSvgService.getCachedLocationSource();
       setState(() {
         _weatherData = cached;
         _locationName = cachedCity;
@@ -135,6 +109,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         }
         _loading = false;
         _lastDisplayHour = DateTime.now().minute >= 30 ? (DateTime.now().hour + 1) % 24 : DateTime.now().hour;
+        _cachedSvgString = null; // Invalidate cache for new data
       });
       debugPrint('Showing cached data immediately: ${cached.fetchedAt}');
     }
@@ -151,7 +126,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   @override
   void dispose() {
     _refreshTimer?.cancel();
-    _weatherService.dispose();
     _locationService.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
@@ -171,6 +145,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     if (_lastDisplayHour != null && _lastDisplayHour != displayHour) {
       debugPrint('Half-hour boundary crossed ($_lastDisplayHour -> $displayHour), redrawing chart...');
       _lastDisplayHour = displayHour;
+      _cachedSvgString = null; // Invalidate cache to regenerate with new time
       setState(() {}); // Trigger rebuild to update "now" indicator position
     }
     _lastDisplayHour ??= displayHour;
@@ -195,29 +170,22 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   /// Update widget when app goes to background.
-  /// Regenerates SVG with current time position.
+  /// Triggers native widget update which generates fresh SVG.
   Future<void> _updateWidgetOnBackground() async {
     if (_weatherData == null) return;
 
     try {
-      // Generate fresh SVG charts with current time and Material You colors
-      await _widgetService.generateAndSaveSvgCharts(
-        displayData: _weatherData!.getDisplayRange(),
-        nowIndex: _weatherData!.getNowIndex(),
-        latitude: _weatherData!.latitude,
-        longitude: _weatherData!.longitude,
-        locale: _locale,
-        usesFahrenheit: _usesFahrenheit,
-        lightColors: _materialYouLightColors,
-        darkColors: _materialYouDarkColors,
-      );
+      // Save current data for widget display
+      final currentHour = _weatherData!.getCurrentHour();
+      if (currentHour != null) {
+        await _widgetService.saveCurrentTemperature(
+          UnitsService.formatTemperature(currentHour.temperature, PlatformDispatcher.instance.locale),
+        );
+      }
+      await _widgetService.saveLocationName(_locationName);
 
-      // Trigger widget update to load new SVGs
-      await _widgetService.updateWidget(
-        weatherData: _weatherData!,
-        locationName: _locationName,
-        locale: LocaleUtils.parseLocaleString(_locale),
-      );
+      // Trigger native widget update - SVG is generated natively
+      await _widgetService.triggerWidgetUpdate();
 
       debugPrint('Widget updated on app background');
     } catch (e) {
@@ -228,8 +196,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   @override
   void didChangePlatformBrightness() {
     super.didChangePlatformBrightness();
-    // Theme changed while app is running - trigger native widget update to show indicator
+    // Theme changed while app is running - invalidate cached SVG and trigger widget update
     debugPrint('Platform brightness changed - triggering widget update');
+    _cachedSvgString = null; // Invalidate cache to regenerate with new theme
     _widgetService.triggerWidgetUpdate();
     // Then re-render after short delay
     Future.delayed(const Duration(milliseconds: 300), () {
@@ -237,30 +206,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         _checkAndSyncWidget();
       }
     });
-  }
-
-
-  /// Update cached Material You colors for widget SVG generation.
-  /// Called from build() when context is available.
-  void _updateMaterialYouColors(BuildContext context) {
-    // Use native colors directly for widget SVG generation
-    // Must match _initializeMaterialYouColors() and background_service.dart
-    if (widget.materialYouColors != null) {
-      // Light mode: onPrimaryContainer for temperature (darker, better contrast)
-      // Dark mode: primary for temperature (brighter, better contrast)
-      _materialYouLightColors = SvgChartColors.light.withDynamicColors(
-        temperatureLine: SvgColor.fromArgb(widget.materialYouColors!.light.onPrimaryContainer.toARGB32()),
-        timeLabel: SvgColor.fromArgb(widget.materialYouColors!.light.tertiary.toARGB32()),
-      );
-      _materialYouDarkColors = SvgChartColors.dark.withDynamicColors(
-        temperatureLine: SvgColor.fromArgb(widget.materialYouColors!.dark.primary.toARGB32()),
-        timeLabel: SvgColor.fromArgb(widget.materialYouColors!.dark.tertiary.toARGB32()),
-      );
-    } else {
-      // Fall back to default colors when Material You not available
-      _materialYouLightColors = SvgChartColors.light;
-      _materialYouDarkColors = SvgChartColors.dark;
-    }
   }
 
   /// Quick check on startup to sync widget state with cache age.
@@ -277,13 +222,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
 
     // Check if cache has newer data than in-memory (background service may have updated)
-    final cached = await _weatherService.getCachedWeather();
+    final cached = await NativeSvgService.getCachedWeather();
     final cacheIsNewer = cached != null &&
         (_weatherData == null || cached.fetchedAt.isAfter(_weatherData!.fetchedAt));
 
-    final isStale = await _weatherService.isCacheStale();
+    final isStale = await NativeSvgService.isCacheStale();
     if (isStale || wasResized || themeChanged || cacheIsNewer) {
-      final cachedCity = await _weatherService.getCachedCityName();
+      final cachedCity = await NativeSvgService.getCachedCityName();
       if (cached != null) {
         if (cacheIsNewer) {
           debugPrint('Cache is newer than in-memory data, syncing: ${cached.fetchedAt} > ${_weatherData?.fetchedAt}');
@@ -292,6 +237,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           _weatherData = cached;
           _locationName = cachedCity;
           _lastDisplayHour = DateTime.now().minute >= 30 ? (DateTime.now().hour + 1) % 24 : DateTime.now().hour;
+          _cachedSvgString = null; // Invalidate cache for new data
         });
         // Update widget after frame is rendered
         WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -315,22 +261,17 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       // Track brightness for theme change detection
       _lastRenderedBrightness = WidgetsBinding.instance.platformDispatcher.platformBrightness;
 
-      await _widgetService.updateWidget(
-        weatherData: weather,
-        locationName: _locationName,
-        locale: LocaleUtils.parseLocaleString(_locale),
-      );
-      // Also generate SVG charts for background widget updates
-      await _widgetService.generateAndSaveSvgCharts(
-        displayData: weather.getDisplayRange(),
-        nowIndex: weather.getNowIndex(),
-        latitude: weather.latitude,
-        longitude: weather.longitude,
-        locale: _locale,
-        usesFahrenheit: _usesFahrenheit,
-        lightColors: _materialYouLightColors,
-        darkColors: _materialYouDarkColors,
-      );
+      // Save current data for widget display
+      final currentHour = weather.getCurrentHour();
+      if (currentHour != null) {
+        await _widgetService.saveCurrentTemperature(
+          UnitsService.formatTemperature(currentHour.temperature, PlatformDispatcher.instance.locale),
+        );
+      }
+      await _widgetService.saveLocationName(_locationName);
+
+      // Trigger native widget update - SVG is generated natively from cached weather
+      await _widgetService.triggerWidgetUpdate();
     } finally {
       _isUpdatingWidget = false;
     }
@@ -357,10 +298,22 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
     try {
       final location = await _locationService.getLocation();
-      final weather = await _weatherService.fetchWeather(
-        location.latitude,
-        location.longitude,
+
+      // Fetch weather via native Kotlin HTTP client
+      final success = await NativeSvgService.fetchWeather(
+        latitude: location.latitude,
+        longitude: location.longitude,
       );
+
+      if (!success) {
+        throw Exception('Failed to fetch weather data');
+      }
+
+      // Read the cached weather data
+      final weather = await NativeSvgService.getCachedWeather();
+      if (weather == null) {
+        throw Exception('Weather data not available after fetch');
+      }
 
       setState(() {
         _weatherData = weather;
@@ -368,10 +321,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         _locationSource = location.source;
         _loading = false;
         _lastDisplayHour = DateTime.now().minute >= 30 ? (DateTime.now().hour + 1) % 24 : DateTime.now().hour;
+        _cachedSvgString = null; // Invalidate cache for new data
       });
 
       // Cache location info for offline use
-      await _weatherService.cacheLocationInfo(location.city, _locationSource.name);
+      await NativeSvgService.cacheLocationInfo(location.city, _locationSource.name);
 
       // Update widget after frame is rendered
       WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -379,10 +333,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       });
     } catch (e) {
       // Try to use cached weather data on any failure
-      final cached = await _weatherService.getCachedWeather();
+      final cached = await NativeSvgService.getCachedWeather();
       if (cached != null) {
-        final cachedCity = await _weatherService.getCachedCityName();
-        final cachedSource = await _weatherService.getCachedLocationSource();
+        final cachedCity = await NativeSvgService.getCachedCityName();
+        final cachedSource = await NativeSvgService.getCachedLocationSource();
         setState(() {
           _weatherData = cached;
           _locationName = cachedCity;
@@ -394,6 +348,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           }
           _loading = false;
           _lastDisplayHour = DateTime.now().minute >= 30 ? (DateTime.now().hour + 1) % 24 : DateTime.now().hour;
+          _cachedSvgString = null; // Invalidate cache for new data
         });
 
         // Update widget with cached data
@@ -410,11 +365,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
       // No cache available, show error
       setState(() {
-        if (e is WeatherException) {
-          _error = e.message;
-        } else {
-          _error = e.toString();
-        }
+        _error = e.toString();
         _loading = false;
       });
     } finally {
@@ -440,13 +391,39 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     return isDark ? widget.materialYouColors!.dark : widget.materialYouColors!.light;
   }
 
+  /// Generate SVG asynchronously using native Kotlin generator.
+  /// Updates cached SVG and triggers rebuild when complete.
+  Future<void> _generateSvgAsync({
+    required int width,
+    required int height,
+    required bool isLight,
+    required bool usesFahrenheit,
+  }) async {
+    try {
+      final svgString = await NativeSvgService.generateSvg(
+        width: width,
+        height: height,
+        isLight: isLight,
+        usesFahrenheit: usesFahrenheit,
+      );
+
+      if (svgString != null && mounted) {
+        setState(() {
+          _cachedSvgString = svgString;
+          _cachedSvgWidth = width;
+          _cachedSvgHeight = height;
+          _cachedSvgIsLight = isLight;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error generating SVG: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = MeteogramColors.of(context, nativeColors: _getNativeColorsForTheme(context));
-
-    // Update cached Material You colors for widget SVG generation
-    _updateMaterialYouColors(context);
 
     return Scaffold(
       backgroundColor: colors.background,
@@ -547,8 +524,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       );
     }
 
-    final displayData = _weatherData!.getDisplayRange();
-    final nowIndex = _weatherData!.getNowIndex();
     final currentHour = _weatherData!.getCurrentHour();
 
     return RefreshIndicator(
@@ -673,51 +648,51 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                           final isLight = Theme.of(context).brightness == Brightness.light;
                           final mediaQuery = MediaQuery.of(context);
                           final dpr = mediaQuery.devicePixelRatio;
-                          // Get locale for time formatting and temperature units
-                          // Use platform locale (not Flutter's resolved locale) to get country code for unit preferences
+                          // Get locale for temperature units
                           final platformLocale = PlatformDispatcher.instance.locale;
-                          final locale = platformLocale.toString();
                           final usesFahrenheit = UnitsService.usesFahrenheit(platformLocale);
-                          _locale = locale;
-                          _usesFahrenheit = usesFahrenheit;
                           // Save for background service
-                          HomeWidget.saveWidgetData<String>('locale', locale);
+                          HomeWidget.saveWidgetData<String>('locale', platformLocale.toString());
                           HomeWidget.saveWidgetData<bool>('usesFahrenheit', usesFahrenheit);
 
                           // Generate SVG at device pixel dimensions
-                          final deviceWidth = chartWidth * dpr;
-                          final deviceHeight = chartHeight * dpr;
+                          final deviceWidthPx = (chartWidth * dpr).round();
+                          final deviceHeightPx = (chartHeight * dpr).round();
 
-                          // Apply Material You dynamic colors
-                          final meteogramColors = MeteogramColors.of(context, nativeColors: _getNativeColorsForTheme(context));
-                          final baseColors = isLight ? SvgChartColors.light : SvgChartColors.dark;
-                          final colors = baseColors.withDynamicColors(
-                            temperatureLine: SvgColor.fromArgb(meteogramColors.temperatureLine.toARGB32()),
-                            timeLabel: SvgColor.fromArgb(meteogramColors.timeLabel.toARGB32()),
-                          );
+                          // Check if we need to regenerate the SVG
+                          final needsRegeneration = _cachedSvgString == null ||
+                              _cachedSvgWidth != deviceWidthPx ||
+                              _cachedSvgHeight != deviceHeightPx ||
+                              _cachedSvgIsLight != isLight;
 
-                          final generator = SvgChartGenerator();
-                          final svgString = generator.generate(
-                            data: displayData,
-                            nowIndex: nowIndex,
-                            latitude: _weatherData!.latitude,
-                            longitude: _weatherData!.longitude,
-                            colors: colors,
-                            width: deviceWidth,
-                            height: deviceHeight,
-                            locale: locale,
-                            usesFahrenheit: usesFahrenheit,
-                          );
+                          if (needsRegeneration) {
+                            // Trigger async SVG generation
+                            _generateSvgAsync(
+                              width: deviceWidthPx,
+                              height: deviceHeightPx,
+                              isLight: isLight,
+                              usesFahrenheit: usesFahrenheit,
+                            );
+                          }
 
-                          return SizedBox(
-                            width: chartWidth,
-                            height: chartHeight,
-                            child: NativeSvgChartView(
-                              svgString: svgString,
-                              width: deviceWidth,
-                              height: deviceHeight,
-                            ),
-                          );
+                          // Show cached SVG if available, otherwise show empty container
+                          if (_cachedSvgString != null) {
+                            return SizedBox(
+                              width: chartWidth,
+                              height: chartHeight,
+                              child: NativeSvgChartView(
+                                svgString: _cachedSvgString!,
+                                width: deviceWidthPx.toDouble(),
+                                height: deviceHeightPx.toDouble(),
+                              ),
+                            );
+                          } else {
+                            // Show placeholder while generating
+                            return SizedBox(
+                              width: chartWidth,
+                              height: chartHeight,
+                            );
+                          }
                         },
                       ),
                     ],

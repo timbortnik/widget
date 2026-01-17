@@ -1,5 +1,7 @@
 package org.bortnik.meteogram
 
+import android.appwidget.AppWidgetManager
+import android.content.ComponentName
 import android.content.Context
 import android.util.Log
 
@@ -44,62 +46,12 @@ object WidgetUtils {
     }
 
     /**
-     * Get current system locale as string for passing to Flutter.
-     * Format: "language_COUNTRY" (e.g., "en_US", "uk_UA")
-     */
-    fun getLocaleString(): String {
-        val locale = java.util.Locale.getDefault()
-        return "${locale.language}_${locale.country}"
-    }
-
-    /**
-     * Re-render chart for a specific widget with its dimensions.
-     */
-    fun rerenderChartForWidget(context: Context, widgetId: Int, widthPx: Int, heightPx: Int) {
-        try {
-            val localeStr = getLocaleString()
-
-            es.antonborri.home_widget.HomeWidgetBackgroundIntent.getBroadcast(
-                context,
-                android.net.Uri.parse("homewidget://chartReRender?widgetId=$widgetId&width=$widthPx&height=$heightPx&locale=$localeStr")
-            ).send()
-            Log.d(TAG, "Chart re-render triggered for widget $widgetId (${widthPx}x${heightPx}, locale=$localeStr)")
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to trigger chart re-render for widget $widgetId", e)
-        }
-    }
-
-    /**
-     * Re-render charts for all widgets.
-     * Triggers a single background intent that will iterate through all widget IDs.
-     */
-    fun rerenderAllWidgets(context: Context) {
-        try {
-            val localeStr = getLocaleString()
-
-            es.antonborri.home_widget.HomeWidgetBackgroundIntent.getBroadcast(
-                context,
-                android.net.Uri.parse("homewidget://chartReRenderAll?locale=$localeStr")
-            ).send()
-            Log.d(TAG, "Chart re-render triggered for all widgets (locale=$localeStr)")
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to trigger chart re-render for all widgets", e)
-        }
-    }
-
-    /**
-     * Fetch weather via HomeWidget background intent.
+     * Fetch weather natively via Open-Meteo API.
+     * Runs asynchronously and updates widget on completion.
      */
     fun fetchWeather(context: Context) {
-        try {
-            es.antonborri.home_widget.HomeWidgetBackgroundIntent.getBroadcast(
-                context,
-                android.net.Uri.parse("homewidget://weatherUpdate")
-            ).send()
-            Log.d(TAG, "Weather fetch triggered via HomeWidget")
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to trigger weather fetch", e)
-        }
+        Log.d(TAG, "Triggering native weather fetch")
+        WeatherFetcher.fetchAndUpdate(context)
     }
 
     /**
@@ -177,7 +129,43 @@ object WidgetUtils {
      */
     fun rerenderAllWidgetsIfNeeded(context: Context) {
         if (isRerenderNeeded(context)) {
-            rerenderAllWidgets(context)
+            rerenderAllWidgetsNative(context)
+        }
+    }
+
+    /**
+     * Trigger native widget update for all widgets.
+     * This calls AppWidgetManager directly, which invokes MeteogramWidgetProvider.onUpdate()
+     * and uses native SVG generation (no Dart/Flutter involved).
+     */
+    fun rerenderAllWidgetsNative(context: Context) {
+        try {
+            val appWidgetManager = AppWidgetManager.getInstance(context)
+            val componentName = ComponentName(context, MeteogramWidgetProvider::class.java)
+            val widgetIds = appWidgetManager.getAppWidgetIds(componentName)
+
+            if (widgetIds.isEmpty()) {
+                Log.d(TAG, "No widgets to update")
+                return
+            }
+
+            Log.d(TAG, "Triggering native update for ${widgetIds.size} widgets")
+
+            // notifyAppWidgetViewDataChanged triggers onUpdate
+            for (widgetId in widgetIds) {
+                appWidgetManager.notifyAppWidgetViewDataChanged(widgetId, android.R.id.list)
+            }
+
+            // Also send explicit update intent
+            val intent = android.content.Intent(context, MeteogramWidgetProvider::class.java).apply {
+                action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+                putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, widgetIds)
+            }
+            context.sendBroadcast(intent)
+
+            Log.d(TAG, "Native widget update triggered for ${widgetIds.joinToString()}")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to trigger native widget update", e)
         }
     }
 }

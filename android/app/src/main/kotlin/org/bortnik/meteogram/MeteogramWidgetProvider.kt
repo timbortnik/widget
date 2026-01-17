@@ -10,13 +10,16 @@ import android.os.Build
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.os.Bundle
+import android.text.format.DateFormat
 import android.util.Log
 import android.view.View
 import android.widget.RemoteViews
 import com.caverock.androidsvg.SVG
 import es.antonborri.home_widget.HomeWidgetProvider
+import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.FileInputStream
+import java.util.Locale
 
 class MeteogramWidgetProvider : HomeWidgetProvider() {
     companion object {
@@ -43,6 +46,109 @@ class MeteogramWidgetProvider : HomeWidgetProvider() {
         val width = prefs.getInt("widget_${widgetId}_width_px", 0)
         val height = prefs.getInt("widget_${widgetId}_height_px", 0)
         return if (width > 0 && height > 0) Pair(width, height) else null
+    }
+
+    /**
+     * Get chart colors for a theme, applying Material You colors if available.
+     */
+    private fun getChartColors(context: Context, isLight: Boolean): SvgChartColors {
+        val baseColors = if (isLight) SvgChartColors.light else SvgChartColors.dark
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+            return baseColors
+        }
+
+        val prefs = context.getSharedPreferences(WidgetUtils.PREFS_NAME, Context.MODE_PRIVATE)
+
+        // Get Material You colors from SharedPreferences (saved by MaterialYouColorExtractor)
+        val tempColorKey = if (isLight) "material_you_light_on_primary_container" else "material_you_dark_primary"
+        val timeColorKey = if (isLight) "material_you_light_tertiary" else "material_you_dark_tertiary"
+
+        val tempColor = prefs.getInt(tempColorKey, 0)
+        val timeColor = prefs.getInt(timeColorKey, 0)
+
+        if (tempColor == 0 || timeColor == 0) {
+            Log.d(TAG, "Material You colors not available, using defaults")
+            return baseColors
+        }
+
+        Log.d(TAG, "Applying Material You colors: temp=${Integer.toHexString(tempColor)}, time=${Integer.toHexString(timeColor)}")
+        return baseColors.withDynamicColors(
+            temperatureLine = SvgColor.fromArgb(tempColor),
+            timeLabel = SvgColor.fromArgb(timeColor)
+        )
+    }
+
+    /**
+     * Check if device uses Fahrenheit based on locale.
+     * US, Liberia, and Myanmar use Fahrenheit.
+     */
+    private fun usesFahrenheit(): Boolean {
+        val country = Locale.getDefault().country
+        return country in listOf("US", "LR", "MM")
+    }
+
+    /**
+     * Generate SVG chart natively and render to bitmap.
+     * @return Bitmap or null if generation fails
+     */
+    private fun generateChartBitmap(
+        context: Context,
+        weatherData: WeatherData,
+        colors: SvgChartColors,
+        width: Int,
+        height: Int
+    ): Bitmap? {
+        if (width <= 0 || height <= 0) {
+            Log.e(TAG, "Invalid dimensions for native SVG generation: ${width}x${height}")
+            return null
+        }
+
+        return try {
+            val displayData = weatherData.getDisplayRange()
+            val nowIndex = weatherData.getNowIndex()
+
+            val generator = SvgChartGenerator()
+            val svgString = generator.generate(
+                data = displayData,
+                nowIndex = nowIndex,
+                latitude = weatherData.latitude,
+                longitude = weatherData.longitude,
+                colors = colors,
+                width = width.toDouble(),
+                height = height.toDouble(),
+                locale = Locale.getDefault(),
+                usesFahrenheit = usesFahrenheit(),
+                use24HourFormat = DateFormat.is24HourFormat(context)
+            )
+
+            // Render SVG string to bitmap
+            renderSvgStringToBitmap(svgString, width, height)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error generating native chart", e)
+            null
+        }
+    }
+
+    /**
+     * Render an SVG string to a Bitmap.
+     */
+    private fun renderSvgStringToBitmap(svgString: String, width: Int, height: Int): Bitmap? {
+        return try {
+            ByteArrayInputStream(svgString.toByteArray()).use { inputStream ->
+                val svg = SVG.getFromInputStream(inputStream)
+                svg.documentWidth = width.toFloat()
+                svg.documentHeight = height.toFloat()
+
+                val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+                val canvas = Canvas(bitmap)
+                svg.renderToCanvas(canvas)
+                bitmap
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error rendering SVG string to bitmap", e)
+            null
+        }
     }
 
     /**
@@ -174,16 +280,57 @@ class MeteogramWidgetProvider : HomeWidgetProvider() {
         // Save per-widget dimensions
         saveWidgetDimensions(prefs, appWidgetId, widthPx, heightPx, density)
 
-        // Also save as "current" dimensions for backward compatibility and app preview
+        // Set flag for app to detect resize on resume
         prefs.edit()
-            .putInt(WidgetUtils.KEY_WIDGET_WIDTH_PX, widthPx)
-            .putInt(WidgetUtils.KEY_WIDGET_HEIGHT_PX, heightPx)
-            .putFloat("widget_density", density)
             .putBoolean("widget_resized", true)
             .commit()
 
-        // Trigger chart re-render for this widget
-        WidgetUtils.rerenderChartForWidget(context, appWidgetId, widthPx, heightPx)
+        // Try to generate chart natively for immediate update
+        val weatherData = WeatherDataParser.parseFromPrefs(context)
+        if (weatherData != null && widthPx > 0 && heightPx > 0) {
+            Log.d(TAG, "Generating native chart for resize")
+
+            val views = RemoteViews(context.packageName, R.layout.meteogram_widget)
+
+            // Generate light theme chart
+            val lightColors = getChartColors(context, isLight = true)
+            val lightBitmap = generateChartBitmap(context, weatherData, lightColors, widthPx, heightPx)
+            if (lightBitmap != null) {
+                views.setImageViewBitmap(R.id.widget_chart_light, lightBitmap)
+                Log.d(TAG, "Native light chart generated")
+            }
+
+            // Generate dark theme chart
+            val darkColors = getChartColors(context, isLight = false)
+            val darkBitmap = generateChartBitmap(context, weatherData, darkColors, widthPx, heightPx)
+            if (darkBitmap != null) {
+                views.setImageViewBitmap(R.id.widget_chart_dark, darkBitmap)
+                Log.d(TAG, "Native dark chart generated")
+            }
+
+            if (lightBitmap != null || darkBitmap != null) {
+                views.setViewVisibility(R.id.widget_placeholder, View.GONE)
+                views.setViewVisibility(R.id.widget_refresh_indicator, View.GONE)
+
+                // Set up tap to open app
+                val intent = Intent(context, MainActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                }
+                val pendingIntent = PendingIntent.getActivity(
+                    context, 0, intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+                views.setOnClickPendingIntent(R.id.widget_root, pendingIntent)
+
+                appWidgetManager.updateAppWidget(appWidgetId, views)
+                Log.d(TAG, "Widget $appWidgetId updated with native charts")
+                return
+            }
+        }
+
+        // Fallback: trigger weather fetch which will cache data and update widget
+        Log.d(TAG, "Native generation failed or no weather data, triggering weather fetch")
+        WidgetUtils.fetchWeather(context)
     }
 
     override fun onDeleted(context: Context, appWidgetIds: IntArray) {
@@ -204,16 +351,12 @@ class MeteogramWidgetProvider : HomeWidgetProvider() {
         updateWidgetIdsList(context, appWidgetIds)
 
         // Check for Material You color changes (Android 12+)
-        // This detects wallpaper/theme color changes and triggers SVG re-generation
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            if (MaterialYouColorExtractor.updateColorsIfChanged(context)) {
-                Log.d(TAG, "Material You colors changed - triggering re-render for all widgets")
-                WidgetUtils.rerenderAllWidgets(context)
-                // Skip rendering with old SVGs - wait for background service to generate new ones
-                // The re-render will trigger another onUpdate with correct colors
-                return
-            }
+            MaterialYouColorExtractor.updateColorsIfChanged(context)
         }
+
+        // Try to load weather data for native generation
+        val weatherData = WeatherDataParser.parseFromPrefs(context)
 
         for (appWidgetId in appWidgetIds) {
             val views = RemoteViews(context.packageName, R.layout.meteogram_widget)
@@ -233,12 +376,6 @@ class MeteogramWidgetProvider : HomeWidgetProvider() {
             // Save per-widget dimensions (only if valid)
             if (widthPx > 0 && heightPx > 0) {
                 saveWidgetDimensions(widgetData, appWidgetId, widthPx, heightPx, density)
-                // Also save as "current" for backward compatibility
-                widgetData.edit()
-                    .putInt(WidgetUtils.KEY_WIDGET_WIDTH_PX, widthPx)
-                    .putInt(WidgetUtils.KEY_WIDGET_HEIGHT_PX, heightPx)
-                    .putFloat("widget_density", density)
-                    .commit()
             } else {
                 // Try to use saved per-widget dimensions first
                 val savedDims = getWidgetDimensions(widgetData, appWidgetId)
@@ -247,55 +384,75 @@ class MeteogramWidgetProvider : HomeWidgetProvider() {
                     heightPx = savedDims.second
                     Log.d(TAG, "Widget $appWidgetId using saved dimensions: ${widthPx}x${heightPx}px")
                 } else {
-                    // Fall back to global default
-                    val (defaultWidth, defaultHeight) = WidgetUtils.getWidgetDimensions(context)
-                    widthPx = defaultWidth
-                    heightPx = defaultHeight
+                    // Fall back to defaults
+                    widthPx = WidgetUtils.DEFAULT_WIDTH_PX
+                    heightPx = WidgetUtils.DEFAULT_HEIGHT_PX
                     Log.d(TAG, "Widget $appWidgetId using default dimensions: ${widthPx}x${heightPx}px")
                 }
             }
 
             // Set up tap to open app
-            val intent = android.content.Intent(context, MainActivity::class.java).apply {
-                flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP
-                component = android.content.ComponentName(context, MainActivity::class.java)
+            val intent = Intent(context, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
             }
             val pendingIntent = PendingIntent.getActivity(
-                context,
-                0,
-                intent,
+                context, 0, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
             views.setOnClickPendingIntent(R.id.widget_root, pendingIntent)
 
-            // Get chart sources - prefer widget-specific SVG, fall back to generic
-            val svgLightPath = widgetData.getString("svg_path_light_$appWidgetId", null)
-                ?: widgetData.getString("svg_path_light", null)
-            val svgDarkPath = widgetData.getString("svg_path_dark_$appWidgetId", null)
-                ?: widgetData.getString("svg_path_dark", null)
-            Log.d(TAG, "Widget $appWidgetId SVG paths - light: $svgLightPath, dark: $svgDarkPath")
-
             var hasChart = false
 
-            // Load light theme chart
-            val lightBitmap = loadChartBitmap(svgLightPath, null, widthPx, heightPx)
-            if (lightBitmap != null) {
-                views.setImageViewBitmap(R.id.widget_chart_light, lightBitmap)
-                hasChart = true
-                Log.d(TAG, "Widget $appWidgetId light chart loaded")
+            // Try native generation first (works without file dependencies)
+            if (weatherData != null && widthPx > 0 && heightPx > 0) {
+                // Generate light theme chart
+                val lightColors = getChartColors(context, isLight = true)
+                val lightBitmap = generateChartBitmap(context, weatherData, lightColors, widthPx, heightPx)
+                if (lightBitmap != null) {
+                    views.setImageViewBitmap(R.id.widget_chart_light, lightBitmap)
+                    hasChart = true
+                    Log.d(TAG, "Widget $appWidgetId native light chart generated")
+                }
+
+                // Generate dark theme chart
+                val darkColors = getChartColors(context, isLight = false)
+                val darkBitmap = generateChartBitmap(context, weatherData, darkColors, widthPx, heightPx)
+                if (darkBitmap != null) {
+                    views.setImageViewBitmap(R.id.widget_chart_dark, darkBitmap)
+                    hasChart = true
+                    Log.d(TAG, "Widget $appWidgetId native dark chart generated")
+                }
             }
 
-            // Load dark theme chart
-            val darkBitmap = loadChartBitmap(svgDarkPath, null, widthPx, heightPx)
-            if (darkBitmap != null) {
-                views.setImageViewBitmap(R.id.widget_chart_dark, darkBitmap)
-                hasChart = true
-                Log.d(TAG, "Widget $appWidgetId dark chart loaded")
+            // Fallback: try loading from SVG files (backward compat with Dart-generated charts)
+            if (!hasChart) {
+                val svgLightPath = widgetData.getString("svg_path_light_$appWidgetId", null)
+                    ?: widgetData.getString("svg_path_light", null)
+                val svgDarkPath = widgetData.getString("svg_path_dark_$appWidgetId", null)
+                    ?: widgetData.getString("svg_path_dark", null)
+                Log.d(TAG, "Widget $appWidgetId falling back to SVG files - light: $svgLightPath, dark: $svgDarkPath")
+
+                // Load light theme chart from file
+                val lightBitmap = loadChartBitmap(svgLightPath, null, widthPx, heightPx)
+                if (lightBitmap != null) {
+                    views.setImageViewBitmap(R.id.widget_chart_light, lightBitmap)
+                    hasChart = true
+                    Log.d(TAG, "Widget $appWidgetId light chart loaded from file")
+                }
+
+                // Load dark theme chart from file
+                val darkBitmap = loadChartBitmap(svgDarkPath, null, widthPx, heightPx)
+                if (darkBitmap != null) {
+                    views.setImageViewBitmap(R.id.widget_chart_dark, darkBitmap)
+                    hasChart = true
+                    Log.d(TAG, "Widget $appWidgetId dark chart loaded from file")
+                }
             }
 
             // Show placeholder if no charts available
             if (!hasChart) {
                 views.setViewVisibility(R.id.widget_placeholder, View.VISIBLE)
+                Log.d(TAG, "Widget $appWidgetId showing placeholder - no weather data")
             } else {
                 views.setViewVisibility(R.id.widget_placeholder, View.GONE)
             }
@@ -305,5 +462,8 @@ class MeteogramWidgetProvider : HomeWidgetProvider() {
             appWidgetManager.updateAppWidget(appWidgetId, views)
             Log.d(TAG, "Updated widget $appWidgetId")
         }
+
+        // Update last render time
+        WidgetUtils.updateLastRenderTime(context)
     }
 }
