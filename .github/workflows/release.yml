@@ -26,6 +26,9 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Generate version file
+        run: ./scripts/generate_version.sh
+
       - name: Analyze code
         run: flutter analyze
 

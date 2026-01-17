@@ -54,6 +54,9 @@ jobs:
       - name: Get Flutter dependencies
         run: flutter pub get
 
+      - name: Generate version file
+        run: ./scripts/generate_version.sh
+
       - name: Build for CodeQL
         run: cd android && ./gradlew compileDebugKotlin --no-daemon
 
