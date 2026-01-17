@@ -254,9 +254,9 @@ class MeteogramWidgetProvider : HomeWidgetProvider() {
         return null
     }
 
-    // Note: System events (USER_PRESENT, LOCALE_CHANGED, etc.) are handled
-    // by WidgetEventReceiver which is registered at runtime in MeteogramApplication.
-    // Implicit broadcasts cannot be received via manifest-declared receivers on Android 8.0+.
+    // Note: LOCALE_CHANGED and TIMEZONE_CHANGED are handled by WidgetEventReceiver
+    // (manifest-registered). Network changes are handled by WorkManager with
+    // NetworkType.CONNECTED constraint.
 
     override fun onAppWidgetOptionsChanged(
         context: Context,

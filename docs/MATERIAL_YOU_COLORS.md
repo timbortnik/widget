@@ -23,13 +23,12 @@ The widget detects color changes through multiple layered mechanisms:
 |-----------|-------|---------------|
 | **ContentObserver** | Immediate | App process alive (in background) |
 | **WorkManager ContentUriTrigger** | Delayed (batched) | Fallback when app killed |
-| **USER_PRESENT broadcast** | On unlock | App was force-closed |
 | **WeatherUpdateWorker** | ~30 min | Periodic WorkManager task |
 | **onUpdate()** | On interaction | Widget resize/tap |
 
 **Primary mechanism:** ContentObserver in `MeteogramApplication` fires instantly when `Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES` changes. This works as long as the app process is alive (even in background).
 
-**Fallbacks:** When the app is force-closed, WorkManager and USER_PRESENT catch the change on next process start or screen unlock.
+**Fallbacks:** When the app is force-closed, WorkManager catches the change on next process start.
 
 ## Files
 
@@ -40,7 +39,6 @@ The widget detects color changes through multiple layered mechanisms:
 | `MaterialYouColorWorker.kt` | WorkManager fallback with content URI trigger |
 | `WeatherUpdateWorker.kt` | Periodic WorkManager task, checks colors |
 | `MeteogramWidgetProvider.kt` | Checks colors in onUpdate() |
-| `WidgetEventReceiver.kt` | Checks colors on USER_PRESENT |
 
 ## Data Flow
 
@@ -50,16 +48,13 @@ User changes Material You colors in Settings
          ▼
 Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES changes
          │
-         ├──────────────────────┬──────────────────────┐
-         │                      │                      │
-         ▼                      ▼                      ▼
-   ContentObserver        WorkManager            (App killed)
-   (immediate)            (batched delay)              │
-         │                      │                      ▼
-         │                      │               USER_PRESENT
-         │                      │               on next unlock
-         │                      │                      │
-         └──────────────────────┴──────────────────────┘
+         ├──────────────────────┐
+         │                      │
+         ▼                      ▼
+   ContentObserver        WorkManager
+   (immediate)            (batched delay)
+         │                      │
+         └──────────────────────┘
                                 │
                                 ▼
          MaterialYouColorExtractor.checkAndUpdateColors()
@@ -127,7 +122,7 @@ These are two separate concerns:
 ```
 RemoteViews switches visibility instantly when system theme changes - no app code needed.
 
-**Material You accent colors** require active detection because Android provides no broadcast. This is why we use the multi-layered approach (ContentObserver, WorkManager, USER_PRESENT, etc.).
+**Material You accent colors** require active detection because Android provides no broadcast. This is why we use the multi-layered approach (ContentObserver, WorkManager).
 
 ### Why Themed Icons Update Instantly
 

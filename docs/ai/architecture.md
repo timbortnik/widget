@@ -40,10 +40,9 @@ The app follows a standard Flutter architecture with clear separation of concern
 ### Widget Updates
 Background updates use layered mechanisms for reliability:
 1. **AlarmManager (15 min)**: Inexact alarm catches up on wake if missed during sleep
-2. **WorkManager (~30 min)**: Network-constrained periodic task
+2. **WorkManager (~30 min)**: Network-constrained periodic task (fetches when network available)
 3. **BOOT_COMPLETED**: Immediate refresh after device boot
-4. **CONNECTIVITY_CHANGE**: Refresh when network returns
-5. **updatePeriodMillis (30 min)**: System fallback, OEM-resistant
+4. **updatePeriodMillis (30 min)**: System fallback, OEM-resistant
 
 All paths use the same native flow:
 1. Check staleness (>15 min) → fetch weather if needed via `WeatherFetcher`
@@ -183,7 +182,7 @@ android/app/src/main/kotlin/.../
 ├── MainActivity.kt              # PlatformView factory, Material You colors
 ├── MeteogramApplication.kt      # Registers receivers, schedules alarm
 ├── MeteogramWidgetProvider.kt   # Home screen widget provider
-├── WidgetEventReceiver.kt       # Handles CONNECTIVITY_CHANGE, locale/timezone
+├── WidgetEventReceiver.kt       # Handles locale/timezone changes
 ├── WidgetAlarmScheduler.kt      # Schedules 15-min inexact alarm
 ├── WidgetAlarmReceiver.kt       # Handles alarm-triggered updates
 ├── BootCompletedReceiver.kt     # Refreshes widget on device boot

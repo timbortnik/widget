@@ -73,7 +73,6 @@
 
         <!-- Widget event receiver for system broadcasts that trigger widget updates -->
         <!-- LOCALE_CHANGED and TIMEZONE_CHANGED are exempt from Android 8.0+ restrictions -->
-        <!-- CONNECTIVITY_CHANGE is registered at runtime in MeteogramApplication -->
         <receiver
             android:name=".WidgetEventReceiver"
             android:exported="true">

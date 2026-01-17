@@ -365,14 +365,11 @@ The widget responds to system events via broadcast receivers.
 |-------|----------------|--------------|----------|
 | Device boot | `ACTION_BOOT_COMPLETED` | Manifest | Fetch if stale, re-render, schedule alarm |
 | Alarm (15 min) | Custom action | AlarmManager | Fetch if stale, re-render if needed |
-| Network restored | `CONNECTIVITY_CHANGE` | Runtime | Fetch if stale, re-render if needed |
 | Widget resize | `onAppWidgetOptionsChanged` | N/A | Re-render immediately |
 | Locale change | `ACTION_LOCALE_CHANGED` | Manifest | Re-render all widgets (no fetch) |
 | Timezone change | `ACTION_TIMEZONE_CHANGED` | Manifest | Re-render all widgets (no fetch) |
-| Periodic (~30 min) | `WeatherUpdateWorker` | WorkManager | Fetch if stale, re-render all widgets |
+| Periodic (~30 min) | `WeatherUpdateWorker` | WorkManager | Fetch if stale, re-render all widgets (has `NetworkType.CONNECTED` constraint) |
 | System fallback | `updatePeriodMillis` | Widget XML | Re-render (OEM-resistant) |
-
-Note: `ACTION_USER_PRESENT` was removed - it only works when app process is running, causing inconsistent behavior.
 
 **Important:** `LOCALE_CHANGED` and `TIMEZONE_CHANGED` use manifest-declared receivers because the app process is killed when locale/timezone changes. Runtime-registered receivers are lost when the process dies. These broadcasts are exempt from Android 8.0+ implicit broadcast restrictions.
 
@@ -467,7 +464,7 @@ private fun fetchWeatherIfStale(context: Context) {
 ┌─────────────────────────────────────────────────────────────┐
 │                     MeteogramApplication                      │
 │  onCreate():                                                  │
-│  - Registers WidgetEventReceiver for CONNECTIVITY_CHANGE      │
+│  - Registers theme ContentObserver (Material You)             │
 │  - Schedules WidgetAlarmScheduler (15-min inexact alarm)      │
 │  - Enqueues WeatherUpdateWorker (WorkManager)                 │
 └─────────────────────────────────────────────────────────────┘
@@ -485,7 +482,7 @@ private fun fetchWeatherIfStale(context: Context) {
 ├─────────────────────────────────────────────────────────────┤
 │  BootCompletedReceiver    → Immediate refresh on boot         │
 │  WidgetAlarmReceiver      → Every ~15 min (catches up on wake)│
-│  WidgetEventReceiver      → CONNECTIVITY_CHANGE, locale/tz    │
+│  WidgetEventReceiver      → Locale/timezone changes           │
 │  WeatherUpdateWorker      → Every ~30 min (network required)  │
 │  updatePeriodMillis       → Every 30 min (system fallback)    │
 └─────────────────────────────────────────────────────────────┘
@@ -501,12 +498,10 @@ private fun fetchWeatherIfStale(context: Context) {
 ```
 
 **Broadcast Registration Notes:**
-- `CONNECTIVITY_CHANGE`: Runtime registration in MeteogramApplication
 - `LOCALE_CHANGED`, `TIMEZONE_CHANGED`: Manifest (app killed on change, exempt from 8.0+ restrictions)
 - `BOOT_COMPLETED`: Manifest (requires RECEIVE_BOOT_COMPLETED permission)
 - Custom alarm action: Manifest for WidgetAlarmReceiver
-
-**Note:** `ACTION_USER_PRESENT` was removed - it only works when app process is running (runtime registration required since Android 8.0), causing inconsistent widget behavior.
+- Network availability: Handled by WorkManager with `NetworkType.CONNECTED` constraint
 
 #### "Now" Indicator Updates
 

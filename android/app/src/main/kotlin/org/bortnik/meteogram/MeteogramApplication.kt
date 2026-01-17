@@ -2,7 +2,6 @@ package org.bortnik.meteogram
 
 import android.app.Application
 import android.content.Intent
-import android.content.IntentFilter
 import android.database.ContentObserver
 import android.os.Build
 import android.os.Handler
@@ -20,14 +19,11 @@ class MeteogramApplication : Application() {
         private const val THEME_CUSTOMIZATION_KEY = "theme_customization_overlay_packages"
     }
 
-    private val widgetEventReceiver = WidgetEventReceiver()
-    private var receiverRegistered = false
     private var themeObserver: ContentObserver? = null
 
     override fun onCreate() {
         super.onCreate()
         Log.d(TAG, "Application onCreate")
-        registerEventReceiver()
         registerThemeObserver()
         enqueueMaterialYouColorObserver()
         enqueuePeriodicWeatherUpdate()
@@ -75,22 +71,5 @@ class MeteogramApplication : Application() {
         // WorkManager periodic task for background weather updates
         // More battery-efficient than AlarmManager - OS batches work
         WeatherUpdateWorker.enqueue(this)
-    }
-
-    private fun registerEventReceiver() {
-        if (receiverRegistered) return
-
-        // LOCALE_CHANGED and TIMEZONE_CHANGED are handled by manifest-declared receiver
-        // (required because app process is killed on locale change)
-        // CONNECTIVITY_CHANGE requires runtime registration
-        // Note: USER_PRESENT removed - it only works when app is running, causing inconsistent behavior
-        val filter = IntentFilter().apply {
-            addAction("android.net.conn.CONNECTIVITY_CHANGE")
-        }
-
-        // Use RECEIVER_EXPORTED to receive system broadcasts
-        registerReceiver(widgetEventReceiver, filter, RECEIVER_EXPORTED)
-        receiverRegistered = true
-        Log.d(TAG, "Widget event receiver registered (runtime: CONNECTIVITY_CHANGE)")
     }
 }

@@ -30,7 +30,7 @@ This file provides context for AI assistants working on this project.
 - **Data:** Temperature (line with gradient fill), precipitation (bars), daylight (computed from cloud cover)
 - **Theme:** System light/dark mode with custom color palette
 - **Units:** Locale-aware (°F for US/Liberia/Myanmar, °C elsewhere)
-- **Update:** Timer checks every minute in foreground (refreshes if data >15 min old, redraws at half-hour boundary). Background: AlarmManager (15 min), WorkManager (~30 min), BOOT_COMPLETED, CONNECTIVITY_CHANGE, updatePeriodMillis (30 min fallback)
+- **Update:** Timer checks every minute in foreground (refreshes if data >15 min old, redraws at half-hour boundary). Background: AlarmManager (15 min), WorkManager (~30 min with network constraint), BOOT_COMPLETED, updatePeriodMillis (30 min fallback)
 - **Languages:** 30+ languages via ARB files
 - **Widget:** SVG rendered natively via AndroidSVG for pixel-perfect display
 
@@ -61,7 +61,7 @@ android/app/src/main/
 │   ├── MainActivity.kt
 │   ├── MeteogramApplication.kt       # Registers receivers, theme observer, alarm
 │   ├── MeteogramWidgetProvider.kt    # Extends HomeWidgetProvider
-│   ├── WidgetEventReceiver.kt        # Handles CONNECTIVITY_CHANGE, locale/timezone
+│   ├── WidgetEventReceiver.kt        # Handles locale/timezone changes
 │   ├── WidgetAlarmScheduler.kt       # Schedules 15-min inexact alarm
 │   ├── WidgetAlarmReceiver.kt        # Handles alarm broadcasts
 │   ├── BootCompletedReceiver.kt      # Refreshes widget on device boot
@@ -131,14 +131,11 @@ Android widgets use RemoteViews which only support:
 
 ### Background Refresh (fully native)
 - **AlarmManager**: `WidgetAlarmScheduler.kt` schedules 15-min inexact alarm (catches up on wake)
-- **WorkManager**: `WeatherUpdateWorker.kt` runs ~30 min with network constraint
+- **WorkManager**: `WeatherUpdateWorker.kt` runs ~30 min with `NetworkType.CONNECTED` constraint
 - **BOOT_COMPLETED**: `BootCompletedReceiver.kt` refreshes immediately after device boot
-- **CONNECTIVITY_CHANGE**: `WidgetEventReceiver.kt` refreshes when network returns
 - **updatePeriodMillis**: System-managed 30-min fallback (OEM-resistant)
 - **Weather fetching**: `WeatherFetcher.kt` calls Open-Meteo API directly (no Dart involved)
 - **Material You**: `ContentObserver` + `MaterialYouColorWorker.kt` detect theme changes
-
-Note: USER_PRESENT was removed - it only works when app process is running, causing inconsistent behavior.
 
 ## Build Commands
 
