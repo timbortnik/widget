@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="widget_description">Meteogramma con temperatura, precipitazioni e luce diurna</string>
+    <string name="widget_placeholder">Tocca per caricare le previsioni</string>
 </resources>

@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="widget_description">तापमान, वर्षा और दिन के उजाले दिखाने वाला मौसम चार्ट</string>
+    <string name="widget_placeholder">पूर्वानुमान लोड करने के लिए टैप करें</string>
 </resources>

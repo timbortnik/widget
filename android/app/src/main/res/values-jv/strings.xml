@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="widget_description">Meteogram karo suhu, udan lan cahya awan</string>
+    <string name="widget_placeholder">Tutul kanggo mbukak ramalan</string>
 </resources>

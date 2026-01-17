@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="widget_description">기온, 강수량, 일조량을 보여주는 기상도</string>
+    <string name="widget_placeholder">탭하여 예보 로드</string>
 </resources>

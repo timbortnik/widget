@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="widget_description">Meteogram med temperatur, nederbörd och dagsljus</string>
+    <string name="widget_placeholder">Tryck för att ladda prognos</string>
 </resources>

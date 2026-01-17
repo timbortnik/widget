@@ -37,7 +37,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"
-        android:text="Tap to load forecast"
+        android:text="@string/widget_placeholder"
         android:textSize="13sp"
         android:textColor="@color/widget_placeholder_text"
         android:fontFamily="sans-serif" />

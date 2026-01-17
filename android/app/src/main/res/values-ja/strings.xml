@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="widget_description">気温、降水量、日照を表示するメテオグラム</string>
+    <string name="widget_placeholder">タップして予報を読み込む</string>
 </resources>

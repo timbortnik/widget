@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="widget_description">Sıcaklık, yağış ve gün ışığı gösteren meteogram</string>
+    <string name="widget_placeholder">Hava durumunu yüklemek için dokunun</string>
 </resources>

@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="widget_description">Meteogram z temperaturą, opadami i światłem dziennym</string>
+    <string name="widget_placeholder">Dotknij, aby załadować prognozę</string>
 </resources>

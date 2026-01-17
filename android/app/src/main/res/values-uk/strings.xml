@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="widget_description">Метеограма з прогнозом температури, опадів та освітленості</string>
+    <string name="widget_placeholder">Натисніть, щоб завантажити прогноз</string>
 </resources>

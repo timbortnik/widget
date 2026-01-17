@@ -2,4 +2,5 @@
 <resources>
     <string name="app_name">Meteogram</string>
     <string name="widget_description">Weather meteogram showing temperature, precipitation, and daylight</string>
+    <string name="widget_placeholder">Tap to load forecast</string>
 </resources>

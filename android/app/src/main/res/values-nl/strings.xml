@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="widget_description">Meteogram met temperatuur, neerslag en daglicht</string>
+    <string name="widget_placeholder">Tik om voorspelling te laden</string>
 </resources>
