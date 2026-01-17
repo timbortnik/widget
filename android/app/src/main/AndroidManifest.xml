@@ -73,13 +73,32 @@
 
         <!-- Widget event receiver for system broadcasts that trigger widget updates -->
         <!-- LOCALE_CHANGED and TIMEZONE_CHANGED are exempt from Android 8.0+ restrictions -->
-        <!-- USER_PRESENT and CONNECTIVITY_CHANGE are registered at runtime in MeteogramApplication -->
+        <!-- CONNECTIVITY_CHANGE is registered at runtime in MeteogramApplication -->
         <receiver
             android:name=".WidgetEventReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.LOCALE_CHANGED" />
                 <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Alarm receiver for periodic widget updates -->
+        <!-- Fires every ~15 min when device is awake, catches up on wake if missed -->
+        <receiver
+            android:name=".WidgetAlarmReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="org.bortnik.meteogram.ACTION_ALARM_UPDATE" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Boot completed receiver to refresh widget immediately after reboot -->
+        <receiver
+            android:name=".BootCompletedReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
     </application>

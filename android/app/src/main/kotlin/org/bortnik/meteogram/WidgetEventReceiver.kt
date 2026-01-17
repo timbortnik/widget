@@ -43,17 +43,18 @@ class WidgetEventReceiver : BroadcastReceiver() {
                 triggerReRender(context)
             }
             "android.net.conn.CONNECTIVITY_CHANGE" -> {
-                // Check network immediately - staleness check prevents duplicate fetches
                 if (isNetworkAvailable(context)) {
-                    Log.d(TAG, "Network available - checking staleness")
-                    fetchWeatherIfStale(context)
+                    // Fetch if stale, otherwise re-render if needed (30-min boundary crossed)
+                    if (WidgetUtils.isWeatherDataStale(context)) {
+                        Log.d(TAG, "Network available, data stale - fetching weather")
+                        WidgetUtils.fetchWeather(context)
+                    } else {
+                        Log.d(TAG, "Network available, data fresh - checking if re-render needed")
+                        WidgetUtils.rerenderAllWidgetsIfNeeded(context)
+                    }
                 }
             }
         }
-    }
-
-    private fun fetchWeatherIfStale(context: Context) {
-        WidgetUtils.fetchWeatherIfStale(context)
     }
 
     private fun triggerReRender(context: Context) {

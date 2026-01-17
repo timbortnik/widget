@@ -31,6 +31,13 @@ class MeteogramApplication : Application() {
         registerThemeObserver()
         enqueueMaterialYouColorObserver()
         enqueuePeriodicWeatherUpdate()
+        scheduleWidgetAlarm()
+    }
+
+    private fun scheduleWidgetAlarm() {
+        // Inexact alarm for reliable "now" indicator updates
+        // Fires every ~15 min, catches up on wake if missed during sleep
+        WidgetAlarmScheduler.schedule(this)
     }
 
     /**
