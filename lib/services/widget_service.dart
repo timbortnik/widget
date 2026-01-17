@@ -135,6 +135,9 @@ class WidgetService {
       await HomeWidget.saveWidgetData<String>('svg_path_light', lightPath);
       await HomeWidget.saveWidgetData<String>('svg_path_dark', darkPath);
 
+      // Update last render time for conditional re-render on unlock
+      await HomeWidget.saveWidgetData<int>('last_render_time', DateTime.now().millisecondsSinceEpoch);
+
       debugPrint('SVG charts generated: $lightPath, $darkPath');
       return true;
     } catch (e) {

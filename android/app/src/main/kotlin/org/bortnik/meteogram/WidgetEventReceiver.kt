@@ -33,11 +33,12 @@ class WidgetEventReceiver : BroadcastReceiver() {
 
         when (intent.action) {
             Intent.ACTION_USER_PRESENT -> {
-                // Screen unlocked - always re-render to update "now" indicator position
-                // Check Material You colors first (updates stored colors if changed)
-                Log.d(TAG, "User present - re-rendering chart and checking staleness")
+                // Screen unlocked - re-render only if needed:
+                // 1. Crossed 30-min boundary (now indicator moved)
+                // 2. Weather data updated while locked (background fetch)
+                Log.d(TAG, "User present - checking if re-render needed")
                 updateMaterialYouColors(context)
-                WidgetUtils.rerenderChart(context)
+                WidgetUtils.rerenderAllWidgetsIfNeeded(context)
                 fetchWeatherIfStale(context)
             }
             Intent.ACTION_LOCALE_CHANGED -> {

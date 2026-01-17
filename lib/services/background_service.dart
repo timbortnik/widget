@@ -142,6 +142,9 @@ Future<void> _updateWeatherData() async {
     }
     _log('SVG charts generated');
 
+    // Update last render time for conditional re-render on unlock
+    await HomeWidget.saveWidgetData<int>('last_render_time', DateTime.now().millisecondsSinceEpoch);
+
     _log('Updating widget...');
     await HomeWidget.updateWidget(
       androidName: 'MeteogramWidgetProvider',
@@ -206,6 +209,9 @@ Future<void> _reRenderCharts([Uri? uri]) async {
 
     // Regenerate SVG charts (pass URI params if available)
     await _generateSvgCharts(weather, latitude, longitude, uriWidth: uriWidth, uriHeight: uriHeight, uriLocale: uriLocale, widgetId: widgetId);
+
+    // Update last render time for conditional re-render on unlock
+    await HomeWidget.saveWidgetData<int>('last_render_time', DateTime.now().millisecondsSinceEpoch);
 
     // Update widget
     await HomeWidget.updateWidget(
@@ -284,6 +290,9 @@ Future<void> _reRenderAllWidgets([Uri? uri]) async {
         );
       }
     }
+
+    // Update last render time for conditional re-render on unlock
+    await HomeWidget.saveWidgetData<int>('last_render_time', DateTime.now().millisecondsSinceEpoch);
 
     // Update widget
     await HomeWidget.updateWidget(
