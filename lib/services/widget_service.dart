@@ -23,24 +23,6 @@ class WidgetService {
     }
   }
 
-  /// Save current temperature for widget display.
-  Future<void> saveCurrentTemperature(String tempString) async {
-    try {
-      await HomeWidget.saveWidgetData<String>('current_temperature', tempString);
-    } catch (e) {
-      debugPrint('Error saving temperature: $e');
-    }
-  }
-
-  /// Save location name for widget display.
-  Future<void> saveLocationName(String? locationName) async {
-    try {
-      await HomeWidget.saveWidgetData<String>('location_name', locationName ?? '');
-    } catch (e) {
-      debugPrint('Error saving location: $e');
-    }
-  }
-
   /// Initialize widget service.
   static Future<void> initialize() async {
     // Set app group ID for iOS

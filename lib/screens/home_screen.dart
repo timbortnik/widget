@@ -176,18 +176,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   /// Update widget when app goes to background.
   /// Triggers native widget update which generates fresh SVG.
   Future<void> _updateWidgetOnBackground() async {
-    if (_currentTemperatureCelsius == null) return;
-
     try {
-      // Save current data for widget display
-      await _widgetService.saveCurrentTemperature(
-        UnitsService.formatTemperatureFromBool(_currentTemperatureCelsius!, UnitsService.usesFahrenheit(PlatformDispatcher.instance.locale)),
-      );
-      await _widgetService.saveLocationName(_locationName);
-
-      // Trigger native widget update - SVG is generated natively
       await _widgetService.triggerWidgetUpdate();
-
       debugPrint('Widget updated on app background');
     } catch (e) {
       debugPrint('Error updating widget on background: $e');
@@ -263,14 +253,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     try {
       // Track brightness for theme change detection
       _lastRenderedBrightness = WidgetsBinding.instance.platformDispatcher.platformBrightness;
-
-      // Save current data for widget display
-      if (_currentTemperatureCelsius != null) {
-        await _widgetService.saveCurrentTemperature(
-          UnitsService.formatTemperatureFromBool(_currentTemperatureCelsius!, UnitsService.usesFahrenheit(PlatformDispatcher.instance.locale)),
-        );
-      }
-      await _widgetService.saveLocationName(_locationName);
 
       // Trigger native widget update - SVG is generated natively from cached weather
       await _widgetService.triggerWidgetUpdate();

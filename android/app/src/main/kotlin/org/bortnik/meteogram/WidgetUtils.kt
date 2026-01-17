@@ -153,12 +153,7 @@ object WidgetUtils {
 
             Log.d(TAG, "Triggering native update for ${widgetIds.size} widgets")
 
-            // notifyAppWidgetViewDataChanged triggers onUpdate
-            for (widgetId in widgetIds) {
-                appWidgetManager.notifyAppWidgetViewDataChanged(widgetId, android.R.id.list)
-            }
-
-            // Also send explicit update intent
+            // Send explicit update intent
             val intent = android.content.Intent(context, MeteogramWidgetProvider::class.java).apply {
                 action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
                 putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, widgetIds)

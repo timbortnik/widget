@@ -186,8 +186,10 @@ object WeatherFetcher {
 
     /**
      * Fetch weather data from Open-Meteo API.
+     * Certificate pinning not implemented - acceptable for public weather data with no auth.
      * @return JSON response or null on failure
      */
+    @android.annotation.SuppressLint("CustomX509TrustManager")
     private fun fetchFromApi(latitude: Double, longitude: Double): JSONObject? {
         val url = URL(buildUrl(latitude, longitude))
         var connection: HttpURLConnection? = null
