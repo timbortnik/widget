@@ -2,7 +2,7 @@
 
 FLUTTER := ~/git/flutter/bin/flutter
 
-.PHONY: debug release release-all release-split bundle install install-debug clean version
+.PHONY: debug release release-all release-split bundle install install-debug clean version test test-dart test-kotlin analyze
 
 # Generate version.dart from git info (tag or commit hash)
 version:
@@ -39,3 +39,18 @@ install-debug: debug
 # Clean build artifacts
 clean:
 	$(FLUTTER) clean
+
+# Run all tests (Dart + Kotlin)
+test: test-dart test-kotlin
+
+# Run Dart/Flutter tests only
+test-dart:
+	$(FLUTTER) test
+
+# Run Kotlin unit tests only (requires JDK 17+, set JAVA_HOME if needed)
+test-kotlin:
+	cd android && ./gradlew :app:test --console=plain
+
+# Run Flutter analyzer
+analyze:
+	$(FLUTTER) analyze

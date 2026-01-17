@@ -158,8 +158,14 @@ Note: All build targets run `make version` first to embed git tag/commit hash.
 **MANDATORY** before committing any code changes:
 
 ```bash
-flutter analyze     # Must show "No issues found!"
-flutter test        # Must pass all tests
+make analyze        # Must show "No issues found!"
+make test           # Must pass all tests (Dart + Kotlin)
+```
+
+Individual test commands:
+```bash
+make test-dart      # Flutter/Dart tests only
+make test-kotlin    # Kotlin unit tests only
 ```
 
 Do not commit code with analyzer warnings or test failures.
