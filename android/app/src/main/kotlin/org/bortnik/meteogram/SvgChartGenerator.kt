@@ -93,11 +93,11 @@ data class SvgChartColors(
 
         val dark = SvgChartColors(
             temperatureLine = SvgColor(0xFF, 0x76, 0x75),
-            temperatureGradientStart = SvgColor(0xFF, 0x76, 0x75, 0x60),
+            temperatureGradientStart = SvgColor(0xFF, 0x76, 0x75, 0x28),  // 16% opacity (was 38%)
             temperatureGradientEnd = SvgColor(0xFF, 0x76, 0x75, 0x00),
             precipitationBar = SvgColor(0x00, 0xCE, 0xC9),
-            daylightBar = SvgColor(0xFF, 0xFF, 0x00),        // Pure yellow
-            nowIndicator = SvgColor(0xE0, 0xE0, 0xE0),
+            daylightBar = SvgColor(0xFF, 0xD5, 0x4F),        // Warm amber
+            nowIndicator = SvgColor(0xFF, 0xFF, 0xFF),        // Pure white
             timeLabel = SvgColor(0xE0, 0xE0, 0xE0),
             cardBackground = SvgColor(0x2D, 0x2D, 0x2D),    // Neutral gray
             primaryText = SvgColor(0xFF, 0xFF, 0xFF)
@@ -135,10 +135,10 @@ object ChartConstants {
     const val TEMP_RANGE_PADDING_RATIO = 0.10
 
     /** Opacity for daylight bars. */
-    const val DAYLIGHT_BAR_OPACITY = 0.8
+    const val DAYLIGHT_BAR_OPACITY = 0.5
 
     /** Opacity for precipitation bars. */
-    const val PRECIPITATION_BAR_OPACITY = 0.85
+    const val PRECIPITATION_BAR_OPACITY = 0.5
 }
 
 /**
@@ -300,6 +300,22 @@ class SvgChartGenerator {
         val slotWidth = width / data.size
         val barWidth = slotWidth * ChartConstants.BAR_WIDTH_RATIO
 
+        val shadowOffset = 3
+
+        // Draw shadows first (outside opacity group for visibility)
+        svg.append("""<g opacity="0.4">""")
+        for (i in data.indices) {
+            val daylight = calculateDaylight(data[i], latitude, longitude)
+            if (daylight <= 0) continue
+
+            val barHeight = daylight * chartHeight
+            val x = i * slotWidth + (slotWidth - barWidth) / 2
+
+            svg.append("""<rect x="${(x + shadowOffset).toInt()}" y="$shadowOffset" width="${barWidth.toInt()}" height="${barHeight.toInt()}" fill="#000000" rx="2"/>""")
+        }
+        svg.append("</g>")
+
+        // Draw main bars
         svg.append("""<g opacity="${ChartConstants.DAYLIGHT_BAR_OPACITY}">""")
         for (i in data.indices) {
             val daylight = calculateDaylight(data[i], latitude, longitude)
@@ -329,6 +345,23 @@ class SvgChartGenerator {
         val slotWidth = width / data.size
         val barWidth = slotWidth * ChartConstants.BAR_WIDTH_RATIO
 
+        val shadowOffset = 3
+
+        // Draw shadows first (outside opacity group for visibility)
+        svg.append("""<g opacity="0.4">""")
+        for (i in data.indices) {
+            val precip = data[i].precipitation
+            if (precip <= 0) continue
+
+            val normalized = (precip / 10.0).coerceIn(0.0, 1.0)
+            val barHeight = sqrt(normalized) * chartHeight
+            val x = i * slotWidth + (slotWidth - barWidth) / 2
+
+            svg.append("""<rect x="${(x + shadowOffset).toInt()}" y="$shadowOffset" width="${barWidth.toInt()}" height="${barHeight.toInt()}" fill="#000000" rx="2"/>""")
+        }
+        svg.append("</g>")
+
+        // Draw main bars
         svg.append("""<g opacity="${ChartConstants.PRECIPITATION_BAR_OPACITY}">""")
         for (i in data.indices) {
             val precip = data[i].precipitation
@@ -382,8 +415,9 @@ class SvgChartGenerator {
         val areaPath = "$path L ${width.toInt()} ${chartHeight.toInt()} L 0 ${chartHeight.toInt()} Z"
         svg.append("""<path d="$areaPath" fill="url(#tempGradient)" stroke="none"/>""")
 
-        // Temperature line with dark outline for visibility on daylight bars
-        svg.append("""<path d="$path" fill="none" stroke="#000000" stroke-width="5" stroke-opacity="0.3" stroke-linecap="round" stroke-linejoin="round"/>""")
+        // Temperature line with offset drop shadow for depth
+        val shadowOffset = 3
+        svg.append("""<path d="$path" fill="none" stroke="#000000" stroke-width="4" stroke-opacity="0.5" stroke-linecap="round" stroke-linejoin="round" transform="translate($shadowOffset,$shadowOffset)"/>""")
         svg.append("""<path d="$path" fill="none" stroke="${colors.temperatureLine.toHex()}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>""")
     }
 
@@ -426,14 +460,24 @@ class SvgChartGenerator {
 
         // Font size relative to width
         val fontSize = (width * ChartConstants.TEMP_FONT_SIZE_RATIO).toInt()
-        val style = """fill="${colors.temperatureLine.toHex()}" font-size="$fontSize" font-weight="bold" font-family="sans-serif" text-anchor="middle""""
+        val baseStyle = """font-size="$fontSize" font-weight="bold" font-family="sans-serif" text-anchor="middle" dominant-baseline="middle""""
+        val shadowStyle = """fill="#000000" fill-opacity="0.6" $baseStyle"""
+        val fillStyle = """fill="${colors.temperatureLine.toHex()}" $baseStyle"""
 
         // Align labels with actual temperature positions on the line
         // Add offset to account for text height
         val yOffset = fontSize * 0.4
-        svg.append("""<text x="${centerX.toInt()}" y="${(tempToY(maxTemp) + yOffset).toInt()}" $style dominant-baseline="middle">${formatTemp(maxTemp)}</text>""")
-        svg.append("""<text x="${centerX.toInt()}" y="${(tempToY(midTemp) + yOffset).toInt()}" $style dominant-baseline="middle">${formatTemp(midTemp)}</text>""")
-        svg.append("""<text x="${centerX.toInt()}" y="${(tempToY(minTemp) + yOffset).toInt()}" $style dominant-baseline="middle">${formatTemp(minTemp)}</text>""")
+        val shadowOffset = 4  // Shadow offset down and right
+
+        // Draw each label: offset shadow first, then main text
+        listOf(maxTemp, midTemp, minTemp).forEach { temp ->
+            val y = (tempToY(temp) + yOffset).toInt()
+            val text = formatTemp(temp)
+            // Shadow (offset down-right)
+            svg.append("""<text x="${centerX.toInt() + shadowOffset}" y="${y + shadowOffset}" $shadowStyle>$text</text>""")
+            // Main text
+            svg.append("""<text x="${centerX.toInt()}" y="$y" $fillStyle>$text</text>""")
+        }
     }
 
     /**
@@ -452,7 +496,10 @@ class SvgChartGenerator {
         val fontSize = (width * ChartConstants.TIME_FONT_SIZE_RATIO).toInt()
         // Position labels 60% down in the area below the chart
         val labelY = chartHeight + (height - chartHeight) * 0.6
-        val style = """fill="${colors.timeLabel.toHex()}" font-size="$fontSize" font-weight="600" font-family="sans-serif" text-anchor="middle" dominant-baseline="middle""""
+        val baseStyle = """font-size="$fontSize" font-weight="600" font-family="sans-serif" text-anchor="middle" dominant-baseline="middle""""
+        val shadowStyle = """fill="#000000" fill-opacity="0.6" $baseStyle"""
+        val fillStyle = """fill="${colors.timeLabel.toHex()}" $baseStyle"""
+        val shadowOffset = 4  // Shadow offset down and right
 
         var i = nowIndex
         while (i < data.size - 8) {
@@ -462,7 +509,10 @@ class SvgChartGenerator {
                 val timeStr = formatHourOnly(date)
                 val x = (i.toDouble() / (data.size - 1)) * width
 
-                svg.append("""<text x="${x.toInt()}" y="${labelY.toInt()}" $style>$timeStr</text>""")
+                // Shadow (offset down-right)
+                svg.append("""<text x="${x.toInt() + shadowOffset}" y="${labelY.toInt() + shadowOffset}" $shadowStyle>$timeStr</text>""")
+                // Main text
+                svg.append("""<text x="${x.toInt()}" y="${labelY.toInt()}" $fillStyle>$timeStr</text>""")
             }
             i++
         }
