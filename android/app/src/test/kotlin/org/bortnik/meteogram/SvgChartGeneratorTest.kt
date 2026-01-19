@@ -71,7 +71,7 @@ class SvgChartGeneratorTest {
     fun `SvgChartColors light preset has expected values`() {
         val light = SvgChartColors.light
 
-        assertEquals("#ff6b6b", light.temperatureLine.toHex())
+        assertEquals("#e04545", light.temperatureLine.toHex())  // Deeper red for light bg
         assertEquals("#4ecdc4", light.precipitationBar.toHex())
     }
 
@@ -79,7 +79,7 @@ class SvgChartGeneratorTest {
     fun `SvgChartColors dark preset has expected values`() {
         val dark = SvgChartColors.dark
 
-        assertEquals("#ff7675", dark.temperatureLine.toHex())
+        assertEquals("#ff5f5f", dark.temperatureLine.toHex())  // More saturated coral
         assertEquals("#00cec9", dark.precipitationBar.toHex())
     }
 
