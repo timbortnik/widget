@@ -140,8 +140,8 @@ object ChartConstants {
     /** Chart height as percentage of total height (95%). */
     const val CHART_HEIGHT_RATIO = 0.95
 
-    /** Temperature range vertical padding (10% of range). */
-    const val TEMP_RANGE_PADDING_RATIO = 0.10
+    /** Temperature range vertical padding (15% of range). */
+    const val TEMP_RANGE_PADDING_RATIO = 0.15
 
     /** Opacity for daylight bars. */
     const val DAYLIGHT_BAR_OPACITY = 0.70
@@ -426,7 +426,7 @@ class SvgChartGenerator {
         val maxTemp = temps.maxOrNull() ?: 0.0
         val midTemp = (minTemp + maxTemp) / 2
         val tempRange = (maxTemp - minTemp).coerceAtLeast(1.0)
-        val yPadding = tempRange * 0.10
+        val yPadding = tempRange * ChartConstants.TEMP_RANGE_PADDING_RATIO
 
         // Use same Y calculation as temperature line for alignment
         fun tempToY(temp: Double): Double {
