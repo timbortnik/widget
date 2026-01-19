@@ -65,9 +65,9 @@ object MaterialYouColorExtractor {
             val lightPrimary = context.getColor(android.R.color.system_accent1_800)  // Darker for light bg
             val lightOnPrimaryContainer = context.getColor(android.R.color.system_accent1_900)
             val lightTertiary = context.getColor(android.R.color.system_accent3_800)  // Darker for light bg
-            val darkPrimary = context.getColor(android.R.color.system_accent1_300)  // More saturated
-            val darkOnPrimaryContainer = context.getColor(android.R.color.system_accent1_100)
-            val darkTertiary = context.getColor(android.R.color.system_accent3_300)  // More saturated
+            val darkPrimary = context.getColor(android.R.color.system_accent1_100)  // Brightest for dark bg
+            val darkOnPrimaryContainer = context.getColor(android.R.color.system_accent1_50)
+            val darkTertiary = context.getColor(android.R.color.system_accent3_100)  // Brightest for dark bg
 
             // Extract surface colors from neutral palette
             // Light: lower tone numbers = lighter colors
