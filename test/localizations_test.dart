@@ -96,8 +96,7 @@ void main() {
       final ja = await AppLocalizations.delegate.load(jaLocale);
 
       // Verify translations are actually different (not all English)
-      expect(en.appTitle, isNot(equals(de.appTitle)),
-        reason: 'English and German titles should be different');
+      // Note: appTitle is "Meteograph" in all languages (brand name)
       expect(en.temperature, isNot(equals(uk.temperature)),
         reason: 'English and Ukrainian should be different');
       expect(en.location, isNot(equals(ja.location)),
