@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="500" viewBox="0 0 1024 500">
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7B61C4"/>
+      <stop offset="100%" stop-color="#5A3E9E"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1024" height="500" fill="url(#bgGradient)"/>
+
+  <!-- App name - upper portion -->
+  <text x="512" y="160" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="80" font-weight="600" fill="white">Meteograph</text>
+
+  <!-- Single elegant temperature curve - lower portion -->
+  <path d="M60,340 Q180,280 300,320 Q420,360 500,290 Q560,240 620,270 Q740,330 860,280 L964,300"
+        stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.9"/>
+</svg>

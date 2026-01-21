@@ -1,0 +1,69 @@
+Google Play Store Metadata
+==========================
+
+App Name (max 30 chars):
+Meteograph
+
+Short Description (max 80 chars):
+Elegant home screen widget showing temperature, rain, and daylight at a glance.
+
+Full Description (max 4000 chars):
+Meteograph displays a beautiful, information-dense weather forecast right on your home screen.
+
+SEE THE WEATHER AT A GLANCE
+The meteogram shows 46 hours of forecast plus the last 6 hours, with:
+• Temperature curve with gradient fill
+• Precipitation bars showing rain and snow intensity
+• Daylight intensity based on sun position and cloud cover
+• Current time marker so you always know where "now" is
+
+DESIGNED FOR YOUR HOME SCREEN
+• Clean, minimal design that complements any wallpaper
+• Adapts to system light/dark mode automatically
+• Material You dynamic colors on Android 12+ devices
+• Updates in the background so data is always fresh
+
+RESPECTS YOUR PRIVACY
+• No account required
+• No ads, no tracking
+• Location is only used to fetch weather data
+• Weather data from Open-Meteo (free, open-source API)
+
+LOCALIZED
+• Temperature in Celsius or Fahrenheit based on your locale
+• 12-hour or 24-hour time format
+• Translated into 30+ languages
+
+BATTERY FRIENDLY
+• Efficient background updates
+• Minimal network usage
+
+Perfect for anyone who wants a quick weather overview without opening an app. Just glance at your home screen and know if you need an umbrella or a jacket.
+
+---
+
+REQUIRED GRAPHICS
+=================
+
+1. Hi-res Icon (512x512 PNG)
+   - App icon on transparent or solid background
+   - Location: store/icon-512.png
+
+2. Feature Graphic (1024x500 PNG)
+   - Displayed at top of store listing
+   - Should showcase the widget on a phone/home screen
+   - Location: store/feature-graphic.png
+
+3. Screenshots (1080x1920 or similar, PNG)
+   - Minimum 2, maximum 8
+   - Show the widget on home screen
+   - Show the app interface
+   - Show light and dark modes
+   - Location: store/screenshots/
+
+---
+
+CATEGORIZATION
+==============
+Category: Weather
+Content rating: Everyone

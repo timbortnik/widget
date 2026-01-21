@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 108 108">
+  <!-- Background -->
+  <rect width="108" height="108" fill="#6750A4"/>
+  <!-- M shape - temperature graph style -->
+  <path
+    d="M20,78 L20,52 Q20,46 26,49 L38,57 Q44,61 50,52 L54,32 Q56,26 58,32 L70,57 Q76,68 88,52 L88,78"
+    stroke="#FFFFFF"
+    stroke-width="6"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    fill="none"/>
+</svg>
