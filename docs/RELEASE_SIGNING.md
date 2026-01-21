@@ -1,6 +1,6 @@
 # Android Release Signing Setup
 
-This document describes how to set up release signing for the Meteogram Widget app.
+This document describes how to set up release signing for the Meteograph app.
 
 ## Overview
 
@@ -38,7 +38,7 @@ keytool -genkey -v \
 You'll be prompted for:
 - **Keystore password** - Use a strong password you'll remember
 - **Key password** - Use the same password (press Enter to use keystore password)
-- **Name, Organization, etc.** - Can use your real info or "Meteogram Widget"
+- **Name, Organization, etc.** - Can use your real info or "Meteograph"
 
 ### 3. Create Encrypted Backup
 

@@ -9,7 +9,7 @@ class AppLocalizationsNo extends AppLocalizations {
   AppLocalizationsNo([String locale = 'no']) : super(locale);
 
   @override
-  String get appTitle => 'Meteogram';
+  String get appTitle => 'Meteograph';
 
   @override
   String get temperature => 'Temperatur';

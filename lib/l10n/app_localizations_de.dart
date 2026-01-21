@@ -9,7 +9,7 @@ class AppLocalizationsDe extends AppLocalizations {
   AppLocalizationsDe([String locale = 'de']) : super(locale);
 
   @override
-  String get appTitle => 'Meteogramm';
+  String get appTitle => 'Meteograph';
 
   @override
   String get temperature => 'Temperatur';

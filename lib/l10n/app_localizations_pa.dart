@@ -9,7 +9,7 @@ class AppLocalizationsPa extends AppLocalizations {
   AppLocalizationsPa([String locale = 'pa']) : super(locale);
 
   @override
-  String get appTitle => 'ਮੌਸਮ ਚਾਰਟ';
+  String get appTitle => 'Meteograph';
 
   @override
   String get temperature => 'ਤਾਪਮਾਨ';

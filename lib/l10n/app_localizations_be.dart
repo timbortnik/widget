@@ -9,7 +9,7 @@ class AppLocalizationsBe extends AppLocalizations {
   AppLocalizationsBe([String locale = 'be']) : super(locale);
 
   @override
-  String get appTitle => 'Метэаграма';
+  String get appTitle => 'Meteograph';
 
   @override
   String get temperature => 'Тэмпература';

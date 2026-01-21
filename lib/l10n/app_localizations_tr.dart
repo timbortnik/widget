@@ -9,7 +9,7 @@ class AppLocalizationsTr extends AppLocalizations {
   AppLocalizationsTr([String locale = 'tr']) : super(locale);
 
   @override
-  String get appTitle => 'Meteogram';
+  String get appTitle => 'Meteograph';
 
   @override
   String get temperature => 'Sıcaklık';

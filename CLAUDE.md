@@ -11,7 +11,7 @@ This file provides context for AI assistants working on this project.
 
 ## Project Overview
 
-**Meteogram Widget** - A Flutter mobile app with Android home screen widget displaying weather forecasts as a meteogram (temperature line + precipitation bars + daylight intensity).
+**Meteograph** - A Flutter mobile app with Android home screen widget displaying weather forecasts as a meteogram (temperature line + precipitation bars + daylight intensity).
 
 ## Quick Reference
 

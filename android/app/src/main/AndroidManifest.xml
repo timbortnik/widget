@@ -11,7 +11,7 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
-        android:label="Meteogram"
+        android:label="Meteograph"
         android:name=".MeteogramApplication"
         android:icon="@mipmap/ic_launcher"
         android:allowBackup="false"
@@ -44,7 +44,7 @@
             android:name="flutterEmbedding"
             android:value="2" />
 
-        <!-- Meteogram Home Screen Widget -->
+        <!-- Meteograph Home Screen Widget -->
         <receiver
             android:name=".MeteogramWidgetProvider"
             android:exported="true">

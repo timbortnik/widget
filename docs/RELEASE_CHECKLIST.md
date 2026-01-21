@@ -1,4 +1,4 @@
-# Release Checklist for Meteogram Widget
+# Release Checklist for Meteograph
 
 This document tracks the status of all items needed for public release on Google Play Store.
 

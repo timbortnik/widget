@@ -9,7 +9,7 @@ class AppLocalizationsEl extends AppLocalizations {
   AppLocalizationsEl([String locale = 'el']) : super(locale);
 
   @override
-  String get appTitle => 'Μετεωρόγραμμα';
+  String get appTitle => 'Meteograph';
 
   @override
   String get temperature => 'Θερμοκρασία';

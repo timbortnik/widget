@@ -9,7 +9,7 @@ class AppLocalizationsTa extends AppLocalizations {
   AppLocalizationsTa([String locale = 'ta']) : super(locale);
 
   @override
-  String get appTitle => 'வானிலை வரைபடம்';
+  String get appTitle => 'Meteograph';
 
   @override
   String get temperature => 'வெப்பநிலை';

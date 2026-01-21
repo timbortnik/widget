@@ -1,4 +1,4 @@
-# Meteogram Widget
+# Meteograph
 
 A beautiful, modern weather widget for Android showing temperature forecasts as a meteogram chart.
 
@@ -72,7 +72,7 @@ make install-debug  # Build debug + install on emulator
 1. Install the app on your device
 2. Open the app and let it load weather data
 3. Long-press on home screen → Widgets
-4. Find "Meteogram" and drag to home screen
+4. Find "Meteograph" and drag to home screen
 5. Tap widget to refresh data
 
 ## Project Structure

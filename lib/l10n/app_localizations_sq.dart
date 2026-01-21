@@ -9,7 +9,7 @@ class AppLocalizationsSq extends AppLocalizations {
   AppLocalizationsSq([String locale = 'sq']) : super(locale);
 
   @override
-  String get appTitle => 'Meteogram';
+  String get appTitle => 'Meteograph';
 
   @override
   String get temperature => 'Temperatura';

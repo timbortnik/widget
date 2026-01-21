@@ -9,7 +9,7 @@ class AppLocalizationsBn extends AppLocalizations {
   AppLocalizationsBn([String locale = 'bn']) : super(locale);
 
   @override
-  String get appTitle => 'আবহাওয়া চার্ট';
+  String get appTitle => 'Meteograph';
 
   @override
   String get temperature => 'তাপমাত্রা';

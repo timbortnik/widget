@@ -9,7 +9,7 @@ class AppLocalizationsZh extends AppLocalizations {
   AppLocalizationsZh([String locale = 'zh']) : super(locale);
 
   @override
-  String get appTitle => '气象图';
+  String get appTitle => 'Meteograph';
 
   @override
   String get temperature => '温度';

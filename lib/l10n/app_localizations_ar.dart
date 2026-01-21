@@ -9,7 +9,7 @@ class AppLocalizationsAr extends AppLocalizations {
   AppLocalizationsAr([String locale = 'ar']) : super(locale);
 
   @override
-  String get appTitle => 'مخطط الطقس';
+  String get appTitle => 'Meteograph';
 
   @override
   String get temperature => 'درجة الحرارة';

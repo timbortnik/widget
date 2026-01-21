@@ -1,6 +1,6 @@
 {
   "@@locale": "ja",
-  "appTitle": "気象グラフ",
+  "appTitle": "Meteograph",
   "temperature": "気温",
   "precipitation": "降水量",
   "cloudCover": "雲量",

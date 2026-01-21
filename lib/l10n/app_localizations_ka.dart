@@ -9,7 +9,7 @@ class AppLocalizationsKa extends AppLocalizations {
   AppLocalizationsKa([String locale = 'ka']) : super(locale);
 
   @override
-  String get appTitle => 'მეტეოგრამა';
+  String get appTitle => 'Meteograph';
 
   @override
   String get temperature => 'ტემპერატურა';

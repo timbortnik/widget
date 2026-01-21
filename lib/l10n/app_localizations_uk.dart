@@ -9,7 +9,7 @@ class AppLocalizationsUk extends AppLocalizations {
   AppLocalizationsUk([String locale = 'uk']) : super(locale);
 
   @override
-  String get appTitle => 'Метеограма';
+  String get appTitle => 'Meteograph';
 
   @override
   String get temperature => 'Температура';

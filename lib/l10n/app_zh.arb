@@ -1,6 +1,6 @@
 {
   "@@locale": "zh",
-  "appTitle": "气象图",
+  "appTitle": "Meteograph",
   "temperature": "温度",
   "precipitation": "降水",
   "cloudCover": "云量",

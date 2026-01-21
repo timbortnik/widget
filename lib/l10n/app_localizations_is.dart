@@ -9,7 +9,7 @@ class AppLocalizationsIs extends AppLocalizations {
   AppLocalizationsIs([String locale = 'is']) : super(locale);
 
   @override
-  String get appTitle => 'Veðurrit';
+  String get appTitle => 'Meteograph';
 
   @override
   String get temperature => 'Hitastig';

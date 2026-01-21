@@ -9,7 +9,7 @@ class AppLocalizationsHi extends AppLocalizations {
   AppLocalizationsHi([String locale = 'hi']) : super(locale);
 
   @override
-  String get appTitle => 'मौसम चार्ट';
+  String get appTitle => 'Meteograph';
 
   @override
   String get temperature => 'तापमान';

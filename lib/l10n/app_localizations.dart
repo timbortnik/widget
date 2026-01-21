@@ -169,7 +169,7 @@ abstract class AppLocalizations {
   /// App name shown in title bar and widget
   ///
   /// In en, this message translates to:
-  /// **'Meteogram'**
+  /// **'Meteograph'**
   String get appTitle;
 
   /// Label for temperature data on chart

@@ -1,6 +1,6 @@
 {
   "@@locale": "uk",
-  "appTitle": "Метеограма",
+  "appTitle": "Meteograph",
   "@appTitle": {
     "description": "App name shown in title bar and widget"
   },

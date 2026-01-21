@@ -9,7 +9,7 @@ class AppLocalizationsKo extends AppLocalizations {
   AppLocalizationsKo([String locale = 'ko']) : super(locale);
 
   @override
-  String get appTitle => '기상 차트';
+  String get appTitle => 'Meteograph';
 
   @override
   String get temperature => '기온';

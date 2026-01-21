@@ -9,7 +9,7 @@ class AppLocalizationsFi extends AppLocalizations {
   AppLocalizationsFi([String locale = 'fi']) : super(locale);
 
   @override
-  String get appTitle => 'Meteogrammi';
+  String get appTitle => 'Meteograph';
 
   @override
   String get temperature => 'Lämpötila';

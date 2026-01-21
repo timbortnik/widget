@@ -25,7 +25,7 @@ class MeteogramApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Meteogram',
+      title: 'Meteograph',
       debugShowCheckedModeBanner: false,
 
       // Theme - use native Material You colors if available

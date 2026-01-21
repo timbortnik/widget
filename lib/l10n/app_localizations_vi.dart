@@ -9,7 +9,7 @@ class AppLocalizationsVi extends AppLocalizations {
   AppLocalizationsVi([String locale = 'vi']) : super(locale);
 
   @override
-  String get appTitle => 'Biểu đồ thời tiết';
+  String get appTitle => 'Meteograph';
 
   @override
   String get temperature => 'Nhiệt độ';

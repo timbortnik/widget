@@ -1,6 +1,6 @@
 # Design Principles
 
-This document captures the design philosophy guiding the Meteogram app UI.
+This document captures the design philosophy guiding the Meteograph app UI.
 
 ## Core Philosophy
 

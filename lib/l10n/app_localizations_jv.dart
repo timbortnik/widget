@@ -9,7 +9,7 @@ class AppLocalizationsJv extends AppLocalizations {
   AppLocalizationsJv([String locale = 'jv']) : super(locale);
 
   @override
-  String get appTitle => 'Grafik Cuaca';
+  String get appTitle => 'Meteograph';
 
   @override
   String get temperature => 'Suhu';

@@ -1,4 +1,4 @@
-# Build targets for Meteogram Widget
+# Build targets for Meteograph
 
 FLUTTER := ~/git/flutter/bin/flutter
 

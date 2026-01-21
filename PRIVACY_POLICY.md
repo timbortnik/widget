@@ -2,7 +2,7 @@
 
 **Effective Date:** January 8, 2025
 
-**Meteogram Widget** ("the App") is developed by Tim Bortnik. This Privacy Policy explains how the App collects, uses, and protects your information.
+**Meteograph** ("the App") is developed by Tim Bortnik. This Privacy Policy explains how the App collects, uses, and protects your information.
 
 ## Summary
 

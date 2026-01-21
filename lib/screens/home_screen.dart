@@ -625,7 +625,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                         ],
                       ),
                       const SizedBox(height: 16),
-                      // Meteogram chart - Native PlatformView for exact widget match
+                      // Meteograph chart - Native PlatformView for exact widget match
                       // Use LayoutBuilder to get full width and calculate height from aspect ratio
                       LayoutBuilder(
                         builder: (context, constraints) {

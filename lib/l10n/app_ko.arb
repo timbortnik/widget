@@ -1,6 +1,6 @@
 {
   "@@locale": "ko",
-  "appTitle": "기상 차트",
+  "appTitle": "Meteograph",
   "temperature": "기온",
   "precipitation": "강수량",
   "cloudCover": "구름량",

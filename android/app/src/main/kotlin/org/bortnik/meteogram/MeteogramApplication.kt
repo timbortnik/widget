@@ -10,7 +10,7 @@ import android.provider.Settings
 import android.util.Log
 
 /**
- * Application class for Meteogram widget.
+ * Application class for Meteograph.
  * Registers broadcast receivers for system events that trigger widget updates.
  */
 class MeteogramApplication : Application() {
