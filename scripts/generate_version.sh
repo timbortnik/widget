@@ -4,7 +4,7 @@
 # - Otherwise: use short commit hash (e.g., abc1234)
 #
 # Also outputs VERSION_CODE and VERSION_NAME for CI builds:
-#   VERSION_CODE = commit count (always increases)
+#   VERSION_CODE = derived from semver tag (v1.2.3 → 10203)
 #   VERSION_NAME = tag without 'v' prefix, or commit hash
 
 set -e
@@ -15,18 +15,28 @@ OUTPUT_FILE="$PROJECT_DIR/lib/generated/version.dart"
 
 # Get git info
 COMMIT_HASH=$(git -C "$PROJECT_DIR" rev-parse --short HEAD 2>/dev/null || echo "unknown")
+
+# Try git tag first (works with full history), fall back to GITHUB_REF_NAME (CI shallow clone)
 TAG=$(git -C "$PROJECT_DIR" describe --tags --exact-match HEAD 2>/dev/null || echo "")
-VERSION_CODE=$(git -C "$PROJECT_DIR" rev-list --count HEAD 2>/dev/null || echo "1")
+if [ -z "$TAG" ] && [ -n "$GITHUB_REF_NAME" ] && [[ "$GITHUB_REF_NAME" == v* ]]; then
+    TAG="$GITHUB_REF_NAME"
+fi
 
 # Determine version string and release status
 if [ -n "$TAG" ]; then
     VERSION="$TAG"
     VERSION_NAME="${TAG#v}"  # Strip 'v' prefix
     IS_RELEASE="true"
+    # Derive VERSION_CODE from semver: v1.2.3 → 1*10000 + 2*100 + 3 = 10203
+    MAJOR=$(echo "$VERSION_NAME" | cut -d. -f1)
+    MINOR=$(echo "$VERSION_NAME" | cut -d. -f2)
+    PATCH=$(echo "$VERSION_NAME" | cut -d. -f3)
+    VERSION_CODE=$((MAJOR * 10000 + MINOR * 100 + PATCH))
 else
     VERSION="$COMMIT_HASH"
     VERSION_NAME="$COMMIT_HASH"
     IS_RELEASE="false"
+    VERSION_CODE=1  # Dev builds use placeholder
 fi
 
 # Generate the Dart file

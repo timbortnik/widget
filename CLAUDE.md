@@ -156,21 +156,22 @@ Version is derived from git, not hardcoded in pubspec.yaml:
 
 | Component | Source | Example |
 |-----------|--------|---------|
-| VERSION_NAME | Git tag without `v` prefix | `v1.0.2` → `1.0.2` |
-| VERSION_CODE | Total commit count | `274` |
+| VERSION_NAME | Git tag without `v` prefix | `v1.0.3` → `1.0.3` |
+| VERSION_CODE | Semver as integer: major×10000 + minor×100 + patch | `v1.0.3` → `10003` |
 
 **How it works:**
 - `scripts/generate_version.sh` outputs `VERSION_CODE` and `VERSION_NAME` to stdout
 - **Local builds:** Makefile extracts version from git and passes `--build-name` / `--build-number` to flutter
 - **CI builds:** Release workflow captures script output via `$GITHUB_OUTPUT` and passes to flutter
+- **Shallow clones:** Falls back to `GITHUB_REF_NAME` when git tag isn't available
 
 **Creating a release:**
 ```bash
-git tag v1.0.3
-git push origin v1.0.3  # Triggers release workflow
+git tag v1.0.4
+git push origin v1.0.4  # Triggers release workflow
 ```
 
-The VERSION_CODE (commit count) auto-increments with each commit, so Play Store uploads always have a unique, increasing build number.
+VERSION_CODE increases with each version bump (1.0.3→10003, 1.0.4→10004, 1.1.0→10100).
 
 ## Pre-Commit Checklist
 
