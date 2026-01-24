@@ -2,6 +2,10 @@
 # Generate version.dart with git info
 # - If HEAD is tagged: use tag name (e.g., v1.2.3)
 # - Otherwise: use short commit hash (e.g., abc1234)
+#
+# Also outputs VERSION_CODE and VERSION_NAME for CI builds:
+#   VERSION_CODE = commit count (always increases)
+#   VERSION_NAME = tag without 'v' prefix, or commit hash
 
 set -e
 
@@ -12,13 +16,16 @@ OUTPUT_FILE="$PROJECT_DIR/lib/generated/version.dart"
 # Get git info
 COMMIT_HASH=$(git -C "$PROJECT_DIR" rev-parse --short HEAD 2>/dev/null || echo "unknown")
 TAG=$(git -C "$PROJECT_DIR" describe --tags --exact-match HEAD 2>/dev/null || echo "")
+VERSION_CODE=$(git -C "$PROJECT_DIR" rev-list --count HEAD 2>/dev/null || echo "1")
 
 # Determine version string and release status
 if [ -n "$TAG" ]; then
     VERSION="$TAG"
+    VERSION_NAME="${TAG#v}"  # Strip 'v' prefix
     IS_RELEASE="true"
 else
     VERSION="$COMMIT_HASH"
+    VERSION_NAME="$COMMIT_HASH"
     IS_RELEASE="false"
 fi
 
@@ -38,4 +45,9 @@ class AppVersion {
 }
 EOF
 
-echo "Generated $OUTPUT_FILE: version=$VERSION, isRelease=$IS_RELEASE"
+# Human-readable output to stderr
+echo "Generated $OUTPUT_FILE: version=$VERSION, isRelease=$IS_RELEASE" >&2
+
+# Machine-readable output to stdout (for CI: >> $GITHUB_OUTPUT)
+echo "VERSION_CODE=$VERSION_CODE"
+echo "VERSION_NAME=$VERSION_NAME"

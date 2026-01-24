@@ -80,7 +80,7 @@ android/app/src/main/
     └── values/strings.xml
 
 scripts/
-└── generate_version.sh      # Generates version.dart from git tag/commit
+└── generate_version.sh      # Generates version.dart + outputs VERSION_CODE/VERSION_NAME for builds
 ```
 
 ## Color Palette
@@ -149,6 +149,28 @@ make clean          # Clean build artifacts
 ```
 
 Note: All build targets run `make version` first to embed git tag/commit hash.
+
+## Versioning
+
+Version is derived from git, not hardcoded in pubspec.yaml:
+
+| Component | Source | Example |
+|-----------|--------|---------|
+| VERSION_NAME | Git tag without `v` prefix | `v1.0.2` → `1.0.2` |
+| VERSION_CODE | Total commit count | `274` |
+
+**How it works:**
+- `scripts/generate_version.sh` outputs `VERSION_CODE` and `VERSION_NAME` to stdout
+- **Local builds:** Makefile extracts version from git and passes `--build-name` / `--build-number` to flutter
+- **CI builds:** Release workflow captures script output via `$GITHUB_OUTPUT` and passes to flutter
+
+**Creating a release:**
+```bash
+git tag v1.0.3
+git push origin v1.0.3  # Triggers release workflow
+```
+
+The VERSION_CODE (commit count) auto-increments with each commit, so Play Store uploads always have a unique, increasing build number.
 
 ## Pre-Commit Checklist
 

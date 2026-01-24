@@ -27,7 +27,8 @@ jobs:
         run: flutter pub get
 
       - name: Generate version file
-        run: ./scripts/generate_version.sh
+        id: version
+        run: ./scripts/generate_version.sh >> $GITHUB_OUTPUT
 
       - name: Analyze code
         run: flutter analyze
@@ -44,7 +45,7 @@ jobs:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        run: flutter build apk --release
+        run: flutter build apk --release --build-name=${{ steps.version.outputs.VERSION_NAME }} --build-number=${{ steps.version.outputs.VERSION_CODE }}
 
       - name: Build App Bundle
         env:
@@ -52,7 +53,7 @@ jobs:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        run: flutter build appbundle --release
+        run: flutter build appbundle --release --build-name=${{ steps.version.outputs.VERSION_NAME }} --build-number=${{ steps.version.outputs.VERSION_CODE }}
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v6
