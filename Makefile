@@ -2,6 +2,11 @@
 
 FLUTTER := ~/git/flutter/bin/flutter
 
+# Version from git tag (e.g., v1.0.1 -> 1.0.1), fallback to 0.0.0
+VERSION_NAME := $(shell git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//' || echo "0.0.0")
+# Build number from commit count (always incrementing)
+VERSION_CODE := $(shell git rev-list --count HEAD)
+
 .PHONY: debug release release-all release-split bundle install install-debug clean version test test-dart test-kotlin analyze
 
 # Generate version.dart from git info (tag or commit hash)
@@ -14,19 +19,27 @@ debug: version
 
 # Release build (arm64 only, ~19 MB)
 release: version
-	$(FLUTTER) build apk --release --target-platform android-arm64
+	@echo "Building version $(VERSION_NAME)+$(VERSION_CODE)"
+	$(FLUTTER) build apk --release --target-platform android-arm64 \
+		--build-name=$(VERSION_NAME) --build-number=$(VERSION_CODE)
 
 # Release build with all architectures (~52 MB)
 release-all: version
-	$(FLUTTER) build apk --release
+	@echo "Building version $(VERSION_NAME)+$(VERSION_CODE)"
+	$(FLUTTER) build apk --release \
+		--build-name=$(VERSION_NAME) --build-number=$(VERSION_CODE)
 
 # Split APKs by architecture (for manual distribution)
 release-split: version
-	$(FLUTTER) build apk --release --split-per-abi
+	@echo "Building version $(VERSION_NAME)+$(VERSION_CODE)"
+	$(FLUTTER) build apk --release --split-per-abi \
+		--build-name=$(VERSION_NAME) --build-number=$(VERSION_CODE)
 
 # App Bundle for Play Store (Google optimizes delivery)
 bundle: version
-	$(FLUTTER) build appbundle --release
+	@echo "Building version $(VERSION_NAME)+$(VERSION_CODE)"
+	$(FLUTTER) build appbundle --release \
+		--build-name=$(VERSION_NAME) --build-number=$(VERSION_CODE)
 
 # Install release APK on connected device
 install: release
