@@ -33,12 +33,13 @@ This file provides context for AI assistants working on this project.
 - **Update:** Timer checks every minute in foreground (refreshes if data >15 min old, redraws at half-hour boundary). Background: AlarmManager (15 min), WorkManager (~30 min with network constraint), BOOT_COMPLETED, updatePeriodMillis (30 min fallback)
 - **Languages:** 30+ languages via ARB files
 - **Widget:** SVG rendered natively via AndroidSVG for pixel-perfect display
+- **Edge-to-edge:** Enabled via `SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge)` with transparent system bars (required for Android 15+)
 
 ## Architecture
 
 ```
 lib/
-├── main.dart                 # Entry point
+├── main.dart                 # Entry point, edge-to-edge setup
 ├── generated/
 │   └── version.dart         # Generated git version info (gitignored)
 ├── l10n/                     # Generated + source ARB files
@@ -77,7 +78,9 @@ android/app/src/main/
     ├── layout/meteogram_widget.xml   # RemoteViews layout
     ├── xml/meteogram_widget_info.xml # Widget config
     ├── drawable/widget_background.xml
-    └── values/strings.xml
+    ├── values/styles.xml             # Base themes
+    ├── values-v27/styles.xml         # Edge-to-edge cutout mode (API 27+)
+    └── values-night-v27/styles.xml   # Dark mode edge-to-edge (API 27+)
 
 scripts/
 └── generate_version.sh      # Generates version.dart + outputs VERSION_CODE/VERSION_NAME for builds
@@ -244,3 +247,4 @@ adb logcat | grep -i "Error inflating"
 5. **Null API values** - Use `?.toDouble() ?? 0.0` pattern for nullable JSON
 6. **Implicit broadcasts** - Android 8.0+ requires runtime receiver registration (not manifest)
 7. **Event staleness** - Widget checks `last_weather_update` timestamp (15 min threshold)
+8. **Edge-to-edge warning** - Play Console may warn about deprecated APIs (setStatusBarColor etc.) - this is Flutter engine code, not app code; tracked in flutter/flutter#160328
