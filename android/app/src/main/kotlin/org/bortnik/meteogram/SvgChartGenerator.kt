@@ -9,6 +9,7 @@ import kotlin.math.cos
 import kotlin.math.exp
 import kotlin.math.pow
 import kotlin.math.sin
+import kotlin.math.roundToInt
 import kotlin.math.sqrt
 
 /**
@@ -404,9 +405,9 @@ class SvgChartGenerator {
      */
     private fun formatTemp(celsius: Double): String {
         return if (usesFahrenheit) {
-            (celsius * 9 / 5 + 32).toInt().toString()
+            (celsius * 9 / 5 + 32).roundToInt().toString()
         } else {
-            celsius.toInt().toString()
+            celsius.roundToInt().toString()
         }
     }
 
