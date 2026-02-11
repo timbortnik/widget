@@ -566,7 +566,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               const SizedBox(height: 16),
 
               // Unified weather card: temperature + legend + chart
-              Container(
+              Center(
+              child: Container(
+                constraints: MediaQuery.of(context).orientation == Orientation.landscape
+                    ? BoxConstraints(maxWidth: MediaQuery.of(context).size.height * 0.7)
+                    : null,
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: colors.cardBackground,
@@ -690,6 +694,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     ],
                   ),
                 ),
+              ),
 
               // Attribution (CC BY 4.0 requirement)
               const SizedBox(height: 16),
