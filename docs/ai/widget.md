@@ -393,24 +393,16 @@ Future<void> homeWidgetBackgroundCallback(Uri? uri) async {
   }
 }
 
-// Re-render from cached data (no network call)
-// URI params: width, height, locale (all optional, fallback to cached/Platform values)
-Future<void> _reRenderCharts([Uri? uri]) async {
-  // Extract params from URI (more reliable than Platform.localeName in cold-start)
-  final uriWidth = int.tryParse(uri?.queryParameters['width'] ?? '');
-  final uriHeight = int.tryParse(uri?.queryParameters['height'] ?? '');
-  final uriLocale = uri?.queryParameters['locale'];
+// NOTE: Re-rendering is now handled natively in Kotlin.
+// WidgetUtils.rerenderAllWidgetsNative() reads cached weather from
+// SharedPreferences and generates SVGs via SvgChartGenerator.kt.
+// The Dart-based _reRenderCharts flow below is historical reference only.
 
+// Re-render from cached data (no network call)
+Future<void> _reRenderCharts([Uri? uri]) async {
   final cachedJson = await HomeWidget.getWidgetData<String>('cached_weather');
   if (cachedJson == null) return;
-
-  final weather = WeatherData.fromJson(jsonDecode(cachedJson));
-  final latitude = await HomeWidget.getWidgetData<double>('cached_latitude') ?? 0.0;
-  final longitude = await HomeWidget.getWidgetData<double>('cached_longitude') ?? 0.0;
-
-  await _generateSvgCharts(weather, latitude, longitude,
-    uriWidth: uriWidth, uriHeight: uriHeight, uriLocale: uriLocale);
-  await HomeWidget.updateWidget(androidName: 'MeteogramWidgetProvider');
+  // Native Kotlin handles SVG generation and widget update
 }
 ```
 
@@ -530,13 +522,14 @@ void main() async {
 
 ## Data Flow
 
-1. **App loads weather** from Open-Meteo API
-2. **SVG generated** in Dart via `SvgChartGenerator` (both light AND dark themes)
-3. **SVG files saved** to app documents folder (`meteogram_light.svg`, `meteogram_dark.svg`)
-4. **Widget data saved** via HomeWidget.saveWidgetData → SharedPreferences (SVG paths)
+1. **App saves location** via `HomeWidget.saveWidgetData` (`saved_latitude`/`saved_longitude` as Long-encoded doubles, `saved_city`)
+2. **App loads weather** from Open-Meteo API (via native `WeatherFetcher.kt`)
+3. **SVG generated** natively in Kotlin via `SvgChartGenerator.kt` (both light AND dark themes)
+4. **Weather JSON cached** to SharedPreferences (`cached_weather`)
 5. **Native provider** reads SVG, renders via AndroidSVG → Bitmap → ImageView
-6. **In-app display** uses same pipeline via PlatformView (AndroidView)
-7. **Theme switching** handled automatically by Android resource system
+6. **Background refresh** reads `saved_latitude`/`saved_longitude` from SharedPreferences (user's chosen location)
+7. **In-app display** uses same native SVG pipeline via PlatformView (AndroidView)
+8. **Theme switching** handled automatically by Android resource system
 
 **Key benefit:** SVG generation works in background isolates (no Flutter UI required), enabling true background updates.
 

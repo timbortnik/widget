@@ -15,8 +15,8 @@ class LocationService {
   static const String _latKey = 'saved_latitude';
   static const String _lonKey = 'saved_longitude';
   static const String _cityKey = 'saved_city';
-  static const String _useGpsKey = 'use_gps';
-  static const String _sourceKey = 'location_source';
+  static const String _sourceKey = 'saved_location_source';
+  static const String _legacySourceKey = 'location_source';
 
   /// HTTP client for making requests. Defaults to standard client.
   final http.Client _client;
@@ -24,15 +24,44 @@ class LocationService {
   /// Create a LocationService with optional custom HTTP client.
   LocationService({http.Client? client}) : _client = client ?? http.Client();
 
+  /// Migrate legacy SharedPreferences keys to current names.
+  /// Call once at app startup. Safe to call multiple times.
+  static Future<void> migrateIfNeeded() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    // v1.0.8 → v1.0.9: location_source → saved_location_source, remove use_gps
+    // These legacy keys were always written together, so checking one suffices.
+    if (prefs.containsKey(_legacySourceKey)) {
+      if (!prefs.containsKey(_sourceKey)) {
+        final value = prefs.getString(_legacySourceKey);
+        if (value != null) {
+          await prefs.setString(_sourceKey, value);
+        }
+      }
+      await prefs.remove(_legacySourceKey);
+      await prefs.remove('use_gps');
+
+      // Also clean up HomeWidget storage
+      final legacyWidgetSource = await HomeWidget.getWidgetData<String>(_legacySourceKey);
+      if (legacyWidgetSource != null) {
+        if (await HomeWidget.getWidgetData<String>(_sourceKey) == null) {
+          await HomeWidget.saveWidgetData<String>(_sourceKey, legacyWidgetSource);
+        }
+        await HomeWidget.saveWidgetData<String?>(_legacySourceKey, null);
+      }
+      await HomeWidget.saveWidgetData<bool?>('use_gps', null);
+    }
+  }
+
   /// Get the current location (GPS or saved).
   Future<LocationData> getLocation() async {
     final prefs = await SharedPreferences.getInstance();
-    final useGps = prefs.getBool(_useGpsKey) ?? true;
+    final source = prefs.getString(_sourceKey);
 
-    if (useGps) {
-      return _getGpsLocation();
-    } else {
+    if (source == LocationSource.manual.name) {
       return _getSavedLocation(prefs);
+    } else {
+      return _getGpsLocation();
     }
   }
 
@@ -189,70 +218,50 @@ class LocationService {
     LocationSource source = LocationSource.manual,
   }) async {
     final prefs = await SharedPreferences.getInstance();
+
+    // Skip writes if nothing changed (avoids redundant I/O on every refresh)
+    if (prefs.getDouble(_latKey) == latitude &&
+        prefs.getDouble(_lonKey) == longitude &&
+        prefs.getString(_sourceKey) == source.name &&
+        prefs.getString(_cityKey) == city) {
+      return;
+    }
+
     await prefs.setDouble(_latKey, latitude);
     await prefs.setDouble(_lonKey, longitude);
     if (city != null) {
       await prefs.setString(_cityKey, city);
+    } else {
+      await prefs.remove(_cityKey);
     }
     await prefs.setString(_sourceKey, source.name);
-    await prefs.setBool(_useGpsKey, false);
 
     // Also save to HomeWidget for background service access
-    await HomeWidget.saveWidgetData<double>('saved_latitude', latitude);
-    await HomeWidget.saveWidgetData<double>('saved_longitude', longitude);
+    await HomeWidget.saveWidgetData<double>(_latKey, latitude);
+    await HomeWidget.saveWidgetData<double>(_lonKey, longitude);
     if (city != null) {
-      await HomeWidget.saveWidgetData<String>('saved_city', city);
+      await HomeWidget.saveWidgetData<String>(_cityKey, city);
+    } else {
+      await HomeWidget.saveWidgetData<String?>(_cityKey, null);
     }
-    await HomeWidget.saveWidgetData<String>('location_source', source.name);
-    await HomeWidget.saveWidgetData<bool>('use_gps', false);
+    await HomeWidget.saveWidgetData<String>(_sourceKey, source.name);
   }
 
   /// Switch to using GPS location.
   /// Saves to both SharedPreferences (for app) and HomeWidget (for background service).
   Future<void> useGpsLocation() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_useGpsKey, true);
+    await prefs.setString(_sourceKey, LocationSource.gps.name);
 
     // Also save to HomeWidget for background service access
-    await HomeWidget.saveWidgetData<bool>('use_gps', true);
-    await HomeWidget.saveWidgetData<String>('location_source', LocationSource.gps.name);
+    await HomeWidget.saveWidgetData<String>(_sourceKey, LocationSource.gps.name);
   }
 
-  /// Check if using GPS.
+  /// Check if using GPS. Defaults to true (GPS) when no source is saved.
   Future<bool> isUsingGps() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_useGpsKey) ?? true;
-  }
-
-  /// Get saved location from HomeWidget storage (for background service).
-  /// Returns null if no location is saved or if using GPS.
-  /// This is more reliable than SharedPreferences in background isolates.
-  Future<LocationData?> getSavedLocationFromWidget() async {
-    final useGps = await HomeWidget.getWidgetData<bool>('use_gps') ?? true;
-    if (useGps) {
-      return null; // GPS mode, no saved location
-    }
-
-    final lat = await HomeWidget.getWidgetData<double>('saved_latitude');
-    final lon = await HomeWidget.getWidgetData<double>('saved_longitude');
-    final city = await HomeWidget.getWidgetData<String>('saved_city');
-    final sourceName = await HomeWidget.getWidgetData<String>('location_source');
-
-    if (lat == null || lon == null) {
-      return null;
-    }
-
-    final source = LocationSource.values.firstWhere(
-      (s) => s.name == sourceName,
-      orElse: () => LocationSource.manual,
-    );
-
-    return LocationData(
-      latitude: lat,
-      longitude: lon,
-      source: source,
-      city: city,
-    );
+    final source = prefs.getString(_sourceKey);
+    return source == null || source == LocationSource.gps.name;
   }
 
   /// Request GPS permission explicitly.

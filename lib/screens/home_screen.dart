@@ -284,6 +284,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     try {
       final location = await _locationService.getLocation();
 
+      // Persist coordinates for native background refresh (AlarmManager, WorkManager, etc.)
+      // GPS coordinates change each fetch; background services need the latest.
+      await _locationService.saveLocation(
+        location.latitude,
+        location.longitude,
+        city: location.city,
+        source: location.source,
+      );
+
       // Fetch weather via native Kotlin HTTP client
       final success = await NativeSvgService.fetchWeather(
         latitude: location.latitude,

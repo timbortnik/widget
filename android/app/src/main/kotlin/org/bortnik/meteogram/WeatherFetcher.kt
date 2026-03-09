@@ -1,6 +1,7 @@
 package org.bortnik.meteogram
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.util.Log
 import org.json.JSONArray
 import org.json.JSONObject
@@ -23,21 +24,44 @@ object WeatherFetcher {
     private const val PAST_HOURS = 6
 
     /**
+     * Read user's saved location from SharedPreferences.
+     * Dart writes these via home_widget, which stores doubles as Long
+     * via Double.doubleToRawLongBits().
+     * @return (latitude, longitude) pair, or null if no location is saved.
+     */
+    fun getLocation(prefs: SharedPreferences): Pair<Double, Double>? {
+        if (prefs.contains("saved_latitude") && prefs.contains("saved_longitude")) {
+            val latitude = Double.fromBits(prefs.getLong("saved_latitude", 0L))
+            val longitude = Double.fromBits(prefs.getLong("saved_longitude", 0L))
+            return Pair(latitude, longitude)
+        }
+
+        // Upgrade fallback: pre-v1.0.9 wrote cached_* as Float from previous fetches.
+        // Bridges GPS users who haven't opened the app since upgrade.
+        if (prefs.contains("cached_latitude") && prefs.contains("cached_longitude")) {
+            val latitude = prefs.getFloat("cached_latitude", 0f).toDouble()
+            val longitude = prefs.getFloat("cached_longitude", 0f).toDouble()
+            Log.d(TAG, "Using cached_* fallback for upgrade compatibility")
+            return Pair(latitude, longitude)
+        }
+
+        return null
+    }
+
+    /**
      * Fetch weather data synchronously and save to SharedPreferences.
-     * Uses cached location from SharedPreferences.
+     * Uses saved location from SharedPreferences.
      * Call from background thread only.
      */
     fun fetchAndUpdateSync(context: Context) {
         val prefs = context.getSharedPreferences(WidgetUtils.PREFS_NAME, Context.MODE_PRIVATE)
 
-        // Get cached location
-        val latitude = prefs.getFloat("cached_latitude", 0f).toDouble()
-        val longitude = prefs.getFloat("cached_longitude", 0f).toDouble()
-
-        if (latitude == 0.0 && longitude == 0.0) {
-            Log.w(TAG, "No cached location available")
+        val location = getLocation(prefs)
+        if (location == null) {
+            Log.w(TAG, "No saved location available")
             return
         }
+        val (latitude, longitude) = location
 
         if (fetchWeatherSync(context, latitude, longitude)) {
             // Trigger widget update
@@ -67,9 +91,16 @@ object WeatherFetcher {
             return false
         }
 
+        // Check if user changed location while we were fetching
+        val prefs = context.getSharedPreferences(WidgetUtils.PREFS_NAME, Context.MODE_PRIVATE)
+        val currentLocation = getLocation(prefs)
+        if (currentLocation != null && (currentLocation.first != latitude || currentLocation.second != longitude)) {
+            Log.d(TAG, "Location changed during fetch, discarding stale result")
+            return false
+        }
+
         // Save to SharedPreferences
         // Note: Values read by Dart via home_widget must be stored as strings
-        val prefs = context.getSharedPreferences(WidgetUtils.PREFS_NAME, Context.MODE_PRIVATE)
         val now = System.currentTimeMillis()
 
         // Extract current temperature using same logic as Dart's getNowIndex()

@@ -4,6 +4,7 @@ import 'l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'screens/home_screen.dart';
+import 'services/location_service.dart';
 import 'services/widget_service.dart';
 import 'services/material_you_service.dart';
 import 'theme/app_theme.dart';
@@ -19,6 +20,7 @@ void main() async {
     systemNavigationBarDividerColor: Colors.transparent,
   ));
 
+  await LocationService.migrateIfNeeded();
   await WidgetService.initialize();
 
   // Load Material You colors from native Android code
