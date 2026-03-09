@@ -236,7 +236,7 @@ class SvgChartGenerator {
 
         // Grid lines at 12h intervals
         var i = nowIndex + 12
-        while (i < data.size - 8) {
+        while (i < data.size - 4) {
             val x = (i.toDouble() / (data.size - 1)) * width
             svg.append("""<line x1="${x.toInt()}" y1="0" x2="${x.toInt()}" y2="${chartHeight.toInt()}" stroke="${colors.timeLabel.toHex()}" stroke-width="1" opacity="0.3"/>""")
             i += 12
@@ -477,7 +477,7 @@ class SvgChartGenerator {
         val fillStyle = """$baseStyle fill="${colors.timeLabel.toHex()}""""
 
         var i = nowIndex
-        while (i < data.size - 8) {
+        while (i < data.size - 4) {
             val offset = i - nowIndex
             if (offset >= 0 && offset % 12 == 0) {
                 val date = Date(data[i].time)
