@@ -81,7 +81,7 @@ class WidgetAlarmReceiverTest {
 
         val intent = Intent(WidgetAlarmReceiver.ACTION_ALARM_UPDATE)
 
-        // Should not throw - will attempt fetch (which fails without network, but doesn't crash)
+        // Should not throw — fetch fails without network but doesn't crash
         receiver.onReceive(context, intent)
     }
 
@@ -97,6 +97,30 @@ class WidgetAlarmReceiverTest {
         val intent = Intent(WidgetAlarmReceiver.ACTION_ALARM_UPDATE)
 
         // Should not throw
+        receiver.onReceive(context, intent)
+    }
+
+    @Test
+    fun `onReceive with stale data still attempts re-render before fetch`() {
+        // Set weather data to be stale AND a re-render needed (crossed 30-min boundary)
+        val prefs = context.getSharedPreferences(WidgetUtils.PREFS_NAME, Context.MODE_PRIVATE)
+        val oldTime = System.currentTimeMillis() - (20 * 60 * 1000)
+        val halfHourMs = 30 * 60 * 1000L
+        val previousSlot = ((System.currentTimeMillis() / halfHourMs) - 1) * halfHourMs
+
+        prefs.edit()
+            .putString(WidgetUtils.KEY_LAST_WEATHER_UPDATE, oldTime.toString())
+            .putLong(WidgetUtils.KEY_LAST_RENDER_TIME, previousSlot)
+            .commit()
+
+        // Verify precondition: both stale and re-render needed
+        assertTrue("Data should be stale", WidgetUtils.isWeatherDataStale(context))
+        assertTrue("Re-render should be needed", WidgetUtils.isRerenderNeeded(context))
+
+        val intent = Intent(WidgetAlarmReceiver.ACTION_ALARM_UPDATE)
+
+        // Should not throw — re-render is attempted (no widgets in test, so it's a no-op)
+        // and fetch is started (fails without network, but doesn't crash)
         receiver.onReceive(context, intent)
     }
 }

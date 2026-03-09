@@ -331,7 +331,7 @@ class MeteogramWidgetProvider : HomeWidgetProvider() {
 
         // Fallback: trigger weather fetch which will cache data and update widget
         Log.d(TAG, "Native generation failed or no weather data, triggering weather fetch")
-        WidgetUtils.fetchWeather(context)
+        WidgetUtils.fetchWeather(context, goAsync())
     }
 
     override fun onDeleted(context: Context, appWidgetIds: IntArray) {

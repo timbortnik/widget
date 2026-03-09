@@ -1,9 +1,11 @@
 package org.bortnik.meteogram
 
 import android.appwidget.AppWidgetManager
+import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
 import android.util.Log
+import java.util.concurrent.Executors
 
 /**
  * Shared utility functions and constants for widget operations.
@@ -11,6 +13,7 @@ import android.util.Log
  */
 object WidgetUtils {
     private const val TAG = "WidgetUtils"
+    private val executor = Executors.newSingleThreadExecutor()
 
     // Default fallback dimensions for chart rendering when SharedPreferences unavailable
     // Based on typical 4x4 grid widget at ~3x density: 300dp * 3 ≈ 900px
@@ -47,11 +50,32 @@ object WidgetUtils {
 
     /**
      * Fetch weather natively via Open-Meteo API.
-     * Runs asynchronously and updates widget on completion.
+     * Runs asynchronously on a background thread and updates widget on completion.
+     *
+     * @param pendingResult PendingResult from goAsync() to keep the
+     *   calling BroadcastReceiver's process alive until the fetch completes.
      */
-    fun fetchWeather(context: Context) {
+    fun fetchWeather(context: Context, pendingResult: BroadcastReceiver.PendingResult? = null) {
         Log.d(TAG, "Triggering native weather fetch")
-        WeatherFetcher.fetchAndUpdate(context)
+        executor.execute {
+            try {
+                WeatherFetcher.fetchAndUpdateSync(context)
+            } catch (e: Exception) {
+                Log.e(TAG, "Weather fetch failed", e)
+            } finally {
+                pendingResult?.finish()
+            }
+        }
+    }
+
+    /**
+     * Fetch weather synchronously via Open-Meteo API.
+     * Blocks until fetch completes. Call from a background thread only
+     * (e.g., WorkManager's doWork()).
+     */
+    fun fetchWeatherSync(context: Context) {
+        Log.d(TAG, "Triggering native weather fetch (sync)")
+        WeatherFetcher.fetchAndUpdateSync(context)
     }
 
     /**
@@ -69,18 +93,6 @@ object WidgetUtils {
         Log.d(TAG, "Weather data age: ${ageMinutes}min, stale: $isStale")
 
         return isStale
-    }
-
-    /**
-     * Fetch weather data only if stale. Otherwise skip to avoid unnecessary API calls.
-     */
-    fun fetchWeatherIfStale(context: Context) {
-        if (isWeatherDataStale(context)) {
-            Log.d(TAG, "Data stale - fetching weather")
-            fetchWeather(context)
-        } else {
-            Log.d(TAG, "Data fresh - skipping fetch")
-        }
     }
 
     /**

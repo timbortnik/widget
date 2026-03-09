@@ -12,33 +12,15 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 import java.util.TimeZone
-import java.util.concurrent.Executors
-
 /**
  * Native weather fetcher for Open-Meteo API.
- * Replaces the Dart-based HomeWidgetBackgroundIntent approach for more reliable background updates.
+ * All methods are synchronous — call from a background thread only.
  */
 object WeatherFetcher {
     private const val TAG = "WeatherFetcher"
     private const val BASE_URL = "https://api.open-meteo.com/v1/forecast"
     private const val TIMEOUT_MS = 10_000
     private const val PAST_HOURS = 6
-
-    private val executor = Executors.newSingleThreadExecutor()
-
-    /**
-     * Fetch weather data asynchronously and save to SharedPreferences.
-     * Triggers widget update on success.
-     */
-    fun fetchAndUpdate(context: Context) {
-        executor.execute {
-            try {
-                fetchAndUpdateSync(context)
-            } catch (e: Exception) {
-                Log.e(TAG, "Background fetch failed", e)
-            }
-        }
-    }
 
     /**
      * Fetch weather data synchronously and save to SharedPreferences.

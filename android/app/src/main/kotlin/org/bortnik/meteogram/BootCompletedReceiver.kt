@@ -33,7 +33,7 @@ class BootCompletedReceiver : BroadcastReceiver() {
         // Fetch weather if stale, otherwise just re-render
         if (WidgetUtils.isWeatherDataStale(context)) {
             Log.d(TAG, "Weather data stale - fetching fresh data")
-            WidgetUtils.fetchWeather(context)
+            WidgetUtils.fetchWeather(context, goAsync())
         } else {
             Log.d(TAG, "Weather data fresh - re-rendering widgets")
             WidgetUtils.rerenderAllWidgetsNative(context)

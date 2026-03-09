@@ -29,14 +29,14 @@ class WidgetAlarmReceiver : BroadcastReceiver() {
 
         Log.d(TAG, "Alarm triggered - checking for updates")
 
-        // Try to fetch fresh data if stale (runs async, triggers re-render on success)
-        if (WidgetUtils.isWeatherDataStale(context)) {
-            Log.d(TAG, "Weather data stale - fetching fresh data")
-            WidgetUtils.fetchWeather(context)
-        }
-
-        // Always re-render if needed (30-min boundary crossed, updates "now" marker)
+        // Re-render immediately if needed (30-min boundary crossed, updates "now" marker)
         // This ensures widget updates even when offline
         WidgetUtils.rerenderAllWidgetsIfNeeded(context)
+
+        // Fetch fresh data if stale, keeping process alive until complete
+        if (WidgetUtils.isWeatherDataStale(context)) {
+            Log.d(TAG, "Weather data stale - fetching fresh data")
+            WidgetUtils.fetchWeather(context, goAsync())
+        }
     }
 }

@@ -67,7 +67,7 @@ class WeatherUpdateWorker(
             // Fetch weather if stale, otherwise just re-render
             if (WidgetUtils.isWeatherDataStale(applicationContext)) {
                 Log.d(TAG, "Weather data stale - fetching fresh data")
-                WidgetUtils.fetchWeather(applicationContext)
+                WidgetUtils.fetchWeatherSync(applicationContext)
             } else {
                 Log.d(TAG, "Weather data fresh - re-rendering all widgets natively")
                 WidgetUtils.rerenderAllWidgetsNative(applicationContext)
