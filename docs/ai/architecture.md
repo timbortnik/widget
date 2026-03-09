@@ -79,6 +79,45 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 ```
 
+## SharedPreferences Keys
+
+All keys live in the `HomeWidgetPreferences` file (shared between Dart via `home_widget` and native Kotlin).
+
+### User Intent (`saved_*`) — written by Dart via `home_widget`
+
+| Key | Type | Written by | Read by | Purpose |
+|-----|------|-----------|---------|---------|
+| `saved_latitude` | Long (double bits) | `location_service.dart` | `WeatherFetcher.kt` | User's chosen latitude |
+| `saved_longitude` | Long (double bits) | `location_service.dart` | `WeatherFetcher.kt` | User's chosen longitude |
+| `saved_city` | String | `location_service.dart` | `location_service.dart` | User's chosen city name |
+| `saved_location_source` | String | `location_service.dart` | `location_service.dart` | User's chosen mode (`gps` or `manual`) |
+
+**Note:** `home_widget` stores Dart `double` values as `Long` via `Double.doubleToRawLongBits()`. Native Kotlin must read with `getLong()` + `Double.fromBits()`, not `getFloat()`.
+
+### Cache (`cached_*`) — written by Kotlin after successful fetch
+
+| Key | Type | Written by | Read by | Purpose |
+|-----|------|-----------|---------|---------|
+| `cached_weather` | String (JSON) | `WeatherFetcher.kt` | `WeatherDataParser.kt`, Dart | Full weather response |
+| `cached_latitude` | Float | `WeatherFetcher.kt` | — (reserved for future use) | Last successfully fetched latitude |
+| `cached_longitude` | Float | `WeatherFetcher.kt` | — (reserved for future use) | Last successfully fetched longitude |
+| `cached_city_name` | String | `home_screen.dart` | `home_screen.dart` | Last displayed city name |
+| `cached_location_source` | String | `home_screen.dart` | `home_screen.dart` | Location source from last successful display (for UI restore) |
+| `current_temperature_celsius` | String | `WeatherFetcher.kt` | `native_svg_service.dart` | Current temp for quick display |
+
+### Widget State — written/read by Kotlin
+
+| Key | Type | Written by | Read by | Purpose |
+|-----|------|-----------|---------|---------|
+| `last_weather_update` | String (millis) | `WeatherFetcher.kt` | `WidgetUtils.kt`, `native_svg_service.dart` | Timestamp of last successful fetch |
+| `last_render_time` | Long (millis) | `WidgetUtils.kt` | `WidgetUtils.kt` | Timestamp of last widget render |
+| `widget_width_px` | Int | `MeteogramWidgetProvider.kt` | `WidgetUtils.kt` | Widget width in pixels |
+| `widget_height_px` | Int | `MeteogramWidgetProvider.kt` | `WidgetUtils.kt` | Widget height in pixels |
+| `widget_ids` | String (CSV) | `MeteogramWidgetProvider.kt` | `WidgetUtils.kt` | Active widget IDs |
+| `widget_resized` | Boolean | `MeteogramWidgetProvider.kt` | `home_screen.dart` | Flag to trigger in-app re-render |
+| `svg_path_light` | String | `WidgetUtils.kt` | `MeteogramWidgetProvider.kt` | Path to light theme SVG |
+| `svg_path_dark` | String | `WidgetUtils.kt` | `MeteogramWidgetProvider.kt` | Path to dark theme SVG |
+
 ## Key Components
 
 ### SvgChartGenerator (`android/.../SvgChartGenerator.kt`)

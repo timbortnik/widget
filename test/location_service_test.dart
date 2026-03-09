@@ -550,7 +550,7 @@ void main() {
       expect(prefs.getDouble('saved_latitude'), 48.85);
       expect(prefs.getDouble('saved_longitude'), 2.35);
       expect(prefs.getString('saved_city'), 'Paris');
-      expect(prefs.getBool('use_gps'), false);
+      expect(prefs.getString('saved_location_source'), 'manual');
     });
 
     test('useGpsLocation sets GPS flag', () async {
@@ -561,6 +561,31 @@ void main() {
       expect(await service.isUsingGps(), isTrue);
     });
 
+    test('saveLocation clears stale city when switching to GPS', () async {
+      final service = LocationService(client: MockClient((r) async => http.Response('', 200)));
+
+      await service.saveLocation(48.85, 2.35, city: 'Paris');
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString('saved_city'), 'Paris');
+
+      await service.saveLocation(48.85, 2.35, source: LocationSource.gps);
+      expect(prefs.getString('saved_city'), isNull);
+    });
+
+    test('saveLocation skips writes when nothing changed', () async {
+      final service = LocationService(client: MockClient((r) async => http.Response('', 200)));
+
+      await service.saveLocation(48.85, 2.35, city: 'Paris');
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString('saved_city'), 'Paris');
+
+      // Same values — should be a no-op (we can't directly observe the skip,
+      // but we verify the values remain correct)
+      await service.saveLocation(48.85, 2.35, city: 'Paris');
+      expect(prefs.getDouble('saved_latitude'), 48.85);
+      expect(prefs.getString('saved_city'), 'Paris');
+    });
+
     test('saveLocation disables GPS', () async {
       final service = LocationService(client: MockClient((r) async => http.Response('', 200)));
 
@@ -569,6 +594,62 @@ void main() {
 
       await service.saveLocation(0, 0);
       expect(await service.isUsingGps(), isFalse);
+    });
+  });
+
+  group('migrateIfNeeded', () {
+    test('migrates legacy keys and cleans up', () async {
+      SharedPreferences.setMockInitialValues({
+        'location_source': 'manual',
+        'use_gps': false,
+      });
+
+      await LocationService.migrateIfNeeded();
+
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString('saved_location_source'), 'manual');
+      expect(prefs.containsKey('location_source'), isFalse);
+      expect(prefs.containsKey('use_gps'), isFalse);
+    });
+
+    test('cleans up legacy keys without overwriting existing value', () async {
+      SharedPreferences.setMockInitialValues({
+        'saved_location_source': 'gps',
+        'location_source': 'manual',
+        'use_gps': false,
+      });
+
+      await LocationService.migrateIfNeeded();
+
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString('saved_location_source'), 'gps');
+      expect(prefs.containsKey('location_source'), isFalse);
+      expect(prefs.containsKey('use_gps'), isFalse);
+    });
+
+    test('is a no-op when no keys exist', () async {
+      SharedPreferences.setMockInitialValues({});
+
+      await LocationService.migrateIfNeeded();
+
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.containsKey('saved_location_source'), isFalse);
+      expect(prefs.containsKey('location_source'), isFalse);
+    });
+
+    test('is idempotent', () async {
+      SharedPreferences.setMockInitialValues({
+        'location_source': 'manual',
+        'use_gps': false,
+      });
+
+      await LocationService.migrateIfNeeded();
+      await LocationService.migrateIfNeeded();
+
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getString('saved_location_source'), 'manual');
+      expect(prefs.containsKey('location_source'), isFalse);
+      expect(prefs.containsKey('use_gps'), isFalse);
     });
   });
 

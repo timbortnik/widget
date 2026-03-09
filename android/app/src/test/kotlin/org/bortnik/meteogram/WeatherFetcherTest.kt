@@ -249,12 +249,8 @@ class WeatherFetcherTest {
     // ==================== fetchAndUpdateSync Tests ====================
 
     @Test
-    fun `fetchAndUpdateSync returns early without cached location`() {
-        // No location cached - should return without crashing
+    fun `fetchAndUpdateSync returns early without saved location`() {
         prefs.edit().clear().commit()
-
-        // This will log "No cached location available" and return
-        // We can't easily verify the return since it's void, but it shouldn't crash
         try {
             WeatherFetcher.fetchAndUpdateSync(context)
         } catch (e: Exception) {
@@ -263,18 +259,124 @@ class WeatherFetcherTest {
     }
 
     @Test
-    fun `fetchAndUpdateSync returns early with zero coordinates`() {
-        // 0,0 location is treated as "no location"
+    fun `fetchAndUpdateSync uses cached Float coordinates as upgrade fallback`() {
+        // Pre-v1.0.9 wrote cached_* as Float; getLocation() falls back to these
+        // when saved_* (Long) keys don't exist yet
         prefs.edit()
-            .putFloat("cached_latitude", 0f)
-            .putFloat("cached_longitude", 0f)
+            .putFloat("cached_latitude", 52.52f)
+            .putFloat("cached_longitude", 13.405f)
             .commit()
 
+        // Should not crash — getLocation() reads cached_* as fallback,
+        // then fetchWeatherSync attempts HTTP (fails silently in test)
         try {
             WeatherFetcher.fetchAndUpdateSync(context)
         } catch (e: Exception) {
             fail("Should not throw: ${e.message}")
         }
+    }
+
+    // ==================== getLocation Tests ====================
+
+    @Test
+    fun `getLocation returns null when no location keys exist`() {
+        prefs.edit().clear().commit()
+        assertNull(WeatherFetcher.getLocation(prefs))
+    }
+
+    @Test
+    fun `getLocation reads saved coordinates from home_widget format`() {
+        // home_widget stores doubles as Long via Double.doubleToRawLongBits()
+        val lat = 52.52
+        val lon = 13.405
+        prefs.edit()
+            .putLong("saved_latitude", lat.toRawBits())
+            .putLong("saved_longitude", lon.toRawBits())
+            .commit()
+
+        val location = WeatherFetcher.getLocation(prefs)
+        assertNotNull(location)
+        assertEquals(lat, location!!.first, 0.0001)
+        assertEquals(lon, location.second, 0.0001)
+    }
+
+    @Test
+    fun `getLocation handles zero coordinates as valid location`() {
+        val lat = 0.0
+        val lon = 0.0
+        prefs.edit()
+            .putLong("saved_latitude", lat.toRawBits())
+            .putLong("saved_longitude", lon.toRawBits())
+            .commit()
+
+        val location = WeatherFetcher.getLocation(prefs)
+        assertNotNull(location)
+        assertEquals(lat, location!!.first, 0.0001)
+        assertEquals(lon, location.second, 0.0001)
+    }
+
+    @Test
+    fun `getLocation handles negative coordinates`() {
+        val lat = -33.87
+        val lon = -151.21
+        prefs.edit()
+            .putLong("saved_latitude", lat.toRawBits())
+            .putLong("saved_longitude", lon.toRawBits())
+            .commit()
+
+        val location = WeatherFetcher.getLocation(prefs)
+        assertNotNull(location)
+        assertEquals(lat, location!!.first, 0.0001)
+        assertEquals(lon, location.second, 0.0001)
+    }
+
+    @Test
+    fun `getLocation returns null when only latitude is saved`() {
+        prefs.edit()
+            .putLong("saved_latitude", 52.52.toRawBits())
+            .commit()
+
+        assertNull(WeatherFetcher.getLocation(prefs))
+    }
+
+    @Test
+    fun `getLocation returns null when only longitude is saved`() {
+        prefs.edit()
+            .putLong("saved_longitude", 13.405.toRawBits())
+            .commit()
+
+        assertNull(WeatherFetcher.getLocation(prefs))
+    }
+
+    @Test
+    fun `getLocation falls back to cached Float coordinates for upgrade`() {
+        // Pre-v1.0.9: fetchWeatherSync wrote cached_* as Float
+        prefs.edit()
+            .putFloat("cached_latitude", 52.52f)
+            .putFloat("cached_longitude", 13.405f)
+            .commit()
+
+        val location = WeatherFetcher.getLocation(prefs)
+        assertNotNull(location)
+        assertEquals(52.52, location!!.first, 0.01)
+        assertEquals(13.405, location.second, 0.01)
+    }
+
+    @Test
+    fun `getLocation prefers saved Long over cached Float`() {
+        val lat = 48.85
+        val lon = 2.35
+        prefs.edit()
+            .putLong("saved_latitude", lat.toRawBits())
+            .putLong("saved_longitude", lon.toRawBits())
+            .putFloat("cached_latitude", 52.52f)
+            .putFloat("cached_longitude", 13.405f)
+            .commit()
+
+        val location = WeatherFetcher.getLocation(prefs)
+        assertNotNull(location)
+        assertEquals(lat, location!!.first, 0.0001)
+        assertEquals(lon, location.second, 0.0001)
     }
 
     // ==================== Helper Methods ====================

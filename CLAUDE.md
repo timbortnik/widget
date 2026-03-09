@@ -129,8 +129,8 @@ Android widgets use RemoteViews which only support:
 **NOT supported:** View, Space, custom views, most Material widgets
 
 ### Data Flow
-1. **In-app**: `home_screen.dart` gets location → calls `NativeSvgService.fetchWeather()` → Kotlin fetches from Open-Meteo → caches to SharedPreferences → Dart reads cache → Kotlin generates SVG → rendered via `NativeSvgChartView`
-2. **Widget**: Native code reads cached weather from SharedPreferences → `SvgChartGenerator.kt` generates SVG → AndroidSVG renders to bitmap → ImageView
+1. **In-app**: `home_screen.dart` gets location → saves coordinates to SharedPreferences via `home_widget` (`saved_latitude`/`saved_longitude` as Long-encoded doubles) → calls `NativeSvgService.fetchWeather()` → Kotlin fetches from Open-Meteo → caches weather JSON to SharedPreferences → Dart reads cache → Kotlin generates SVG → rendered via `NativeSvgChartView`
+2. **Widget**: Native code reads `saved_latitude`/`saved_longitude` from SharedPreferences (Long-encoded doubles from home_widget) → `WeatherFetcher.kt` fetches from Open-Meteo → caches weather JSON → `SvgChartGenerator.kt` generates SVG → AndroidSVG renders to bitmap → ImageView
 
 ### Background Refresh (fully native)
 - **AlarmManager**: `WidgetAlarmScheduler.kt` schedules 15-min inexact alarm (catches up on wake)
@@ -237,6 +237,18 @@ adb logcat | grep -i "Error inflating"
 | `lib/services/location_service.dart` | GPS/manual location with city search |
 | `lib/theme/app_theme.dart` | All colors and gradients |
 | `scripts/generate_version.sh` | Generates version.dart from git tag/commit |
+
+## Upgrade Safety
+
+**Renaming SharedPreferences keys requires migration.** Users have data stored under old key names that must not be lost or misinterpreted on upgrade. When renaming a key:
+
+1. Add migration code in `LocationService.migrateIfNeeded()` (called from `main.dart` at startup)
+2. Read old key → write new key → remove old key
+3. Migrate both `SharedPreferences` and `HomeWidget` storage (they're separate stores)
+4. Keep the legacy key constant in code for reference
+5. Migration must be idempotent (safe to run multiple times)
+
+See `location_source` → `saved_location_source` migration as the reference pattern.
 
 ## Gotchas
 
