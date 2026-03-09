@@ -951,13 +951,15 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
     final l10n = AppLocalizations.of(context)!;
 
     return DraggableScrollableSheet(
-      initialChildSize: 0.6,
+      initialChildSize: 0.8,
       minChildSize: 0.4,
-      maxChildSize: 0.9,
+      maxChildSize: 1.0,
       expand: false,
-      builder: (context, scrollController) => Column(
+      builder: (context, scrollController) => ListView(
+        controller: scrollController,
+        padding: EdgeInsets.zero,
         children: [
-          // Header and search (fixed)
+          // Header and search
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
             child: Column(
@@ -1002,68 +1004,59 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
               ],
             ),
           ),
-          // Content (scrollable)
-          Expanded(
-            child: ListView(
-              controller: scrollController,
-              padding: EdgeInsets.zero,
-              children: [
-                // Show search results if searching
-                if (_searchController.text.trim().length >= 2) ...[
-                  if (_isSearching)
-                    Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Center(
-                        child: SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: colors.temperatureLine,
-                          ),
-                        ),
-                      ),
-                    )
-                  else if (_searchResults.isEmpty)
-                    Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Center(
-                        child: Text(
-                          'No cities found',
-                          style: TextStyle(color: colors.secondaryText),
-                        ),
-                      ),
-                    )
-                  else
-                    ..._searchResults.map(_buildCityResultTile),
-                ] else ...[
-                  // GPS option
-                  ListTile(
-                    leading: Icon(Icons.gps_fixed, color: colors.temperatureLine),
-                    title: Text('GPS', style: TextStyle(color: colors.primaryText)),
-                    subtitle: Text('Device location', style: TextStyle(color: colors.secondaryText, fontSize: 12)),
-                    trailing: widget.currentSource == LocationSource.gps
-                        ? Icon(Icons.check, color: colors.temperatureLine, size: 20)
-                        : null,
-                    onTap: widget.onGpsSelected,
-                  ),
-                  // Recent cities
-                  if (_recentCities.isNotEmpty) ...[
-                    Divider(color: colors.gridLine),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                      child: Text(
-                        'Recent',
-                        style: TextStyle(color: colors.secondaryText, fontSize: 12),
-                      ),
+          // Show search results if searching
+          if (_searchController.text.trim().length >= 2) ...[
+            if (_isSearching)
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Center(
+                  child: SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: colors.temperatureLine,
                     ),
-                    ..._recentCities.map(_buildRecentCityTile),
-                  ],
-                ],
-                const SizedBox(height: 20),
-              ],
+                  ),
+                ),
+              )
+            else if (_searchResults.isEmpty)
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Center(
+                  child: Text(
+                    'No cities found',
+                    style: TextStyle(color: colors.secondaryText),
+                  ),
+                ),
+              )
+            else
+              ..._searchResults.map(_buildCityResultTile),
+          ] else ...[
+            // GPS option
+            ListTile(
+              leading: Icon(Icons.gps_fixed, color: colors.temperatureLine),
+              title: Text('GPS', style: TextStyle(color: colors.primaryText)),
+              subtitle: Text('Device location', style: TextStyle(color: colors.secondaryText, fontSize: 12)),
+              trailing: widget.currentSource == LocationSource.gps
+                  ? Icon(Icons.check, color: colors.temperatureLine, size: 20)
+                  : null,
+              onTap: widget.onGpsSelected,
             ),
-          ),
+            // Recent cities
+            if (_recentCities.isNotEmpty) ...[
+              Divider(color: colors.gridLine),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                child: Text(
+                  'Recent',
+                  style: TextStyle(color: colors.secondaryText, fontSize: 12),
+                ),
+              ),
+              ..._recentCities.map(_buildRecentCityTile),
+            ],
+          ],
+          const SizedBox(height: 20),
         ],
       ),
     );
