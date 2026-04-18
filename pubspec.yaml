@@ -35,7 +35,7 @@ dependencies:
 
   # API & Data
   http: ^1.2.0
-  shared_preferences: ^2.3.0
+  shared_preferences: ^2.5.5
 
   # Location
   geolocator: ^14.0.2
@@ -62,7 +62,7 @@ dev_dependencies:
   flutter_lints: ^6.0.0
 
   # Testing
-  mocktail: ^1.0.4
+  mocktail: ^1.0.5
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
