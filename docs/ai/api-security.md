@@ -47,7 +47,7 @@ exports.weather = functions.https.onRequest(async (req, res) => {
   }
 
   const API_KEY = process.env.OPENMETEO_KEY;
-  const url = `https://customer-api.open-meteo.com/v1/forecast?apikey=${API_KEY}&latitude=${lat}&longitude=${lon}&hourly=temperature_2m,precipitation,cloud_cover&timezone=auto&past_hours=6&forecast_days=2`;
+  const url = `https://customer-api.open-meteo.com/v1/forecast?apikey=${API_KEY}&latitude=${lat}&longitude=${lon}&hourly=temperature_2m,precipitation,cloud_cover&timezone=auto&past_hours=32&forecast_days=7`;
 
   try {
     const response = await fetch(url);
@@ -106,23 +106,16 @@ await FirebaseAppCheck.instance.activate(
 );
 ```
 
-### 6. Update Weather Service
+### 6. Update Weather Fetcher
 
-```dart
-// lib/services/weather_service.dart
-class WeatherService {
-  static const String _baseUrl =
-    'https://us-central1-YOUR_PROJECT.cloudfunctions.net/weather';
+Since the native-SVG migration, the HTTP client lives in Kotlin:
 
-  Future<WeatherData> fetchWeather(double latitude, double longitude) async {
-    final uri = Uri.parse(_baseUrl).replace(queryParameters: {
-      'lat': latitude.toString(),
-      'lon': longitude.toString(),
-    });
-
-    final response = await http.get(uri);
-    // ... rest unchanged
-  }
+```kotlin
+// android/.../WeatherFetcher.kt
+private fun buildUrl(latitude: Double, longitude: Double): String {
+    return "https://us-central1-YOUR_PROJECT.cloudfunctions.net/weather?" +
+            "lat=$latitude" +
+            "&lon=$longitude"
 }
 ```
 
@@ -169,6 +162,6 @@ app.use(limiter);
 - [ ] Store Open-Meteo API key as secret
 - [ ] Enable App Check in Firebase Console
 - [ ] Add firebase_app_check to Flutter app
-- [ ] Update weather_service.dart to use proxy
+- [ ] Update WeatherFetcher.kt to use proxy
 - [ ] Test on device
 - [ ] Monitor usage in Firebase Console

@@ -35,9 +35,15 @@ https://api.open-meteo.com/v1/forecast
   &longitude=13.41
   &hourly=temperature_2m,precipitation,cloud_cover
   &timezone=UTC
-  &past_hours=6
-  &forecast_days=2
+  &past_hours=32
+  &forecast_days=7
 ```
+
+A single fetch covers both the 48-hour and 7-day charts. The 32-hour past
+window is sized so the weekly chart's "now" line sits at the same fraction
+of width as the 48-hour chart. Each chart slices its own view out of the
+cached response via `WeatherData.getHourlyView()` (6h past + 46h forecast)
+or `WeatherData.getWeeklyView()` (32h past + 168h forecast).
 
 ## Example Response
 

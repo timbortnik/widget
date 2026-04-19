@@ -102,12 +102,14 @@ PlatformView wrapper for in-app SVG display. Responsibilities:
 ### WeatherFetcher (`android/.../WeatherFetcher.kt`)
 Native HTTP client for Open-Meteo API. Responsibilities:
 - Build API URL with parameters
-- Request 6 hours of past data + 2 days forecast
+- Request 32 hours of past data + 7 days forecast (sized for the weekly chart)
 - Make HTTP request with timeout (10s)
 - Parse JSON response and cache to SharedPreferences
 - Handle errors (network, API, parsing)
 
-**Data Range:** 6 hours past + 48 hours future (~54 hours total)
+**Data Range:** 32 hours past + 168 hours future (~200 hours total). Both
+widgets slice their own view from this cache — the 48h chart takes 6h past +
+46h forecast, the weekly takes the full window.
 
 **Key benefit:** Works without Dart/Flutter engine for true background updates
 

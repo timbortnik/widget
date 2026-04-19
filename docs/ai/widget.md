@@ -207,90 +207,37 @@ class MeteogramWidgetProvider : HomeWidgetProvider() {
 
 ## Flutter Integration
 
-### SVG Chart Generator (`lib/services/svg_chart_generator.dart`)
-Pure Dart SVG generation - no Flutter UI dependencies, works in background isolates.
+All SVG generation happens in Kotlin (`SvgChartGenerator.kt`). The Flutter
+side only displays the generated SVG and triggers refreshes.
 
-**CRITICAL: Transparent Background Requirement**
-The SVG MUST NOT have a background fill. The widget layout uses `?android:attr/colorBackground` with 80% alpha to match system widgets (like Google Search bar). If the SVG has a solid background, it will:
-- Override the system background color
-- Break visual consistency with other widgets
-- Prevent the translucent effect
+### SVG Chart Generator (Kotlin — `android/.../SvgChartGenerator.kt`)
 
-The chart elements (temperature line, precipitation bars, daylight bars) are drawn directly on the transparent canvas.
+Single source of truth for chart rendering: used by both widgets (48h and
+weekly) and the in-app panels. `generate()` takes the hourly data slice plus
+dimensions, locale, Fahrenheit flag, label step, and label format, and
+returns an SVG string.
 
-```dart
-class SvgChartGenerator {
-  String generate({
-    required List<HourlyData> data,
-    required int nowIndex,
-    required double latitude,
-    required double longitude,
-    required SvgChartColors colors,
-    required double width,
-    required double height,
-    String locale = 'en',
-  }) {
-    // Generates complete SVG string with:
-    // - NO background rect (transparent - uses system widget background)
-    // - Temperature line with gradient fill
-    // - Precipitation bars
-    // - Daylight intensity bars (requires latitude + longitude for solar position)
-    // - Temperature labels (min/mid/max)
-    // - Time labels (locale-aware via DateFormat.j())
-  }
-}
-```
+**Transparent background requirement.** The SVG must not include a background
+rect. The widget layout uses `?android:attr/colorBackground` with 80% alpha
+so widgets match system chrome (Search bar, Clock, etc.). A solid SVG
+background would override this and break the translucent look.
 
-### Widget Service (`lib/services/widget_service.dart`)
-```dart
-Future<void> generateAndSaveSvgCharts({
-  required List<HourlyData> displayData,
-  required int nowIndex,
-  required double latitude,
-  required double longitude,
-  String locale = 'en',
-}) async {
-  final generator = SvgChartGenerator();
+### Method Channel (`lib/services/native_svg_service.dart`)
 
-  // Get list of widget IDs (stored by native code)
-  final widgetIdsStr = await HomeWidget.getWidgetData<String>('widget_ids');
+Dart calls Kotlin over a single method channel (`org.bortnik.meteogram/svg`):
 
-  if (widgetIdsStr != null && widgetIdsStr.isNotEmpty) {
-    // Generate per-widget SVGs at each widget's dimensions
-    final widgetIds = widgetIdsStr.split(',').map(int.tryParse).whereType<int>();
-    for (final widgetId in widgetIds) {
-      final widthPx = await HomeWidget.getWidgetData<int>('widget_${widgetId}_width_px');
-      final heightPx = await HomeWidget.getWidgetData<int>('widget_${widgetId}_height_px');
-      await _generateSvgPair(generator, widgetId, widthPx, heightPx, ...);
-    }
-  } else {
-    // Fallback: generate generic SVG for backward compatibility
-    await _generateSvgPair(generator, null, defaultWidth, defaultHeight, ...);
-  }
-}
-
-// Helper generates light+dark SVGs, saves with widget-specific paths
-Future<void> _generateSvgPair(..., int? widgetId, ...) async {
-  // Generate SVGs...
-
-  // Use widget-specific file names if widgetId provided
-  final lightFileName = widgetId != null ? 'meteogram_light_$widgetId.svg' : 'meteogram_light.svg';
-
-  // Atomic write (temp file then rename)
-  await File('$lightPath.tmp').writeAsString(svgLight);
-  await File('$lightPath.tmp').rename(lightPath);
-
-  // Store paths for native widget (widget-specific or generic)
-  if (widgetId != null) {
-    await HomeWidget.saveWidgetData<String>('svg_path_light_$widgetId', lightPath);
-  } else {
-    await HomeWidget.saveWidgetData<String>('svg_path_light', lightPath);
-  }
-}
-```
+- `fetchWeather(lat, lon)` — Kotlin `WeatherFetcher` calls Open-Meteo and
+  writes the result to SharedPreferences.
+- `generateSvg(mode, width, height, isLight, usesFahrenheit)` — Kotlin reads
+  the cache and returns an SVG string for the requested mode (`hourly` or
+  `weekly`).
+- Various getters for the cached temperature, fetch timestamp, cached city,
+  etc.
 
 ### In-App Chart Display (`lib/widgets/native_svg_chart_view.dart`)
-Uses PlatformView to embed native ImageView, bypassing Flutter's compositor:
+
+PlatformView wrapper that embeds a native Android view showing the SVG:
+
 ```dart
 class NativeSvgChartView extends StatefulWidget {
   final String svgString;
