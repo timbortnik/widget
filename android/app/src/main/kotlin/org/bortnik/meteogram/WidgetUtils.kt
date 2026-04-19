@@ -1,6 +1,7 @@
 package org.bortnik.meteogram
 
 import android.appwidget.AppWidgetManager
+import android.appwidget.AppWidgetProvider
 import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
@@ -32,6 +33,15 @@ object WidgetUtils {
 
     // 30-minute boundary for "now" indicator updates
     private const val HALF_HOUR_MS = 30 * 60 * 1000L
+
+    /**
+     * All widget provider classes the app ships. rerenderAllWidgetsNative
+     * iterates this list so every provider type receives an update broadcast.
+     */
+    private val WIDGET_PROVIDERS: List<Class<out AppWidgetProvider>> = listOf(
+        MeteogramWidgetProvider::class.java,
+        MeteogramWeeklyWidgetProvider::class.java
+    )
 
     /**
      * Get widget dimensions from SharedPreferences with fallback defaults.
@@ -148,33 +158,34 @@ object WidgetUtils {
     }
 
     /**
-     * Trigger native widget update for all widgets.
-     * This calls AppWidgetManager directly, which invokes MeteogramWidgetProvider.onUpdate()
-     * and uses native SVG generation (no Dart/Flutter involved).
+     * Trigger native widget update for every registered provider type.
+     * This calls AppWidgetManager directly, which invokes onUpdate()
+     * on each provider and uses native SVG generation (no Dart/Flutter involved).
      */
     fun rerenderAllWidgetsNative(context: Context) {
-        try {
-            val appWidgetManager = AppWidgetManager.getInstance(context)
-            val componentName = ComponentName(context, MeteogramWidgetProvider::class.java)
-            val widgetIds = appWidgetManager.getAppWidgetIds(componentName)
+        val appWidgetManager = AppWidgetManager.getInstance(context)
+        for (providerClass in WIDGET_PROVIDERS) {
+            try {
+                val componentName = ComponentName(context, providerClass)
+                val widgetIds = appWidgetManager.getAppWidgetIds(componentName)
 
-            if (widgetIds.isEmpty()) {
-                Log.d(TAG, "No widgets to update")
-                return
+                if (widgetIds.isEmpty()) {
+                    Log.d(TAG, "No ${providerClass.simpleName} widgets to update")
+                    continue
+                }
+
+                Log.d(TAG, "Triggering native update for ${widgetIds.size} ${providerClass.simpleName} widgets")
+
+                val intent = android.content.Intent(context, providerClass).apply {
+                    action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+                    putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, widgetIds)
+                }
+                context.sendBroadcast(intent)
+
+                Log.d(TAG, "Native widget update triggered for ${providerClass.simpleName}: ${widgetIds.joinToString()}")
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to trigger native widget update for ${providerClass.simpleName}", e)
             }
-
-            Log.d(TAG, "Triggering native update for ${widgetIds.size} widgets")
-
-            // Send explicit update intent
-            val intent = android.content.Intent(context, MeteogramWidgetProvider::class.java).apply {
-                action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
-                putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, widgetIds)
-            }
-            context.sendBroadcast(intent)
-
-            Log.d(TAG, "Native widget update triggered for ${widgetIds.joinToString()}")
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to trigger native widget update", e)
         }
     }
 }

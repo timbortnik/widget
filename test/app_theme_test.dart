@@ -71,8 +71,8 @@ void main() {
       expect(MeteogramColors.dark.temperatureLine, const Color(0xFFFF7675));
     });
 
-    test('light preset has teal precipitation bar', () {
-      expect(MeteogramColors.light.precipitationBar, const Color(0xFF4ECDC4));
+    test('light preset has deeper teal precipitation bar for contrast', () {
+      expect(MeteogramColors.light.precipitationBar, const Color(0xFF1A9D92));
     });
 
     test('dark preset has cyan precipitation bar', () {

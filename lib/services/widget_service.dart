@@ -7,9 +7,10 @@ import 'package:home_widget/home_widget.dart';
 /// This service only handles widget metadata updates and triggering refreshes.
 class WidgetService {
   static const _androidWidgetName = 'MeteogramWidgetProvider';
+  static const _androidWeeklyWidgetName = 'MeteogramWeeklyWidgetProvider';
   static const _iosWidgetName = 'MeteogramWidget';
 
-  /// Trigger a native widget update.
+  /// Trigger a native widget update for all provider variants.
   /// The native code will generate SVGs from cached weather data.
   Future<void> triggerWidgetUpdate() async {
     try {
@@ -17,6 +18,7 @@ class WidgetService {
         androidName: _androidWidgetName,
         iOSName: _iosWidgetName,
       );
+      await HomeWidget.updateWidget(androidName: _androidWeeklyWidgetName);
       debugPrint('Triggered native widget update');
     } catch (e) {
       debugPrint('Error triggering widget update: $e');

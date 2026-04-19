@@ -10,7 +10,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
-import org.robolectric.annotation.Config
 import java.lang.reflect.Method
 
 /**
@@ -20,7 +19,6 @@ import java.lang.reflect.Method
  * Network operations are not tested (would require mocking HttpURLConnection).
  */
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [33])
 class WeatherFetcherTest {
 
     private lateinit var context: Context
@@ -137,8 +135,8 @@ class WeatherFetcherTest {
         assertTrue(result.contains("longitude=13.405"))
         assertTrue(result.contains("hourly=temperature_2m,precipitation,cloud_cover"))
         assertTrue(result.contains("timezone=UTC"))
-        assertTrue(result.contains("past_hours=6"))
-        assertTrue(result.contains("forecast_days=2"))
+        assertTrue(result.contains("past_hours=${WeatherConstants.WEEKLY_PAST_HOURS}"))
+        assertTrue(result.contains("forecast_days=7"))
     }
 
     @Test

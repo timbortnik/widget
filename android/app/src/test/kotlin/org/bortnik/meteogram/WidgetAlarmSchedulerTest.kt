@@ -11,7 +11,6 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows
-import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowAlarmManager
 import org.robolectric.shadows.ShadowPendingIntent
 
@@ -19,7 +18,6 @@ import org.robolectric.shadows.ShadowPendingIntent
  * Unit tests for WidgetAlarmScheduler.
  */
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [33])
 class WidgetAlarmSchedulerTest {
 
     private lateinit var context: Context

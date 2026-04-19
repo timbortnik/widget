@@ -29,26 +29,51 @@ class WeatherDataTest {
         )
     }
 
-    @Test
-    fun `getDisplayRange returns all data when less than DISPLAY_RANGE_HOURS`() {
-        val weatherData = createWeatherData(10)
-
-        val displayRange = weatherData.getDisplayRange()
-
-        assertEquals(10, displayRange.size)
+    /** Build weather data where "now" sits at the given hour offset from epoch. */
+    private fun weatherCenteredOnNow(pastHours: Int, forecastHours: Int): WeatherData {
+        val now = System.currentTimeMillis()
+        val hourMs = 3600_000L
+        val roundedNow = (now / hourMs) * hourMs
+        val hourly = (-pastHours..forecastHours).map { offset ->
+            HourlyData(
+                time = roundedNow + offset * hourMs,
+                temperature = 10.0 + offset,
+                precipitation = 0.0,
+                cloudCover = 0
+            )
+        }
+        return WeatherData(
+            timezone = "UTC",
+            latitude = 52.52,
+            longitude = 13.405,
+            hourly = hourly,
+            fetchedAt = now
+        )
     }
 
     @Test
-    fun `getDisplayRange limits to DISPLAY_RANGE_HOURS`() {
-        val weatherData = createWeatherData(100)
+    fun `getHourlyView returns 48h window around now`() {
+        // Full cache: 48h past + 336h forecast = 385 entries.
+        val weatherData = weatherCenteredOnNow(pastHours = 48, forecastHours = 336)
 
-        val displayRange = weatherData.getDisplayRange()
+        val view = weatherData.getHourlyView()
 
-        assertEquals(WeatherConstants.DISPLAY_RANGE_HOURS, displayRange.size)
+        assertEquals(WeatherConstants.DISPLAY_RANGE_HOURS, view.data.size)
+        assertEquals(WeatherConstants.PAST_HOURS, view.nowIndex)
     }
 
     @Test
-    fun `getDisplayRange returns empty list for empty hourly data`() {
+    fun `getWeeklyView returns proportional past plus 14d forecast`() {
+        val weatherData = weatherCenteredOnNow(pastHours = 48, forecastHours = 336)
+
+        val view = weatherData.getWeeklyView()
+
+        assertEquals(WeatherConstants.WEEKLY_RANGE_HOURS, view.data.size)
+        assertEquals(WeatherConstants.WEEKLY_PAST_HOURS, view.nowIndex)
+    }
+
+    @Test
+    fun `getHourlyView returns empty view for empty data`() {
         val weatherData = WeatherData(
             timezone = "UTC",
             latitude = 0.0,
@@ -57,9 +82,26 @@ class WeatherDataTest {
             fetchedAt = 0L
         )
 
-        val displayRange = weatherData.getDisplayRange()
+        val view = weatherData.getHourlyView()
 
-        assertTrue(displayRange.isEmpty())
+        assertTrue(view.data.isEmpty())
+        assertEquals(0, view.nowIndex)
+    }
+
+    @Test
+    fun `getWeeklyView returns empty view for empty data`() {
+        val weatherData = WeatherData(
+            timezone = "UTC",
+            latitude = 0.0,
+            longitude = 0.0,
+            hourly = emptyList(),
+            fetchedAt = 0L
+        )
+
+        val view = weatherData.getWeeklyView()
+
+        assertTrue(view.data.isEmpty())
+        assertEquals(0, view.nowIndex)
     }
 
     @Test

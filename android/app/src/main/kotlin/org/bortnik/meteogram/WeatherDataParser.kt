@@ -12,15 +12,42 @@ import java.util.TimeZone
  * Constants matching Dart weather_data.dart.
  */
 object WeatherConstants {
-    /** Hours of past data to request from API. */
+    /** Hours of past data shown by the 48h chart. */
     const val PAST_HOURS = 6
 
-    /** Hours of future data to display on chart. */
+    /** Hours of forecast data shown by the 48h chart. */
     const val FORECAST_HOURS = 46
 
-    /** Total display range in hours (past + forecast). */
+    /** Total hours shown by the 48h chart (past + forecast). */
     const val DISPLAY_RANGE_HOURS = PAST_HOURS + FORECAST_HOURS
+
+    /** Hours of forecast data shown by the weekly (7-day) chart. */
+    const val WEEKLY_FORECAST_HOURS = 7 * 24
+
+    /**
+     * Past window for the weekly chart, sized so the "now" line sits at the
+     * same fraction of chart width as the 48h chart.
+     *
+     * SvgChartGenerator positions points as `index / (size - 1)`, so we want
+     * `past / (past + forecast - 1)` to equal `PAST_HOURS / (PAST_HOURS +
+     * FORECAST_HOURS - 1)`. Solving gives
+     * `past = PAST_HOURS * (forecast - 1) / (FORECAST_HOURS - 1)`; rounded to
+     * the nearest integer for discrete hourly data. Doubling numerator and
+     * denominator plus denominator lets us round-half-up in integer math.
+     */
+    const val WEEKLY_PAST_HOURS =
+        (PAST_HOURS * (WEEKLY_FORECAST_HOURS - 1) * 2 + (FORECAST_HOURS - 1)) /
+            (2 * (FORECAST_HOURS - 1))
+
+    /** Total hours shown by the weekly chart. */
+    const val WEEKLY_RANGE_HOURS = WEEKLY_PAST_HOURS + WEEKLY_FORECAST_HOURS
 }
+
+/**
+ * A view on weather data for chart rendering: the slice of hourly data to plot
+ * plus the index within that slice where "now" sits.
+ */
+data class ChartView(val data: List<HourlyData>, val nowIndex: Int)
 
 /**
  * Parsed weather data from cache.
@@ -33,11 +60,28 @@ data class WeatherData(
     val fetchedAt: Long  // milliseconds
 ) {
     /**
-     * Get data for display range (limited to DISPLAY_RANGE_HOURS).
+     * Chart view for the 48h meteogram: 6h past + 46h forecast centred on
+     * the current hour, with nowIndex adjusted to the returned slice.
      */
-    fun getDisplayRange(): List<HourlyData> {
-        val endIndex = WeatherConstants.DISPLAY_RANGE_HOURS.coerceAtMost(hourly.size)
-        return hourly.subList(0, endIndex)
+    fun getHourlyView(): ChartView = sliceView(
+        pastHours = WeatherConstants.PAST_HOURS,
+        totalHours = WeatherConstants.DISPLAY_RANGE_HOURS
+    )
+
+    /**
+     * Chart view for the weekly meteogram: proportional past + 14d forecast.
+     */
+    fun getWeeklyView(): ChartView = sliceView(
+        pastHours = WeatherConstants.WEEKLY_PAST_HOURS,
+        totalHours = WeatherConstants.WEEKLY_RANGE_HOURS
+    )
+
+    private fun sliceView(pastHours: Int, totalHours: Int): ChartView {
+        if (hourly.isEmpty()) return ChartView(emptyList(), 0)
+        val fullNow = getNowIndex()
+        val start = (fullNow - pastHours).coerceAtLeast(0)
+        val end = (start + totalHours).coerceAtMost(hourly.size)
+        return ChartView(hourly.subList(start, end), fullNow - start)
     }
 
     /**

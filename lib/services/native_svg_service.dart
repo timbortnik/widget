@@ -97,16 +97,24 @@ class NativeSvgService {
     }
   }
 
+  /// Chart rendering modes for the native generator.
+  /// Matches the string values expected by MainActivity.generateSvgFromCache.
+  static const chartModeHourly = 'hourly';
+  static const chartModeWeekly = 'weekly';
+
   /// Generate SVG string using native Kotlin generator.
   /// Returns null if generation fails (e.g., no cached weather data).
   ///
   /// The native generator reads weather data from SharedPreferences,
   /// so weather must be cached before calling this.
+  ///
+  /// [mode] selects which chart to render: 'hourly' (default, 48h) or 'weekly' (14 days).
   static Future<String?> generateSvg({
     required int width,
     required int height,
     required bool isLight,
     required bool usesFahrenheit,
+    String mode = chartModeHourly,
   }) async {
     try {
       final result = await _channel.invokeMethod<String>('generateSvg', {
@@ -114,6 +122,7 @@ class NativeSvgService {
         'height': height,
         'isLight': isLight,
         'usesFahrenheit': usesFahrenheit,
+        'mode': mode,
       });
       return result;
     } on PlatformException catch (e) {
@@ -128,18 +137,21 @@ class NativeSvgService {
     required int width,
     required int height,
     required bool usesFahrenheit,
+    String mode = chartModeHourly,
   }) async {
     final light = await generateSvg(
       width: width,
       height: height,
       isLight: true,
       usesFahrenheit: usesFahrenheit,
+      mode: mode,
     );
     final dark = await generateSvg(
       width: width,
       height: height,
       isLight: false,
       usesFahrenheit: usesFahrenheit,
+      mode: mode,
     );
     return (light: light, dark: dark);
   }

@@ -44,7 +44,7 @@
             android:name="flutterEmbedding"
             android:value="2" />
 
-        <!-- Meteograph Home Screen Widget -->
+        <!-- Meteograph Home Screen Widget (48h) -->
         <receiver
             android:name=".MeteogramWidgetProvider"
             android:exported="true">
@@ -54,6 +54,18 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/meteogram_widget_info" />
+        </receiver>
+
+        <!-- Meteograph 14-day Home Screen Widget -->
+        <receiver
+            android:name=".MeteogramWeeklyWidgetProvider"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/meteogram_widget_weekly_info" />
         </receiver>
 
         <!-- HomeWidget background receiver for Dart callback invocation -->

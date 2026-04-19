@@ -8,7 +8,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
-import org.robolectric.annotation.Config
 
 /**
  * Unit tests for WidgetEventReceiver.
@@ -18,7 +17,6 @@ import org.robolectric.annotation.Config
  * which is not available in unit tests.
  */
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [33])
 class WidgetEventReceiverTest {
 
     private lateinit var context: Context

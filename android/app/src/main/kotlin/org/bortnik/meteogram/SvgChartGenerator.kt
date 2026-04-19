@@ -87,7 +87,7 @@ data class SvgChartColors(
             temperatureLine = SvgColor(0xE0, 0x45, 0x45),  // Deeper red for light bg
             temperatureGradientStart = SvgColor(0xE0, 0x45, 0x45, 0x1A),  // 10% opacity
             temperatureGradientEnd = SvgColor(0xE0, 0x45, 0x45, 0x00),
-            precipitationBar = SvgColor(0x4E, 0xCD, 0xC4),
+            precipitationBar = SvgColor(0x1A, 0x9D, 0x92),  // Deeper teal for contrast on light bg
             daylightBar = SvgColor(0xFF, 0x8F, 0x00),      // Dark amber (visible on white)
             nowIndicator = SvgColor(0x4A, 0x55, 0x68),
             timeLabel = SvgColor(0x4A, 0x55, 0x68),
@@ -103,7 +103,7 @@ data class SvgChartColors(
             temperatureGradientStart = SvgColor(0xFF, 0x5F, 0x5F, 0x47),  // 28% opacity
             temperatureGradientEnd = SvgColor(0xFF, 0x5F, 0x5F, 0x00),
             precipitationBar = SvgColor(0x00, 0xCE, 0xC9),
-            daylightBar = SvgColor(0xFF, 0xD5, 0x4F),        // Warm amber
+            daylightBar = SvgColor(0xFF, 0xD5, 0x4F),        // Warm amber (matches icon)
             nowIndicator = SvgColor(0xFF, 0xFF, 0xFF),        // Pure white
             timeLabel = SvgColor(0xE0, 0xE0, 0xE0),
             cardBackground = SvgColor(0x2D, 0x2D, 0x2D),    // Neutral gray
@@ -113,6 +113,16 @@ data class SvgChartColors(
             outlineWidth = 1.5
         )
     }
+}
+
+/**
+ * Format to use for time labels along the X axis.
+ */
+enum class TimeLabelFormat {
+    /** Hour of day ("15" or "3 PM"). Used by the 48h meteogram. */
+    HOUR,
+    /** Short weekday abbreviation ("Sat"). Used by the weekly meteogram. */
+    WEEKDAY
 }
 
 /**
@@ -145,10 +155,10 @@ object ChartConstants {
     const val TEMP_RANGE_PADDING_RATIO = 0.15
 
     /** Opacity for daylight bars. */
-    const val DAYLIGHT_BAR_OPACITY = 0.70
+    const val DAYLIGHT_BAR_OPACITY = 0.90
 
     /** Opacity for precipitation bars. */
-    const val PRECIPITATION_BAR_OPACITY = 0.70
+    const val PRECIPITATION_BAR_OPACITY = 0.90
 }
 
 /**
@@ -175,6 +185,8 @@ class SvgChartGenerator {
      * @param usesFahrenheit Whether to display temperature in Fahrenheit
      * @param use24HourFormat Whether to use 24-hour time format (false = 12-hour with AM/PM)
      * @param usePastFade Whether to fade past data
+     * @param labelStepHours Spacing between X-axis labels and grid lines, in hours
+     * @param labelFormat Format for X-axis labels (hour of day vs weekday)
      * @return SVG string
      */
     fun generate(
@@ -188,7 +200,9 @@ class SvgChartGenerator {
         locale: Locale = Locale.getDefault(),
         usesFahrenheit: Boolean = false,
         use24HourFormat: Boolean = true,
-        usePastFade: Boolean = true
+        usePastFade: Boolean = true,
+        labelStepHours: Int = 12,
+        labelFormat: TimeLabelFormat = TimeLabelFormat.HOUR
     ): String {
         this.locale = locale
         this.usesFahrenheit = usesFahrenheit
@@ -203,7 +217,11 @@ class SvgChartGenerator {
         // Reserve space for time labels based on font size
         val timeFontSize = width * ChartConstants.TIME_FONT_SIZE_RATIO
         val chartHeight = (height - timeFontSize * 1.5) * ChartConstants.CHART_HEIGHT_RATIO
-        val nowFraction = (nowIndex + 1).toDouble() / data.size
+        // Match the now-line's x position (nowIndex / (size-1)) so the
+        // past-fade mask transitions exactly where the line sits, otherwise
+        // the line can land in the mask's transition zone and appear
+        // inconsistently bright across chart sizes.
+        val nowFraction = if (data.size > 1) nowIndex.toDouble() / (data.size - 1) else 0.0
 
         svg.append("""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width.toInt()} ${height.toInt()}">""")
 
@@ -234,12 +252,26 @@ class SvgChartGenerator {
         val nowX = (nowIndex.toDouble() / (data.size - 1)) * width
         svg.append("""<line x1="${nowX.toInt()}" y1="0" x2="${nowX.toInt()}" y2="${chartHeight.toInt()}" stroke="${colors.nowIndicator.toHex()}" stroke-width="4"/>""")
 
-        // Grid lines at 12h intervals
-        var i = nowIndex + 12
-        while (i < data.size - 4) {
-            val x = (i.toDouble() / (data.size - 1)) * width
-            svg.append("""<line x1="${x.toInt()}" y1="0" x2="${x.toInt()}" y2="${chartHeight.toInt()}" stroke="${colors.timeLabel.toHex()}" stroke-width="1" opacity="0.3"/>""")
-            i += 12
+        // Grid lines. Weekday charts mark every local midnight so each day has
+        // a clear left boundary; hour charts stick to fixed labelStepHours
+        // intervals anchored on now.
+        val step = labelStepHours.coerceAtLeast(1)
+        if (labelFormat == TimeLabelFormat.WEEKDAY) {
+            val gridCalendar = Calendar.getInstance(TimeZone.getDefault())
+            for (i in data.indices) {
+                if (i < 2 || i > data.size - 3) continue
+                gridCalendar.time = Date(data[i].time)
+                if (gridCalendar.get(Calendar.HOUR_OF_DAY) != 0) continue
+                val x = (i.toDouble() / (data.size - 1)) * width
+                svg.append("""<line x1="${x.toInt()}" y1="0" x2="${x.toInt()}" y2="${chartHeight.toInt()}" stroke="${colors.timeLabel.toHex()}" stroke-width="1" opacity="0.5"/>""")
+            }
+        } else {
+            var i = nowIndex + step
+            while (i < data.size - 4) {
+                val x = (i.toDouble() / (data.size - 1)) * width
+                svg.append("""<line x1="${x.toInt()}" y1="0" x2="${x.toInt()}" y2="${chartHeight.toInt()}" stroke="${colors.timeLabel.toHex()}" stroke-width="1" opacity="0.5"/>""")
+                i += step
+            }
         }
 
         svg.append("</g>")
@@ -248,7 +280,7 @@ class SvgChartGenerator {
         writeTempLabels(svg, data, colors, width, chartHeight, nowFraction)
 
         // Time labels
-        writeTimeLabels(svg, data, nowIndex, colors, width, height, chartHeight)
+        writeTimeLabels(svg, data, nowIndex, colors, width, height, chartHeight, step, labelFormat)
 
         svg.append("</svg>")
         return svg.toString()
@@ -269,15 +301,17 @@ class SvgChartGenerator {
         svg.append("""<stop offset="100%" stop-color="${colors.temperatureLine.toHex()}" stop-opacity="${"%.2f".format(colors.temperatureGradientEnd.opacity)}"/>""")
         svg.append("</linearGradient>")
 
-        // Daylight bar gradient (vertical: fades at top, semi-solid at bottom)
+        // Daylight bar gradient (vertical: solid where bars anchor at the top,
+        // fading as they hang down — mirror of the precipitation bar range,
+        // which is solid at the bottom where its bars anchor).
         svg.append("""<linearGradient id="daylightGradient" x1="0" y1="0" x2="0" y2="1">""")
-        svg.append("""<stop offset="0%" stop-color="${colors.daylightBar.toHex()}" stop-opacity="0.7"/>""")
+        svg.append("""<stop offset="0%" stop-color="${colors.daylightBar.toHex()}" stop-opacity="0.9"/>""")
         svg.append("""<stop offset="100%" stop-color="${colors.daylightBar.toHex()}" stop-opacity="0.3"/>""")
         svg.append("</linearGradient>")
 
         // Precipitation bar gradient (vertical: solid at bottom, fades at top - bars grow upward)
         svg.append("""<linearGradient id="precipGradient" x1="0" y1="0" x2="0" y2="1">""")
-        svg.append("""<stop offset="0%" stop-color="${colors.precipitationBar.toHex()}" stop-opacity="0.5"/>""")
+        svg.append("""<stop offset="0%" stop-color="${colors.precipitationBar.toHex()}" stop-opacity="0.3"/>""")
         svg.append("""<stop offset="100%" stop-color="${colors.precipitationBar.toHex()}" stop-opacity="0.9"/>""")
         svg.append("</linearGradient>")
 
@@ -435,7 +469,11 @@ class SvgChartGenerator {
             return chartHeight * (1 - normalizedTemp)
         }
 
-        val centerX = (nowFraction / 2.5) * width
+        // Anchor labels inside the "past" region but keep them clear of the
+        // left edge. The plain nowFraction/2.5 formula is near zero when the
+        // past region is tiny (e.g. weekly mode with 6h past in 14 days),
+        // which pushes the labels off the canvas — clamp to a sane minimum.
+        val centerX = (nowFraction / 2.5).coerceAtLeast(0.05) * width
 
         // Font size relative to width
         val fontSize = (width * ChartConstants.TEMP_FONT_SIZE_RATIO).toInt()
@@ -466,8 +504,11 @@ class SvgChartGenerator {
         colors: SvgChartColors,
         width: Double,
         height: Double,
-        chartHeight: Double
+        chartHeight: Double,
+        stepHours: Int,
+        format: TimeLabelFormat
     ) {
+        val step = stepHours.coerceAtLeast(1)
         // Font size relative to width
         val fontSize = (width * ChartConstants.TIME_FONT_SIZE_RATIO).toInt()
         // Position labels 60% down in the area below the chart
@@ -476,19 +517,60 @@ class SvgChartGenerator {
         val strokeStyle = """$baseStyle fill="none" stroke="${colors.outlineColor.toHex()}" stroke-width="${colors.outlineWidth}" stroke-opacity="${colors.outlineOpacity}""""
         val fillStyle = """$baseStyle fill="${colors.timeLabel.toHex()}""""
 
-        var i = nowIndex
-        while (i < data.size - 4) {
-            val offset = i - nowIndex
-            if (offset >= 0 && offset % 12 == 0) {
-                val date = Date(data[i].time)
-                val timeStr = formatHourOnly(date)
+        if (format == TimeLabelFormat.WEEKDAY) {
+            // Weekday labels sit at local noon of each day so the label sits
+            // in the middle of "its" day on the chart. The step controls how
+            // many days apart labels are (e.g. 48h = every other day), and
+            // the sequence is anchored on "today" so the first visible label
+            // is today rather than whichever day the past window starts on.
+            val dayStep = (step / 24).coerceAtLeast(1)
+            val calendar = Calendar.getInstance(TimeZone.getDefault())
+            calendar.time = Date(data[nowIndex.coerceIn(data.indices)].time)
+            val todayOrdinal = calendar.get(Calendar.YEAR) * 400 + calendar.get(Calendar.DAY_OF_YEAR)
+            for (i in data.indices) {
+                if (i < 2 || i > data.size - 3) continue
+                calendar.time = Date(data[i].time)
+                if (calendar.get(Calendar.HOUR_OF_DAY) != 12) continue
+                val delta = calendar.get(Calendar.YEAR) * 400 + calendar.get(Calendar.DAY_OF_YEAR) - todayOrdinal
+                if (delta < 0 || delta % dayStep != 0) continue
+                val timeStr = formatWeekday(Date(data[i].time))
                 val x = (i.toDouble() / (data.size - 1)) * width
-
                 svg.append("""<text x="${x.toInt()}" y="${labelY.toInt()}" $strokeStyle>$timeStr</text>""")
                 svg.append("""<text x="${x.toInt()}" y="${labelY.toInt()}" $fillStyle>$timeStr</text>""")
             }
-            i++
+        } else {
+            var i = nowIndex
+            while (i < data.size - 4) {
+                val offset = i - nowIndex
+                if (offset >= 0 && offset % step == 0) {
+                    val date = Date(data[i].time)
+                    val timeStr = formatHourOnly(date)
+                    val x = (i.toDouble() / (data.size - 1)) * width
+
+                    svg.append("""<text x="${x.toInt()}" y="${labelY.toInt()}" $strokeStyle>$timeStr</text>""")
+                    svg.append("""<text x="${x.toInt()}" y="${labelY.toInt()}" $fillStyle>$timeStr</text>""")
+                }
+                i++
+            }
         }
+    }
+
+    /**
+     * Format date using the CLDR "short" weekday width — the locale-defined
+     * two-character form ("Mo", "Tu" in English; "Mo", "Di" in German;
+     * "Пн", "Вт" in Russian). Uses android.icu which provides all four
+     * CLDR widths (wide/abbreviated/short/narrow); java.text.SimpleDateFormat
+     * only exposes wide, abbreviated, and narrow.
+     */
+    private fun formatWeekday(date: Date): String {
+        val calendar = Calendar.getInstance().apply { time = date }
+        val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
+        val symbols = android.icu.text.DateFormatSymbols.getInstance(locale)
+        val shortNames = symbols.getWeekdays(
+            android.icu.text.DateFormatSymbols.FORMAT,
+            android.icu.text.DateFormatSymbols.SHORT
+        )
+        return shortNames[dayOfWeek]
     }
 
     /**

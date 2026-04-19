@@ -20,7 +20,10 @@ object WeatherFetcher {
     private const val TAG = "WeatherFetcher"
     private const val BASE_URL = "https://api.open-meteo.com/v1/forecast"
     private const val TIMEOUT_MS = 10_000
-    private const val PAST_HOURS = 6
+    // Fetch enough past data for the weekly chart's proportional past window;
+    // the 48h chart slices a smaller window around "now".
+    private val PAST_HOURS = WeatherConstants.WEEKLY_PAST_HOURS
+    private const val FORECAST_DAYS = 7
 
     /**
      * Fetch weather data synchronously and save to SharedPreferences.
@@ -211,7 +214,7 @@ object WeatherFetcher {
                 "&hourly=temperature_2m,precipitation,cloud_cover" +
                 "&timezone=UTC" +
                 "&past_hours=$PAST_HOURS" +
-                "&forecast_days=2"
+                "&forecast_days=$FORECAST_DAYS"
     }
 
     /**

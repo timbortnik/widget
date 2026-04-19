@@ -43,12 +43,17 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   bool _isUpdatingWidget = false; // Prevents concurrent widget updates
   bool _isLoadingWeather = false; // Prevents concurrent weather fetches
 
-  // Cached SVG string for in-app chart display
-  String? _cachedSvgString;
-  // Parameters used to generate cached SVG (for invalidation)
-  int? _cachedSvgWidth;
-  int? _cachedSvgHeight;
-  bool? _cachedSvgIsLight;
+  // Cached SVG strings for in-app chart display, keyed by chart mode.
+  final Map<String, _ChartCacheEntry> _chartCache = {
+    NativeSvgService.chartModeHourly: _ChartCacheEntry(),
+    NativeSvgService.chartModeWeekly: _ChartCacheEntry(),
+  };
+
+  void _invalidateChartCaches() {
+    for (final entry in _chartCache.values) {
+      entry.svg = null;
+    }
+  }
 
   // Periodic timer for foreground auto-refresh (every minute)
   Timer? _refreshTimer;
@@ -114,7 +119,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         }
         _loading = false;
         _lastDisplayHour = DateTime.now().minute >= 30 ? (DateTime.now().hour + 1) % 24 : DateTime.now().hour;
-        _cachedSvgString = null; // Invalidate cache for new data
+        _invalidateChartCaches();
       });
       debugPrint('Showing cached data immediately: $_weatherFetchedAt');
     }
@@ -150,7 +155,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     if (_lastDisplayHour != null && _lastDisplayHour != displayHour) {
       debugPrint('Half-hour boundary crossed ($_lastDisplayHour -> $displayHour), redrawing chart...');
       _lastDisplayHour = displayHour;
-      _cachedSvgString = null; // Invalidate cache to regenerate with new time
+      _invalidateChartCaches();
       setState(() {}); // Trigger rebuild to update "now" indicator position
     }
     _lastDisplayHour ??= displayHour;
@@ -190,7 +195,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     super.didChangePlatformBrightness();
     // Theme changed while app is running - invalidate cached SVG and trigger widget update
     debugPrint('Platform brightness changed - triggering widget update');
-    _cachedSvgString = null; // Invalidate cache to regenerate with new theme
+    _invalidateChartCaches();
     _widgetService.triggerWidgetUpdate();
     // Then re-render after short delay
     Future.delayed(const Duration(milliseconds: 300), () {
@@ -231,7 +236,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           _weatherFetchedAt = cachedTime;
           _locationName = cachedCity;
           _lastDisplayHour = DateTime.now().minute >= 30 ? (DateTime.now().hour + 1) % 24 : DateTime.now().hour;
-          _cachedSvgString = null; // Invalidate cache for new data
+          _invalidateChartCaches();
         });
         // Update widget after frame is rendered
         WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -305,7 +310,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         _locationSource = location.source;
         _loading = false;
         _lastDisplayHour = DateTime.now().minute >= 30 ? (DateTime.now().hour + 1) % 24 : DateTime.now().hour;
-        _cachedSvgString = null; // Invalidate cache for new data
+        _invalidateChartCaches();
       });
 
       // Cache location info for offline use
@@ -335,7 +340,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           }
           _loading = false;
           _lastDisplayHour = DateTime.now().minute >= 30 ? (DateTime.now().hour + 1) % 24 : DateTime.now().hour;
-          _cachedSvgString = null; // Invalidate cache for new data
+          _invalidateChartCaches();
         });
 
         // Update widget with cached data
@@ -379,8 +384,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   /// Generate SVG asynchronously using native Kotlin generator.
-  /// Updates cached SVG and current temperature, triggers rebuild when complete.
+  /// Updates the cache entry for [mode] and triggers rebuild when complete.
+  /// For hourly mode, also syncs current_temperature_celsius with nowIndex.
   Future<void> _generateSvgAsync({
+    required String mode,
     required int width,
     required int height,
     required bool isLight,
@@ -388,6 +395,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }) async {
     try {
       final svgString = await NativeSvgService.generateSvg(
+        mode: mode,
         width: width,
         height: height,
         isLight: isLight,
@@ -395,21 +403,23 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       );
 
       if (svgString != null && mounted) {
-        // Kotlin updates current_temperature_celsius during generateSvg to match nowIndex
-        final updatedTemp = await NativeSvgService.getCurrentTemperatureCelsius();
+        final updatedTemp = mode == NativeSvgService.chartModeHourly
+            ? await NativeSvgService.getCurrentTemperatureCelsius()
+            : null;
 
         setState(() {
-          _cachedSvgString = svgString;
-          _cachedSvgWidth = width;
-          _cachedSvgHeight = height;
-          _cachedSvgIsLight = isLight;
+          final cache = _chartCache[mode]!;
+          cache.svg = svgString;
+          cache.width = width;
+          cache.height = height;
+          cache.isLight = isLight;
           if (updatedTemp != null) {
             _currentTemperatureCelsius = updatedTemp;
           }
         });
       }
     } catch (e) {
-      debugPrint('Error generating SVG: $e');
+      debugPrint('Error generating SVG ($mode): $e');
     }
   }
 
@@ -568,8 +578,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               // Unified weather card: temperature + legend + chart
               Center(
               child: Container(
+                // Landscape now hosts two charts side by side; give the card
+                // more horizontal room than the single-chart layout needed.
                 constraints: MediaQuery.of(context).orientation == Orientation.landscape
-                    ? BoxConstraints(maxWidth: MediaQuery.of(context).size.height * 0.7)
+                    ? BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.95)
                     : null,
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -629,66 +641,30 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                         ],
                       ),
                       const SizedBox(height: 16),
-                      // Meteograph chart - Native PlatformView for exact widget match
-                      // Use LayoutBuilder to get full width and calculate height from aspect ratio
-                      LayoutBuilder(
-                        builder: (context, constraints) {
-                          // Check staleness on first build (cold start after long time)
-                          _refreshIfStale();
-
-                          // Calculate height from width and widget aspect ratio
-                          // This ensures the chart always fills available width
-                          final chartWidth = constraints.maxWidth;
-                          final chartHeight = chartWidth / _chartAspectRatio;
-
-                          final isLight = Theme.of(context).brightness == Brightness.light;
-                          final mediaQuery = MediaQuery.of(context);
-                          final dpr = mediaQuery.devicePixelRatio;
-                          // Get locale for temperature units
-                          final platformLocale = PlatformDispatcher.instance.locale;
-                          final usesFahrenheit = UnitsService.usesFahrenheit(platformLocale);
-                          // Save for background service
-                          HomeWidget.saveWidgetData<String>('locale', platformLocale.toString());
-                          HomeWidget.saveWidgetData<bool>('usesFahrenheit', usesFahrenheit);
-
-                          // Generate SVG at device pixel dimensions
-                          final deviceWidthPx = (chartWidth * dpr).round();
-                          final deviceHeightPx = (chartHeight * dpr).round();
-
-                          // Check if we need to regenerate the SVG
-                          final needsRegeneration = _cachedSvgString == null ||
-                              _cachedSvgWidth != deviceWidthPx ||
-                              _cachedSvgHeight != deviceHeightPx ||
-                              _cachedSvgIsLight != isLight;
-
-                          if (needsRegeneration) {
-                            // Trigger async SVG generation
-                            _generateSvgAsync(
-                              width: deviceWidthPx,
-                              height: deviceHeightPx,
-                              isLight: isLight,
-                              usesFahrenheit: usesFahrenheit,
+                      // Meteograph charts - 48h on top/left, 14-day stacked/next to it.
+                      // Portrait = Column, landscape = Row (each chart gets half width).
+                      // Use device orientation (not layout constraints), since the enclosing
+                      // card is width-constrained and would otherwise always look portrait.
+                      Builder(
+                        builder: (context) {
+                          final orientation = MediaQuery.of(context).orientation;
+                          if (orientation == Orientation.landscape) {
+                            return Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(child: _buildChart(mode: NativeSvgService.chartModeHourly)),
+                                const SizedBox(width: 12),
+                                Expanded(child: _buildChart(mode: NativeSvgService.chartModeWeekly)),
+                              ],
                             );
                           }
-
-                          // Show cached SVG if available, otherwise show empty container
-                          if (_cachedSvgString != null) {
-                            return SizedBox(
-                              width: chartWidth,
-                              height: chartHeight,
-                              child: NativeSvgChartView(
-                                svgString: _cachedSvgString!,
-                                width: deviceWidthPx.toDouble(),
-                                height: deviceHeightPx.toDouble(),
-                              ),
-                            );
-                          } else {
-                            // Show placeholder while generating
-                            return SizedBox(
-                              width: chartWidth,
-                              height: chartHeight,
-                            );
-                          }
+                          return Column(
+                            children: [
+                              _buildChart(mode: NativeSvgService.chartModeHourly),
+                              const SizedBox(height: 12),
+                              _buildChart(mode: NativeSvgService.chartModeWeekly),
+                            ],
+                          );
                         },
                       ),
                     ],
@@ -747,6 +723,56 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildChart({required String mode}) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Check staleness on first build (cold start after long time)
+        _refreshIfStale();
+
+        final chartWidth = constraints.maxWidth;
+        final chartHeight = chartWidth / _chartAspectRatio;
+
+        final isLight = Theme.of(context).brightness == Brightness.light;
+        final mediaQuery = MediaQuery.of(context);
+        final dpr = mediaQuery.devicePixelRatio;
+        final platformLocale = PlatformDispatcher.instance.locale;
+        final usesFahrenheit = UnitsService.usesFahrenheit(platformLocale);
+
+        final deviceWidthPx = (chartWidth * dpr).round();
+        final deviceHeightPx = (chartHeight * dpr).round();
+
+        final cache = _chartCache[mode]!;
+        final needsRegeneration = cache.svg == null ||
+            cache.width != deviceWidthPx ||
+            cache.height != deviceHeightPx ||
+            cache.isLight != isLight;
+
+        if (needsRegeneration) {
+          _generateSvgAsync(
+            mode: mode,
+            width: deviceWidthPx,
+            height: deviceHeightPx,
+            isLight: isLight,
+            usesFahrenheit: usesFahrenheit,
+          );
+        }
+
+        if (cache.svg != null) {
+          return SizedBox(
+            width: chartWidth,
+            height: chartHeight,
+            child: NativeSvgChartView(
+              svgString: cache.svg!,
+              width: deviceWidthPx.toDouble(),
+              height: deviceHeightPx.toDouble(),
+            ),
+          );
+        }
+        return SizedBox(width: chartWidth, height: chartHeight);
+      },
     );
   }
 
@@ -1090,4 +1116,12 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
       onTap: () => widget.onCitySelected(city),
     );
   }
+}
+
+/// Per-mode cache of the last-rendered SVG plus the params used to generate it.
+class _ChartCacheEntry {
+  String? svg;
+  int? width;
+  int? height;
+  bool? isLight;
 }

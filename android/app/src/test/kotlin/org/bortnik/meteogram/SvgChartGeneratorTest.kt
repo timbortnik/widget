@@ -2,10 +2,11 @@ package org.bortnik.meteogram
 
 import org.junit.Assert.*
 import org.junit.Test
-import java.util.Locale
 
 /**
  * Unit tests for SvgChartGenerator and related classes.
+ * Weekday formatting uses android.icu at runtime; that path is exercised on
+ * device rather than here because Robolectric does not shadow android.icu.
  */
 class SvgChartGeneratorTest {
 
@@ -72,7 +73,7 @@ class SvgChartGeneratorTest {
         val light = SvgChartColors.light
 
         assertEquals("#e04545", light.temperatureLine.toHex())  // Deeper red for light bg
-        assertEquals("#4ecdc4", light.precipitationBar.toHex())
+        assertEquals("#1a9d92", light.precipitationBar.toHex())  // Deeper teal for contrast on light bg
     }
 
     @Test

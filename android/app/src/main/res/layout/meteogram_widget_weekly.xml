@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 14-day weekly meteogram widget. Structurally identical to meteogram_widget.xml;
+     the provider draws a longer time range with weekday labels. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:theme="@style/WidgetTheme"
+    android:background="?android:attr/colorBackground"
+    android:alpha="0.80"
+    android:clipToOutline="false"
+    android:outlineProvider="none">
+
+    <ImageView
+        android:id="@+id/widget_chart_light"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="fitCenter"
+        android:visibility="@integer/chart_light_visibility"
+        android:contentDescription="Weekly weather forecast chart" />
+    <ImageView
+        android:id="@+id/widget_chart_dark"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="fitCenter"
+        android:visibility="@integer/chart_dark_visibility"
+        android:contentDescription="Weekly weather forecast chart" />
+
+    <TextView
+        android:id="@+id/widget_placeholder"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:text="@string/widget_placeholder"
+        android:textSize="13sp"
+        android:textColor="@color/widget_placeholder_text"
+        android:fontFamily="sans-serif" />
+
+    <TextView
+        android:id="@+id/widget_refresh_indicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="↻"
+        android:textSize="64sp"
+        android:textColor="?android:attr/textColorPrimary"
+        android:shadowColor="@color/widget_shadow"
+        android:shadowDx="2"
+        android:shadowDy="2"
+        android:shadowRadius="4"
+        android:visibility="gone" />
+
+</FrameLayout>

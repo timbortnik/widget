@@ -2,7 +2,6 @@ package org.bortnik.meteogram
 
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.os.Build
 import android.text.format.DateFormat
 import android.util.Log
 import com.caverock.androidsvg.SVG
@@ -37,6 +36,7 @@ class MainActivity : FlutterActivity() {
                     val height = call.argument<Int>("height") ?: 0
                     val isLight = call.argument<Boolean>("isLight") ?: true
                     val usesFahrenheit = call.argument<Boolean>("usesFahrenheit") ?: false
+                    val mode = call.argument<String>("mode") ?: "hourly"
 
                     if (width <= 0 || height <= 0) {
                         result.error("INVALID_ARGS", "Invalid dimensions: ${width}x${height}", null)
@@ -44,7 +44,7 @@ class MainActivity : FlutterActivity() {
                     }
 
                     try {
-                        val svgString = generateSvgFromCache(width, height, isLight, usesFahrenheit)
+                        val svgString = generateSvgFromCache(width, height, isLight, usesFahrenheit, mode)
                         if (svgString != null) {
                             result.success(svgString)
                         } else {
@@ -113,7 +113,8 @@ class MainActivity : FlutterActivity() {
         width: Int,
         height: Int,
         isLight: Boolean,
-        usesFahrenheit: Boolean
+        usesFahrenheit: Boolean,
+        mode: String
     ): String? {
         val weatherData = WeatherDataParser.parseFromPrefs(this)
         if (weatherData == null) {
@@ -121,26 +122,27 @@ class MainActivity : FlutterActivity() {
             return null
         }
 
-        val displayData = weatherData.getDisplayRange()
-        val nowIndex = weatherData.getNowIndex()
+        val weekly = mode == "weekly"
+        val view = if (weekly) weatherData.getWeeklyView() else weatherData.getHourlyView()
 
-        // Update current temperature to match nowIndex (keeps Dart in sync as time passes)
-        // Store as string for home_widget compatibility (Dart reads via HomeWidget.getWidgetData)
-        val currentTemp = weatherData.getCurrentTemperature()
-        if (currentTemp != null) {
-            getSharedPreferences(WidgetUtils.PREFS_NAME, MODE_PRIVATE)
-                .edit()
-                .putString("current_temperature_celsius", currentTemp.toString())
-                .apply()
+        // Only the hourly view drives "current temperature" — the weekly view
+        // shares the same cache timestamp but shouldn't overwrite the reading.
+        if (!weekly) {
+            val currentTemp = weatherData.getCurrentTemperature()
+            if (currentTemp != null) {
+                getSharedPreferences(WidgetUtils.PREFS_NAME, MODE_PRIVATE)
+                    .edit()
+                    .putString("current_temperature_celsius", currentTemp.toString())
+                    .apply()
+            }
         }
 
-        // Get colors with Material You support
-        val colors = getChartColors(isLight)
+        val colors = WidgetChartColors.get(this, isLight)
 
         val generator = SvgChartGenerator()
         return generator.generate(
-            data = displayData,
-            nowIndex = nowIndex,
+            data = view.data,
+            nowIndex = view.nowIndex,
             latitude = weatherData.latitude,
             longitude = weatherData.longitude,
             colors = colors,
@@ -148,35 +150,9 @@ class MainActivity : FlutterActivity() {
             height = height.toDouble(),
             locale = Locale.getDefault(),
             usesFahrenheit = usesFahrenheit,
-            use24HourFormat = DateFormat.is24HourFormat(this)
-        )
-    }
-
-    /**
-     * Get chart colors with Material You support.
-     */
-    private fun getChartColors(isLight: Boolean): SvgChartColors {
-        val baseColors = if (isLight) SvgChartColors.light else SvgChartColors.dark
-
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
-            return baseColors
-        }
-
-        val prefs = getSharedPreferences(WidgetUtils.PREFS_NAME, MODE_PRIVATE)
-
-        val tempColorKey = if (isLight) "material_you_light_on_primary_container" else "material_you_dark_primary"
-        val timeColorKey = if (isLight) "material_you_light_tertiary" else "material_you_dark_tertiary"
-
-        val tempColor = prefs.getInt(tempColorKey, 0)
-        val timeColor = prefs.getInt(timeColorKey, 0)
-
-        if (tempColor == 0 || timeColor == 0) {
-            return baseColors
-        }
-
-        return baseColors.withDynamicColors(
-            temperatureLine = SvgColor.fromArgb(tempColor),
-            timeLabel = SvgColor.fromArgb(timeColor)
+            use24HourFormat = DateFormat.is24HourFormat(this),
+            labelStepHours = if (weekly) 24 else 12,
+            labelFormat = if (weekly) TimeLabelFormat.WEEKDAY else TimeLabelFormat.HOUR
         )
     }
 

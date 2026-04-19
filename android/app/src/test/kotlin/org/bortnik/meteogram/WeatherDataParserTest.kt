@@ -4,13 +4,11 @@ import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.annotation.Config
 
 /**
  * Unit tests for WeatherDataParser using Robolectric to mock Android JSON classes.
  */
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [33])
 class WeatherDataParserTest {
 
     @Test

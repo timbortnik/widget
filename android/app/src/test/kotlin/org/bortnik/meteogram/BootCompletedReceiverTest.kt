@@ -10,14 +10,12 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows
-import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowAlarmManager
 
 /**
  * Unit tests for BootCompletedReceiver.
  */
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [33])
 class BootCompletedReceiverTest {
 
     private lateinit var context: Context

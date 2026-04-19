@@ -123,7 +123,7 @@ class MeteogramColors {
     temperatureLine: Color(0xFFFF6B6B),
     temperatureGradientStart: Color(0x40FF6B6B),
     temperatureGradientEnd: Color(0x00FF6B6B),
-    precipitationBar: Color(0xFF4ECDC4),
+    precipitationBar: Color(0xFF1A9D92),
     nowIndicator: Color(0xFFFFE66D),
     gridLine: Color(0x20000000),
     labelText: Color(0xFF4A5568),
@@ -149,8 +149,8 @@ class MeteogramColors {
     primaryText: Color(0xFFFFFFFF),
     secondaryText: Color(0xFFB2BEC3),
     chartTempLabel: Color(0xFFF0F0F0),
-    daylightBar: Color(0xFFFFFF00),      // Pure yellow
-    daylightIcon: Color(0xFFFFFF00),      // Pure yellow (matches daylightBar)
+    daylightBar: Color(0xFFFFD54F),      // Warm amber
+    daylightIcon: Color(0xFFFFD54F),      // Warm amber (matches daylightBar)
     timeLabel: Color(0xFFE0E0E0),         // Fallback - overridden by Material You tertiary
   );
 
