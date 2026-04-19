@@ -1,6 +1,9 @@
 # Meteograph
 
-A beautiful, modern weather widget for Android showing temperature forecasts as a meteogram chart.
+Open-source Android weather widget that puts a detailed forecast directly on
+your home screen — no ads, no tracking, no account. Choose a 48-hour or 7-day
+meteogram with temperature, precipitation, and daylight on a single glanceable
+chart. Powered by the free Open-Meteo API.
 
 <a href="https://play.google.com/store/apps/details?id=org.bortnik.meteogram">
   <img alt="Get it on Google Play" height="72"
