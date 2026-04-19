@@ -64,16 +64,16 @@ dependencies {
     implementation("com.caverock:androidsvg-aar:1.4")
 
     // WorkManager for observing Material You color changes
-    implementation("androidx.work:work-runtime-ktx:2.9.0")
+    implementation("androidx.work:work-runtime-ktx:2.10.5")
 
     // Unit testing
     testImplementation("junit:junit:4.13.2")
-    testImplementation("org.mockito.kotlin:mockito-kotlin:5.2.1")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:6.0.0")
     testImplementation("org.robolectric:robolectric:4.14.1")
-    testImplementation("androidx.test:core:1.5.0")
+    testImplementation("androidx.test:core:1.7.0")
 
     // Instrumented testing
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test:runner:1.5.2")
-    androidTestImplementation("androidx.test:rules:1.5.0")
+    androidTestImplementation("androidx.test.ext:junit:1.3.0")
+    androidTestImplementation("androidx.test:runner:1.7.0")
+    androidTestImplementation("androidx.test:rules:1.7.0")
 }
