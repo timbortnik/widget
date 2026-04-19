@@ -2,4 +2,6 @@
 <resources>
     <string name="widget_description">Meteograma con temperatura, precipitación y luz diurna</string>
     <string name="widget_placeholder">Toca para cargar el pronóstico</string>
+    <string name="widget_weekly_description">Meteograma de 7 días con temperatura, precipitación y luz diurna</string>
+    <string name="widget_weekly_preview_label">Meteograph 7 días</string>
 </resources>

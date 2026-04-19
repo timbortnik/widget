@@ -2,4 +2,6 @@
 <resources>
     <string name="widget_description">Метеограма з прогнозом температури, опадів та освітленості</string>
     <string name="widget_placeholder">Натисніть, щоб завантажити прогноз</string>
+    <string name="widget_weekly_description">7-денна метеограма з прогнозом температури, опадів та освітленості</string>
+    <string name="widget_weekly_preview_label">Meteograph 7 днів</string>
 </resources>

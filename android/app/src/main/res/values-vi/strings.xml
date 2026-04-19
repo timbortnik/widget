@@ -2,4 +2,6 @@
 <resources>
     <string name="widget_description">Biểu đồ thời tiết với nhiệt độ, lượng mưa và ánh sáng ban ngày</string>
     <string name="widget_placeholder">Nhấn để tải dự báo</string>
+    <string name="widget_weekly_description">Biểu đồ thời tiết 7 ngày với nhiệt độ, lượng mưa và ánh sáng ban ngày</string>
+    <string name="widget_weekly_preview_label">Meteograph 7 ngày</string>
 </resources>

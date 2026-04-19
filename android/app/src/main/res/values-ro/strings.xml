@@ -2,4 +2,6 @@
 <resources>
     <string name="widget_description">Meteogramă cu temperatură, precipitații și lumina zilei</string>
     <string name="widget_placeholder">Atinge pentru a încărca prognoza</string>
+    <string name="widget_weekly_description">Meteogramă pe 7 zile cu temperatură, precipitații și lumina zilei</string>
+    <string name="widget_weekly_preview_label">Meteograph 7 zile</string>
 </resources>

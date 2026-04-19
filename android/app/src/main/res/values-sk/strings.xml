@@ -2,4 +2,6 @@
 <resources>
     <string name="widget_description">Meteogram s teplotou, zrážkami a denným svetlom</string>
     <string name="widget_placeholder">Klepnite pre načítanie predpovede</string>
+    <string name="widget_weekly_description">7-dňový meteogram s teplotou, zrážkami a denným svetlom</string>
+    <string name="widget_weekly_preview_label">Meteograph 7 dní</string>
 </resources>

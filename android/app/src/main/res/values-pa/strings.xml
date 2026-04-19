@@ -2,4 +2,6 @@
 <resources>
     <string name="widget_description">ਤਾਪਮਾਨ, ਵਰਖਾ ਅਤੇ ਦਿਨ ਦੀ ਰੌਸ਼ਨੀ ਵਾਲਾ ਮੌਸਮ ਚਾਰਟ</string>
     <string name="widget_placeholder">ਪੂਰਵ ਅਨੁਮਾਨ ਲੋਡ ਕਰਨ ਲਈ ਟੈਪ ਕਰੋ</string>
+    <string name="widget_weekly_description">7-ਦਿਨ ਦਾ ਮੌਸਮ ਚਾਰਟ ਤਾਪਮਾਨ, ਵਰਖਾ ਅਤੇ ਦਿਨ ਦੀ ਰੌਸ਼ਨੀ ਵਾਲਾ</string>
+    <string name="widget_weekly_preview_label">Meteograph 7 ਦਿਨ</string>
 </resources>

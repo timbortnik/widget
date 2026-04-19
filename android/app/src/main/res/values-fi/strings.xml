@@ -2,4 +2,6 @@
 <resources>
     <string name="widget_description">Meteogrammi lämpötilan, sademäärän ja päivänvalon kanssa</string>
     <string name="widget_placeholder">Napauta ladataksesi ennusteen</string>
+    <string name="widget_weekly_description">7 päivän meteogrammi lämpötilan, sademäärän ja päivänvalon kanssa</string>
+    <string name="widget_weekly_preview_label">Meteograph 7 päivää</string>
 </resources>

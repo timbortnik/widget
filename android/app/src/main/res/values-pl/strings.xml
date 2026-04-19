@@ -2,4 +2,6 @@
 <resources>
     <string name="widget_description">Meteogram z temperaturą, opadami i światłem dziennym</string>
     <string name="widget_placeholder">Dotknij, aby załadować prognozę</string>
+    <string name="widget_weekly_description">7-dniowy meteogram z temperaturą, opadami i światłem dziennym</string>
+    <string name="widget_weekly_preview_label">Meteograph 7 dni</string>
 </resources>

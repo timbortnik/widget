@@ -2,4 +2,6 @@
 <resources>
     <string name="widget_description">Метеограм со температура, врнежи и дневна светлина</string>
     <string name="widget_placeholder">Допрете за да ја вчитате прогнозата</string>
+    <string name="widget_weekly_description">7-дневен метеограм со температура, врнежи и дневна светлина</string>
+    <string name="widget_weekly_preview_label">Meteograph 7 дни</string>
 </resources>

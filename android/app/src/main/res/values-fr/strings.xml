@@ -2,4 +2,6 @@
 <resources>
     <string name="widget_description">Météogramme avec température, précipitations et lumière du jour</string>
     <string name="widget_placeholder">Appuyez pour charger les prévisions</string>
+    <string name="widget_weekly_description">Météogramme 7 jours avec température, précipitations et lumière du jour</string>
+    <string name="widget_weekly_preview_label">Meteograph 7 jours</string>
 </resources>

@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"
-        android:text="Meteograph 7-day"
+        android:text="@string/widget_weekly_preview_label"
         android:textSize="18sp"
         android:textStyle="bold"
         android:textColor="?android:attr/textColorPrimary" />

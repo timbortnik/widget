@@ -2,4 +2,6 @@
 <resources>
     <string name="widget_description">기온, 강수량, 일조량을 보여주는 기상도</string>
     <string name="widget_placeholder">탭하여 예보 로드</string>
+    <string name="widget_weekly_description">기온, 강수량, 일조량을 보여주는 7일 기상도</string>
+    <string name="widget_weekly_preview_label">Meteograph 7일</string>
 </resources>

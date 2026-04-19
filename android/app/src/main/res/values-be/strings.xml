@@ -2,4 +2,6 @@
 <resources>
     <string name="widget_description">Метэаграма з тэмпературай, ападкамі і дзённым святлом</string>
     <string name="widget_placeholder">Націсніце, каб загрузіць прагноз</string>
+    <string name="widget_weekly_description">7-дзённая метэаграма з тэмпературай, ападкамі і дзённым святлом</string>
+    <string name="widget_weekly_preview_label">Meteograph 7 дзён</string>
 </resources>

@@ -2,4 +2,6 @@
 <resources>
     <string name="widget_description">显示温度、降水和日照的气象图</string>
     <string name="widget_placeholder">点击加载预报</string>
+    <string name="widget_weekly_description">显示未来7天温度、降水和日照的气象图</string>
+    <string name="widget_weekly_preview_label">Meteograph 7天</string>
 </resources>

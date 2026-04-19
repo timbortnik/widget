@@ -2,4 +2,6 @@
 <resources>
     <string name="widget_description">気温、降水量、日照を表示するメテオグラム</string>
     <string name="widget_placeholder">タップして予報を読み込む</string>
+    <string name="widget_weekly_description">気温、降水量、日照を表示する7日間のメテオグラム</string>
+    <string name="widget_weekly_preview_label">Meteograph 7日間</string>
 </resources>

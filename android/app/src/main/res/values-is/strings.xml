@@ -2,4 +2,6 @@
 <resources>
     <string name="widget_description">Veðurrit með hita, úrkomu og dagsbirtu</string>
     <string name="widget_placeholder">Ýttu til að hlaða spá</string>
+    <string name="widget_weekly_description">7 daga veðurrit með hita, úrkomu og dagsbirtu</string>
+    <string name="widget_weekly_preview_label">Meteograph 7 dagar</string>
 </resources>

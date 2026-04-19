@@ -2,4 +2,6 @@
 <resources>
     <string name="widget_description">مخطط جوي يعرض درجة الحرارة والهطول وضوء النهار</string>
     <string name="widget_placeholder">انقر لتحميل التوقعات</string>
+    <string name="widget_weekly_description">مخطط جوي لـ 7 أيام يعرض درجة الحرارة والهطول وضوء النهار</string>
+    <string name="widget_weekly_preview_label">Meteograph 7 أيام</string>
 </resources>

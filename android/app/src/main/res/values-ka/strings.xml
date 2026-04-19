@@ -2,4 +2,6 @@
 <resources>
     <string name="widget_description">მეტეოგრამა ტემპერატურით, ნალექით და დღის სინათლით</string>
     <string name="widget_placeholder">შეეხეთ პროგნოზის ჩასატვირთად</string>
+    <string name="widget_weekly_description">7-დღიანი მეტეოგრამა ტემპერატურით, ნალექით და დღის სინათლით</string>
+    <string name="widget_weekly_preview_label">Meteograph 7 დღე</string>
 </resources>

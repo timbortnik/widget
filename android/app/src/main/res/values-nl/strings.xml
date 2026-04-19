@@ -2,4 +2,6 @@
 <resources>
     <string name="widget_description">Meteogram met temperatuur, neerslag en daglicht</string>
     <string name="widget_placeholder">Tik om voorspelling te laden</string>
+    <string name="widget_weekly_description">7-daags meteogram met temperatuur, neerslag en daglicht</string>
+    <string name="widget_weekly_preview_label">Meteograph 7 dagen</string>
 </resources>

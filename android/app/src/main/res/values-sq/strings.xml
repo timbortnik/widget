@@ -2,4 +2,6 @@
 <resources>
     <string name="widget_description">Meteogram me temperaturë, reshje dhe dritë ditore</string>
     <string name="widget_placeholder">Prekni për të ngarkuar parashikimin</string>
+    <string name="widget_weekly_description">Meteogram 7-ditor me temperaturë, reshje dhe dritë ditore</string>
+    <string name="widget_weekly_preview_label">Meteograph 7 ditë</string>
 </resources>

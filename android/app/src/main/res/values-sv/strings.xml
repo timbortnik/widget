@@ -2,4 +2,6 @@
 <resources>
     <string name="widget_description">Meteogram med temperatur, nederbörd och dagsljus</string>
     <string name="widget_placeholder">Tryck för att ladda prognos</string>
+    <string name="widget_weekly_description">7-dagars meteogram med temperatur, nederbörd och dagsljus</string>
+    <string name="widget_weekly_preview_label">Meteograph 7 dagar</string>
 </resources>

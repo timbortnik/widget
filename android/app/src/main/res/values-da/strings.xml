@@ -2,4 +2,6 @@
 <resources>
     <string name="widget_description">Meteogram med temperatur, nedbør og dagslys</string>
     <string name="widget_placeholder">Tryk for at indlæse vejrudsigt</string>
+    <string name="widget_weekly_description">7-dages meteogram med temperatur, nedbør og dagslys</string>
+    <string name="widget_weekly_preview_label">Meteograph 7 dage</string>
 </resources>

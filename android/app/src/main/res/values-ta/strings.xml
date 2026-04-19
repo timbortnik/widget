@@ -2,4 +2,6 @@
 <resources>
     <string name="widget_description">வெப்பநிலை, மழைப்பொழிவு மற்றும் பகல் ஒளி காட்டும் வானிலை வரைபடம்</string>
     <string name="widget_placeholder">முன்னறிவிப்பை ஏற்ற தட்டவும்</string>
+    <string name="widget_weekly_description">7 நாள் வெப்பநிலை, மழைப்பொழிவு மற்றும் பகல் ஒளி காட்டும் வானிலை வரைபடம்</string>
+    <string name="widget_weekly_preview_label">Meteograph 7 நாள்</string>
 </resources>

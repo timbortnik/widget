@@ -2,4 +2,6 @@
 <resources>
     <string name="widget_description">Метеограма с температура, валежи и дневна светлина</string>
     <string name="widget_placeholder">Докоснете, за да заредите прогнозата</string>
+    <string name="widget_weekly_description">7-дневна метеограма с температура, валежи и дневна светлина</string>
+    <string name="widget_weekly_preview_label">Meteograph 7 дни</string>
 </resources>

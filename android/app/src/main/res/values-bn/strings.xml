@@ -2,4 +2,6 @@
 <resources>
     <string name="widget_description">তাপমাত্রা, বৃষ্টিপাত এবং দিনের আলো সহ আবহাওয়া চিত্র</string>
     <string name="widget_placeholder">পূর্বাভাস লোড করতে আলতো চাপুন</string>
+    <string name="widget_weekly_description">৭ দিনের আবহাওয়া চিত্র তাপমাত্রা, বৃষ্টিপাত এবং দিনের আলো সহ</string>
+    <string name="widget_weekly_preview_label">Meteograph ৭ দিন</string>
 </resources>

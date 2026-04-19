@@ -2,4 +2,6 @@
 <resources>
     <string name="widget_description">Meteogramm mit Temperatur, Niederschlag und Tageslicht</string>
     <string name="widget_placeholder">Tippen, um Vorhersage zu laden</string>
+    <string name="widget_weekly_description">7-Tage-Meteogramm mit Temperatur, Niederschlag und Tageslicht</string>
+    <string name="widget_weekly_preview_label">Meteograph 7 Tage</string>
 </resources>

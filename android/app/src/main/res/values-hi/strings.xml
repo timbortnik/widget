@@ -2,4 +2,6 @@
 <resources>
     <string name="widget_description">तापमान, वर्षा और दिन के उजाले दिखाने वाला मौसम चार्ट</string>
     <string name="widget_placeholder">पूर्वानुमान लोड करने के लिए टैप करें</string>
+    <string name="widget_weekly_description">7-दिन का मौसम चार्ट तापमान, वर्षा और दिन के उजाले के साथ</string>
+    <string name="widget_weekly_preview_label">Meteograph 7 दिन</string>
 </resources>

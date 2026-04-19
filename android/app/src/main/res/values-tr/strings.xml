@@ -2,4 +2,6 @@
 <resources>
     <string name="widget_description">Sıcaklık, yağış ve gün ışığı gösteren meteogram</string>
     <string name="widget_placeholder">Hava durumunu yüklemek için dokunun</string>
+    <string name="widget_weekly_description">7 günlük sıcaklık, yağış ve gün ışığı gösteren meteogram</string>
+    <string name="widget_weekly_preview_label">Meteograph 7 gün</string>
 </resources>

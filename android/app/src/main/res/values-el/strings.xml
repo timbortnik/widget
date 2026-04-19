@@ -2,4 +2,6 @@
 <resources>
     <string name="widget_description">Μετεωρόγραμμα με θερμοκρασία, βροχόπτωση και φως ημέρας</string>
     <string name="widget_placeholder">Πατήστε για φόρτωση πρόβλεψης</string>
+    <string name="widget_weekly_description">7ήμερο μετεωρόγραμμα με θερμοκρασία, βροχόπτωση και φως ημέρας</string>
+    <string name="widget_weekly_preview_label">Meteograph 7 ημέρες</string>
 </resources>
