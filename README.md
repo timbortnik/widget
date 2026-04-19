@@ -2,6 +2,11 @@
 
 A beautiful, modern weather widget for Android showing temperature forecasts as a meteogram chart.
 
+<a href="https://play.google.com/store/apps/details?id=org.bortnik.meteogram">
+  <img alt="Get it on Google Play" height="72"
+       src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png">
+</a>
+
 ![Flutter](https://img.shields.io/badge/Flutter-3.x-blue.svg)
 ![License](https://img.shields.io/badge/License-BSL_1.1-blue.svg)
 ![Platform](https://img.shields.io/badge/Platform-Android-brightgreen.svg)
