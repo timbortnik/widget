@@ -16,32 +16,37 @@ chart. Powered by the free Open-Meteo API.
 
 ## Features
 
-- **46-hour forecast** with 6 hours of history
-- **Beautiful meteogram chart** with:
+- **Two home-screen widgets**: 48-hour chart (46h forecast + 6h past) and
+  7-day chart, both rendered natively via AndroidSVG
+- **Meteogram chart** with:
   - Temperature line with gradient fill
   - Precipitation bars
   - Daylight intensity (computed from cloud cover and sun position)
-  - Current time indicator
-- **Home screen widget** with native SVG rendering via AndroidSVG
+  - Current time marker
+  - Weekday labels (weekly) / hour labels (48h)
 - **Smart refresh**:
-  - Auto-refresh in foreground (timer checks every minute for stale data >15 min, redraws at half-hour)
-  - WorkManager periodic task (~30 min) for background updates (battery-efficient)
+  - Foreground timer checks every minute for stale data (>15 min) and
+    redraws at half-hour boundaries
+  - AlarmManager (~15 min inexact) catches up on device wake
+  - WorkManager periodic task (~30 min) with network-connected constraint
+  - BOOT_COMPLETED refresh on device restart
   - Event-driven updates (screen unlock, network change, locale/timezone change)
 - **Flexible location**:
-  - GPS with reverse geocoding
-  - City search (any city worldwide)
+  - GPS with reverse geocoding (native platform geocoder)
+  - City search via Open-Meteo geocoding API
   - Recent cities remembered
   - Berlin default when GPS unavailable
 - **Material You** dynamic color support (Android 12+)
 - **Light/dark theme** following system preference
 - **36 languages** supported
-- **Locale-aware units** (°F for US/Liberia/Myanmar, °C elsewhere)
+- **Locale-aware units** (°F for US/Liberia/Myanmar, °C elsewhere; 12/24h time)
 - **Offline support** with smart caching:
   - Automatic cache fallback when offline
   - Fibonacci retry backoff (1, 2, 3, 5, 8 min) for background refresh
   - Visual "OFFLINE" watermark on stale data (>1 hour old)
   - Cached location and city name preserved
-- **No API key required** - uses free Open-Meteo API
+- **No API key required** — uses free Open-Meteo API
+- **No ads, no tracking, no account**
 
 ## Screenshots
 
@@ -88,46 +93,53 @@ make install-debug  # Build debug + install on emulator
 
 ```
 lib/
-├── main.dart                 # App entry point
-├── l10n/                     # Localization files (36 languages)
-│   ├── app_en.arb           # English (template)
-│   └── app_*.arb            # ar, be, bg, bn, bs, cs, da, de, el, es,
-│                            # fi, fr, hi, hr, is, it, ja, jv, ka, ko,
-│                            # mk, nl, no, pa, pl, pt, ro, sk, sq, sv,
-│                            # ta, tr, uk, vi, zh
-├── models/
-│   └── weather_data.dart    # Weather data models
+├── main.dart                     # App entry point, edge-to-edge setup
+├── generated/version.dart        # Generated git version info (gitignored)
+├── l10n/                         # Localization files (36 languages)
+│   ├── app_en.arb                # English (template)
+│   └── app_*.arb                 # ar, be, bg, bn, bs, cs, da, de, el, es,
+│                                 # fi, fr, hi, hr, is, it, ja, jv, ka, ko,
+│                                 # mk, nl, no, pa, pl, pt, ro, sk, sq, sv,
+│                                 # ta, tr, uk, vi, zh
 ├── screens/
-│   └── home_screen.dart     # Main app screen
+│   └── home_screen.dart          # Main app screen (both chart panels)
 ├── services/
-│   ├── weather_service.dart      # Open-Meteo API client
-│   ├── location_service.dart     # GPS/IP/manual location
-│   ├── widget_service.dart       # Home widget updates
-│   ├── background_service.dart   # WorkManager refresh
-│   ├── svg_chart_generator.dart  # Pure Dart SVG generation
-│   ├── native_svg_renderer.dart  # Native PNG rendering
-│   └── units_service.dart        # Temperature/precipitation units
+│   ├── location_service.dart     # GPS + city search + reverse geocoding
+│   ├── widget_service.dart       # Home widget updates via home_widget
+│   ├── native_svg_service.dart   # Method channel to Kotlin (SVG / weather / cache)
+│   ├── units_service.dart        # Temperature unit and 12/24h logic
+│   └── material_you_service.dart # Material You color pass-through
 ├── theme/
-│   └── app_theme.dart       # Colors, themes, Material You
+│   └── app_theme.dart            # Colors, themes, Material You mapping
 └── widgets/
-    └── native_svg_chart_view.dart # Native SVG chart display
+    └── native_svg_chart_view.dart # PlatformView wrapper for native SVG
 
-android/app/src/main/
-├── kotlin/.../
-│   ├── MainActivity.kt              # Flutter activity
-│   ├── MeteogramApplication.kt      # App initialization, event receivers
-│   ├── MeteogramWidgetProvider.kt   # Widget provider
-│   ├── WidgetEventReceiver.kt       # System event handler
-│   ├── WidgetUtils.kt               # Widget helper functions
-│   ├── WeatherUpdateWorker.kt       # WorkManager periodic refresh
-│   ├── SvgChartPlatformView.kt      # Native SVG rendering
-│   ├── SvgChartViewFactory.kt       # PlatformView factory
-│   ├── MaterialYouColorExtractor.kt # Dynamic color extraction
-│   └── MaterialYouColorWorker.kt    # Background color updates
-└── res/
-    ├── layout/meteogram_widget.xml # Widget layout
-    ├── xml/meteogram_widget_info.xml
-    └── drawable/widget_background.xml
+android/app/src/main/kotlin/.../
+├── MainActivity.kt                   # Flutter activity + method channel
+├── MeteogramApplication.kt           # Receiver registration, alarm schedule
+├── MeteogramWidgetProvider.kt        # Base widget (48h) — shared logic
+├── MeteogramWeeklyWidgetProvider.kt  # 7-day variant (extends base)
+├── WidgetEventReceiver.kt            # Locale / timezone / network receiver
+├── WidgetAlarmScheduler.kt           # 15-min inexact AlarmManager
+├── WidgetAlarmReceiver.kt            # Alarm broadcast handler
+├── BootCompletedReceiver.kt          # Refresh on device boot
+├── WidgetUtils.kt                    # Shared widget helpers
+├── WidgetChartColors.kt              # Material You color resolver
+├── WeatherUpdateWorker.kt            # WorkManager periodic refresh (~30 min)
+├── WeatherFetcher.kt                 # Native HTTP client for Open-Meteo
+├── WeatherDataParser.kt              # Cached-weather parser + chart views
+├── SvgChartGenerator.kt              # Native SVG generator (single source of truth)
+├── MaterialYouColorExtractor.kt      # Dynamic color extraction
+├── MaterialYouColorWorker.kt         # Background color updates
+├── SvgChartPlatformView.kt           # In-app native SVG rendering
+└── SvgChartViewFactory.kt            # PlatformView factory
+
+android/app/src/main/res/
+├── layout/meteogram_widget.xml              # 48h widget layout
+├── layout/meteogram_widget_weekly.xml       # 7-day widget layout
+├── xml/meteogram_widget_info.xml
+├── xml/meteogram_widget_weekly_info.xml
+└── drawable/widget_background.xml
 ```
 
 ## API
@@ -141,37 +153,43 @@ GET https://api.open-meteo.com/v1/forecast
   &longitude={lon}
   &hourly=temperature_2m,precipitation,cloud_cover
   &timezone=UTC
-  &past_hours=6
-  &forecast_days=2
+  &past_hours=32
+  &forecast_days=7
 ```
 
-Returns hourly data for:
-- `temperature_2m` - Temperature in Celsius
-- `precipitation` - Rain/snow in mm
-- `cloud_cover` - Cloud coverage percentage (0-100)
+The 32-hour past window keeps the weekly chart's "now" line at the same
+fraction of width as the 48-hour chart. The 48-hour chart slices a smaller
+window (6h past + 46h future) from the same cache.
 
-Daylight intensity is computed from cloud cover and solar position (latitude + time).
+Returns hourly data for:
+- `temperature_2m` — temperature in Celsius
+- `precipitation` — rain/snow in mm
+- `cloud_cover` — cloud coverage percentage (0-100)
+
+Daylight intensity is computed locally from cloud cover and solar position.
 
 ### City Search (Geocoding)
 ```
 GET https://geocoding-api.open-meteo.com/v1/search
   ?name={query}
   &count=8
-  &language=en
+  &language={locale}
 ```
 
-Returns matching cities with coordinates, country, and region.
+The `language` parameter uses the user's current locale so results come
+back in their preferred language.
 
 ## Widget Technical Details
 
 ### Android Widget
 
-The home screen widget uses:
-- `HomeWidgetProvider` from home_widget package
+The home screen widgets use:
+- `HomeWidgetProvider` from the home_widget package
 - `RemoteViews` for native Android widget rendering
-- SVG chart rendered natively via AndroidSVG library
-- WorkManager periodic task for background refresh (battery-efficient)
-- Event receivers for unlock/network/locale changes
+- SVG chart generated in Kotlin (`SvgChartGenerator.kt`) and rasterised via AndroidSVG
+- AlarmManager (~15 min inexact), WorkManager (~30 min with network constraint),
+  and BOOT_COMPLETED for reliable background refresh
+- Event receivers for unlock / network / locale / timezone changes
 
 **RemoteViews Limitations:**
 - Only supports: TextView, ImageView, LinearLayout, RelativeLayout, FrameLayout
@@ -179,24 +197,28 @@ The home screen widget uses:
 
 ### Data Flow
 
-1. App loads weather from Open-Meteo API
-2. SVG chart generated via `SvgChartGenerator` (pure Dart)
-3. In-app: SVG rendered via native Android PlatformView (AndroidSVG)
-4. Widget: SVG saved to file, rendered by native provider via AndroidSVG
-5. WorkManager periodic task triggers background refresh (~30 min)
-6. Event receivers trigger refresh on unlock/network/locale changes
+1. **Foreground**: `home_screen.dart` → `NativeSvgService.fetchWeather()` →
+   Kotlin `WeatherFetcher` pulls from Open-Meteo → caches to SharedPreferences
+2. **SVG generation**: `SvgChartGenerator.kt` reads the cache and produces an
+   SVG string — single source of truth used by both the in-app chart and both widgets
+3. **In-app**: SVG rendered via native PlatformView (AndroidSVG)
+4. **Widget**: SVG rasterised to a bitmap and shown in an ImageView
+5. **Background**: AlarmManager / WorkManager / BOOT_COMPLETED / event receivers
+   trigger a native refresh + widget re-render, Flutter engine stays off
 
 ## Customization
 
 ### Colors
 
-Edit `lib/theme/app_theme.dart`:
+Edit `lib/theme/app_theme.dart` for the in-app UI and
+`android/app/src/main/kotlin/.../SvgChartGenerator.kt` for the chart itself
+(`SvgChartColors.light` / `SvgChartColors.dark`). Example from the Dart side:
 
 ```dart
 static const light = MeteogramColors(
   temperatureLine: Color(0xFFFF6B6B),    // Coral red
-  precipitationBar: Color(0xFF4ECDC4),   // Teal
-  daylightBar: Color(0xFFFF8F00),        // Dark amber (daylight bars)
+  precipitationBar: Color(0xFF1A9D92),   // Deeper teal (legibility on white)
+  daylightBar: Color(0xFFFF8F00),        // Dark amber
   nowIndicator: Color(0xFFFFE66D),       // Golden yellow
   // ...
 );
