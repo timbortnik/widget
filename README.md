@@ -42,11 +42,12 @@ A beautiful, modern weather widget for Android showing temperature forecasts as 
 
 ## Screenshots
 
-The app features a modern, card-based design with:
-- Large temperature display
-- Pull-to-refresh
-- Smooth animations
-- Elegant color palette (coral red temp line, teal precipitation, yellow daylight)
+<p>
+  <img src="store/screenshots/screen1.png" width="22%" alt="Home screen widget">
+  <img src="store/screenshots/screen2.png" width="22%" alt="In-app chart">
+  <img src="store/screenshots/screen3.png" width="22%" alt="Dark mode">
+  <img src="store/screenshots/screen4.png" width="22%" alt="Location picker">
+</p>
 
 ## Installation
 
