@@ -74,6 +74,9 @@ jobs:
       - name: Run Kotlin tests
         run: cd android && ./gradlew :app:test --console=plain
 
+      - name: Build debug APK
+        run: flutter build apk --debug --target-platform android-arm64
+
       - name: Check test coverage
         run: |
           if [ -f coverage/lcov.info ]; then
