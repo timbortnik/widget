@@ -59,6 +59,16 @@ flutter {
     source = "../.."
 }
 
+// home_widget 0.9.1 declares `androidx.glance:glance-appwidget:1.+`, which now
+// resolves to 1.3.0-alpha01 and requires compileSdk 37 / AGP 9.1.0. We don't
+// use Glance (widget is plain RemoteViews), so pin to the last stable release.
+configurations.all {
+    resolutionStrategy {
+        force("androidx.glance:glance-appwidget:1.1.1")
+        force("androidx.glance:glance:1.1.1")
+    }
+}
+
 dependencies {
     // AndroidSVG for rendering SVG charts in the widget
     implementation("com.caverock:androidsvg-aar:1.4")
