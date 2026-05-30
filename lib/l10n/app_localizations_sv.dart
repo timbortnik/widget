@@ -131,4 +131,16 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get searchCityHint => 'Sök stad...';
+
+  @override
+  String get theme => 'Tema';
+
+  @override
+  String get themeSystem => 'Systemstandard';
+
+  @override
+  String get themeLight => 'Ljust';
+
+  @override
+  String get themeDark => 'Mörkt';
 }

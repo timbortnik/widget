@@ -132,4 +132,16 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get searchCityHint => 'Şehir ara...';
+
+  @override
+  String get theme => 'Tema';
+
+  @override
+  String get themeSystem => 'Sistem varsayılanı';
+
+  @override
+  String get themeLight => 'Açık';
+
+  @override
+  String get themeDark => 'Koyu';
 }

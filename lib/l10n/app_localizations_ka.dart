@@ -131,4 +131,16 @@ class AppLocalizationsKa extends AppLocalizations {
 
   @override
   String get searchCityHint => 'მოძებნე ქალაქი...';
+
+  @override
+  String get theme => 'თემა';
+
+  @override
+  String get themeSystem => 'სისტემის ნაგულისხმევი';
+
+  @override
+  String get themeLight => 'ღია';
+
+  @override
+  String get themeDark => 'მუქი';
 }

@@ -5,6 +5,7 @@ import android.appwidget.AppWidgetManager
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.os.Build
 import android.graphics.BitmapFactory
@@ -12,6 +13,8 @@ import android.graphics.Canvas
 import android.os.Bundle
 import android.text.format.DateFormat
 import android.util.Log
+import android.util.TypedValue
+import android.view.ContextThemeWrapper
 import android.view.View
 import android.widget.RemoteViews
 import com.caverock.androidsvg.SVG
@@ -129,6 +132,47 @@ open class MeteogramWidgetProvider : HomeWidgetProvider() {
             Log.e(logTag, "Error rendering SVG string to bitmap", e)
             null
         }
+    }
+
+    /**
+     * Apply the user's in-app theme choice to the widget. By default the layout
+     * switches the light/dark charts via night-mode resource qualifiers and the
+     * card uses ?android:attr/colorBackground (the "system" option); a manual
+     * Light/Dark choice overrides both here so the widget matches the app.
+     */
+    private fun applyThemeOverride(context: Context, views: RemoteViews) {
+        val prefs = context.getSharedPreferences(WidgetUtils.PREFS_NAME, Context.MODE_PRIVATE)
+        val mode = prefs.getString(WidgetUtils.KEY_THEME_MODE, null)
+        val visibility = WidgetUtils.chartVisibilityForThemeMode(mode) ?: return
+        views.setViewVisibility(R.id.widget_chart_light, visibility.first)
+        views.setViewVisibility(R.id.widget_chart_dark, visibility.second)
+        // The visible "card" is the widget root background, which otherwise only
+        // tracks the system night mode — force it to match the chosen theme.
+        views.setInt(
+            R.id.widget_root,
+            "setBackgroundColor",
+            resolveColorBackground(context, night = mode == "dark")
+        )
+    }
+
+    /**
+     * Resolve ?android:attr/colorBackground as it would be inflated under the
+     * given night mode, so a forced theme's card matches the system look.
+     */
+    private fun resolveColorBackground(context: Context, night: Boolean): Int {
+        val config = Configuration(context.resources.configuration)
+        val nightFlag = if (night) Configuration.UI_MODE_NIGHT_YES else Configuration.UI_MODE_NIGHT_NO
+        // Split the mask and the set onto separate statements so no single line
+        // mixes `and`/`or` (avoids CodeQL's operator-precedence-whitespace alert).
+        val modeWithoutNight = config.uiMode and Configuration.UI_MODE_NIGHT_MASK.inv()
+        config.uiMode = modeWithoutNight or nightFlag
+        val themed = ContextThemeWrapper(
+            context.createConfigurationContext(config),
+            R.style.WidgetTheme
+        )
+        val tv = TypedValue()
+        themed.theme.resolveAttribute(android.R.attr.colorBackground, tv, true)
+        return if (tv.resourceId != 0) themed.getColor(tv.resourceId) else tv.data
     }
 
     private fun updateWidgetIdsList(context: Context, widgetIds: IntArray) {
@@ -252,6 +296,7 @@ open class MeteogramWidgetProvider : HomeWidgetProvider() {
             if (lightBitmap != null || darkBitmap != null) {
                 views.setViewVisibility(R.id.widget_placeholder, View.GONE)
                 views.setViewVisibility(R.id.widget_refresh_indicator, View.GONE)
+                applyThemeOverride(context, views)
 
                 val intent = Intent(context, MainActivity::class.java).apply {
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
@@ -383,6 +428,9 @@ open class MeteogramWidgetProvider : HomeWidgetProvider() {
             }
 
             views.setViewVisibility(R.id.widget_refresh_indicator, View.GONE)
+            if (hasChart) {
+                applyThemeOverride(context, views)
+            }
 
             appWidgetManager.updateAppWidget(appWidgetId, views)
             Log.d(logTag, "Updated widget $appWidgetId")

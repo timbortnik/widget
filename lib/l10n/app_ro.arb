@@ -39,5 +39,9 @@
   "gpsPermissionDenied": "Permisiunea GPS refuzată. Activați din setările dispozitivului.",
   "searchConnectionError": "Nu se poate căuta - verificați conexiunea",
   "selectLocation": "Selectați locația",
-  "searchCityHint": "Căutați oraș..."
+  "searchCityHint": "Căutați oraș...",
+  "theme": "Temă",
+  "themeSystem": "Prestabilit de sistem",
+  "themeLight": "Luminoasă",
+  "themeDark": "Întunecată"
 }

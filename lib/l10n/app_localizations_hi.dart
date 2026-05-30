@@ -131,4 +131,16 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get searchCityHint => 'शहर खोजें...';
+
+  @override
+  String get theme => 'थीम';
+
+  @override
+  String get themeSystem => 'सिस्टम डिफ़ॉल्ट';
+
+  @override
+  String get themeLight => 'लाइट';
+
+  @override
+  String get themeDark => 'डार्क';
 }

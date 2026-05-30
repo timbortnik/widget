@@ -132,4 +132,16 @@ class AppLocalizationsSq extends AppLocalizations {
 
   @override
   String get searchCityHint => 'Kërko qytet...';
+
+  @override
+  String get theme => 'Tema';
+
+  @override
+  String get themeSystem => 'Parazgjedhja e sistemit';
+
+  @override
+  String get themeLight => 'E çelët';
+
+  @override
+  String get themeDark => 'E errët';
 }

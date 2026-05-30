@@ -131,4 +131,16 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get searchCityHint => 'ابحث عن مدينة...';
+
+  @override
+  String get theme => 'المظهر';
+
+  @override
+  String get themeSystem => 'افتراضي النظام';
+
+  @override
+  String get themeLight => 'فاتح';
+
+  @override
+  String get themeDark => 'داكن';
 }

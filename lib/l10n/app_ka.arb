@@ -39,5 +39,9 @@
   "gpsPermissionDenied": "GPS ნებართვა უარყოფილია. ჩართეთ მოწყობილობის პარამეტრებში.",
   "searchConnectionError": "ძიება ვერ მოხერხდა - შეამოწმეთ კავშირი",
   "selectLocation": "აირჩიეთ მდებარეობა",
-  "searchCityHint": "მოძებნე ქალაქი..."
+  "searchCityHint": "მოძებნე ქალაქი...",
+  "theme": "თემა",
+  "themeSystem": "სისტემის ნაგულისხმევი",
+  "themeLight": "ღია",
+  "themeDark": "მუქი"
 }

@@ -132,4 +132,16 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get searchCityHint => 'Căutați oraș...';
+
+  @override
+  String get theme => 'Temă';
+
+  @override
+  String get themeSystem => 'Prestabilit de sistem';
+
+  @override
+  String get themeLight => 'Luminoasă';
+
+  @override
+  String get themeDark => 'Întunecată';
 }

@@ -39,5 +39,9 @@
   "gpsPermissionDenied": "GPS-tillatelse avslått. Aktiver i enhetsinnstillinger.",
   "searchConnectionError": "Kan ikke søke - sjekk tilkoblingen",
   "selectLocation": "Velg plassering",
-  "searchCityHint": "Søk by..."
+  "searchCityHint": "Søk by...",
+  "theme": "Tema",
+  "themeSystem": "Systemstandard",
+  "themeLight": "Lyst",
+  "themeDark": "Mørkt"
 }

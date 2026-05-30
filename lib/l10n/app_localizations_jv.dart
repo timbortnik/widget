@@ -131,4 +131,16 @@ class AppLocalizationsJv extends AppLocalizations {
 
   @override
   String get searchCityHint => 'Goleki kutha...';
+
+  @override
+  String get theme => 'Tema';
+
+  @override
+  String get themeSystem => 'Gawan sistem';
+
+  @override
+  String get themeLight => 'Padhang';
+
+  @override
+  String get themeDark => 'Peteng';
 }

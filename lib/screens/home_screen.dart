@@ -18,9 +18,17 @@ import '../generated/version.dart';
 class HomeScreen extends StatefulWidget {
   final MaterialYouColors? materialYouColors;
 
+  /// Currently active in-app theme mode (used to show the chooser selection).
+  final ThemeMode themeMode;
+
+  /// Called when the user picks a theme mode from the chooser.
+  final ValueChanged<ThemeMode>? onThemeModeChanged;
+
   const HomeScreen({
     super.key,
     this.materialYouColors,
+    this.themeMode = ThemeMode.system,
+    this.onThemeModeChanged,
   });
 
   @override
@@ -539,39 +547,56 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Location row
-              GestureDetector(
-                onTap: _showLocationPicker,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      _getLocationIcon(),
-                      size: 14,
+              // Top row: location selector + theme switcher
+              Row(
+                children: [
+                  GestureDetector(
+                    onTap: _showLocationPicker,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          _getLocationIcon(),
+                          size: 14,
+                          color: colors.secondaryText,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          _locationName ?? l10n.unknownLocation,
+                          style: TextStyle(
+                            color: colors.secondaryText,
+                            fontSize: 13,
+                          ),
+                        ),
+                        Text(
+                          ' · ${_getLocationSourceLabel(l10n)}',
+                          style: TextStyle(
+                            color: colors.secondaryText,
+                            fontSize: 13,
+                          ),
+                        ),
+                        Icon(
+                          Icons.arrow_drop_down,
+                          size: 16,
+                          color: colors.secondaryText,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    onPressed: _showThemePicker,
+                    icon: Icon(
+                      Icons.brightness_medium_outlined,
+                      size: 20,
                       color: colors.secondaryText,
                     ),
-                    const SizedBox(width: 4),
-                    Text(
-                      _locationName ?? l10n.unknownLocation,
-                      style: TextStyle(
-                        color: colors.secondaryText,
-                        fontSize: 13,
-                      ),
-                    ),
-                    Text(
-                      ' · ${_getLocationSourceLabel(l10n)}',
-                      style: TextStyle(
-                        color: colors.secondaryText,
-                        fontSize: 13,
-                      ),
-                    ),
-                    Icon(
-                      Icons.arrow_drop_down,
-                      size: 16,
-                      color: colors.secondaryText,
-                    ),
-                  ],
-                ),
+                    tooltip: l10n.theme,
+                    visualDensity: VisualDensity.compact,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                ],
               ),
               const SizedBox(height: 16),
 
@@ -859,6 +884,61 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           );
         },
       ),
+    );
+  }
+
+  /// Bottom sheet to choose the in-app theme: System default / Light / Dark.
+  void _showThemePicker() {
+    final colors = MeteogramColors.of(context, nativeColors: _getNativeColorsForTheme(context));
+    final l10n = AppLocalizations.of(context)!;
+
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: colors.cardBackground,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        Widget tile(ThemeMode mode, IconData icon, String label) {
+          return ListTile(
+            leading: Icon(icon, color: colors.temperatureLine),
+            title: Text(label, style: TextStyle(color: colors.primaryText)),
+            trailing: widget.themeMode == mode
+                ? Icon(Icons.check, color: colors.temperatureLine, size: 20)
+                : null,
+            onTap: () {
+              Navigator.pop(sheetContext);
+              widget.onThemeModeChanged?.call(mode);
+            },
+          );
+        }
+
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    l10n.theme,
+                    style: TextStyle(
+                      color: colors.primaryText,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+              tile(ThemeMode.system, Icons.brightness_auto_outlined, l10n.themeSystem),
+              tile(ThemeMode.light, Icons.light_mode_outlined, l10n.themeLight),
+              tile(ThemeMode.dark, Icons.dark_mode_outlined, l10n.themeDark),
+              const SizedBox(height: 12),
+            ],
+          ),
+        );
+      },
     );
   }
 

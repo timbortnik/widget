@@ -39,5 +39,9 @@
   "gpsPermissionDenied": "GPS அனுமதி மறுக்கப்பட்டது. சாதன அமைப்புகளில் இயக்கவும்.",
   "searchConnectionError": "தேட இயலவில்லை - இணைப்பைச் சரிபார்க்கவும்",
   "selectLocation": "இருப்பிடத்தைத் தேர்ந்தெடுக்கவும்",
-  "searchCityHint": "நகரத்தைத் தேடு..."
+  "searchCityHint": "நகரத்தைத் தேடு...",
+  "theme": "தீம்",
+  "themeSystem": "அமைப்பின் இயல்புநிலை",
+  "themeLight": "வெளிர்",
+  "themeDark": "அடர்"
 }

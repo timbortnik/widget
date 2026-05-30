@@ -39,5 +39,9 @@
   "gpsPermissionDenied": "Ijin GPS ditolak. Aktifake ing setelan piranti.",
   "searchConnectionError": "Ora bisa nggoleki - priksa sambungan",
   "selectLocation": "Pilih lokasi",
-  "searchCityHint": "Goleki kutha..."
+  "searchCityHint": "Goleki kutha...",
+  "theme": "Tema",
+  "themeSystem": "Gawan sistem",
+  "themeLight": "Padhang",
+  "themeDark": "Peteng"
 }

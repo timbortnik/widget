@@ -39,5 +39,9 @@
   "gpsPermissionDenied": "GPS-lupa evätty. Ota käyttöön laitteen asetuksista.",
   "searchConnectionError": "Haku epäonnistui - tarkista yhteys",
   "selectLocation": "Valitse sijainti",
-  "searchCityHint": "Hae kaupunkia..."
+  "searchCityHint": "Hae kaupunkia...",
+  "theme": "Teema",
+  "themeSystem": "Järjestelmän oletus",
+  "themeLight": "Vaalea",
+  "themeDark": "Tumma"
 }

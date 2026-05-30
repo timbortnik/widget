@@ -39,5 +39,9 @@
   "gpsPermissionDenied": "GPS अनुमति अस्वीकृत। डिवाइस सेटिंग्स में सक्षम करें।",
   "searchConnectionError": "खोज नहीं हो सकी - अपना कनेक्शन जांचें",
   "selectLocation": "स्थान चुनें",
-  "searchCityHint": "शहर खोजें..."
+  "searchCityHint": "शहर खोजें...",
+  "theme": "थीम",
+  "themeSystem": "सिस्टम डिफ़ॉल्ट",
+  "themeLight": "लाइट",
+  "themeDark": "डार्क"
 }

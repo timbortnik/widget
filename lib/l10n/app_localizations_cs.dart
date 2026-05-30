@@ -131,4 +131,16 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get searchCityHint => 'Hledat město...';
+
+  @override
+  String get theme => 'Motiv';
+
+  @override
+  String get themeSystem => 'Výchozí nastavení systému';
+
+  @override
+  String get themeLight => 'Světlý';
+
+  @override
+  String get themeDark => 'Tmavý';
 }

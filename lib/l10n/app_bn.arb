@@ -39,5 +39,9 @@
   "gpsPermissionDenied": "GPS অনুমতি অস্বীকৃত। ডিভাইস সেটিংসে সক্ষম করুন।",
   "searchConnectionError": "অনুসন্ধান করা যাচ্ছে না - আপনার সংযোগ পরীক্ষা করুন",
   "selectLocation": "অবস্থান নির্বাচন করুন",
-  "searchCityHint": "শহর খুঁজুন..."
+  "searchCityHint": "শহর খুঁজুন...",
+  "theme": "থিম",
+  "themeSystem": "সিস্টেম ডিফল্ট",
+  "themeLight": "হালকা",
+  "themeDark": "গাঢ়"
 }

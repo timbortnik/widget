@@ -39,5 +39,9 @@
   "gpsPermissionDenied": "Quyền GPS bị từ chối. Bật trong cài đặt thiết bị.",
   "searchConnectionError": "Không thể tìm kiếm - kiểm tra kết nối của bạn",
   "selectLocation": "Chọn vị trí",
-  "searchCityHint": "Tìm thành phố..."
+  "searchCityHint": "Tìm thành phố...",
+  "theme": "Giao diện",
+  "themeSystem": "Mặc định hệ thống",
+  "themeLight": "Sáng",
+  "themeDark": "Tối"
 }

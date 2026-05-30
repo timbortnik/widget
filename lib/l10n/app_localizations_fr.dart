@@ -132,4 +132,16 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get searchCityHint => 'Rechercher une ville...';
+
+  @override
+  String get theme => 'Thème';
+
+  @override
+  String get themeSystem => 'Système par défaut';
+
+  @override
+  String get themeLight => 'Clair';
+
+  @override
+  String get themeDark => 'Sombre';
 }

@@ -141,5 +141,9 @@
   "gpsPermissionDenied": "Дозвіл GPS відхилено. Увімкніть у налаштуваннях пристрою.",
   "searchConnectionError": "Не вдалося знайти - перевірте підключення",
   "selectLocation": "Оберіть місце",
-  "searchCityHint": "Пошук міста..."
+  "searchCityHint": "Пошук міста...",
+  "theme": "Тема",
+  "themeSystem": "Системна",
+  "themeLight": "Світла",
+  "themeDark": "Темна"
 }

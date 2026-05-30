@@ -132,4 +132,16 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get searchCityHint => 'Αναζήτηση πόλης...';
+
+  @override
+  String get theme => 'Θέμα';
+
+  @override
+  String get themeSystem => 'Προεπιλογή συστήματος';
+
+  @override
+  String get themeLight => 'Φωτεινό';
+
+  @override
+  String get themeDark => 'Σκούρο';
 }

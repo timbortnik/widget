@@ -132,4 +132,16 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get searchCityHint => 'Пошук міста...';
+
+  @override
+  String get theme => 'Тема';
+
+  @override
+  String get themeSystem => 'Системна';
+
+  @override
+  String get themeLight => 'Світла';
+
+  @override
+  String get themeDark => 'Темна';
 }

@@ -133,4 +133,16 @@ class AppLocalizationsMk extends AppLocalizations {
 
   @override
   String get searchCityHint => 'Пребарај град...';
+
+  @override
+  String get theme => 'Тема';
+
+  @override
+  String get themeSystem => 'Системски зададено';
+
+  @override
+  String get themeLight => 'Светла';
+
+  @override
+  String get themeDark => 'Темна';
 }

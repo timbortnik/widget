@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
 import android.util.Log
+import android.view.View
 import java.util.concurrent.Executors
 
 /**
@@ -30,6 +31,21 @@ object WidgetUtils {
     const val KEY_WIDGET_HEIGHT_PX = "widget_height_px"
     const val KEY_LAST_WEATHER_UPDATE = "last_weather_update"
     const val KEY_LAST_RENDER_TIME = "last_render_time"
+
+    // In-app theme choice, mirrored from Dart so the widget matches the app.
+    // Values: "system" | "light" | "dark" (absent == follow system).
+    const val KEY_THEME_MODE = "theme_mode"
+
+    /**
+     * Map the user's in-app theme choice to (lightVisibility, darkVisibility)
+     * for the widget's two chart ImageViews, or null to defer to the system
+     * (the night-mode resource qualifiers baked into the layout).
+     */
+    fun chartVisibilityForThemeMode(mode: String?): Pair<Int, Int>? = when (mode) {
+        "light" -> Pair(View.VISIBLE, View.GONE)
+        "dark" -> Pair(View.GONE, View.VISIBLE)
+        else -> null
+    }
 
     // 30-minute boundary for "now" indicator updates
     private const val HALF_HOUR_MS = 30 * 60 * 1000L

@@ -39,5 +39,9 @@
   "gpsPermissionDenied": "GPS heimild hafnað. Virkja í stillingar tækis.",
   "searchConnectionError": "Ekki tókst að leita - athugaðu tengingu",
   "selectLocation": "Veldu staðsetningu",
-  "searchCityHint": "Leita að borg..."
+  "searchCityHint": "Leita að borg...",
+  "theme": "Þema",
+  "themeSystem": "Sjálfgefið kerfi",
+  "themeLight": "Ljóst",
+  "themeDark": "Dökkt"
 }

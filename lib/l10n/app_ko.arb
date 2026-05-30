@@ -39,5 +39,9 @@
   "gpsPermissionDenied": "GPS 권한이 거부되었습니다. 기기 설정에서 활성화하세요.",
   "searchConnectionError": "검색 불가 - 연결을 확인하세요",
   "selectLocation": "위치 선택",
-  "searchCityHint": "도시 검색..."
+  "searchCityHint": "도시 검색...",
+  "theme": "테마",
+  "themeSystem": "시스템 기본값",
+  "themeLight": "라이트",
+  "themeDark": "다크"
 }

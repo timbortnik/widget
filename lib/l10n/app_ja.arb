@@ -39,5 +39,9 @@
   "gpsPermissionDenied": "GPS権限が拒否されました。設定で有効にしてください。",
   "searchConnectionError": "検索できません - 接続を確認してください",
   "selectLocation": "場所を選択",
-  "searchCityHint": "都市を検索..."
+  "searchCityHint": "都市を検索...",
+  "theme": "テーマ",
+  "themeSystem": "システムのデフォルト",
+  "themeLight": "ライト",
+  "themeDark": "ダーク"
 }

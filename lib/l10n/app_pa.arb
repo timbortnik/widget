@@ -39,5 +39,9 @@
   "gpsPermissionDenied": "GPS ਇਜਾਜ਼ਤ ਰੱਦ। ਡਿਵਾਈਸ ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਯੋਗ ਕਰੋ।",
   "searchConnectionError": "ਖੋਜ ਨਹੀਂ ਹੋ ਸਕਦੀ - ਆਪਣਾ ਕਨੈਕਸ਼ਨ ਚੈੱਕ ਕਰੋ",
   "selectLocation": "ਟਿਕਾਣਾ ਚੁਣੋ",
-  "searchCityHint": "ਸ਼ਹਿਰ ਲੱਭੋ..."
+  "searchCityHint": "ਸ਼ਹਿਰ ਲੱਭੋ...",
+  "theme": "ਥੀਮ",
+  "themeSystem": "ਸਿਸਟਮ ਡਿਫੌਲਟ",
+  "themeLight": "ਲਾਈਟ",
+  "themeDark": "ਡਾਰਕ"
 }

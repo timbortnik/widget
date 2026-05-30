@@ -132,4 +132,16 @@ class AppLocalizationsHr extends AppLocalizations {
 
   @override
   String get searchCityHint => 'Pretraži grad...';
+
+  @override
+  String get theme => 'Tema';
+
+  @override
+  String get themeSystem => 'Zadano sustavom';
+
+  @override
+  String get themeLight => 'Svijetla';
+
+  @override
+  String get themeDark => 'Tamna';
 }
