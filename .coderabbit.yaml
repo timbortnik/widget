@@ -1,0 +1,42 @@
+# yaml-language-server: $schema=https://docs.coderabbit.ai/schemas/coderabbit-yaml.json
+# CodeRabbit config for Meteograph. Docs: https://docs.coderabbit.ai/reference/configuration
+
+language: en-US
+
+reviews:
+  profile: chill                  # less nit-picky; set to "assertive" for stricter reviews
+  request_changes_workflow: false # post comments, don't block merges
+  high_level_summary: true
+  poem: false
+  review_status: true
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - main
+  path_filters:
+    # Skip generated / build output so reviews focus on hand-written code
+    - "!lib/l10n/app_localizations*.dart"
+    - "!lib/generated/**"
+    - "!**/*.g.dart"
+    - "!build/**"
+    - "!android/**/build/**"
+  path_instructions:
+    - path: "lib/**/*.dart"
+      instructions: >-
+        Flutter/Dart. Follow the conventions in CLAUDE.md. Flag analyzer
+        issues (code must pass `flutter analyze`), unsafe null handling, and
+        unnecessary widget rebuilds. New user-facing strings must be added to
+        lib/l10n/app_en.arb (and translated), not hardcoded.
+    - path: "android/**/*.kt"
+      instructions: >-
+        Kotlin for the home-screen widget. Watch for RemoteViews restrictions,
+        null safety, and main-thread work. SharedPreferences keys shared
+        between native and Dart (HomeWidgetPreferences) must stay in sync.
+    - path: "**/*_test.dart"
+      instructions: >-
+        Ensure tests assert real behavior; home_widget and SharedPreferences
+        mocks should follow the existing patterns in test/.
+
+chat:
+  auto_reply: true
