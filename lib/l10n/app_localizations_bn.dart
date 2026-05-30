@@ -132,4 +132,16 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get searchCityHint => 'শহর খুঁজুন...';
+
+  @override
+  String get theme => 'থিম';
+
+  @override
+  String get themeSystem => 'সিস্টেম ডিফল্ট';
+
+  @override
+  String get themeLight => 'হালকা';
+
+  @override
+  String get themeDark => 'গাঢ়';
 }

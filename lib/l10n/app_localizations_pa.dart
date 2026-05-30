@@ -132,4 +132,16 @@ class AppLocalizationsPa extends AppLocalizations {
 
   @override
   String get searchCityHint => 'ਸ਼ਹਿਰ ਲੱਭੋ...';
+
+  @override
+  String get theme => 'ਥੀਮ';
+
+  @override
+  String get themeSystem => 'ਸਿਸਟਮ ਡਿਫੌਲਟ';
+
+  @override
+  String get themeLight => 'ਲਾਈਟ';
+
+  @override
+  String get themeDark => 'ਡਾਰਕ';
 }

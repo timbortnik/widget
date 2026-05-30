@@ -131,4 +131,16 @@ class AppLocalizationsBg extends AppLocalizations {
 
   @override
   String get searchCityHint => 'Търсене на град...';
+
+  @override
+  String get theme => 'Тема';
+
+  @override
+  String get themeSystem => 'Системна';
+
+  @override
+  String get themeLight => 'Светла';
+
+  @override
+  String get themeDark => 'Тъмна';
 }

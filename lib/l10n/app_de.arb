@@ -39,5 +39,9 @@
   "gpsPermissionDenied": "GPS-Berechtigung verweigert. In Geräteeinstellungen aktivieren.",
   "searchConnectionError": "Suche fehlgeschlagen - Verbindung prüfen",
   "selectLocation": "Standort auswählen",
-  "searchCityHint": "Stadt suchen..."
+  "searchCityHint": "Stadt suchen...",
+  "theme": "Design",
+  "themeSystem": "Systemstandard",
+  "themeLight": "Hell",
+  "themeDark": "Dunkel"
 }

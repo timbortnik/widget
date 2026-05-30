@@ -39,5 +39,9 @@
   "gpsPermissionDenied": "GPS权限被拒绝。请在设备设置中启用。",
   "searchConnectionError": "无法搜索 - 请检查您的连接",
   "selectLocation": "选择位置",
-  "searchCityHint": "搜索城市..."
+  "searchCityHint": "搜索城市...",
+  "theme": "主题",
+  "themeSystem": "系统默认",
+  "themeLight": "浅色",
+  "themeDark": "深色"
 }

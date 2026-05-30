@@ -132,4 +132,16 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get searchCityHint => 'Tìm thành phố...';
+
+  @override
+  String get theme => 'Giao diện';
+
+  @override
+  String get themeSystem => 'Mặc định hệ thống';
+
+  @override
+  String get themeLight => 'Sáng';
+
+  @override
+  String get themeDark => 'Tối';
 }

@@ -1,6 +1,7 @@
 package org.bortnik.meteogram
 
 import android.content.Context
+import android.view.View
 import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert.*
 import org.junit.Before
@@ -176,5 +177,34 @@ class WidgetUtilsTest {
 
         assertEquals(WidgetUtils.DEFAULT_WIDTH_PX, width)
         assertEquals(WidgetUtils.DEFAULT_HEIGHT_PX, height)
+    }
+
+    @Test
+    fun `chartVisibilityForThemeMode forces light chart for light`() {
+        val visibility = WidgetUtils.chartVisibilityForThemeMode("light")
+
+        assertEquals(Pair(View.VISIBLE, View.GONE), visibility)
+    }
+
+    @Test
+    fun `chartVisibilityForThemeMode forces dark chart for dark`() {
+        val visibility = WidgetUtils.chartVisibilityForThemeMode("dark")
+
+        assertEquals(Pair(View.GONE, View.VISIBLE), visibility)
+    }
+
+    @Test
+    fun `chartVisibilityForThemeMode defers to system for system`() {
+        assertNull(WidgetUtils.chartVisibilityForThemeMode("system"))
+    }
+
+    @Test
+    fun `chartVisibilityForThemeMode defers to system when unset`() {
+        assertNull(WidgetUtils.chartVisibilityForThemeMode(null))
+    }
+
+    @Test
+    fun `chartVisibilityForThemeMode defers to system for unknown value`() {
+        assertNull(WidgetUtils.chartVisibilityForThemeMode("bogus"))
     }
 }

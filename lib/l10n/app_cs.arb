@@ -39,5 +39,9 @@
   "gpsPermissionDenied": "Oprávnění GPS zamítnuto. Povolte v nastavení zařízení.",
   "searchConnectionError": "Nelze vyhledávat - zkontrolujte připojení",
   "selectLocation": "Vyberte umístění",
-  "searchCityHint": "Hledat město..."
+  "searchCityHint": "Hledat město...",
+  "theme": "Motiv",
+  "themeSystem": "Výchozí nastavení systému",
+  "themeLight": "Světlý",
+  "themeDark": "Tmavý"
 }

@@ -39,5 +39,9 @@
   "gpsPermissionDenied": "Permissão GPS negada. Ative nas configurações do dispositivo.",
   "searchConnectionError": "Não foi possível pesquisar - verifique sua conexão",
   "selectLocation": "Selecionar local",
-  "searchCityHint": "Pesquisar cidade..."
+  "searchCityHint": "Pesquisar cidade...",
+  "theme": "Tema",
+  "themeSystem": "Padrão do sistema",
+  "themeLight": "Claro",
+  "themeDark": "Escuro"
 }

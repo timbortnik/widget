@@ -39,5 +39,9 @@
   "gpsPermissionDenied": "GPS дозволата е одбиена. Овозможете во поставките.",
   "searchConnectionError": "Не може да се пребарува - проверете ја врската",
   "selectLocation": "Изберете локација",
-  "searchCityHint": "Пребарај град..."
+  "searchCityHint": "Пребарај град...",
+  "theme": "Тема",
+  "themeSystem": "Системски зададено",
+  "themeLight": "Светла",
+  "themeDark": "Темна"
 }

@@ -132,4 +132,16 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get searchCityHint => 'நகரத்தைத் தேடு...';
+
+  @override
+  String get theme => 'தீம்';
+
+  @override
+  String get themeSystem => 'அமைப்பின் இயல்புநிலை';
+
+  @override
+  String get themeLight => 'வெளிர்';
+
+  @override
+  String get themeDark => 'அடர்';
 }

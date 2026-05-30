@@ -39,5 +39,9 @@
   "gpsPermissionDenied": "GPS-behörighet nekad. Aktivera i enhetsinställningar.",
   "searchConnectionError": "Kan inte söka - kontrollera anslutningen",
   "selectLocation": "Välj plats",
-  "searchCityHint": "Sök stad..."
+  "searchCityHint": "Sök stad...",
+  "theme": "Tema",
+  "themeSystem": "Systemstandard",
+  "themeLight": "Ljust",
+  "themeDark": "Mörkt"
 }

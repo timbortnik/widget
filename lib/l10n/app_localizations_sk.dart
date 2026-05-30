@@ -132,4 +132,16 @@ class AppLocalizationsSk extends AppLocalizations {
 
   @override
   String get searchCityHint => 'Hľadať mesto...';
+
+  @override
+  String get theme => 'Motív';
+
+  @override
+  String get themeSystem => 'Predvolené systémom';
+
+  @override
+  String get themeLight => 'Svetlý';
+
+  @override
+  String get themeDark => 'Tmavý';
 }

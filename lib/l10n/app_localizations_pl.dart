@@ -131,4 +131,16 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get searchCityHint => 'Szukaj miasta...';
+
+  @override
+  String get theme => 'Motyw';
+
+  @override
+  String get themeSystem => 'Domyślne ustawienie systemu';
+
+  @override
+  String get themeLight => 'Jasny';
+
+  @override
+  String get themeDark => 'Ciemny';
 }

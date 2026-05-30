@@ -130,4 +130,16 @@ class AppLocalizationsIs extends AppLocalizations {
 
   @override
   String get searchCityHint => 'Leita að borg...';
+
+  @override
+  String get theme => 'Þema';
+
+  @override
+  String get themeSystem => 'Sjálfgefið kerfi';
+
+  @override
+  String get themeLight => 'Ljóst';
+
+  @override
+  String get themeDark => 'Dökkt';
 }

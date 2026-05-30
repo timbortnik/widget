@@ -129,4 +129,16 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get searchCityHint => '도시 검색...';
+
+  @override
+  String get theme => '테마';
+
+  @override
+  String get themeSystem => '시스템 기본값';
+
+  @override
+  String get themeLight => '라이트';
+
+  @override
+  String get themeDark => '다크';
 }

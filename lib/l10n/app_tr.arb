@@ -39,5 +39,9 @@
   "gpsPermissionDenied": "GPS izni reddedildi. Cihaz ayarlarından etkinleştirin.",
   "searchConnectionError": "Arama yapılamıyor - bağlantınızı kontrol edin",
   "selectLocation": "Konum seçin",
-  "searchCityHint": "Şehir ara..."
+  "searchCityHint": "Şehir ara...",
+  "theme": "Tema",
+  "themeSystem": "Sistem varsayılanı",
+  "themeLight": "Açık",
+  "themeDark": "Koyu"
 }

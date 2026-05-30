@@ -39,5 +39,9 @@
   "gpsPermissionDenied": "Η άδεια GPS απορρίφθηκε. Ενεργοποιήστε στις ρυθμίσεις.",
   "searchConnectionError": "Αδυναμία αναζήτησης - ελέγξτε τη σύνδεση",
   "selectLocation": "Επιλογή τοποθεσίας",
-  "searchCityHint": "Αναζήτηση πόλης..."
+  "searchCityHint": "Αναζήτηση πόλης...",
+  "theme": "Θέμα",
+  "themeSystem": "Προεπιλογή συστήματος",
+  "themeLight": "Φωτεινό",
+  "themeDark": "Σκούρο"
 }

@@ -39,5 +39,9 @@
   "gpsPermissionDenied": "Permission GPS refusée. Activer dans les paramètres.",
   "searchConnectionError": "Recherche impossible - vérifiez votre connexion",
   "selectLocation": "Sélectionner un lieu",
-  "searchCityHint": "Rechercher une ville..."
+  "searchCityHint": "Rechercher une ville...",
+  "theme": "Thème",
+  "themeSystem": "Système par défaut",
+  "themeLight": "Clair",
+  "themeDark": "Sombre"
 }

@@ -225,5 +225,25 @@
   "searchCityHint": "Search city...",
   "@searchCityHint": {
     "description": "Placeholder text in city search field"
+  },
+
+  "theme": "Theme",
+  "@theme": {
+    "description": "Title for the theme chooser"
+  },
+
+  "themeSystem": "System default",
+  "@themeSystem": {
+    "description": "Theme option that follows the device light/dark setting"
+  },
+
+  "themeLight": "Light",
+  "@themeLight": {
+    "description": "Light theme option"
+  },
+
+  "themeDark": "Dark",
+  "@themeDark": {
+    "description": "Dark theme option"
   }
 }

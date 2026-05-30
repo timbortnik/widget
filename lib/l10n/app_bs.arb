@@ -39,5 +39,9 @@
   "gpsPermissionDenied": "GPS dozvola odbijena. Omogućite u postavkama uređaja.",
   "searchConnectionError": "Nije moguće pretraživati - provjerite vezu",
   "selectLocation": "Odaberite lokaciju",
-  "searchCityHint": "Pretraži grad..."
+  "searchCityHint": "Pretraži grad...",
+  "theme": "Tema",
+  "themeSystem": "Zadano sistemom",
+  "themeLight": "Svijetla",
+  "themeDark": "Tamna"
 }

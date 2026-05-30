@@ -129,4 +129,16 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get searchCityHint => '都市を検索...';
+
+  @override
+  String get theme => 'テーマ';
+
+  @override
+  String get themeSystem => 'システムのデフォルト';
+
+  @override
+  String get themeLight => 'ライト';
+
+  @override
+  String get themeDark => 'ダーク';
 }

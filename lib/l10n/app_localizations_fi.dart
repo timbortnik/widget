@@ -131,4 +131,16 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get searchCityHint => 'Hae kaupunkia...';
+
+  @override
+  String get theme => 'Teema';
+
+  @override
+  String get themeSystem => 'Järjestelmän oletus';
+
+  @override
+  String get themeLight => 'Vaalea';
+
+  @override
+  String get themeDark => 'Tumma';
 }

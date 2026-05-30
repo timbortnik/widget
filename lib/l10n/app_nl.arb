@@ -39,5 +39,9 @@
   "gpsPermissionDenied": "GPS-toestemming geweigerd. Schakel in via apparaatinstellingen.",
   "searchConnectionError": "Kan niet zoeken - controleer je verbinding",
   "selectLocation": "Selecteer locatie",
-  "searchCityHint": "Zoek stad..."
+  "searchCityHint": "Zoek stad...",
+  "theme": "Thema",
+  "themeSystem": "Systeemstandaard",
+  "themeLight": "Licht",
+  "themeDark": "Donker"
 }

@@ -130,4 +130,16 @@ class AppLocalizationsNo extends AppLocalizations {
 
   @override
   String get searchCityHint => 'Søk by...';
+
+  @override
+  String get theme => 'Tema';
+
+  @override
+  String get themeSystem => 'Systemstandard';
+
+  @override
+  String get themeLight => 'Lyst';
+
+  @override
+  String get themeDark => 'Mørkt';
 }

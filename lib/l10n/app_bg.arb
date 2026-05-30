@@ -39,5 +39,9 @@
   "gpsPermissionDenied": "Достъпът до GPS е отказан. Активирайте в настройките.",
   "searchConnectionError": "Неуспешно търсене - проверете връзката",
   "selectLocation": "Изберете местоположение",
-  "searchCityHint": "Търсене на град..."
+  "searchCityHint": "Търсене на град...",
+  "theme": "Тема",
+  "themeSystem": "Системна",
+  "themeLight": "Светла",
+  "themeDark": "Тъмна"
 }

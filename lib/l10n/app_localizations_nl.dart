@@ -132,4 +132,16 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get searchCityHint => 'Zoek stad...';
+
+  @override
+  String get theme => 'Thema';
+
+  @override
+  String get themeSystem => 'Systeemstandaard';
+
+  @override
+  String get themeLight => 'Licht';
+
+  @override
+  String get themeDark => 'Donker';
 }
