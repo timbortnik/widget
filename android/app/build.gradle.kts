@@ -64,7 +64,7 @@ dependencies {
     implementation("com.caverock:androidsvg-aar:1.4")
 
     // WorkManager for observing Material You color changes
-    implementation("androidx.work:work-runtime-ktx:2.10.5")
+    implementation("androidx.work:work-runtime-ktx:2.11.2")
 
     // Unit testing
     testImplementation("junit:junit:4.13.2")

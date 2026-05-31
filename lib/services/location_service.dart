@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:geocoding/geocoding.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:geolocator_platform_interface/geolocator_platform_interface.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -39,15 +39,15 @@ class LocationService {
   /// Get location from GPS, with fallback to default location (Berlin).
   Future<LocationData> _getGpsLocation() async {
     // Check if location services are enabled
-    final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    final serviceEnabled = await GeolocatorPlatform.instance.isLocationServiceEnabled();
     if (!serviceEnabled) {
       return _getFallbackLocation();
     }
 
     // Check permission
-    var permission = await Geolocator.checkPermission();
+    var permission = await GeolocatorPlatform.instance.checkPermission();
     if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
+      permission = await GeolocatorPlatform.instance.requestPermission();
       if (permission == LocationPermission.denied) {
         return _getFallbackLocation();
       }
@@ -59,7 +59,7 @@ class LocationService {
 
     // Get position with timeout
     try {
-      final position = await Geolocator.getCurrentPosition(
+      final position = await GeolocatorPlatform.instance.getCurrentPosition(
         locationSettings: const LocationSettings(
           accuracy: LocationAccuracy.low,
           timeLimit: Duration(seconds: 10),
@@ -84,7 +84,7 @@ class LocationService {
       );
     } catch (e) {
       // Fallback to last known position
-      final lastPosition = await Geolocator.getLastKnownPosition();
+      final lastPosition = await GeolocatorPlatform.instance.getLastKnownPosition();
       if (lastPosition != null) {
         // Try to get city name for last known position
         String? city = await _getCityFromCoordinates(
@@ -259,15 +259,15 @@ class LocationService {
   /// Returns true if permission is granted.
   Future<bool> requestGpsPermission() async {
     // Check if location services are enabled
-    final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    final serviceEnabled = await GeolocatorPlatform.instance.isLocationServiceEnabled();
     if (!serviceEnabled) {
       return false;
     }
 
     // Check and request permission
-    var permission = await Geolocator.checkPermission();
+    var permission = await GeolocatorPlatform.instance.checkPermission();
     if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
+      permission = await GeolocatorPlatform.instance.requestPermission();
     }
 
     return permission == LocationPermission.always ||
@@ -276,7 +276,7 @@ class LocationService {
 
   /// Open device location settings.
   Future<void> openLocationSettings() async {
-    await Geolocator.openLocationSettings();
+    await GeolocatorPlatform.instance.openLocationSettings();
   }
 
   /// Search for cities using Open-Meteo geocoding API.
