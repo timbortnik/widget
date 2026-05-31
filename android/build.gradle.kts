@@ -3,20 +3,10 @@ allprojects {
         google()
         mavenCentral()
     }
-
-    // home_widget 0.9.1 declares `androidx.glance:glance-appwidget:1.+`, which
-    // now resolves to 1.3.0-alpha01 and requires compileSdk 37 / AGP 9.1.0.
-    // We don't use Glance (widget is plain RemoteViews), so pin to the last
-    // stable release across all subprojects (including the plugin module).
-    configurations.all {
-        resolutionStrategy {
-            force("androidx.glance:glance-appwidget:1.1.1")
-            force("androidx.glance:glance:1.1.1")
-        }
-    }
 }
 
-// Force all subprojects (Flutter plugins) to use Java 17
+// Force all subprojects (Flutter plugins) to use Java 17. With built-in Kotlin the
+// Kotlin jvmTarget defaults to compileOptions.targetCompatibility, so that's enough.
 subprojects {
     afterEvaluate {
         if (project.hasProperty("android")) {
@@ -25,12 +15,6 @@ subprojects {
                     sourceCompatibility = JavaVersion.VERSION_17
                     targetCompatibility = JavaVersion.VERSION_17
                 }
-            }
-        }
-        // Also set Kotlin JVM target to 17
-        tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-            compilerOptions {
-                jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
             }
         }
     }
