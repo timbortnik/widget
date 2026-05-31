@@ -20,7 +20,7 @@ This file provides context for AI assistants working on this project.
 | Framework | Flutter 3.x |
 | Weather API | Open-Meteo (free, no key) |
 | Charting | Native SVG (SvgChartGenerator.kt + AndroidSVG) |
-| Widget package | home_widget + native receivers |
+| Widget package | Native AppWidgetProvider + method-channel KV store (`widget_store.dart`) |
 | i18n | flutter_localizations + intl (ARB files) |
 | License | BSL 1.1 (converts to MIT 2029) |
 
@@ -48,7 +48,8 @@ lib/
 │   └── app_localizations.dart # Generated
 ├── services/
 │   ├── location_service.dart     # Geolocator wrapper with fallback
-│   ├── widget_service.dart       # home_widget integration
+│   ├── widget_service.dart       # Triggers native widget refresh + resize flag
+│   ├── widget_store.dart         # Method-channel KV bridge to HomeWidgetPreferences (replaces home_widget)
 │   └── native_svg_service.dart   # Method channel to native (weather fetch, SVG gen, cache)
 ├── theme/
 │   └── app_theme.dart       # MeteogramColors, WeatherGradients
@@ -61,7 +62,7 @@ android/app/src/main/
 ├── kotlin/.../
 │   ├── MainActivity.kt
 │   ├── MeteogramApplication.kt       # Registers receivers, theme observer, alarm
-│   ├── MeteogramWidgetProvider.kt    # Extends HomeWidgetProvider
+│   ├── MeteogramWidgetProvider.kt    # Extends AppWidgetProvider
 │   ├── WidgetEventReceiver.kt        # Handles locale/timezone changes
 │   ├── WidgetAlarmScheduler.kt       # Schedules 15-min inexact alarm
 │   ├── WidgetAlarmReceiver.kt        # Handles alarm broadcasts
@@ -140,22 +141,31 @@ Android widgets use RemoteViews which only support:
 - **Weather fetching**: `WeatherFetcher.kt` calls Open-Meteo API directly (no Dart involved)
 - **Material You**: `ContentObserver` + `MaterialYouColorWorker.kt` detect theme changes
 
-## Before Coding — Flutter is PINNED to 3.41.7
+## Before Coding — AGP-9 built-in Kotlin: keep the plugin set KGP-free
 
-**Do NOT upgrade Flutter past 3.41.7** (local SDK *and* CI). This project uses AGP built-in
-Kotlin (`android.builtInKotlin=true`), which **Flutter 3.44.0 broke**: 3.44.0's Gradle plugin
-force-applies `kotlin-android` to every KGP-less Android module — including transitive Java
-plugins (`jni`/`jni_flutter`, pulled via `home_widget → path_provider`) — and AGP rejects KGP
-under built-in Kotlin. 3.41.7 predates that change (the force-apply landed in 3.44.0; the
-3.41.x branch never got it).
+This project runs **AGP-9 built-in Kotlin** (`android.builtInKotlin=true`), and AGP-9 rejects
+the legacy Kotlin Gradle Plugin (KGP) **globally** — a single KGP-applying module breaks the
+build. The project therefore has **zero Flutter plugins with native code**
+(`GeneratedPluginRegistrant` is empty): `home_widget` and `geolocator` were both removed in
+favour of native implementations (`WidgetStore`/`LocationProvider` over the method channel).
 
-- **Local SDK:** 3.41.7 — set via `flutter downgrade` (from 3.44.0), or `git checkout 3.41.7`
-  in the Flutter clone, or FVM per-project.
-- **CI:** pinned via `flutter-version: '3.41.7'` in `.github/workflows/`.
-- **Verify after any toolchain change:** `make analyze` + `make test` + a debug build.
-- **Un-pin when** Flutter stops force-applying KGP to Java-only plugins, OR `home_widget` +
-  `path_provider`/`jni` ship built-in-Kotlin builds (track flutter/flutter#185121). Then bump
-  Flutter, `flutter pub upgrade`, and re-verify. See `android/gradle.properties` for the flags.
+**With no KGP plugin present, Flutter 3.44.0 builds clean** (unpinned 2026-05; previously stuck
+on 3.41.7). Flutter 3.44.0 still *tries* to force-apply `kotlin-android` to `:app` and logs a
+benign warning — `Applying the Kotlin Android Plugin (KGP) was unsuccessful. KGP was not found
+on the classpath.` — but the apply is caught (`FlutterPluginUtils.kt:633`) and the build
+succeeds. That one warning line is expected; ignore it (Flutter plans to drop the force-apply,
+flutter/flutter#184837).
+
+- **CRITICAL:** do **not** add any Flutter plugin that applies KGP (most native plugins do) — it
+  will break the build under built-in Kotlin. Prefer a native implementation over the method
+  channel, or a plugin version that supports built-in Kotlin. If a KGP plugin is unavoidable,
+  you must switch to the legacy path: `android.builtInKotlin=false` + re-add `id("kotlin-android")`
+  to `app/build.gradle.kts` (KGP is already declared `apply false` in `settings.gradle.kts`).
+- **CI:** `flutter-version: '3.44.0'` in `.github/workflows/`.
+- **Verify after any toolchain/plugin change:** `make analyze` + `make test` + a debug build.
+  After switching the local Flutter SDK version, run `flutter clean` first (stale kernel caches
+  from a different Dart version cause spurious `dot-shorthands` framework-compile errors).
+- `android.newDsl=false` is still required (removed in AGP 10.0 — a separate future deadline).
 
 ## Build Commands
 
@@ -258,7 +268,7 @@ adb logcat | grep -i "Error inflating"
 ## Gotchas
 
 1. **RemoteViews errors** - Check logcat for "Class not allowed to be inflated"
-2. **Widget not updating** - Ensure `HomeWidget.updateWidget()` called with correct names
+2. **Widget not updating** - Ensure `WidgetStore.updateWidget()` called with correct provider names
 3. **SVG not rendering** - Check logcat for AndroidSVG errors, validate SVG string
 4. **Location timeout** - Has 15s timeout with Berlin fallback
 5. **Null API values** - Use `?.toDouble() ?? 0.0` pattern for nullable JSON

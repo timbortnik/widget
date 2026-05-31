@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:home_widget/home_widget.dart';
+import 'widget_store.dart';
 
 /// Service to read Material You colors extracted by native Android code.
 ///
@@ -27,7 +27,7 @@ class MaterialYouService {
   /// Returns null if colors are not available (Android < 12 or not yet extracted).
   static Future<MaterialYouColors?> getColors() async {
     // Read from HomeWidgetPreferences (same file as native Kotlin code)
-    final lightPrimary = await HomeWidget.getWidgetData<int>(_keyLightPrimary);
+    final lightPrimary = await WidgetStore.getWidgetData<int>(_keyLightPrimary);
 
     // Check if colors have been extracted by native code
     if (lightPrimary == null) {
@@ -37,21 +37,21 @@ class MaterialYouService {
     return MaterialYouColors(
       light: MaterialYouThemeColors(
         primary: Color(lightPrimary),
-        onPrimaryContainer: Color(await HomeWidget.getWidgetData<int>(_keyLightOnPrimaryContainer) ?? lightPrimary),
-        tertiary: Color(await HomeWidget.getWidgetData<int>(_keyLightTertiary) ?? lightPrimary),
-        surface: Color(await HomeWidget.getWidgetData<int>(_keyLightSurface) ?? 0xFFFAFAFA),
-        surfaceContainer: Color(await HomeWidget.getWidgetData<int>(_keyLightSurfaceContainer) ?? 0xFFEEEEEE),
-        surfaceContainerHigh: Color(await HomeWidget.getWidgetData<int>(_keyLightSurfaceContainerHigh) ?? 0xFFE0E0E0),
-        onSurface: Color(await HomeWidget.getWidgetData<int>(_keyLightOnSurface) ?? 0xFF1C1C1C),
+        onPrimaryContainer: Color(await WidgetStore.getWidgetData<int>(_keyLightOnPrimaryContainer) ?? lightPrimary),
+        tertiary: Color(await WidgetStore.getWidgetData<int>(_keyLightTertiary) ?? lightPrimary),
+        surface: Color(await WidgetStore.getWidgetData<int>(_keyLightSurface) ?? 0xFFFAFAFA),
+        surfaceContainer: Color(await WidgetStore.getWidgetData<int>(_keyLightSurfaceContainer) ?? 0xFFEEEEEE),
+        surfaceContainerHigh: Color(await WidgetStore.getWidgetData<int>(_keyLightSurfaceContainerHigh) ?? 0xFFE0E0E0),
+        onSurface: Color(await WidgetStore.getWidgetData<int>(_keyLightOnSurface) ?? 0xFF1C1C1C),
       ),
       dark: MaterialYouThemeColors(
-        primary: Color(await HomeWidget.getWidgetData<int>(_keyDarkPrimary) ?? 0xFF90CAF9),
-        onPrimaryContainer: Color(await HomeWidget.getWidgetData<int>(_keyDarkOnPrimaryContainer) ?? 0xFFE3F2FD),
-        tertiary: Color(await HomeWidget.getWidgetData<int>(_keyDarkTertiary) ?? 0xFF80CBC4),
-        surface: Color(await HomeWidget.getWidgetData<int>(_keyDarkSurface) ?? 0xFF121212),
-        surfaceContainer: Color(await HomeWidget.getWidgetData<int>(_keyDarkSurfaceContainer) ?? 0xFF1E1E1E),
-        surfaceContainerHigh: Color(await HomeWidget.getWidgetData<int>(_keyDarkSurfaceContainerHigh) ?? 0xFF2D2D2D),
-        onSurface: Color(await HomeWidget.getWidgetData<int>(_keyDarkOnSurface) ?? 0xFFE0E0E0),
+        primary: Color(await WidgetStore.getWidgetData<int>(_keyDarkPrimary) ?? 0xFF90CAF9),
+        onPrimaryContainer: Color(await WidgetStore.getWidgetData<int>(_keyDarkOnPrimaryContainer) ?? 0xFFE3F2FD),
+        tertiary: Color(await WidgetStore.getWidgetData<int>(_keyDarkTertiary) ?? 0xFF80CBC4),
+        surface: Color(await WidgetStore.getWidgetData<int>(_keyDarkSurface) ?? 0xFF121212),
+        surfaceContainer: Color(await WidgetStore.getWidgetData<int>(_keyDarkSurfaceContainer) ?? 0xFF1E1E1E),
+        surfaceContainerHigh: Color(await WidgetStore.getWidgetData<int>(_keyDarkSurfaceContainerHigh) ?? 0xFF2D2D2D),
+        onSurface: Color(await WidgetStore.getWidgetData<int>(_keyDarkOnSurface) ?? 0xFFE0E0E0),
       ),
     );
   }

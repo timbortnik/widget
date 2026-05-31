@@ -16,8 +16,6 @@ void main() async {
   // Enable edge-to-edge mode (required for Android 15+)
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
-  await WidgetService.initialize();
-
   // Load Material You colors from native Android code
   final materialYouColors = await MaterialYouService.getColors();
 

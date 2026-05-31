@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:home_widget/home_widget.dart';
+import 'widget_store.dart';
 
 /// Service for native Kotlin operations via method channel.
 /// Handles SVG generation, weather fetching, and cache management.
@@ -74,16 +74,16 @@ class NativeSvgService {
 
   /// Get current temperature in Celsius (saved by Kotlin when weather is fetched).
   static Future<double?> getCurrentTemperatureCelsius() async {
-    // Kotlin stores as string for home_widget compatibility
-    final tempStr = await HomeWidget.getWidgetData<String>(_keyCurrentTempCelsius);
+    // Native side stores this as a string; WidgetStore returns it verbatim
+    final tempStr = await WidgetStore.getWidgetData<String>(_keyCurrentTempCelsius);
     if (tempStr == null) return null;
     return double.tryParse(tempStr);
   }
 
   /// Get timestamp of last weather update.
   static Future<DateTime?> getLastWeatherUpdate() async {
-    // Kotlin stores as string for home_widget compatibility
-    final lastUpdateStr = await HomeWidget.getWidgetData<String>(_keyLastWeatherUpdate);
+    // Native side stores this as a string; WidgetStore returns it verbatim
+    final lastUpdateStr = await WidgetStore.getWidgetData<String>(_keyLastWeatherUpdate);
     if (lastUpdateStr == null) return null;
     final lastUpdate = int.tryParse(lastUpdateStr);
     if (lastUpdate == null) return null;
@@ -92,24 +92,24 @@ class NativeSvgService {
 
   /// Check if we have cached weather data.
   static Future<bool> hasWeatherData() async {
-    final lastUpdateStr = await HomeWidget.getWidgetData<String>(_keyLastWeatherUpdate);
+    final lastUpdateStr = await WidgetStore.getWidgetData<String>(_keyLastWeatherUpdate);
     return lastUpdateStr != null;
   }
 
   /// Get cached city name.
   static Future<String?> getCachedCityName() async {
-    return HomeWidget.getWidgetData<String>(_keyCachedCityName);
+    return WidgetStore.getWidgetData<String>(_keyCachedCityName);
   }
 
   /// Get cached location source.
   static Future<String?> getCachedLocationSource() async {
-    return HomeWidget.getWidgetData<String>(_keyCachedLocationSource);
+    return WidgetStore.getWidgetData<String>(_keyCachedLocationSource);
   }
 
   /// Check if cached data is stale (older than 15 minutes).
   static Future<bool> isCacheStale() async {
-    // Kotlin stores as string for home_widget compatibility
-    final lastUpdateStr = await HomeWidget.getWidgetData<String>(_keyLastWeatherUpdate);
+    // Native side stores this as a string; WidgetStore returns it verbatim
+    final lastUpdateStr = await WidgetStore.getWidgetData<String>(_keyLastWeatherUpdate);
     if (lastUpdateStr == null) return true;
     final lastUpdate = int.tryParse(lastUpdateStr);
     if (lastUpdate == null) return true;
@@ -123,10 +123,10 @@ class NativeSvgService {
   /// Save location info to cache for offline display.
   static Future<void> cacheLocationInfo(String? cityName, String? locationSource) async {
     if (cityName != null) {
-      await HomeWidget.saveWidgetData<String>(_keyCachedCityName, cityName);
+      await WidgetStore.saveWidgetData<String>(_keyCachedCityName, cityName);
     }
     if (locationSource != null) {
-      await HomeWidget.saveWidgetData<String>(_keyCachedLocationSource, locationSource);
+      await WidgetStore.saveWidgetData<String>(_keyCachedLocationSource, locationSource);
     }
   }
 

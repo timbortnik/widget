@@ -1,9 +1,14 @@
 package org.bortnik.meteogram
 
+import android.Manifest
+import android.appwidget.AppWidgetManager
+import android.content.ComponentName
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.net.Uri
+import android.provider.Settings
 import android.text.format.DateFormat
 import android.util.Log
 import com.caverock.androidsvg.SVG
@@ -17,6 +22,10 @@ import java.util.Locale
 class MainActivity : FlutterActivity() {
     private val CHANNEL = "org.bortnik.meteogram/svg"
     private val TAG = "MainActivity"
+
+    private val LOCATION_PERMISSION_REQUEST_CODE = 4001
+    /** Held while a runtime location-permission request is in flight; resolved in onRequestPermissionsResult. */
+    private var pendingPermissionResult: MethodChannel.Result? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         // Extract Material You colors BEFORE Flutter engine starts
@@ -135,9 +144,145 @@ class MainActivity : FlutterActivity() {
                         result.error("OPEN_URL_ERROR", e.message, null)
                     }
                 }
+                "saveWidgetData" -> {
+                    val id = call.argument<String>("id")
+                    if (id == null) {
+                        result.error("INVALID_ARGS", "saveWidgetData requires 'id'", null)
+                        return@setMethodCallHandler
+                    }
+                    // Replicates the home_widget plugin's SharedPreferences codec so data
+                    // written by earlier (home_widget-backed) installs stays readable: every
+                    // key gets a companion "home_widget.double.<id>" flag, and doubles are
+                    // stored as raw Long bits. See WidgetStore on the Dart side.
+                    val editor = getSharedPreferences(WidgetUtils.PREFS_NAME, MODE_PRIVATE).edit()
+                    val data = call.argument<Any>("data")
+                    if (data != null) {
+                        editor.putBoolean("home_widget.double.$id", data is Double)
+                        when (data) {
+                            is Boolean -> editor.putBoolean(id, data)
+                            is Float -> editor.putFloat(id, data)
+                            is String -> editor.putString(id, data)
+                            is Double -> editor.putLong(id, java.lang.Double.doubleToRawLongBits(data))
+                            is Int -> editor.putInt(id, data)
+                            is Long -> editor.putLong(id, data)
+                            else -> {
+                                result.error("INVALID_TYPE", "Unsupported type ${data::class.java.simpleName}", null)
+                                return@setMethodCallHandler
+                            }
+                        }
+                    } else {
+                        editor.remove(id)
+                        editor.remove("home_widget.double.$id")
+                    }
+                    result.success(editor.commit())
+                }
+                "getWidgetData" -> {
+                    val id = call.argument<String>("id")
+                    if (id == null) {
+                        result.error("INVALID_ARGS", "getWidgetData requires 'id'", null)
+                        return@setMethodCallHandler
+                    }
+                    val prefs = getSharedPreferences(WidgetUtils.PREFS_NAME, MODE_PRIVATE)
+                    val value = prefs.all[id]
+                    if (value is Long && prefs.getBoolean("home_widget.double.$id", false)) {
+                        result.success(java.lang.Double.longBitsToDouble(value))
+                    } else {
+                        result.success(value)
+                    }
+                }
+                "updateWidget" -> {
+                    val className = call.argument<String>("name") ?: call.argument<String>("android")
+                    if (className == null) {
+                        result.error("INVALID_ARGS", "updateWidget requires 'name'", null)
+                        return@setMethodCallHandler
+                    }
+                    try {
+                        val javaClass = Class.forName("$packageName.$className")
+                        val intent = Intent(this, javaClass).apply {
+                            action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+                        }
+                        val ids = AppWidgetManager.getInstance(applicationContext)
+                            .getAppWidgetIds(ComponentName(this, javaClass))
+                        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
+                        sendBroadcast(intent)
+                        result.success(true)
+                    } catch (e: ClassNotFoundException) {
+                        result.error("NO_WIDGET", "No widget provider named $className", e)
+                    }
+                }
+                "isLocationServiceEnabled" -> {
+                    result.success(LocationProvider.isLocationServiceEnabled(this))
+                }
+                "checkLocationPermission" -> {
+                    result.success(LocationProvider.checkPermissionStatus(this))
+                }
+                "requestLocationPermission" -> {
+                    if (LocationProvider.checkPermissionStatus(this) == "granted") {
+                        result.success("granted")
+                        return@setMethodCallHandler
+                    }
+                    if (pendingPermissionResult != null) {
+                        result.error("PERMISSION_IN_PROGRESS", "A location permission request is already in progress", null)
+                        return@setMethodCallHandler
+                    }
+                    pendingPermissionResult = result
+                    requestPermissions(
+                        arrayOf(
+                            Manifest.permission.ACCESS_FINE_LOCATION,
+                            Manifest.permission.ACCESS_COARSE_LOCATION
+                        ),
+                        LOCATION_PERMISSION_REQUEST_CODE
+                    )
+                }
+                "getCurrentPosition" -> {
+                    val timeoutMs = (call.argument<Int>("timeoutMs") ?: 15000).toLong()
+                    LocationProvider.getCurrentPosition(this, timeoutMs) { coords ->
+                        runOnUiThread {
+                            result.success(coords?.let { mapOf("latitude" to it[0], "longitude" to it[1]) })
+                        }
+                    }
+                }
+                "getLastKnownPosition" -> {
+                    val coords = LocationProvider.getLastKnownPosition(this)
+                    result.success(coords?.let { mapOf("latitude" to it[0], "longitude" to it[1]) })
+                }
+                "openLocationSettings" -> {
+                    try {
+                        val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        startActivity(intent)
+                        result.success(true)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error opening location settings", e)
+                        result.error("OPEN_SETTINGS_ERROR", e.message, null)
+                    }
+                }
                 else -> result.notImplemented()
             }
         }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode != LOCATION_PERMISSION_REQUEST_CODE) return
+
+        val pending = pendingPermissionResult
+        pendingPermissionResult = null
+        if (pending == null) return
+
+        val granted = grantResults.isNotEmpty() &&
+            grantResults.any { it == PackageManager.PERMISSION_GRANTED }
+        val status = when {
+            granted -> "granted"
+            // Not granted and no rationale allowed → user chose "don't ask again" (or it's policy-blocked).
+            !shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION) -> "deniedForever"
+            else -> "denied"
+        }
+        pending.success(status)
     }
 
     /**

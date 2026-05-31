@@ -18,10 +18,10 @@ http.Response utf8Response(String body, int statusCode) {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  // Mock HomeWidget method channel
+  // Mock the native widget-store channel
   final Map<String, dynamic> homeWidgetData = {};
   TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-      .setMockMethodCallHandler(const MethodChannel('home_widget'), (call) async {
+      .setMockMethodCallHandler(const MethodChannel('org.bortnik.meteogram/svg'), (call) async {
     if (call.method == 'saveWidgetData') {
       final args = call.arguments as Map;
       final id = args['id'] as String?;
