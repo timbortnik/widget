@@ -1,8 +1,9 @@
 import 'dart:convert';
-import 'package:geocoding/geocoding.dart';
 import 'package:geolocator_platform_interface/geolocator_platform_interface.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:http/http.dart' as http;
+
+import 'native_svg_service.dart';
 
 /// Default fallback location (Berlin) when GPS is unavailable.
 const double kDefaultLatitude = 52.52;
@@ -119,20 +120,14 @@ class LocationService {
   }
 
   /// Get city name from coordinates via native platform reverse geocoding.
+  ///
+  /// Uses the native android.location.Geocoder through our method channel
+  /// (NativeSvgService.reverseGeocode), which already prefers
+  /// locality -> subAdminArea -> adminArea and returns null on failure.
   Future<String?> _getCityFromCoordinates(double lat, double lon) async {
     try {
-      final placemarks = await placemarkFromCoordinates(lat, lon)
+      return await NativeSvgService.reverseGeocode(latitude: lat, longitude: lon)
           .timeout(const Duration(seconds: 5));
-      if (placemarks.isNotEmpty) {
-        final place = placemarks.first;
-        // Prefer locality (city), fall back to subAdministrativeArea or administrativeArea
-        return place.locality?.isNotEmpty == true
-            ? place.locality
-            : place.subAdministrativeArea?.isNotEmpty == true
-                ? place.subAdministrativeArea
-                : place.administrativeArea;
-      }
-      return null;
     } catch (e) {
       return null;
     }

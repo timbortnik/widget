@@ -140,6 +140,23 @@ Android widgets use RemoteViews which only support:
 - **Weather fetching**: `WeatherFetcher.kt` calls Open-Meteo API directly (no Dart involved)
 - **Material You**: `ContentObserver` + `MaterialYouColorWorker.kt` detect theme changes
 
+## Before Coding — Flutter is PINNED to 3.41.7
+
+**Do NOT upgrade Flutter past 3.41.7** (local SDK *and* CI). This project uses AGP built-in
+Kotlin (`android.builtInKotlin=true`), which **Flutter 3.44.0 broke**: 3.44.0's Gradle plugin
+force-applies `kotlin-android` to every KGP-less Android module — including transitive Java
+plugins (`jni`/`jni_flutter`, pulled via `home_widget → path_provider`) — and AGP rejects KGP
+under built-in Kotlin. 3.41.7 predates that change (the force-apply landed in 3.44.0; the
+3.41.x branch never got it).
+
+- **Local SDK:** 3.41.7 — set via `flutter downgrade` (from 3.44.0), or `git checkout 3.41.7`
+  in the Flutter clone, or FVM per-project.
+- **CI:** pinned via `flutter-version: '3.41.7'` in `.github/workflows/`.
+- **Verify after any toolchain change:** `make analyze` + `make test` + a debug build.
+- **Un-pin when** Flutter stops force-applying KGP to Java-only plugins, OR `home_widget` +
+  `path_provider`/`jni` ship built-in-Kotlin builds (track flutter/flutter#185121). Then bump
+  Flutter, `flutter pub upgrade`, and re-verify. See `android/gradle.properties` for the flags.
+
 ## Build Commands
 
 ```bash

@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:ui' show PlatformDispatcher;
 import 'package:flutter/material.dart';
 import 'package:home_widget/home_widget.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../constants.dart';
 import '../l10n/app_localizations.dart';
 import '../services/location_service.dart';
@@ -700,7 +699,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               // Attribution (CC BY 4.0 requirement)
               const SizedBox(height: 16),
               GestureDetector(
-                onTap: () => launchUrl(Uri.parse('https://open-meteo.com')),
+                onTap: () => NativeSvgService.openUrl('https://open-meteo.com'),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -726,7 +725,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   GestureDetector(
-                    onTap: () => launchUrl(Uri.parse('https://github.com/timbortnik/widget')),
+                    onTap: () => NativeSvgService.openUrl('https://github.com/timbortnik/widget'),
                     child: Text(
                       l10n.sourceCode,
                       style: TextStyle(
