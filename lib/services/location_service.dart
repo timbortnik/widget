@@ -60,7 +60,7 @@ class LocationService {
       final position = await GeolocatorPlatform.instance.getCurrentPosition(
         locationSettings: const LocationSettings(
           accuracy: LocationAccuracy.low,
-          timeLimit: Duration(seconds: 10),
+          timeLimit: Duration(seconds: 15),
         ),
       ).timeout(const Duration(seconds: 15));
 
@@ -351,12 +351,29 @@ class LocationService {
   }
 
   /// Get recent cities from the shared widget store (a JSON-encoded list).
+  /// Returns [] if the stored data is missing or malformed (rather than throwing),
+  /// and silently skips any individual entries that don't parse.
   Future<List<CitySearchResult>> getRecentCities() async {
     final raw = await HomeWidget.getWidgetData<String>(_recentCitiesKey);
     if (raw == null || raw.isEmpty) return [];
-    return (jsonDecode(raw) as List<dynamic>)
-        .map((j) => CitySearchResult.fromJson(j as Map<String, dynamic>))
-        .toList();
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is! List) return [];
+      final cities = <CitySearchResult>[];
+      for (final entry in decoded) {
+        if (entry is Map<String, dynamic>) {
+          try {
+            cities.add(CitySearchResult.fromJson(entry));
+          } catch (_) {
+            // Skip a malformed entry rather than dropping the whole list.
+          }
+        }
+      }
+      return cities;
+    } catch (_) {
+      // Malformed JSON — start fresh instead of crashing.
+      return [];
+    }
   }
 
   /// Add a city to recent cities.

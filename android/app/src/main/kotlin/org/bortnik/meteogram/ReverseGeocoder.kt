@@ -36,6 +36,11 @@ object ReverseGeocoder {
             callback(null)
             return
         }
+        if (latitude !in -90.0..90.0 || longitude !in -180.0..180.0) {
+            Log.w(TAG, "Coordinates out of range: ($latitude, $longitude)")
+            callback(null)
+            return
+        }
         val geocoder = Geocoder(context, Locale.getDefault())
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             geocoder.getFromLocation(latitude, longitude, 1, object : Geocoder.GeocodeListener {
