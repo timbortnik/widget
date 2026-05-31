@@ -236,10 +236,9 @@ class MainActivity : FlutterActivity() {
                 }
                 "getCurrentPosition" -> {
                     val timeoutMs = (call.argument<Int>("timeoutMs") ?: 15000).toLong()
+                    // LocationProvider always invokes its callback on the main thread.
                     LocationProvider.getCurrentPosition(this, timeoutMs) { coords ->
-                        runOnUiThread {
-                            result.success(coords?.let { mapOf("latitude" to it[0], "longitude" to it[1]) })
-                        }
+                        result.success(coords?.let { mapOf("latitude" to it[0], "longitude" to it[1]) })
                     }
                 }
                 "getLastKnownPosition" -> {
