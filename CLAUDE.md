@@ -17,7 +17,7 @@ This file provides context for AI assistants working on this project.
 
 | Aspect | Value |
 |--------|-------|
-| Framework | Flutter 3.x |
+| Framework | Flutter 3.44.0 (pinned — see "Before Coding") |
 | Weather API | Open-Meteo (free, no key) |
 | Charting | Native SVG (SvgChartGenerator.kt + AndroidSVG) |
 | Widget package | Native AppWidgetProvider + method-channel KV store (`widget_store.dart`) |
@@ -156,6 +156,11 @@ on the classpath.` — but the apply is caught (`FlutterPluginUtils.kt:633`) and
 succeeds. That one warning line is expected; ignore it (Flutter plans to drop the force-apply,
 flutter/flutter#184837).
 
+- **Before coding, check the toolchain & deps.** Confirm `flutter --version` is **3.44.0** (the
+  pinned version — don't unintentionally build on another); run `flutter pub outdated` to review
+  dependency updates and note any Flutter release past 3.44.0. Treat **any** Flutter or dependency
+  bump as a *deliberate, verified* change — it can re-break the built-in-Kotlin setup (see history
+  below) — not a casual upgrade.
 - **CRITICAL:** do **not** add any Flutter plugin that applies KGP (most native plugins do) — it
   will break the build under built-in Kotlin. Prefer a native implementation over the method
   channel, or a plugin version that supports built-in Kotlin. If a KGP plugin is unavoidable,
