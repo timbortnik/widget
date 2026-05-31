@@ -134,15 +134,6 @@ void main() {
         }
       },
     );
-
-    // Mock shared_preferences channel
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(
-      const MethodChannel('plugins.flutter.io/shared_preferences'),
-      (MethodCall methodCall) async {
-        return null;
-      },
-    );
   });
 
   tearDown(() {

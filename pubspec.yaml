@@ -35,7 +35,6 @@ dependencies:
 
   # API & Data
   http: ^1.2.0
-  shared_preferences: ^2.5.5
 
   # Location. Depend on the Android implementation directly (not the federated
   # `geolocator`) since this is an Android-only app: this avoids pulling the unused

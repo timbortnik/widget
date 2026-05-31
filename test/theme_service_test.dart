@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:meteogram_widget/services/theme_service.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -32,10 +31,7 @@ void main() {
     return null;
   });
 
-  setUp(() {
-    SharedPreferences.setMockInitialValues({});
-    homeWidgetData.clear();
-  });
+  setUp(homeWidgetData.clear);
 
   group('ThemeService', () {
     test('defaults to system when nothing saved', () async {
@@ -51,17 +47,11 @@ void main() {
     });
 
     test('falls back to system for an unknown stored value', () async {
-      SharedPreferences.setMockInitialValues({'theme_mode': 'bogus'});
+      homeWidgetData['theme_mode'] = 'bogus';
       expect(await ThemeService().load(), ThemeMode.system);
     });
 
-    test('persists the serialized string under theme_mode', () async {
-      await ThemeService().save(ThemeMode.dark);
-      final prefs = await SharedPreferences.getInstance();
-      expect(prefs.getString('theme_mode'), 'dark');
-    });
-
-    test('mirrors the choice to HomeWidget storage for the widget', () async {
+    test('persists the choice to HomeWidget storage for the widget', () async {
       await ThemeService().save(ThemeMode.dark);
       expect(homeWidgetData['theme_mode'], 'dark');
 

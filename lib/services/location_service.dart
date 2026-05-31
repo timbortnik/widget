@@ -3,7 +3,6 @@ import 'package:geocoding/geocoding.dart';
 import 'package:geolocator_platform_interface/geolocator_platform_interface.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 
 /// Default fallback location (Berlin) when GPS is unavailable.
 const double kDefaultLatitude = 52.52;
@@ -26,14 +25,12 @@ class LocationService {
 
   /// Get the current location (GPS or saved).
   Future<LocationData> getLocation() async {
-    final prefs = await SharedPreferences.getInstance();
-    final useGps = prefs.getBool(_useGpsKey) ?? true;
-
+    final useGps = await HomeWidget.getWidgetData<bool>(_useGpsKey) ?? true;
     if (useGps) {
       return _getGpsLocation();
-    } else {
-      return _getSavedLocation(prefs);
     }
+    // Fall back to GPS if no manual location is stored.
+    return await getSavedLocationFromWidget() ?? _getGpsLocation();
   }
 
   /// Get location from GPS, with fallback to default location (Berlin).
@@ -111,32 +108,6 @@ class LocationService {
     }
   }
 
-  /// Get saved location from preferences.
-  Future<LocationData> _getSavedLocation(SharedPreferences prefs) async {
-    final lat = prefs.getDouble(_latKey);
-    final lon = prefs.getDouble(_lonKey);
-    final city = prefs.getString(_cityKey);
-    final sourceName = prefs.getString(_sourceKey);
-
-    if (lat == null || lon == null) {
-      // Fall back to GPS if no saved location
-      return _getGpsLocation();
-    }
-
-    // Parse saved source, default to manual
-    final source = LocationSource.values.firstWhere(
-      (s) => s.name == sourceName,
-      orElse: () => LocationSource.manual,
-    );
-
-    return LocationData(
-      latitude: lat,
-      longitude: lon,
-      source: source,
-      city: city,
-    );
-  }
-
   /// Get fallback location when GPS is unavailable.
   Future<LocationData> _getFallbackLocation() async {
     return LocationData(
@@ -181,62 +152,47 @@ class LocationService {
   }
 
   /// Save a location with its source.
-  /// Saves to both SharedPreferences (for app) and HomeWidget (for background service).
+  /// Persisted to the shared widget store (read by both the app and the native widget).
   Future<void> saveLocation(
     double latitude,
     double longitude, {
     String? city,
     LocationSource source = LocationSource.manual,
   }) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setDouble(_latKey, latitude);
-    await prefs.setDouble(_lonKey, longitude);
+    await HomeWidget.saveWidgetData<double>(_latKey, latitude);
+    await HomeWidget.saveWidgetData<double>(_lonKey, longitude);
     if (city != null) {
-      await prefs.setString(_cityKey, city);
+      await HomeWidget.saveWidgetData<String>(_cityKey, city);
     }
-    await prefs.setString(_sourceKey, source.name);
-    await prefs.setBool(_useGpsKey, false);
-
-    // Also save to HomeWidget for background service access
-    await HomeWidget.saveWidgetData<double>('saved_latitude', latitude);
-    await HomeWidget.saveWidgetData<double>('saved_longitude', longitude);
-    if (city != null) {
-      await HomeWidget.saveWidgetData<String>('saved_city', city);
-    }
-    await HomeWidget.saveWidgetData<String>('location_source', source.name);
-    await HomeWidget.saveWidgetData<bool>('use_gps', false);
+    await HomeWidget.saveWidgetData<String>(_sourceKey, source.name);
+    await HomeWidget.saveWidgetData<bool>(_useGpsKey, false);
   }
 
   /// Switch to using GPS location.
-  /// Saves to both SharedPreferences (for app) and HomeWidget (for background service).
+  /// Persisted to the shared widget store (read by both the app and the native widget).
   Future<void> useGpsLocation() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_useGpsKey, true);
-
-    // Also save to HomeWidget for background service access
-    await HomeWidget.saveWidgetData<bool>('use_gps', true);
-    await HomeWidget.saveWidgetData<String>('location_source', LocationSource.gps.name);
+    await HomeWidget.saveWidgetData<bool>(_useGpsKey, true);
+    await HomeWidget.saveWidgetData<String>(_sourceKey, LocationSource.gps.name);
   }
 
   /// Check if using GPS.
   Future<bool> isUsingGps() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_useGpsKey) ?? true;
+    return await HomeWidget.getWidgetData<bool>(_useGpsKey) ?? true;
   }
 
   /// Get saved location from HomeWidget storage (for background service).
   /// Returns null if no location is saved or if using GPS.
   /// This is more reliable than SharedPreferences in background isolates.
   Future<LocationData?> getSavedLocationFromWidget() async {
-    final useGps = await HomeWidget.getWidgetData<bool>('use_gps') ?? true;
+    final useGps = await HomeWidget.getWidgetData<bool>(_useGpsKey) ?? true;
     if (useGps) {
       return null; // GPS mode, no saved location
     }
 
-    final lat = await HomeWidget.getWidgetData<double>('saved_latitude');
-    final lon = await HomeWidget.getWidgetData<double>('saved_longitude');
-    final city = await HomeWidget.getWidgetData<String>('saved_city');
-    final sourceName = await HomeWidget.getWidgetData<String>('location_source');
+    final lat = await HomeWidget.getWidgetData<double>(_latKey);
+    final lon = await HomeWidget.getWidgetData<double>(_lonKey);
+    final city = await HomeWidget.getWidgetData<String>(_cityKey);
+    final sourceName = await HomeWidget.getWidgetData<String>(_sourceKey);
 
     if (lat == null || lon == null) {
       return null;
@@ -399,18 +355,17 @@ class LocationService {
     return [];
   }
 
-  /// Get recent cities from storage.
+  /// Get recent cities from the shared widget store (a JSON-encoded list).
   Future<List<CitySearchResult>> getRecentCities() async {
-    final prefs = await SharedPreferences.getInstance();
-    final citiesJson = prefs.getStringList(_recentCitiesKey) ?? [];
-    return citiesJson
-        .map((json) => CitySearchResult.fromJson(jsonDecode(json) as Map<String, dynamic>))
+    final raw = await HomeWidget.getWidgetData<String>(_recentCitiesKey);
+    if (raw == null || raw.isEmpty) return [];
+    return (jsonDecode(raw) as List<dynamic>)
+        .map((j) => CitySearchResult.fromJson(j as Map<String, dynamic>))
         .toList();
   }
 
   /// Add a city to recent cities.
   Future<void> addRecentCity(CitySearchResult city) async {
-    final prefs = await SharedPreferences.getInstance();
     final cities = await getRecentCities();
 
     // Remove if already exists (to move to top)
@@ -422,9 +377,9 @@ class LocationService {
     // Keep only last 5
     final trimmed = cities.take(5).toList();
 
-    await prefs.setStringList(
+    await HomeWidget.saveWidgetData<String>(
       _recentCitiesKey,
-      trimmed.map((c) => jsonEncode(c.toJson())).toList(),
+      jsonEncode(trimmed.map((c) => c.toJson()).toList()),
     );
   }
 

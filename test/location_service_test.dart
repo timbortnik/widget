@@ -5,7 +5,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:meteogram_widget/services/location_service.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 /// Create a mock HTTP response with UTF-8 encoding for Unicode support.
 http.Response utf8Response(String body, int statusCode) {
@@ -43,10 +42,7 @@ void main() {
     return null;
   });
 
-  setUp(() {
-    SharedPreferences.setMockInitialValues({});
-    homeWidgetData.clear();
-  });
+  setUp(homeWidgetData.clear);
 
   group('CitySearchResult', () {
     test('fromJson parses all fields', () {
@@ -546,11 +542,10 @@ void main() {
 
       await service.saveLocation(48.85, 2.35, city: 'Paris');
 
-      final prefs = await SharedPreferences.getInstance();
-      expect(prefs.getDouble('saved_latitude'), 48.85);
-      expect(prefs.getDouble('saved_longitude'), 2.35);
-      expect(prefs.getString('saved_city'), 'Paris');
-      expect(prefs.getBool('use_gps'), false);
+      expect(homeWidgetData['saved_latitude'], 48.85);
+      expect(homeWidgetData['saved_longitude'], 2.35);
+      expect(homeWidgetData['saved_city'], 'Paris');
+      expect(homeWidgetData['use_gps'], false);
     });
 
     test('useGpsLocation sets GPS flag', () async {
