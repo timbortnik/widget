@@ -1,7 +1,9 @@
 package org.bortnik.meteogram
 
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.net.Uri
 import android.text.format.DateFormat
 import android.util.Log
 import com.caverock.androidsvg.SVG
@@ -99,6 +101,39 @@ class MainActivity : FlutterActivity() {
                             }
                         }
                     }.start()
+                }
+                "reverseGeocode" -> {
+                    val latitude = call.argument<Double>("latitude")
+                    val longitude = call.argument<Double>("longitude")
+
+                    if (latitude == null || longitude == null) {
+                        result.error("INVALID_ARGS", "Missing latitude or longitude", null)
+                        return@setMethodCallHandler
+                    }
+
+                    // Geocoder can block (network); resolve off the main thread and
+                    // marshal the result back. callback runs at most once.
+                    Thread {
+                        ReverseGeocoder.cityFromCoordinates(this, latitude, longitude) { city ->
+                            runOnUiThread { result.success(city) }
+                        }
+                    }.start()
+                }
+                "openUrl" -> {
+                    val url = call.argument<String>("url")
+                    if (url == null) {
+                        result.error("INVALID_ARGS", "Missing url", null)
+                        return@setMethodCallHandler
+                    }
+                    try {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        startActivity(intent)
+                        result.success(true)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error opening URL", e)
+                        result.error("OPEN_URL_ERROR", e.message, null)
+                    }
                 }
                 else -> result.notImplemented()
             }

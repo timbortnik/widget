@@ -37,6 +37,39 @@ class NativeSvgService {
     }
   }
 
+  // ============ Reverse Geocoding ============
+
+  /// Reverse-geocode coordinates to a city name via the native Android Geocoder.
+  /// Returns null if no name is available or the lookup fails.
+  static Future<String?> reverseGeocode({
+    required double latitude,
+    required double longitude,
+  }) async {
+    try {
+      return await _channel.invokeMethod<String>('reverseGeocode', {
+        'latitude': latitude,
+        'longitude': longitude,
+      });
+    } on PlatformException catch (e) {
+      debugPrint('Native reverse geocode failed: ${e.message}');
+      return null;
+    }
+  }
+
+  // ============ External Links ============
+
+  /// Open [url] in the default browser via a native ACTION_VIEW intent.
+  /// Returns true on success.
+  static Future<bool> openUrl(String url) async {
+    try {
+      final result = await _channel.invokeMethod<bool>('openUrl', {'url': url});
+      return result ?? false;
+    } on PlatformException catch (e) {
+      debugPrint('Native openUrl failed: ${e.message}');
+      return false;
+    }
+  }
+
   // ============ Cache Reading ============
 
   /// Get current temperature in Celsius (saved by Kotlin when weather is fetched).

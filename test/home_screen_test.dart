@@ -80,6 +80,9 @@ void main() {
           case 'generateSvg':
             // Return minimal valid SVG
             return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 50"></svg>';
+          case 'reverseGeocode':
+            // Native Geocoder lookup (coords -> city name)
+            return mockCityName;
           default:
             return null;
         }
@@ -114,35 +117,6 @@ void main() {
         }
       },
     );
-
-    // Mock geocoding channel
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(
-      const MethodChannel('flutter.baseflow.com/geocoding'),
-      (MethodCall methodCall) async {
-        switch (methodCall.method) {
-          case 'placemarkFromCoordinates':
-            return [
-              {
-                'locality': mockCityName,
-                'country': 'Germany',
-                'isoCountryCode': 'DE',
-              }
-            ];
-          default:
-            return null;
-        }
-      },
-    );
-
-    // Mock shared_preferences channel
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(
-      const MethodChannel('plugins.flutter.io/shared_preferences'),
-      (MethodCall methodCall) async {
-        return null;
-      },
-    );
   });
 
   tearDown(() {
@@ -155,9 +129,6 @@ void main() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
             const MethodChannel('flutter.baseflow.com/geolocator'), null);
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(
-            const MethodChannel('flutter.baseflow.com/geocoding'), null);
   });
 
   /// Helper to wrap HomeScreen with required providers

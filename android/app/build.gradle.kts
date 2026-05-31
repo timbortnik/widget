@@ -1,7 +1,8 @@
 plugins {
     id("com.android.application")
-    id("kotlin-android")
-    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
+    // Kotlin is provided by AGP's built-in Kotlin (android.builtInKotlin), so the
+    // kotlin-android plugin is no longer applied. The Flutter Gradle Plugin must be
+    // applied after the Android Gradle plugin.
     id("dev.flutter.flutter-gradle-plugin")
 }
 
@@ -10,15 +11,11 @@ android {
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
+    // With built-in Kotlin, the Kotlin jvmTarget defaults to targetCompatibility (17),
+    // so no separate kotlin { compilerOptions { jvmTarget } } block is needed.
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
-    }
-
-    kotlin {
-        compilerOptions {
-            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
-        }
     }
 
     defaultConfig {
@@ -64,7 +61,7 @@ dependencies {
     implementation("com.caverock:androidsvg-aar:1.4")
 
     // WorkManager for observing Material You color changes
-    implementation("androidx.work:work-runtime-ktx:2.10.5")
+    implementation("androidx.work:work-runtime-ktx:2.11.2")
 
     // Unit testing
     testImplementation("junit:junit:4.13.2")
