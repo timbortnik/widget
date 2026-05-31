@@ -34,43 +34,25 @@ void main() {
     mockTimestamp = DateTime.now().millisecondsSinceEpoch.toString();
     homeWidgetData = {};
 
-    // Mock HomeWidget method channel
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(
-      const MethodChannel('home_widget'),
-      (MethodCall methodCall) async {
-        switch (methodCall.method) {
-          case 'saveWidgetData':
-            final args = methodCall.arguments as Map;
-            final id = args['id'] as String?;
-            final data = args['data'];
-            if (id != null) {
-              homeWidgetData[id] = data;
-            }
-            return true;
-          case 'getWidgetData':
-            final args = methodCall.arguments as Map;
-            final id = args['id'] as String?;
-            final defaultValue = args['defaultValue'];
-            return homeWidgetData[id] ?? defaultValue;
-          case 'updateWidget':
-            return true;
-          case 'setAppGroupId':
-            return true;
-          case 'registerBackgroundCallback':
-            return true;
-          default:
-            return null;
-        }
-      },
-    );
-
-    // Mock native SVG method channel
+    // Mock the native method channel: SVG generation, weather fetch, and the
+    // widget-store KV API that WidgetStore drives — all on one channel.
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
       const MethodChannel('org.bortnik.meteogram/svg'),
       (MethodCall methodCall) async {
         switch (methodCall.method) {
+          case 'saveWidgetData':
+            final args = methodCall.arguments as Map;
+            final id = args['id'] as String?;
+            if (id != null) {
+              homeWidgetData[id] = args['data'];
+            }
+            return true;
+          case 'getWidgetData':
+            final args = methodCall.arguments as Map;
+            return homeWidgetData[args['id'] as String?];
+          case 'updateWidget':
+            return true;
           case 'fetchWeather':
             // Simulate successful fetch - populate mock data with current time
             homeWidgetData['last_weather_update'] =
@@ -83,35 +65,19 @@ void main() {
           case 'reverseGeocode':
             // Native Geocoder lookup (coords -> city name)
             return mockCityName;
-          default:
-            return null;
-        }
-      },
-    );
-
-    // Mock geolocator channel (for LocationService)
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(
-      const MethodChannel('flutter.baseflow.com/geolocator'),
-      (MethodCall methodCall) async {
-        switch (methodCall.method) {
-          case 'checkPermission':
-            return 3; // LocationPermission.whileInUse
+          // LocationBridge methods (native LocationManager)
           case 'isLocationServiceEnabled':
             return true;
+          case 'checkLocationPermission':
+            return 'granted';
+          case 'requestLocationPermission':
+            return 'granted';
           case 'getCurrentPosition':
-            return {
-              'latitude': 52.52,
-              'longitude': 13.405,
-              'timestamp': DateTime.now().millisecondsSinceEpoch,
-              'accuracy': 10.0,
-              'altitude': 0.0,
-              'heading': 0.0,
-              'speed': 0.0,
-              'speedAccuracy': 0.0,
-              'altitudeAccuracy': 0.0,
-              'headingAccuracy': 0.0,
-            };
+            return {'latitude': 52.52, 'longitude': 13.405};
+          case 'getLastKnownPosition':
+            return {'latitude': 52.52, 'longitude': 13.405};
+          case 'openLocationSettings':
+            return true;
           default:
             return null;
         }
@@ -122,13 +88,8 @@ void main() {
   tearDown(() {
     // Clean up mock handlers
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(const MethodChannel('home_widget'), null);
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
             const MethodChannel('org.bortnik.meteogram/svg'), null);
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(
-            const MethodChannel('flutter.baseflow.com/geolocator'), null);
   });
 
   /// Helper to wrap HomeScreen with required providers
@@ -318,31 +279,15 @@ void main() {
   group('HomeScreen error state', () {
     testWidgets('shows error UI when no cached data and fetch fails',
         (tester) async {
-      // Override to simulate fetch failure
+      // Override to simulate fetch failure. Location methods return null here,
+      // so the bridge falls back to the default location and the failing
+      // fetchWeather drives the error state.
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(
         const MethodChannel('org.bortnik.meteogram/svg'),
         (MethodCall methodCall) async {
           if (methodCall.method == 'fetchWeather') {
             return false; // Simulate failure
-          }
-          return null;
-        },
-      );
-
-      // Make geolocator fail
-      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-          .setMockMethodCallHandler(
-        const MethodChannel('flutter.baseflow.com/geolocator'),
-        (MethodCall methodCall) async {
-          if (methodCall.method == 'getCurrentPosition') {
-            throw PlatformException(code: 'PERMISSION_DENIED');
-          }
-          if (methodCall.method == 'checkPermission') {
-            return 0; // denied
-          }
-          if (methodCall.method == 'isLocationServiceEnabled') {
-            return true;
           }
           return null;
         },

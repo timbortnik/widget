@@ -6,11 +6,11 @@ import 'package:meteogram_widget/services/theme_service.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  // Mock the HomeWidget method channel with an in-memory map so we can assert
+  // Mock the native widget-store channel with an in-memory map so we can assert
   // the value is mirrored to widget storage for the native provider.
   final Map<String, dynamic> homeWidgetData = {};
   TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-      .setMockMethodCallHandler(const MethodChannel('home_widget'), (call) async {
+      .setMockMethodCallHandler(const MethodChannel('org.bortnik.meteogram/svg'), (call) async {
     if (call.method == 'saveWidgetData') {
       final args = call.arguments as Map;
       final id = args['id'] as String?;

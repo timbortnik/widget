@@ -1,9 +1,9 @@
 import 'dart:convert';
-import 'package:geolocator_platform_interface/geolocator_platform_interface.dart';
-import 'package:home_widget/home_widget.dart';
 import 'package:http/http.dart' as http;
 
+import 'location_bridge.dart';
 import 'native_svg_service.dart';
+import 'widget_store.dart';
 
 /// Default fallback location (Berlin) when GPS is unavailable.
 const double kDefaultLatitude = 52.52;
@@ -26,7 +26,7 @@ class LocationService {
 
   /// Get the current location (GPS or saved).
   Future<LocationData> getLocation() async {
-    final useGps = await HomeWidget.getWidgetData<bool>(_useGpsKey) ?? true;
+    final useGps = await WidgetStore.getWidgetData<bool>(_useGpsKey) ?? true;
     if (useGps) {
       return _getGpsLocation();
     }
@@ -37,76 +37,56 @@ class LocationService {
   /// Get location from GPS, with fallback to default location (Berlin).
   Future<LocationData> _getGpsLocation() async {
     // Check if location services are enabled
-    final serviceEnabled = await GeolocatorPlatform.instance.isLocationServiceEnabled();
+    final serviceEnabled = await LocationBridge.isLocationServiceEnabled();
     if (!serviceEnabled) {
       return _getFallbackLocation();
     }
 
-    // Check permission
-    var permission = await GeolocatorPlatform.instance.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await GeolocatorPlatform.instance.requestPermission();
-      if (permission == LocationPermission.denied) {
-        return _getFallbackLocation();
-      }
+    // Check permission, prompting once if it's merely denied
+    var permission = await LocationBridge.checkPermission();
+    if (permission == LocationPermissionStatus.denied) {
+      permission = await LocationBridge.requestPermission();
     }
-
-    if (permission == LocationPermission.deniedForever) {
+    if (permission != LocationPermissionStatus.granted) {
+      // denied or deniedForever
       return _getFallbackLocation();
     }
 
-    // Get position with timeout
-    try {
-      final position = await GeolocatorPlatform.instance.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.low,
-          timeLimit: Duration(seconds: 15),
-        ),
-      ).timeout(const Duration(seconds: 15));
-
-      // Get city name via reverse geocoding
-      String? city = await _getCityFromCoordinates(
-        position.latitude,
-        position.longitude,
-      );
-      // Fallback: derive city name from coordinates for known test locations
-      if (city == null || city.isEmpty) {
-        city = _getTestCityName(position.latitude, position.longitude);
-      }
-
-      return LocationData(
-        latitude: position.latitude,
-        longitude: position.longitude,
-        source: LocationSource.gps,
-        city: city,
-      );
-    } catch (e) {
-      // Fallback to last known position
-      final lastPosition = await GeolocatorPlatform.instance.getLastKnownPosition();
-      if (lastPosition != null) {
-        // Try to get city name for last known position
-        String? city = await _getCityFromCoordinates(
-          lastPosition.latitude,
-          lastPosition.longitude,
-        );
-        if (city == null || city.isEmpty) {
-          city = _getTestCityName(lastPosition.latitude, lastPosition.longitude);
-        }
-        return LocationData(
-          latitude: lastPosition.latitude,
-          longitude: lastPosition.longitude,
-          source: LocationSource.gps,
-          city: city,
-        );
-      }
-      // Final fallback to default location
-      return LocationData(
-        latitude: kDefaultLatitude,
-        longitude: kDefaultLongitude,
-        source: LocationSource.manual,
-        city: kDefaultCity,
-      );
+    // Current position (native one-shot, low accuracy, 15s timeout). Returns null
+    // on timeout/failure rather than throwing.
+    final position = await LocationBridge.getCurrentPosition(timeoutMs: 15000);
+    if (position != null) {
+      return _toLocationData(position.latitude, position.longitude);
     }
+
+    // Fallback to last known position
+    final lastPosition = await LocationBridge.getLastKnownPosition();
+    if (lastPosition != null) {
+      return _toLocationData(lastPosition.latitude, lastPosition.longitude);
+    }
+
+    // Final fallback to default location
+    return LocationData(
+      latitude: kDefaultLatitude,
+      longitude: kDefaultLongitude,
+      source: LocationSource.manual,
+      city: kDefaultCity,
+    );
+  }
+
+  /// Build a GPS [LocationData], resolving a city name via reverse geocoding
+  /// (with a test-location fallback for the emulator/Berlin).
+  Future<LocationData> _toLocationData(double latitude, double longitude) async {
+    String? city = await _getCityFromCoordinates(latitude, longitude);
+    if (city == null || city.isEmpty) {
+      city = _getTestCityName(latitude, longitude);
+    }
+    return LocationData(
+      latitude: latitude,
+      longitude: longitude,
+      source: LocationSource.gps,
+      city: city,
+    );
   }
 
   /// Get fallback location when GPS is unavailable.
@@ -154,40 +134,40 @@ class LocationService {
     String? city,
     LocationSource source = LocationSource.manual,
   }) async {
-    await HomeWidget.saveWidgetData<double>(_latKey, latitude);
-    await HomeWidget.saveWidgetData<double>(_lonKey, longitude);
+    await WidgetStore.saveWidgetData<double>(_latKey, latitude);
+    await WidgetStore.saveWidgetData<double>(_lonKey, longitude);
     if (city != null) {
-      await HomeWidget.saveWidgetData<String>(_cityKey, city);
+      await WidgetStore.saveWidgetData<String>(_cityKey, city);
     }
-    await HomeWidget.saveWidgetData<String>(_sourceKey, source.name);
-    await HomeWidget.saveWidgetData<bool>(_useGpsKey, false);
+    await WidgetStore.saveWidgetData<String>(_sourceKey, source.name);
+    await WidgetStore.saveWidgetData<bool>(_useGpsKey, false);
   }
 
   /// Switch to using GPS location.
   /// Persisted to the shared widget store (read by both the app and the native widget).
   Future<void> useGpsLocation() async {
-    await HomeWidget.saveWidgetData<bool>(_useGpsKey, true);
-    await HomeWidget.saveWidgetData<String>(_sourceKey, LocationSource.gps.name);
+    await WidgetStore.saveWidgetData<bool>(_useGpsKey, true);
+    await WidgetStore.saveWidgetData<String>(_sourceKey, LocationSource.gps.name);
   }
 
   /// Check if using GPS.
   Future<bool> isUsingGps() async {
-    return await HomeWidget.getWidgetData<bool>(_useGpsKey) ?? true;
+    return await WidgetStore.getWidgetData<bool>(_useGpsKey) ?? true;
   }
 
-  /// Get saved location from HomeWidget storage (for background service).
+  /// Get saved location from the shared widget store (for background service).
   /// Returns null if no location is saved or if using GPS.
   /// This is more reliable than SharedPreferences in background isolates.
   Future<LocationData?> getSavedLocationFromWidget() async {
-    final useGps = await HomeWidget.getWidgetData<bool>(_useGpsKey) ?? true;
+    final useGps = await WidgetStore.getWidgetData<bool>(_useGpsKey) ?? true;
     if (useGps) {
       return null; // GPS mode, no saved location
     }
 
-    final lat = await HomeWidget.getWidgetData<double>(_latKey);
-    final lon = await HomeWidget.getWidgetData<double>(_lonKey);
-    final city = await HomeWidget.getWidgetData<String>(_cityKey);
-    final sourceName = await HomeWidget.getWidgetData<String>(_sourceKey);
+    final lat = await WidgetStore.getWidgetData<double>(_latKey);
+    final lon = await WidgetStore.getWidgetData<double>(_lonKey);
+    final city = await WidgetStore.getWidgetData<String>(_cityKey);
+    final sourceName = await WidgetStore.getWidgetData<String>(_sourceKey);
 
     if (lat == null || lon == null) {
       return null;
@@ -210,24 +190,23 @@ class LocationService {
   /// Returns true if permission is granted.
   Future<bool> requestGpsPermission() async {
     // Check if location services are enabled
-    final serviceEnabled = await GeolocatorPlatform.instance.isLocationServiceEnabled();
+    final serviceEnabled = await LocationBridge.isLocationServiceEnabled();
     if (!serviceEnabled) {
       return false;
     }
 
     // Check and request permission
-    var permission = await GeolocatorPlatform.instance.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await GeolocatorPlatform.instance.requestPermission();
+    var permission = await LocationBridge.checkPermission();
+    if (permission == LocationPermissionStatus.denied) {
+      permission = await LocationBridge.requestPermission();
     }
 
-    return permission == LocationPermission.always ||
-           permission == LocationPermission.whileInUse;
+    return permission == LocationPermissionStatus.granted;
   }
 
   /// Open device location settings.
   Future<void> openLocationSettings() async {
-    await GeolocatorPlatform.instance.openLocationSettings();
+    await LocationBridge.openLocationSettings();
   }
 
   /// Search for cities using Open-Meteo geocoding API.
@@ -354,7 +333,7 @@ class LocationService {
   /// Returns [] if the stored data is missing or malformed (rather than throwing),
   /// and silently skips any individual entries that don't parse.
   Future<List<CitySearchResult>> getRecentCities() async {
-    final raw = await HomeWidget.getWidgetData<String>(_recentCitiesKey);
+    final raw = await WidgetStore.getWidgetData<String>(_recentCitiesKey);
     if (raw == null || raw.isEmpty) return [];
     try {
       final decoded = jsonDecode(raw);
@@ -389,7 +368,7 @@ class LocationService {
     // Keep only last 5
     final trimmed = cities.take(5).toList();
 
-    await HomeWidget.saveWidgetData<String>(
+    await WidgetStore.saveWidgetData<String>(
       _recentCitiesKey,
       jsonEncode(trimmed.map((c) => c.toJson()).toList()),
     );

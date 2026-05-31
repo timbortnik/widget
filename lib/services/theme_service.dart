@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:home_widget/home_widget.dart';
+import 'widget_store.dart';
 
 /// Persists the user's in-app theme preference (System / Light / Dark).
 ///
 /// The choice drives both the in-app UI and the home-screen widget, so it is
-/// stored in [HomeWidget] storage (`HomeWidgetPreferences`) — the same store the
+/// stored in [WidgetStore] (`HomeWidgetPreferences`) — the same store the
 /// native widget provider reads to match the app's theme.
 class ThemeService {
   /// Storage key holding the serialized [ThemeMode].
@@ -16,12 +16,12 @@ class ThemeService {
 
   /// Loads the saved theme mode, defaulting to [ThemeMode.system].
   Future<ThemeMode> load() async {
-    return _fromString(await HomeWidget.getWidgetData<String>(_prefKey));
+    return _fromString(await WidgetStore.getWidgetData<String>(_prefKey));
   }
 
   /// Persists [mode] for future launches in the shared widget store.
   Future<void> save(ThemeMode mode) async {
-    await HomeWidget.saveWidgetData<String>(_prefKey, _toString(mode));
+    await WidgetStore.saveWidgetData<String>(_prefKey, _toString(mode));
   }
 
   static ThemeMode _fromString(String? value) {

@@ -137,10 +137,13 @@ All city names are localized via reverse geocoding based on device locale.
 - Debounced search (300ms) in UI
 
 ### WidgetService (`lib/services/widget_service.dart`)
-Home widget data management. Responsibilities:
-- Save chart image to app documents folder
-- Save widget data via HomeWidget.saveWidgetData
-- Trigger native widget update
+Home widget refresh coordination. Responsibilities:
+- Trigger native widget update for all provider variants (via `WidgetStore.updateWidget`)
+- Check/clear the resize flag
+
+Shared key-value storage (the `HomeWidgetPreferences` SharedPreferences file) is accessed
+through `WidgetStore` (`lib/services/widget_store.dart`), a method-channel bridge to native
+Kotlin that replaced the `home_widget` package.
 
 ### Native Background Updates
 All background updates are handled natively in Kotlin (no Dart/Flutter involved):
@@ -204,7 +207,7 @@ scripts/
 ## Platform-Specific
 
 ### Android Widget
-- `MeteogramWidgetProvider` extends `HomeWidgetProvider`
+- `MeteogramWidgetProvider` extends `AppWidgetProvider`
 - Layout in `res/layout/meteogram_widget.xml`
 - Uses RemoteViews (limited to TextView, ImageView, LinearLayout, RelativeLayout, FrameLayout)
 - Background in `res/drawable/widget_background.xml` (gradient + rounded corners)
@@ -247,7 +250,7 @@ catch (e) {
 ### Flutter/Dart
 | Package | Purpose |
 |---------|---------|
-| home_widget | Flutter ↔ native widget bridge |
+| (native method channel) | Flutter ↔ native widget bridge — `WidgetStore` over `org.bortnik.meteogram/svg` |
 | geolocator | GPS location |
 | geocoding | Reverse geocoding (coordinates → city name) |
 | http | API requests (weather, city search) |

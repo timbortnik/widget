@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:ui' show PlatformDispatcher;
 import 'package:flutter/material.dart';
-import 'package:home_widget/home_widget.dart';
 import '../constants.dart';
 import '../l10n/app_localizations.dart';
 import '../services/location_service.dart';
@@ -9,6 +8,7 @@ import '../services/widget_service.dart';
 import '../services/native_svg_service.dart';
 import '../services/units_service.dart';
 import '../services/material_you_service.dart';
+import '../services/widget_store.dart';
 import '../theme/app_theme.dart';
 import '../widgets/native_svg_chart_view.dart';
 import '../generated/version.dart';
@@ -91,15 +91,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     await _initializeData();
   }
 
-  /// Save locale and units preferences to HomeWidget for background service.
+  /// Save locale and units preferences to the shared widget store for background service.
   /// Called early in initialization so background can use correct settings.
   Future<void> _saveLocaleAndUnits() async {
     final platformLocale = PlatformDispatcher.instance.locale;
     final locale = platformLocale.toString();
     final usesFahrenheit = UnitsService.usesFahrenheit(platformLocale);
 
-    await HomeWidget.saveWidgetData<String>('locale', locale);
-    await HomeWidget.saveWidgetData<bool>('usesFahrenheit', usesFahrenheit);
+    await WidgetStore.saveWidgetData<String>('locale', locale);
+    await WidgetStore.saveWidgetData<bool>('usesFahrenheit', usesFahrenheit);
 
     debugPrint('Saved locale/units at startup: $locale, usesFahrenheit=$usesFahrenheit');
   }

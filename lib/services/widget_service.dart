@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:home_widget/home_widget.dart';
+import 'widget_store.dart';
 
 /// Service for updating the home screen widget.
 ///
@@ -14,30 +14,24 @@ class WidgetService {
   /// The native code will generate SVGs from cached weather data.
   Future<void> triggerWidgetUpdate() async {
     try {
-      await HomeWidget.updateWidget(
+      await WidgetStore.updateWidget(
         androidName: _androidWidgetName,
         iOSName: _iosWidgetName,
       );
-      await HomeWidget.updateWidget(androidName: _androidWeeklyWidgetName);
+      await WidgetStore.updateWidget(androidName: _androidWeeklyWidgetName);
       debugPrint('Triggered native widget update');
     } catch (e) {
       debugPrint('Error triggering widget update: $e');
     }
   }
 
-  /// Initialize widget service.
-  static Future<void> initialize() async {
-    // Set app group ID for iOS
-    await HomeWidget.setAppGroupId('group.org.bortnik.meteogram');
-  }
-
   /// Check if widget was resized and clear the flag.
   /// Returns true if widget needs re-rendering.
   Future<bool> checkAndClearResizeFlag() async {
     try {
-      final resized = await HomeWidget.getWidgetData<bool>('widget_resized');
+      final resized = await WidgetStore.getWidgetData<bool>('widget_resized');
       if (resized == true) {
-        await HomeWidget.saveWidgetData<bool>('widget_resized', false);
+        await WidgetStore.saveWidgetData<bool>('widget_resized', false);
         debugPrint('Widget was resized');
         return true;
       }

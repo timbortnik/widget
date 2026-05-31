@@ -68,21 +68,6 @@
                 android:resource="@xml/meteogram_widget_weekly_info" />
         </receiver>
 
-        <!-- HomeWidget background receiver for Dart callback invocation -->
-        <receiver
-            android:name="es.antonborri.home_widget.HomeWidgetBackgroundReceiver"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="es.antonborri.home_widget.action.BACKGROUND" />
-            </intent-filter>
-        </receiver>
-
-        <!-- HomeWidget background service for headless Dart execution -->
-        <service
-            android:name="es.antonborri.home_widget.HomeWidgetBackgroundService"
-            android:permission="android.permission.BIND_JOB_SERVICE"
-            android:exported="false" />
-
         <!-- Widget event receiver for system broadcasts that trigger widget updates -->
         <!-- LOCALE_CHANGED and TIMEZONE_CHANGED are exempt from Android 8.0+ restrictions -->
         <receiver

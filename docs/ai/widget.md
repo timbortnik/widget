@@ -2,7 +2,16 @@
 
 ## Overview
 
-Using the `home_widget` package with native Android widget provider. The chart is generated as SVG natively in Kotlin (`SvgChartGenerator.kt`), then rendered using AndroidSVG library. Both the widget and the in-app chart use the same native SVG generation for consistency.
+Native Android `AppWidgetProvider` with a method-channel key-value bridge (`WidgetStore`,
+`lib/services/widget_store.dart`) to the shared `HomeWidgetPreferences` SharedPreferences file.
+The chart is generated as SVG natively in Kotlin (`SvgChartGenerator.kt`), then rendered using
+the AndroidSVG library. Both the widget and the in-app chart use the same native SVG generation
+for consistency.
+
+> **Note (2026-05):** Sections below describing the `home_widget` package, `registerInteractivityCallback`,
+> and a Dart `homeWidgetBackgroundCallback` are **outdated**. The `home_widget` dependency was removed;
+> Flutter↔native KV now goes through `WidgetStore` over the `org.bortnik.meteogram/svg` channel, and all
+> background refresh is native Kotlin (AlarmManager/WorkManager/BootReceiver) with no Dart callbacks.
 
 See `docs/NATIVE_SVG_RENDERING.md` for detailed architecture.
 

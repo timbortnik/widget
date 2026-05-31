@@ -2,6 +2,7 @@ package org.bortnik.meteogram
 
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
+import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -18,7 +19,6 @@ import android.view.ContextThemeWrapper
 import android.view.View
 import android.widget.RemoteViews
 import com.caverock.androidsvg.SVG
-import es.antonborri.home_widget.HomeWidgetProvider
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.FileInputStream
@@ -30,7 +30,7 @@ import java.util.Locale
  * extension points to change layout, time range, or time labels without
  * re-implementing the full RemoteViews update cycle.
  */
-open class MeteogramWidgetProvider : HomeWidgetProvider() {
+open class MeteogramWidgetProvider : AppWidgetProvider() {
     /** Layout resource used for this widget's RemoteViews. */
     protected open val layoutRes: Int = R.layout.meteogram_widget
 
@@ -327,9 +327,10 @@ open class MeteogramWidgetProvider : HomeWidgetProvider() {
     override fun onUpdate(
         context: Context,
         appWidgetManager: AppWidgetManager,
-        appWidgetIds: IntArray,
-        widgetData: SharedPreferences
+        appWidgetIds: IntArray
     ) {
+        // Open the shared store directly (previously supplied by HomeWidgetProvider).
+        val widgetData = context.getSharedPreferences(WidgetUtils.PREFS_NAME, Context.MODE_PRIVATE)
         Log.d(logTag, "onUpdate called for ${appWidgetIds.size} widgets: ${appWidgetIds.joinToString()}")
 
         updateWidgetIdsList(context, appWidgetIds)
