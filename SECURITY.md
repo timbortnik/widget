@@ -27,7 +27,7 @@ We aim to respond to security reports within **48 hours** and provide a fix with
 ### Dependency Management
 
 - **Automated scanning**: Dependabot monitors dependencies weekly
-- **Pinned versions**: Critical dependencies (like `home_widget`) are pinned for stability
+- **Pinned toolchain**: The Flutter SDK and Android Gradle Plugin are pinned for build stability
 - **Regular updates**: Dependencies are reviewed and updated monthly
 - **Vulnerability tracking**: All dependencies checked against [GitHub Advisory Database](https://github.com/advisories)
 
@@ -57,12 +57,6 @@ This app uses these third-party services:
 **No API keys required** - Open-Meteo is a free public API with no registration.
 
 ## Known Security Considerations
-
-### home_widget Version Pin
-
-This project intentionally uses `home_widget: 0.8.0` (not latest 0.9.0) due to functional issues with widget resizing. See [docs/HOME_WIDGET_VERSION_ISSUE.md](docs/HOME_WIDGET_VERSION_ISSUE.md) for details.
-
-**Security impact**: `JobIntentService` (used in 0.8.0) is deprecated but still functional and secure. We monitor for security advisories and will migrate when 0.9.0+ fixes the resize issue.
 
 ### Permissions
 

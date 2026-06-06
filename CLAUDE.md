@@ -18,6 +18,7 @@ This file provides context for AI assistants working on this project.
 | Aspect | Value |
 |--------|-------|
 | Framework | Flutter 3.44.0 (pinned — see "Before Coding") |
+| Android SDK | minSdk 30 (Android 11), target 36 — do NOT lower minSdk, see Gotcha #9 |
 | Weather API | Open-Meteo (free, no key) |
 | Charting | Native SVG (SvgChartGenerator.kt + AndroidSVG) |
 | Widget package | Native AppWidgetProvider + method-channel KV store (`widget_store.dart`) |
@@ -47,7 +48,7 @@ lib/
 │   ├── app_*.arb            # Other languages
 │   └── app_localizations.dart # Generated
 ├── services/
-│   ├── location_service.dart     # Geolocator wrapper with fallback
+│   ├── location_service.dart     # Native location (LocationBridge) with fallback
 │   ├── widget_service.dart       # Triggers native widget refresh + resize flag
 │   ├── widget_store.dart         # Method-channel KV bridge to HomeWidgetPreferences (replaces home_widget)
 │   └── native_svg_service.dart   # Method channel to native (weather fetch, SVG gen, cache)
@@ -280,3 +281,4 @@ adb logcat | grep -i "Error inflating"
 6. **Implicit broadcasts** - Android 8.0+ requires runtime receiver registration (not manifest)
 7. **Event staleness** - Widget checks `last_weather_update` timestamp (15 min threshold)
 8. **Edge-to-edge warning** - Play Console may warn about deprecated APIs (setStatusBarColor etc.) - this is Flutter engine code, not app code; tracked in flutter/flutter#160328
+9. **minSdk is pinned to 30 (`app/build.gradle.kts`), NOT Flutter's default 24** - hard floor is 29: the widget's `WidgetTheme` parent `android:Theme.DeviceDefault.DayNight` requires API 29; on API 24-28 the launcher can't inflate the widget (blank/broken widget → Google Play "Broken Functionality" rejection, fixed 2026-06). 30 also gives `LocationListener` default callbacks (so `LocationProvider` needs no `onStatusChanged`/`onProviderEnabled`/`onProviderDisabled` stubs). Run `cd android && ./gradlew :app:lintDebug` and check for `NewApi` errors before shipping any resource/theme change. If you must support <29, give `WidgetTheme` an API-24-safe parent and add a `values-v29/styles.xml` DayNight override instead of lowering minSdk blindly; below API 30, restore the `LocationListener` stubs.

@@ -35,7 +35,7 @@ reviews:
         between native and Dart (HomeWidgetPreferences) must stay in sync.
     - path: "**/*_test.dart"
       instructions: >-
-        Ensure tests assert real behavior; home_widget and SharedPreferences
+        Ensure tests assert real behavior; WidgetStore and SharedPreferences
         mocks should follow the existing patterns in test/.
 
 chat:

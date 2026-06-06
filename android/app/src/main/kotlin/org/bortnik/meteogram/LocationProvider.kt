@@ -6,8 +6,6 @@ import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
-import android.os.Build
-import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
@@ -32,13 +30,8 @@ object LocationProvider {
 
     fun isLocationServiceEnabled(context: Context): Boolean {
         val lm = context.getSystemService(Context.LOCATION_SERVICE) as? LocationManager ?: return false
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            lm.isLocationEnabled
-        } else {
-            @Suppress("DEPRECATION")
-            (lm.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
-                lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER))
-        }
+        // isLocationEnabled is API 28+; minSdk is 29, so it's always available.
+        return lm.isLocationEnabled
     }
 
     /** "granted" if fine or coarse location is held, else "denied". */
@@ -76,7 +69,6 @@ object LocationProvider {
      * once on the main thread with `[lat, lon]`, or null on timeout/failure. Call
      * this on the main thread.
      */
-    @Suppress("DEPRECATION") // onStatusChanged override is needed for minSdk 24 runtime safety.
     fun getCurrentPosition(context: Context, timeoutMs: Long, callback: (DoubleArray?) -> Unit) {
         if (!hasPermission(context)) { callback(null); return }
         val lm = context.getSystemService(Context.LOCATION_SERVICE) as? LocationManager
@@ -98,13 +90,8 @@ object LocationProvider {
                 handler.removeCallbacksAndMessages(null)
                 callback(doubleArrayOf(location.latitude, location.longitude))
             }
-
-            // onStatusChanged/onProviderEnabled/onProviderDisabled gained default
-            // implementations only in API 30; override them so the class is safe on
-            // API 24 (where the framework still invokes them on the interface).
-            override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
-            override fun onProviderEnabled(provider: String) {}
-            override fun onProviderDisabled(provider: String) {}
+            // onStatusChanged/onProviderEnabled/onProviderDisabled use the
+            // LocationListener default impls (API 30+), so no stubs are needed.
         }
 
         try {

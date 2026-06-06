@@ -30,7 +30,7 @@ Architectural decisions and insights discovered during development.
 - `e007d88` - Replace AlarmManager with WorkManager for battery efficiency
 
 **Related docs:**
-- [NATIVE_SVG_RENDERING.md](NATIVE_SVG_RENDERING.md) - Technical architecture details
+- [ai/widget.md](ai/widget.md) - Technical architecture details
 
 ---
 
@@ -166,7 +166,7 @@ No Flutter, no Dart, no platform channels for widget updates.
 **Key insight:** SVG as an intermediate format gives you human-readable, scalable graphics that can be generated with simple string operations and rendered natively.
 
 **Related docs:**
-- [NATIVE_SVG_RENDERING.md](NATIVE_SVG_RENDERING.md) - Full technical implementation details
+- [ai/widget.md](ai/widget.md) - Full technical implementation details
 
 ---
 
