@@ -68,15 +68,14 @@ Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES changes
          (keys: material_you_light_temp, etc.)
                                 │
                                 ▼
-         WidgetUtils.triggerChartReRender()
+         WidgetUtils.rerenderAllWidgetsNative()
                                 │
                                 ▼
-         Flutter background callback
-         Reads colors from SharedPreferences
-         Generates new SVGs with updated colors
+         Native onUpdate() reads colors from SharedPreferences
+         SvgChartGenerator regenerates SVGs with updated colors
                                 │
                                 ▼
-         HomeWidget.updateWidget()
+         AppWidgetManager.updateAppWidget()
          Widget displays new colors
 ```
 
@@ -115,12 +114,14 @@ These are two separate concerns:
 | Broadcast | `ACTION_CONFIGURATION_CHANGED` | None |
 | Our solution | Dual SVGs with XML visibility | ContentObserver + fallbacks |
 
-**Dark/light mode** is handled automatically by Android. The widget XML uses:
+**Dark/light mode** is handled automatically by Android. The two chart
+`ImageView`s take their visibility from night-qualified integer resources
+(`res/values/integers.xml` vs `res/values-night/integers.xml`):
 ```xml
-<ImageView android:visibility="@{isNightMode ? gone : visible}" />  <!-- light -->
-<ImageView android:visibility="@{isNightMode ? visible : gone}" />  <!-- dark -->
+<integer name="chart_light_visibility">0</integer> <!-- values/: visible (0) -->
+<integer name="chart_dark_visibility">2</integer>  <!-- values/: gone (2) -->
 ```
-RemoteViews switches visibility instantly when system theme changes - no app code needed.
+The launcher re-inflates the RemoteViews when the system theme changes, flipping which chart shows - no app code needed.
 
 **Material You accent colors** require active detection because Android provides no broadcast. This is why we use the multi-layered approach (ContentObserver, WorkManager).
 
@@ -139,10 +140,10 @@ WorkManager is used for content URI observation:
 
 ```kotlin
 // android/app/build.gradle.kts
-implementation("androidx.work:work-runtime-ktx:2.9.0")
+implementation("androidx.work:work-runtime-ktx:2.11.2")
 ```
 
-Note: This is separate from home_widget's WorkManager usage (which we avoid due to delayed execution - see HOME_WIDGET_VERSION_ISSUE.md).
+Note: WorkManager here serves the Material You content-URI trigger and the periodic refresh; it is not a Flutter-bridge dependency (the app has no `home_widget` package).
 
 ## Testing
 

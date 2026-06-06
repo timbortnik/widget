@@ -2,18 +2,24 @@
 
 ## Overview
 
-Native Android `AppWidgetProvider` with a method-channel key-value bridge (`WidgetStore`,
-`lib/services/widget_store.dart`) to the shared `HomeWidgetPreferences` SharedPreferences file.
-The chart is generated as SVG natively in Kotlin (`SvgChartGenerator.kt`), then rendered using
-the AndroidSVG library. Both the widget and the in-app chart use the same native SVG generation
-for consistency.
+The app ships **two native Android home-screen widgets**, both backed by
+`AppWidgetProvider` (no `home_widget` package):
 
-> **Note (2026-05):** Sections below describing the `home_widget` package, `registerInteractivityCallback`,
-> and a Dart `homeWidgetBackgroundCallback` are **outdated**. The `home_widget` dependency was removed;
-> Flutter↔native KV now goes through `WidgetStore` over the `org.bortnik.meteogram/svg` channel, and all
-> background refresh is native Kotlin (AlarmManager/WorkManager/BootReceiver) with no Dart callbacks.
+- **`MeteogramWidgetProvider`** — the default 48-hour meteogram.
+- **`MeteogramWeeklyWidgetProvider`** — a 7-day variant that `extends`
+  `MeteogramWidgetProvider` and only overrides the layout, time range, and
+  X-axis labels (`labelStepHours = 24`, `TimeLabelFormat.WEEKDAY`).
 
-See `docs/NATIVE_SVG_RENDERING.md` for detailed architecture.
+The chart is generated as an SVG string natively in Kotlin
+(`SvgChartGenerator.kt`) and rasterised with the AndroidSVG library. The same
+generator drives both widgets and the in-app chart, so they always match.
+
+Flutter ↔ native key-value storage and the widget-refresh trigger go through
+**`WidgetStore`** (`lib/services/widget_store.dart`) over the
+`org.bortnik.meteogram/svg` method channel — see `MainActivity`
+(`getWidgetData` / `saveWidgetData` / `updateWidget`). **All background refresh
+is native Kotlin** (AlarmManager / WorkManager / boot receiver); there is no
+Dart background callback and no Flutter engine involved in background updates.
 
 ## Critical: RemoteViews Limitations
 
@@ -29,22 +35,16 @@ Android `RemoteViews` only supports a limited set of views:
 
 **If you get "Can't load widget" error, check for unsupported views in the layout XML.**
 
-## Package Setup
-
-### pubspec.yaml
-```yaml
-dependencies:
-  home_widget: ^0.8.0
-  path_provider: ^2.1.0
-```
-
 ## Android Configuration
 
 ### AndroidManifest.xml
+
+The manifest declares the two widget providers plus the receivers that drive
+background refresh (no `home_widget` receivers/services):
+
 ```xml
-<!-- Widget provider -->
-<receiver android:name=".MeteogramWidgetProvider"
-          android:exported="true">
+<!-- 48h widget -->
+<receiver android:name=".MeteogramWidgetProvider" android:exported="true">
     <intent-filter>
         <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
     </intent-filter>
@@ -52,484 +52,198 @@ dependencies:
                android:resource="@xml/meteogram_widget_info" />
 </receiver>
 
-<!-- HomeWidget background callback support (required for event-driven refresh) -->
-<receiver android:name="es.antonborri.home_widget.HomeWidgetBackgroundReceiver"
-          android:exported="true">
+<!-- 7-day weekly widget -->
+<receiver android:name=".MeteogramWeeklyWidgetProvider" android:exported="true">
     <intent-filter>
-        <action android:name="es.antonborri.home_widget.action.BACKGROUND" />
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+    </intent-filter>
+    <meta-data android:name="android.appwidget.provider"
+               android:resource="@xml/meteogram_widget_weekly_info" />
+</receiver>
+
+<!-- Locale / timezone changes (manifest receivers: app process is killed on change,
+     and these broadcasts are exempt from the Android 8.0+ implicit-broadcast ban) -->
+<receiver android:name=".WidgetEventReceiver" android:exported="true">
+    <intent-filter>
+        <action android:name="android.intent.action.LOCALE_CHANGED" />
+        <action android:name="android.intent.action.TIMEZONE_CHANGED" />
     </intent-filter>
 </receiver>
 
-<service android:name="es.antonborri.home_widget.HomeWidgetBackgroundService"
-         android:permission="android.permission.BIND_JOB_SERVICE"
-         android:exported="false" />
+<!-- 15-min inexact alarm -->
+<receiver android:name=".WidgetAlarmReceiver" android:exported="false">
+    <intent-filter>
+        <action android:name="org.bortnik.meteogram.ACTION_ALARM_UPDATE" />
+    </intent-filter>
+</receiver>
+
+<!-- Refresh on device boot (requires RECEIVE_BOOT_COMPLETED) -->
+<receiver android:name=".BootCompletedReceiver" android:exported="true">
+    <intent-filter>
+        <action android:name="android.intent.action.BOOT_COMPLETED" />
+    </intent-filter>
+</receiver>
 ```
 
 ### res/xml/meteogram_widget_info.xml
-```xml
-<?xml version="1.0" encoding="utf-8"?>
-<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
-    android:minWidth="250dp"
-    android:minHeight="150dp"
-    android:updatePeriodMillis="1800000"
-    android:initialLayout="@layout/meteogram_widget"
-    android:resizeMode="horizontal|vertical"
-    android:widgetCategory="home_screen"
-    android:previewImage="@mipmap/ic_launcher">
-</appwidget-provider>
-```
+
+`updatePeriodMillis="1800000"` (30 min) is the OEM-resistant system fallback.
+The API-31+ attributes (`targetCellWidth/Height`, `maxResize*`, `previewLayout`)
+are ignored on older devices. The weekly variant uses
+`meteogram_widget_weekly_info.xml` with the same shape but its own
+`initialLayout`/`previewLayout`/`description`.
 
 ### res/layout/meteogram_widget.xml
-```xml
-<?xml version="1.0" encoding="utf-8"?>
-<FrameLayout android:id="@+id/widget_root"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:theme="@style/WidgetTheme"
-    android:background="?android:attr/colorBackground"
-    android:alpha="0.85">
 
-    <!-- Two chart ImageViews for automatic theme switching -->
-    <ImageView android:id="@+id/widget_chart_light"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:scaleType="fitCenter"
-        android:visibility="@integer/chart_light_visibility" />
-    <ImageView android:id="@+id/widget_chart_dark"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:scaleType="fitCenter"
-        android:visibility="@integer/chart_dark_visibility" />
+The root `FrameLayout` carries `android:theme="@style/WidgetTheme"` and paints
+`?android:attr/colorBackground` at 80% alpha so the widget matches system
+chrome (Search bar, Clock). It contains two chart `ImageView`s (light + dark),
+a placeholder `TextView` ("Tap to load forecast"), and a hidden refresh
+indicator. The weekly layout (`meteogram_widget_weekly.xml`) mirrors it.
 
-    <!-- Placeholder when no chart available -->
-    <TextView android:id="@+id/widget_placeholder"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:text="Tap to load forecast"
-        android:visibility="gone" />
+> **minSdk note:** `WidgetTheme`'s parent `android:Theme.DeviceDefault.DayNight`
+> requires **API 29**, which is why `minSdk` is pinned ≥ 29 (currently 30). On
+> API 24–28 the launcher can't inflate the widget. See CLAUDE.md Gotcha #9.
 
-    <!-- Refresh indicator for resize -->
-    <TextView android:id="@+id/widget_refresh_indicator"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:text="↻"
-        android:textSize="64sp"
-        android:textColor="?android:attr/textColorPrimary"
-        android:visibility="gone" />
-</FrameLayout>
-```
+### Chart theme visibility (light vs dark)
 
-### res/values/integers.xml (Light Mode)
-```xml
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <!-- Visibility: 0=visible, 1=invisible, 2=gone -->
-    <integer name="chart_light_visibility">0</integer>
-    <integer name="chart_dark_visibility">2</integer>
-</resources>
-```
+There is no per-widget bitmap caching of "the current theme"; instead the
+layout holds **both** charts and the system/launcher decides which is visible:
 
-### res/values-night/integers.xml (Dark Mode)
-```xml
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <!-- Visibility: 0=visible, 1=invisible, 2=gone -->
-    <integer name="chart_light_visibility">2</integer>
-    <integer name="chart_dark_visibility">0</integer>
-</resources>
-```
+- `res/values/integers.xml` → `chart_light_visibility=0` (visible),
+  `chart_dark_visibility=2` (gone).
+- `res/values-night/integers.xml` → the inverse.
 
-### res/drawable/widget_background.xml
-```xml
-<?xml version="1.0" encoding="utf-8"?>
-<shape android:shape="rectangle">
-    <gradient
-        android:startColor="#E81B2838"
-        android:endColor="#E80D1B2A"
-        android:angle="135" />
-    <corners android:radius="24dp" />
-</shape>
-```
+When the system theme changes, the launcher re-inflates the RemoteViews and the
+night-qualified integers flip which `ImageView` shows — no app code required.
+A manual in-app theme choice (System/Light/Dark, mirrored to the
+`theme_mode` pref) overrides this in `MeteogramWidgetProvider.applyThemeOverride()`
+via `WidgetUtils.chartVisibilityForThemeMode()`, which also forces the card
+background to match the chosen mode.
 
-### Widget Provider (Kotlin)
-```kotlin
-package com.example.widget
+### Provider rendering (Kotlin)
 
-import android.appwidget.AppWidgetManager
-import android.content.Context
-import android.content.SharedPreferences
-import android.graphics.BitmapFactory
-import android.view.View
-import android.widget.RemoteViews
-import android.app.PendingIntent
-import android.content.Intent
-import es.antonborri.home_widget.HomeWidgetProvider
+`onUpdate()` (in `MeteogramWidgetProvider`, inherited by the weekly provider):
 
-class MeteogramWidgetProvider : HomeWidgetProvider() {
-    override fun onUpdate(
-        context: Context,
-        appWidgetManager: AppWidgetManager,
-        appWidgetIds: IntArray,
-        widgetData: SharedPreferences
-    ) {
-        for (appWidgetId in appWidgetIds) {
-            val views = RemoteViews(context.packageName, R.layout.meteogram_widget)
+1. Reads the cached weather via `WeatherDataParser.parseFromPrefs(context)`.
+2. Picks the slice for this provider via `chartView(weatherData)` —
+   `getHourlyView()` for 48h, `getWeeklyView()` for the weekly subclass.
+3. Generates light **and** dark SVGs with `SvgChartGenerator.generate(...)` and
+   rasterises each to a `Bitmap` in memory (`generateChartBitmap`), then
+   `setImageViewBitmap` on the two `ImageView`s.
+4. Falls back to any previously-saved SVG file paths (`svg_path_light_<id>` /
+   `svg_path_dark_<id>`) if in-memory generation fails.
+5. If there's still no chart (e.g. no weather cached yet), shows the
+   "Tap to load forecast" placeholder; tapping opens `MainActivity`, which
+   fetches and refreshes both widgets.
 
-            // Tap to open app
-            val intent = Intent(context, MainActivity::class.java)
-            val pendingIntent = PendingIntent.getActivity(
-                context, 0, intent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-            views.setOnClickPendingIntent(R.id.widget_root, pendingIntent)
-
-            // Update temperature
-            val temperature = widgetData.getString("current_temperature", "--°")
-            views.setTextViewText(R.id.widget_temperature, temperature)
-
-            // Update location
-            val location = widgetData.getString("location_name", "")
-            views.setTextViewText(R.id.widget_location, location)
-
-            // Update chart image
-            val imagePath = widgetData.getString("meteogram_image", null)
-            if (imagePath != null) {
-                try {
-                    val bitmap = BitmapFactory.decodeFile(imagePath)
-                    if (bitmap != null) {
-                        views.setImageViewBitmap(R.id.widget_chart, bitmap)
-                        views.setViewVisibility(R.id.widget_chart, View.VISIBLE)
-                        views.setViewVisibility(R.id.widget_placeholder, View.GONE)
-                    }
-                } catch (e: Exception) {
-                    // Keep placeholder visible
-                }
-            }
-
-            appWidgetManager.updateAppWidget(appWidgetId, views)
-        }
-    }
-}
-```
+`onAppWidgetOptionsChanged()` handles resize: it stores the new pixel
+dimensions and regenerates immediately (or triggers a fetch if there's no data).
 
 ## Flutter Integration
 
-All SVG generation happens in Kotlin (`SvgChartGenerator.kt`). The Flutter
-side only displays the generated SVG and triggers refreshes.
+All SVG generation and weather fetching happen in Kotlin. The Flutter side only
+displays the generated SVG and triggers refreshes.
 
-### SVG Chart Generator (Kotlin — `android/.../SvgChartGenerator.kt`)
+### Method channel (`org.bortnik.meteogram/svg`)
 
-Single source of truth for chart rendering: used by both widgets (48h and
-weekly) and the in-app panels. `generate()` takes the hourly data slice plus
-dimensions, locale, Fahrenheit flag, label step, and label format, and
-returns an SVG string.
+Dart talks to Kotlin over a single channel. Relevant methods (see
+`MainActivity.configureFlutterEngine`):
 
-**Transparent background requirement.** The SVG must not include a background
-rect. The widget layout uses `?android:attr/colorBackground` with 80% alpha
-so widgets match system chrome (Search bar, Clock, etc.). A solid SVG
-background would override this and break the translucent look.
+| Method | Purpose |
+|--------|---------|
+| `fetchWeather(latitude, longitude)` | `WeatherFetcher` calls Open-Meteo and writes the result to SharedPreferences |
+| `generateSvg(mode, width, height, isLight, usesFahrenheit)` | Reads the cache and returns an SVG string for `hourly` or `weekly` |
+| `renderSvg(svg, width, height)` | Rasterises an SVG string to PNG bytes |
+| `reverseGeocode(latitude, longitude)` | `android.location.Geocoder` → city name |
+| `getWidgetData` / `saveWidgetData` | KV read/write to the shared prefs file (used by `WidgetStore`) |
+| `updateWidget(name)` | Sends `ACTION_APPWIDGET_UPDATE` to the named provider |
+| `isLocationServiceEnabled` / `checkLocationPermission` / `requestLocationPermission` / `getCurrentPosition` / `getLastKnownPosition` / `openLocationSettings` | Native location surface (`LocationProvider`, used by `LocationBridge`) |
 
-### Method Channel (`lib/services/native_svg_service.dart`)
+### WidgetStore (`lib/services/widget_store.dart`)
 
-Dart calls Kotlin over a single method channel (`org.bortnik.meteogram/svg`):
-
-- `fetchWeather(lat, lon)` — Kotlin `WeatherFetcher` calls Open-Meteo and
-  writes the result to SharedPreferences.
-- `generateSvg(mode, width, height, isLight, usesFahrenheit)` — Kotlin reads
-  the cache and returns an SVG string for the requested mode (`hourly` or
-  `weekly`).
-- Various getters for the cached temperature, fetch timestamp, cached city,
-  etc.
-
-### In-App Chart Display (`lib/widgets/native_svg_chart_view.dart`)
-
-PlatformView wrapper that embeds a native Android view showing the SVG:
+Thin KV bridge plus `updateWidget`. It writes to the shared
+**`HomeWidgetPreferences`** SharedPreferences file — that filename is retained
+for backward compatibility, and the native side replicates the old
+`home_widget` serialization (a companion `home_widget.double.<key>` flag and
+`doubleToRawLongBits` for doubles) so data from pre-migration installs survives
+an upgrade.
 
 ```dart
-class NativeSvgChartView extends StatefulWidget {
-  final String svgString;
-  final double width;
-  final double height;
-
-  @override
-  Widget build(BuildContext context) {
-    return AndroidView(
-      viewType: 'svg_chart_view',
-      creationParams: {'svg': svgString, 'width': width, 'height': height},
-    );
-  }
-}
+await WidgetStore.saveWidgetData<bool>('use_gps', true);
+final lat = await WidgetStore.getWidgetData<double>('cached_latitude');
+await WidgetStore.updateWidget(androidName: 'MeteogramWidgetProvider');
 ```
 
-## Background Refresh
+`WidgetService.triggerWidgetUpdate()` refreshes **both** providers
+(`MeteogramWidgetProvider` and `MeteogramWeeklyWidgetProvider`).
 
-### Periodic Updates (WorkManager)
+### In-app chart display (`lib/widgets/native_svg_chart_view.dart`)
 
-Background refresh uses WorkManager for battery efficiency - the OS batches work with other apps:
+A PlatformView (`AndroidView`, viewType `svg_chart_view`) embeds a native
+Android view that renders the SVG via AndroidSVG — bypassing Flutter's
+compositor for 1:1 pixel rendering. The factory is registered in
+`MainActivity` (`SvgChartViewFactory` → `SvgChartPlatformView`).
 
-```kotlin
-// WeatherUpdateWorker.kt - periodic weather refresh
-class WeatherUpdateWorker(context: Context, params: WorkerParameters) : Worker(context, params) {
-    companion object {
-        fun enqueue(context: Context) {
-            val constraints = Constraints.Builder()
-                .setRequiredNetworkType(NetworkType.CONNECTED)
-                .build()
+## Background Refresh (fully native)
 
-            val workRequest = PeriodicWorkRequestBuilder<WeatherUpdateWorker>(
-                30, TimeUnit.MINUTES  // OS may batch/delay for battery
-            ).setConstraints(constraints).build()
+No Dart runs in the background. Updates are driven by layered native
+mechanisms, all coordinated through `WidgetUtils`:
 
-            WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-                "periodic_weather_update",
-                ExistingPeriodicWorkPolicy.KEEP,
-                workRequest
-            )
-        }
-    }
+| Source | Cadence | Behaviour |
+|--------|---------|-----------|
+| `WidgetAlarmReceiver` (AlarmManager) | ~15 min, inexact | Fetch if stale, re-render if needed; catches up on wake |
+| `WeatherUpdateWorker` (WorkManager) | ~30 min | `NetworkType.CONNECTED` constraint; fetch if stale, re-render |
+| `BootCompletedReceiver` | On boot | Immediate refresh, reschedule alarm |
+| `updatePeriodMillis` | 30 min | System fallback, OEM-resistant |
+| `WidgetEventReceiver` | On event | `LOCALE_CHANGED` / `TIMEZONE_CHANGED` → re-render all (no fetch) |
+| `onAppWidgetOptionsChanged` | On resize | Re-render immediately |
 
-    override fun doWork(): Result {
-        if (WidgetUtils.isWeatherDataStale(applicationContext)) {
-            WidgetUtils.fetchWeather(applicationContext)
-        } else {
-            WidgetUtils.rerenderAllWidgets(applicationContext)
-        }
-        return Result.success()
-    }
-}
-```
+`MeteogramApplication.onCreate()` registers the Material You `ContentObserver`,
+schedules the alarm (`WidgetAlarmScheduler`), and enqueues the worker.
 
-### BackgroundService Initialization
-```dart
-class BackgroundService {
-  static Future<void> initialize() async {
-    // Register HomeWidget callback for native events
-    await HomeWidget.registerInteractivityCallback(homeWidgetBackgroundCallback);
-  }
-}
-```
+### WidgetUtils helpers (`WidgetUtils.kt`)
 
-### Event-Driven Refresh
+- `isWeatherDataStale(context)` — true if `last_weather_update` is older than
+  the 15-min threshold (`STALE_THRESHOLD_MS`).
+- `isRerenderNeeded(context)` — true if a 30-min boundary was crossed since the
+  last render (the "now" indicator moved) **or** weather was fetched since.
+- `fetchWeather(context, pendingResult?)` — async fetch on a background
+  executor via `WeatherFetcher.fetchAndUpdateSync`; `fetchWeatherSync` is the
+  blocking variant for `WorkManager.doWork()`.
+- `rerenderAllWidgetsNative(context)` — sends `ACTION_APPWIDGET_UPDATE` to
+  **every** provider in `WIDGET_PROVIDERS` (48h + weekly).
+- `rerenderAllWidgetsIfNeeded(context)` — `rerenderAllWidgetsNative` guarded by
+  `isRerenderNeeded`.
 
-The widget responds to system events via broadcast receivers.
+### "Now" indicator updates
 
-#### Events Handled
-
-| Event | Android Action | Registration | Response |
-|-------|----------------|--------------|----------|
-| Device boot | `ACTION_BOOT_COMPLETED` | Manifest | Fetch if stale, re-render, schedule alarm |
-| Alarm (15 min) | Custom action | AlarmManager | Fetch if stale, re-render if needed |
-| Widget resize | `onAppWidgetOptionsChanged` | N/A | Re-render immediately |
-| Locale change | `ACTION_LOCALE_CHANGED` | Manifest | Re-render all widgets (no fetch) |
-| Timezone change | `ACTION_TIMEZONE_CHANGED` | Manifest | Re-render all widgets (no fetch) |
-| Periodic (~30 min) | `WeatherUpdateWorker` | WorkManager | Fetch if stale, re-render all widgets (has `NetworkType.CONNECTED` constraint) |
-| System fallback | `updatePeriodMillis` | Widget XML | Re-render (OEM-resistant) |
-
-**Important:** `LOCALE_CHANGED` and `TIMEZONE_CHANGED` use manifest-declared receivers because the app process is killed when locale/timezone changes. Runtime-registered receivers are lost when the process dies. These broadcasts are exempt from Android 8.0+ implicit broadcast restrictions.
-
-#### Two-Operation Pattern
-
-**Key design:** Separate weather fetching from chart rendering to minimize unnecessary API calls.
-
-```dart
-// HomeWidget background callback (handles native events)
-// IMPORTANT: URI hosts are always lowercase!
-@pragma('vm:entry-point')
-Future<void> homeWidgetBackgroundCallback(Uri? uri) async {
-  WidgetsFlutterBinding.ensureInitialized();  // Required for headless execution
-  switch (uri?.host.toLowerCase()) {
-    case 'weatherupdate':
-      await _updateWeatherData();  // Fetch + cache + render
-      break;
-    case 'chartrerender':
-      await _reRenderCharts(uri);  // Render from cache only (pass URI for params)
-      break;
-  }
-}
-
-// Re-render from cached data (no network call)
-// URI params: width, height, locale (all optional, fallback to cached/Platform values)
-Future<void> _reRenderCharts([Uri? uri]) async {
-  // Extract params from URI (more reliable than Platform.localeName in cold-start)
-  final uriWidth = int.tryParse(uri?.queryParameters['width'] ?? '');
-  final uriHeight = int.tryParse(uri?.queryParameters['height'] ?? '');
-  final uriLocale = uri?.queryParameters['locale'];
-
-  final cachedJson = await HomeWidget.getWidgetData<String>('cached_weather');
-  if (cachedJson == null) return;
-
-  final weather = WeatherData.fromJson(jsonDecode(cachedJson));
-  final latitude = await HomeWidget.getWidgetData<double>('cached_latitude') ?? 0.0;
-  final longitude = await HomeWidget.getWidgetData<double>('cached_longitude') ?? 0.0;
-
-  await _generateSvgCharts(weather, latitude, longitude,
-    uriWidth: uriWidth, uriHeight: uriHeight, uriLocale: uriLocale);
-  await HomeWidget.updateWidget(androidName: 'MeteogramWidgetProvider');
-}
-```
-
-**CRITICAL: Locale Passing via URI**
-
-`Platform.localeName` is stale in background isolates - it returns the locale from when the Flutter engine started, not the current system locale. When the system locale changes, native code must pass the current locale via URI query params:
-
-```kotlin
-// Native side: pass current locale in URI
-val locale = java.util.Locale.getDefault()
-val localeStr = "${locale.language}_${locale.country}"  // e.g., "en_US", "uk_UA"
-
-HomeWidgetBackgroundIntent.getBroadcast(
-    context,
-    Uri.parse("homewidget://chartReRender?width=$widthPx&height=$heightPx&locale=$localeStr")
-).send()
-```
-
-```dart
-// Dart side: prefer URI locale over Platform.localeName
-Locale systemLocale;
-if (uriLocale != null && uriLocale.isNotEmpty) {
-  final parts = uriLocale.split('_');
-  systemLocale = parts.length >= 2
-      ? Locale(parts[0], parts[1].toUpperCase())
-      : Locale(parts[0]);
-} else {
-  systemLocale = _getSystemLocale();  // Fallback to Platform.localeName
-}
-final usesFahrenheit = UnitsService.usesFahrenheit(systemLocale);
-```
-
-#### Staleness Check (Native Side)
-
-```kotlin
-// WidgetEventReceiver.kt
-private fun fetchWeatherIfStale(context: Context) {
-    val prefs = context.getSharedPreferences("HomeWidgetPreferences", Context.MODE_PRIVATE)
-    val lastUpdate = prefs.getLong("last_weather_update", 0)
-    val staleThreshold = 15 * 60 * 1000L // 15 minutes
-
-    if (System.currentTimeMillis() - lastUpdate > staleThreshold) {
-        triggerWeatherFetch(context)  // Via HomeWidgetBackgroundIntent
-    }
-}
-```
-
-#### Android Architecture
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                     MeteogramApplication                      │
-│  onCreate():                                                  │
-│  - Registers theme ContentObserver (Material You)             │
-│  - Schedules WidgetAlarmScheduler (15-min inexact alarm)      │
-│  - Enqueues WeatherUpdateWorker (WorkManager)                 │
-└─────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────┐
-│                     AndroidManifest.xml                       │
-│  Declares receivers for:                                      │
-│  - WidgetEventReceiver: LOCALE_CHANGED, TIMEZONE_CHANGED      │
-│  - WidgetAlarmReceiver: Custom alarm action                   │
-│  - BootCompletedReceiver: ACTION_BOOT_COMPLETED               │
-└─────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────┐
-│                 Update Trigger Sources                        │
-├─────────────────────────────────────────────────────────────┤
-│  BootCompletedReceiver    → Immediate refresh on boot         │
-│  WidgetAlarmReceiver      → Every ~15 min (catches up on wake)│
-│  WidgetEventReceiver      → Locale/timezone changes           │
-│  WeatherUpdateWorker      → Every ~30 min (network required)  │
-│  updatePeriodMillis       → Every 30 min (system fallback)    │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                       WidgetUtils                             │
-│  - isWeatherDataStale() → check 15-min threshold              │
-│  - fetchWeather() → WeatherFetcher → re-render on success     │
-│  - rerenderAllWidgetsIfNeeded() → check 30-min boundary       │
-│  - rerenderAllWidgetsNative() → trigger onUpdate()            │
-└─────────────────────────────────────────────────────────────┘
-```
-
-**Broadcast Registration Notes:**
-- `LOCALE_CHANGED`, `TIMEZONE_CHANGED`: Manifest (app killed on change, exempt from 8.0+ restrictions)
-- `BOOT_COMPLETED`: Manifest (requires RECEIVE_BOOT_COMPLETED permission)
-- Custom alarm action: Manifest for WidgetAlarmReceiver
-- Network availability: Handled by WorkManager with `NetworkType.CONNECTED` constraint
-
-#### "Now" Indicator Updates
-
-The "now" indicator snaps to the nearest hour at the 30-minute mark (e.g., 2:29 shows "now" at 2:00, 2:30 shows "now" at 3:00).
-
-Updates happen via layered mechanisms:
-1. **AlarmManager (15 min)** - Inexact alarm, catches up on wake if missed during sleep
-2. **WorkManager (~30 min)** - Network-dependent weather fetch
-3. **BOOT_COMPLETED** - Immediate refresh after device boot
-4. **updatePeriodMillis (30 min)** - System fallback, OEM-resistant
-
-Re-render is triggered only when needed:
-- A 30-minute boundary was crossed since last render (indicator position changed)
-- Weather data was updated (background fetch completed)
-
-This approach provides consistent behavior regardless of whether the app process is running.
-
-### main.dart setup
-```dart
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await BackgroundService.initialize();
-  runApp(const MyApp());
-}
-```
+The "now" indicator snaps to the nearest hour at the 30-minute mark (2:29 →
+"now" at 2:00; 2:30 → "now" at 3:00). Re-render fires only when the 30-min slot
+changes or weather was refreshed, so the indicator stays correct whether or not
+the app process is alive.
 
 ## Data Flow
 
-1. **App loads weather** from Open-Meteo API
-2. **SVG generated** in Dart via `SvgChartGenerator` (both light AND dark themes)
-3. **SVG files saved** to app documents folder (`meteogram_light.svg`, `meteogram_dark.svg`)
-4. **Widget data saved** via HomeWidget.saveWidgetData → SharedPreferences (SVG paths)
-5. **Native provider** reads SVG, renders via AndroidSVG → Bitmap → ImageView
-6. **In-app display** uses same pipeline via PlatformView (AndroidView)
-7. **Theme switching** handled automatically by Android resource system
+1. **App fetches weather**: `home_screen.dart` resolves location
+   (`LocationService` → native `LocationBridge`), then calls
+   `NativeSvgService.fetchWeather(lat, lon)` → Kotlin `WeatherFetcher` hits
+   Open-Meteo and caches the JSON to SharedPreferences.
+2. **In-app chart**: Dart calls `generateSvg` → Kotlin reads the cache and
+   returns an SVG string → `NativeSvgChartView` renders it.
+3. **Widget chart**: native `onUpdate` reads the cache, generates light+dark
+   SVGs with `SvgChartGenerator`, rasterises via AndroidSVG → `Bitmap` →
+   `ImageView`.
+4. **Theme switching**: handled by night-qualified resources (system) or
+   `applyThemeOverride` (explicit choice).
 
-**Key benefit:** SVG generation works in background isolates (no Flutter UI required), enabling true background updates.
-
-## Automatic Theme Switching
-
-Android widgets cannot receive `ACTION_CONFIGURATION_CHANGED` when the app is not running. Solution: dual bitmaps with night-qualified resources.
-
-### How It Works
-1. **Flutter renders both themes** - Light and dark charts are captured on every update
-2. **Widget has two ImageViews** - One for light (`widget_chart_light`), one for dark (`widget_chart_dark`)
-3. **Visibility via resources** - `values/integers.xml` shows light, `values-night/integers.xml` shows dark
-4. **Launcher handles switching** - When system theme changes, launcher re-inflates widget with new visibility values
-
-### Color System
-```dart
-// lib/theme/app_theme.dart
-class MeteogramColors {
-  static const light = MeteogramColors(
-    temperatureLine: Color(0xFFFF6B6B),
-    precipitationBar: Color(0xFF4ECDC4),
-    // ... full palette for light theme
-  );
-
-  static const dark = MeteogramColors(
-    temperatureLine: Color(0xFFFF7675),
-    precipitationBar: Color(0xFF00CEC9),
-    // ... full palette for dark theme
-  );
-}
-```
-
-### Trade-off
-Doubles storage (two PNG files instead of one), but enables instant theme switching without any app code running.
+**Key benefit:** SVG generation runs entirely in Kotlin, so background updates
+need no Flutter engine.
 
 ## Daylight Calculation
 
-The meteogram displays daylight intensity as yellow bars, calculated using scientifically-grounded formulas.
+The meteogram displays daylight intensity as yellow bars, calculated using
+scientifically-grounded formulas (implemented natively in `SvgChartGenerator.kt`).
 
 ### Solar Elevation (Astronomical)
 
@@ -557,7 +271,7 @@ Reference: Meeus, J. (1991). *Astronomical Algorithms*. Willmann-Bell.
 
 The simple `elevation / 90°` formula gives zero light at sunrise/sunset, which is incorrect. Instead, we use an atmospheric model that accounts for optical air mass:
 
-```dart
+```
 // Atmospheric refraction constant
 x = 753.66156
 
@@ -633,9 +347,9 @@ Reference: Rainfall-MOR relationship studies, e.g., https://doi.org/10.20937/ATM
 
 ### Combined Formula
 
-```dart
+```
 // Clear-sky illuminance from atmospheric model (0 to ~130,000 lux)
-clearSkyLux = _clearSkyIlluminance(solarElevation)
+clearSkyLux = clearSkyIlluminance(solarElevation)
 
 // Normalize to 0-1 range
 potential = clearSkyLux / 130000
@@ -659,31 +373,26 @@ The square root scaling provides a gentle boost to small values so winter/overca
 
 ### Logcat Commands
 ```bash
-# Widget errors
+# 48h widget
 adb logcat | grep -i "MeteogramWidget"
+
+# Weekly widget
+adb logcat | grep -i "MeteogramWeeklyWidget"
 
 # Layout inflation errors
 adb logcat | grep -i "Error inflating"
-
-# Home widget messages
-adb logcat | grep -i "HomeWidget"
 ```
 
 ### Common Issues
 
 | Issue | Cause | Solution |
 |-------|-------|----------|
-| "Can't load widget" | Unsupported view in layout | Remove View/Space elements |
-| Widget shows placeholder | Image path not saved | Check saveWidgetData call |
-| Temperature shows "--°" | No weather data | Check API call |
-| Widget not updating | WorkManager not enqueued | Check WeatherUpdateWorker.enqueue in MeteogramApplication |
+| "Can't load widget" | Unsupported view in layout, or `WidgetTheme` unavailable below API 29 | Remove `View`/`Space`; keep `minSdk ≥ 29` |
+| Widget shows "Tap to load forecast" | No weather cached yet | Open the app once (or wait for a background fetch with a stored location) |
+| Widget not updating | Alarm/worker not scheduled | Check `MeteogramApplication.onCreate` scheduled the alarm and enqueued `WeatherUpdateWorker` |
+| Weekly widget blank but 48h works | Weekly view slice empty | Check `WeatherData.getWeeklyView()` and that the fetch covers the full forecast window |
 
-## iOS Widget (Not Implemented)
+## Platform
 
-iOS widget extension would require:
-1. Create WidgetKit extension in Xcode
-2. Add App Groups capability
-3. Implement TimelineProvider in Swift
-4. Share data via UserDefaults with shared app group
-
-The current implementation focuses on Android.
+Android-only. There is no iOS widget; an iOS port would require a WidgetKit
+extension, a `TimelineProvider`, and an App Group for shared storage.

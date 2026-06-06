@@ -105,7 +105,7 @@ lib/
 │   └── home_screen.dart          # Main app screen (both chart panels)
 ├── services/
 │   ├── location_service.dart     # GPS + city search + reverse geocoding
-│   ├── widget_service.dart       # Home widget updates via home_widget
+│   ├── widget_service.dart       # Triggers native widget refresh (WidgetStore)
 │   ├── native_svg_service.dart   # Method channel to Kotlin (SVG / weather / cache)
 │   ├── units_service.dart        # Temperature unit and 12/24h logic
 │   └── material_you_service.dart # Material You color pass-through
@@ -184,7 +184,7 @@ back in their preferred language.
 ### Android Widget
 
 The home screen widgets use:
-- `HomeWidgetProvider` from the home_widget package
+- `AppWidgetProvider` (native; two providers — 48h and 7-day weekly)
 - `RemoteViews` for native Android widget rendering
 - SVG chart generated in Kotlin (`SvgChartGenerator.kt`) and rasterised via AndroidSVG
 - AlarmManager (~15 min inexact), WorkManager (~30 min with network constraint),
@@ -248,15 +248,15 @@ Supported locales are auto-detected from ARB files.
 
 | Package | Purpose |
 |---------|---------|
-| home_widget | Android/iOS widget support |
-| geolocator | GPS location |
-| geocoding | Reverse geocoding (city names) |
-| http | API requests |
-| path_provider | File storage |
-| shared_preferences | Settings storage |
+| http | API requests (weather, city search) |
 | intl | Locale-aware formatting |
+| flutter_localizations | i18n framework |
 
-Material You theming uses native Android color extraction (`MaterialYouColorExtractor.kt`).
+Location (GPS + reverse geocoding), the widget KV bridge, persistent storage, and
+Material You theming are all **native** (over the `org.bortnik.meteogram/svg` method
+channel) — no `home_widget`, `geolocator`, `geocoding`, `path_provider`, or
+`shared_preferences` packages. This keeps the project free of any Kotlin-Gradle-Plugin
+plugin, as required by AGP-9 built-in Kotlin.
 
 ## License
 
@@ -273,5 +273,4 @@ Contributions welcome! Please read the existing code style and test your changes
 ## Acknowledgments
 
 - Weather data: [Open-Meteo](https://open-meteo.com/)
-- Widget support: [home_widget](https://pub.dev/packages/home_widget)
 - SVG rendering: [AndroidSVG](https://bigbadaboom.github.io/androidsvg/)

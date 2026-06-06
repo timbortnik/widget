@@ -23,11 +23,6 @@ updates:
     commit-message:
       prefix: "chore"
       include: "scope"
-    # Ignore home_widget updates (intentionally pinned)
-    ignore:
-      - dependency-name: "home_widget"
-        # Ignore all versions - we're pinned to 0.8.0 for functional reasons
-        # See docs/HOME_WIDGET_VERSION_ISSUE.md
     # Group all minor/patch updates into a single PR
     groups:
       dev-dependencies:

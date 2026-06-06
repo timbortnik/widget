@@ -115,7 +115,7 @@ widgets slice their own view from this cache — the 48h chart takes 6h past +
 
 ### LocationService (`lib/services/location_service.dart`)
 Device location handling with fallback. Responsibilities:
-- Get GPS coordinates via geolocator
+- Get GPS coordinates via native `LocationProvider` (through `LocationBridge` over the method channel)
 - Handle permissions gracefully (no exceptions thrown)
 - Reverse geocoding for city name resolution
 - City search via Open-Meteo geocoding API
@@ -250,20 +250,21 @@ catch (e) {
 ### Flutter/Dart
 | Package | Purpose |
 |---------|---------|
-| (native method channel) | Flutter ↔ native widget bridge — `WidgetStore` over `org.bortnik.meteogram/svg` |
-| geolocator | GPS location |
-| geocoding | Reverse geocoding (coordinates → city name) |
-| http | API requests (weather, city search) |
-| path_provider | App documents for SVG files |
-| shared_preferences | Settings storage |
-| flutter_localizations | i18n framework |
+| http | API requests (weather fetch, city search) |
 | intl | Locale-aware time formatting (DateFormat.j) |
+| flutter_localizations | i18n framework |
+| mocktail / flutter_lints | dev: test mocks and lints |
 
-Material You theming uses native Android color extraction (`MaterialYouColorExtractor.kt`).
+GPS, reverse geocoding, the widget KV bridge, and persistent storage are all
+**native** (over the `org.bortnik.meteogram/svg` method channel) — there are no
+`geolocator`, `geocoding`, `home_widget`, `path_provider`, or
+`shared_preferences` packages. This keeps the project free of any
+Kotlin-Gradle-Plugin plugin, as required by AGP-9 built-in Kotlin. Material You
+theming uses native color extraction (`MaterialYouColorExtractor.kt`).
 
 ### Android Native
 | Library | Purpose |
 |---------|---------|
 | com.caverock:androidsvg-aar | SVG parsing and rendering |
 
-See `docs/NATIVE_SVG_RENDERING.md` for detailed rendering architecture.
+See `docs/ai/widget.md` for the widget rendering pipeline and background refresh.

@@ -22,7 +22,7 @@ Dependabot is **enabled by default** when you push `.github/dependabot.yml`. It 
 
 ✅ **Scan dependencies weekly** for known vulnerabilities
 ✅ **Create PRs automatically** to update vulnerable packages
-✅ **Respect ignore rules** (e.g., `home_widget` stays pinned)
+✅ **Respect ignore rules** for any intentionally pinned dependencies
 ✅ **Group updates** to reduce PR noise
 
 **What to expect:**
@@ -185,29 +185,10 @@ Repository → Security tab
 
 ---
 
-## Special Case: home_widget
-
-This project intentionally pins `home_widget: 0.8.0` due to a functional regression in 0.9.0+. See [docs/HOME_WIDGET_VERSION_ISSUE.md](HOME_WIDGET_VERSION_ISSUE.md).
-
-**Dependabot configuration:**
-```yaml
-ignore:
-  - dependency-name: "home_widget"
-    # Pinned to 0.8.0 - see HOME_WIDGET_VERSION_ISSUE.md
-```
-
-**If Dependabot suggests home_widget update:**
-1. Check if 0.9.0+ fixed the WorkManager delay issue
-2. Test widget resize on physical device
-3. Only merge if resize works immediately
-
----
-
 ## Security Scanning Results
 
 **Current Status (as of 2026-01-14):**
 - ✅ No known vulnerabilities in dependencies
-- ✅ `shared_preferences_android` 2.4.18 (patched, CVE fixed)
 - ✅ `http` 1.6.0 (patched, header injection fixed)
 - ✅ No secrets detected
 - ✅ Flutter analyzer: 0 issues
@@ -233,7 +214,7 @@ ignore:
 
 ### "Dependabot updating pinned dependency"
 - Add to `ignore` list in `dependabot.yml`
-- Example already included for `home_widget`
+- Add the dependency to the `ignore` list with a reason comment
 
 ---
 
