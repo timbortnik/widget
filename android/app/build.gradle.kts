@@ -20,7 +20,12 @@ android {
 
     defaultConfig {
         applicationId = "org.bortnik.meteogram"
-        minSdk = flutter.minSdkVersion
+        // minSdk 30 (Android 11). The hard floor is 29: the home-screen widget's theme
+        // parent android:Theme.DeviceDefault.DayNight requires API 29, so on API 24-28
+        // the launcher couldn't inflate the widget (broken widget). API 30 additionally
+        // provides LocationListener default callbacks (see LocationProvider). Overrides
+        // Flutter's default minSdk (24); do not lower below 29 without re-checking WidgetTheme.
+        minSdk = 30
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
