@@ -1,4 +1,8 @@
+const fs = require('fs');
 const path = require('path');
+
+// Failure diagnostics (screenshot + UI tree) land here; uploaded as a CI artifact.
+const ARTIFACTS = path.resolve(__dirname, 'artifacts');
 
 // The test consumes a PREBUILT apk by path — it has no knowledge of Flutter and
 // does not build anything. Override with APP_PATH to point at any apk.
@@ -46,4 +50,25 @@ exports.config = {
       'appium:enforceAppInstall': true,
     },
   ],
+
+  // On a failed test, capture a screenshot + the UiAutomator2 page source so CI
+  // can show what the app looked like (e.g. stuck on the loading spinner vs an
+  // error screen). Files are uploaded as the `e2e-diagnostics` artifact.
+  afterTest: async function (test, _context, { error }) {
+    if (!error) return;
+    fs.mkdirSync(ARTIFACTS, { recursive: true });
+    const base = `${test.parent} - ${test.title}`
+      .replace(/[^a-z0-9]+/gi, '_')
+      .slice(0, 120);
+    try {
+      await browser.saveScreenshot(path.join(ARTIFACTS, `${base}.png`));
+    } catch (e) {
+      console.log('afterTest: screenshot failed:', e.message);
+    }
+    try {
+      fs.writeFileSync(path.join(ARTIFACTS, `${base}.xml`), await browser.getPageSource());
+    } catch (e) {
+      console.log('afterTest: page source failed:', e.message);
+    }
+  },
 };
