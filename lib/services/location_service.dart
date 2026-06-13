@@ -18,6 +18,13 @@ class LocationService {
   static const String _useGpsKey = 'use_gps';
   static const String _sourceKey = 'location_source';
 
+  // Last location successfully resolved from GPS. Kept separate from the manual
+  // [_latKey]/[_lonKey] so a revoked permission / disabled service / cold-start
+  // timeout falls back here (the user's real location) instead of Berlin.
+  static const String _lastGpsLatKey = 'last_gps_latitude';
+  static const String _lastGpsLonKey = 'last_gps_longitude';
+  static const String _lastGpsCityKey = 'last_gps_city';
+
   /// HTTP client for making requests. Defaults to standard client.
   final http.Client _client;
 
@@ -34,12 +41,14 @@ class LocationService {
     return await getSavedLocationFromWidget() ?? _getGpsLocation();
   }
 
-  /// Get location from GPS, with fallback to default location (Berlin).
+  /// Get location from GPS. When no fresh fix is available (services off,
+  /// permission revoked, or timeout) it reuses the last GPS location we
+  /// resolved, and only falls back to the default (Berlin) if we never had one.
   Future<LocationData> _getGpsLocation() async {
     // Check if location services are enabled
     final serviceEnabled = await LocationBridge.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      return _getFallbackLocation();
+      return _lastGpsOrFallback();
     }
 
     // Check permission, prompting once if it's merely denied
@@ -49,7 +58,7 @@ class LocationService {
     }
     if (permission != LocationPermissionStatus.granted) {
       // denied or deniedForever
-      return _getFallbackLocation();
+      return _lastGpsOrFallback();
     }
 
     // Current position (native one-shot, low accuracy, 15s timeout). Returns null
@@ -65,13 +74,15 @@ class LocationService {
       return _toLocationData(lastPosition.latitude, lastPosition.longitude);
     }
 
-    // Final fallback to default location
-    return LocationData(
-      latitude: kDefaultLatitude,
-      longitude: kDefaultLongitude,
-      source: LocationSource.manual,
-      city: kDefaultCity,
-    );
+    // No fresh fix: prefer the last GPS location over the Berlin default.
+    return _lastGpsOrFallback();
+  }
+
+  /// Prefer the last GPS location we successfully resolved; otherwise the
+  /// default (Berlin). Used whenever a fresh GPS fix can't be obtained so a
+  /// transient outage doesn't bounce the user (and the widget cache) to Berlin.
+  Future<LocationData> _lastGpsOrFallback() async {
+    return await _getLastGpsLocation() ?? await _getFallbackLocation();
   }
 
   /// Build a GPS [LocationData], resolving a city name via reverse geocoding
@@ -81,9 +92,36 @@ class LocationService {
     if (city == null || city.isEmpty) {
       city = _getTestCityName(latitude, longitude);
     }
+    // Remember this fix so a later GPS outage can reuse it instead of Berlin.
+    await _saveLastGpsLocation(latitude, longitude, city);
     return LocationData(
       latitude: latitude,
       longitude: longitude,
+      source: LocationSource.gps,
+      city: city,
+    );
+  }
+
+  /// Persist the most recent GPS-resolved location to the shared widget store.
+  Future<void> _saveLastGpsLocation(double latitude, double longitude, String? city) async {
+    await WidgetStore.saveWidgetData<double>(_lastGpsLatKey, latitude);
+    await WidgetStore.saveWidgetData<double>(_lastGpsLonKey, longitude);
+    if (city != null && city.isNotEmpty) {
+      await WidgetStore.saveWidgetData<String>(_lastGpsCityKey, city);
+    }
+  }
+
+  /// Read the last GPS-resolved location, or null if none has been stored yet.
+  Future<LocationData?> _getLastGpsLocation() async {
+    final lat = await WidgetStore.getWidgetData<double>(_lastGpsLatKey);
+    final lon = await WidgetStore.getWidgetData<double>(_lastGpsLonKey);
+    if (lat == null || lon == null) {
+      return null;
+    }
+    final city = await WidgetStore.getWidgetData<String>(_lastGpsCityKey);
+    return LocationData(
+      latitude: lat,
+      longitude: lon,
       source: LocationSource.gps,
       city: city,
     );

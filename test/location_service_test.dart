@@ -18,31 +18,56 @@ http.Response utf8Response(String body, int statusCode) {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  // Mock the native widget-store channel
+  // Mock the native widget-store + location-bridge channel.
+  // The `mock*` fields below let individual tests drive the native GPS state.
   final Map<String, dynamic> homeWidgetData = {};
+  var mockServiceEnabled = true;
+  var mockPermission = 'granted';
+  Map<String, double>? mockCurrentPosition;
+  Map<String, double>? mockLastKnownPosition;
+  String? mockGeocodeCity;
   TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
       .setMockMethodCallHandler(const MethodChannel('org.bortnik.meteogram/svg'), (call) async {
-    if (call.method == 'saveWidgetData') {
-      final args = call.arguments as Map;
-      final id = args['id'] as String?;
-      final data = args['data'];
-      if (id != null) {
-        if (data == null) {
-          homeWidgetData.remove(id);
-        } else {
-          homeWidgetData[id] = data;
+    switch (call.method) {
+      case 'saveWidgetData':
+        final args = call.arguments as Map;
+        final id = args['id'] as String?;
+        final data = args['data'];
+        if (id != null) {
+          if (data == null) {
+            homeWidgetData.remove(id);
+          } else {
+            homeWidgetData[id] = data;
+          }
         }
-      }
-      return true;
-    } else if (call.method == 'getWidgetData') {
-      final args = call.arguments as Map;
-      final id = args['id'] as String?;
-      return id != null ? homeWidgetData[id] : null;
+        return true;
+      case 'getWidgetData':
+        final args = call.arguments as Map;
+        final id = args['id'] as String?;
+        return id != null ? homeWidgetData[id] : null;
+      case 'isLocationServiceEnabled':
+        return mockServiceEnabled;
+      case 'checkLocationPermission':
+      case 'requestLocationPermission':
+        return mockPermission;
+      case 'getCurrentPosition':
+        return mockCurrentPosition;
+      case 'getLastKnownPosition':
+        return mockLastKnownPosition;
+      case 'reverseGeocode':
+        return mockGeocodeCity;
     }
     return null;
   });
 
-  setUp(homeWidgetData.clear);
+  setUp(() {
+    homeWidgetData.clear();
+    mockServiceEnabled = true;
+    mockPermission = 'granted';
+    mockCurrentPosition = null;
+    mockLastKnownPosition = null;
+    mockGeocodeCity = null;
+  });
 
   group('CitySearchResult', () {
     test('fromJson parses all fields', () {
@@ -704,6 +729,84 @@ void main() {
 
       // All results invalid - should return empty list
       expect(results, isEmpty);
+    });
+  });
+
+  group('LocationService GPS fallback', () {
+    LocationService newService() =>
+        LocationService(client: MockClient((r) async => http.Response('', 200)));
+
+    test('persists the last GPS location on a successful fix', () async {
+      mockCurrentPosition = {'latitude': 50.45, 'longitude': 30.52};
+      mockGeocodeCity = 'Kyiv';
+
+      final location = await newService().getLocation();
+
+      expect(location.source, LocationSource.gps);
+      expect(location.city, 'Kyiv');
+      expect(homeWidgetData['last_gps_latitude'], closeTo(50.45, 0.001));
+      expect(homeWidgetData['last_gps_longitude'], closeTo(30.52, 0.001));
+      expect(homeWidgetData['last_gps_city'], 'Kyiv');
+    });
+
+    test('reuses last GPS location when permission is revoked (not Berlin)', () async {
+      // First, a successful fix stores the GPS location.
+      mockCurrentPosition = {'latitude': 50.45, 'longitude': 30.52};
+      mockGeocodeCity = 'Kyiv';
+      await newService().getLocation();
+
+      // Permission is later revoked and no fresh fix is available.
+      mockPermission = 'deniedForever';
+      mockCurrentPosition = null;
+      mockLastKnownPosition = null;
+
+      final location = await newService().getLocation();
+
+      expect(location.latitude, closeTo(50.45, 0.001));
+      expect(location.longitude, closeTo(30.52, 0.001));
+      expect(location.city, 'Kyiv');
+      expect(location.source, LocationSource.gps);
+      expect(location.latitude, isNot(closeTo(kDefaultLatitude, 0.001)));
+    });
+
+    test('reuses last GPS location when location services are disabled', () async {
+      mockCurrentPosition = {'latitude': 50.45, 'longitude': 30.52};
+      mockGeocodeCity = 'Kyiv';
+      await newService().getLocation();
+
+      mockServiceEnabled = false;
+      mockCurrentPosition = null;
+
+      final location = await newService().getLocation();
+
+      expect(location.latitude, closeTo(50.45, 0.001));
+      expect(location.source, LocationSource.gps);
+    });
+
+    test('reuses last GPS location when a fresh fix times out', () async {
+      mockCurrentPosition = {'latitude': 50.45, 'longitude': 30.52};
+      mockGeocodeCity = 'Kyiv';
+      await newService().getLocation();
+
+      // Permission still granted, but both the one-shot and last-known fail.
+      mockCurrentPosition = null;
+      mockLastKnownPosition = null;
+
+      final location = await newService().getLocation();
+
+      expect(location.latitude, closeTo(50.45, 0.001));
+      expect(location.source, LocationSource.gps);
+    });
+
+    test('falls back to Berlin when no GPS location was ever stored', () async {
+      mockPermission = 'deniedForever';
+
+      final location = await newService().getLocation();
+
+      expect(location.latitude, closeTo(kDefaultLatitude, 0.001));
+      expect(location.longitude, closeTo(kDefaultLongitude, 0.001));
+      expect(location.city, kDefaultCity);
+      expect(location.source, LocationSource.manual);
     });
   });
 
