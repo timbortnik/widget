@@ -237,7 +237,7 @@
     "description": "Accessibility label for the hourly meteogram chart"
   },
 
-  "weeklyChartLabel": "14-day weather forecast chart",
+  "weeklyChartLabel": "7-day weather forecast chart",
   "@weeklyChartLabel": {
     "description": "Accessibility label for the weekly meteogram chart"
   },

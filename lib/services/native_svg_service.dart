@@ -141,7 +141,7 @@ class NativeSvgService {
   /// The native generator reads weather data from SharedPreferences,
   /// so weather must be cached before calling this.
   ///
-  /// [mode] selects which chart to render: 'hourly' (default, 48h) or 'weekly' (14 days).
+  /// [mode] selects which chart to render: 'hourly' (default, 48h) or 'weekly' (7 days).
   static Future<String?> generateSvg({
     required int width,
     required int height,

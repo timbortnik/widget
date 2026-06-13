@@ -53,7 +53,7 @@ describe('Meteograph — accessibility (black-box)', () => {
 
     it('chart images are labeled (native content-desc)', async () => {
       const hourly = await $$('android=new UiSelector().descriptionContains("48-hour")');
-      const weekly = await $$('android=new UiSelector().descriptionContains("14-day")');
+      const weekly = await $$('android=new UiSelector().descriptionContains("7-day")');
       console.log(`  charts: hourly=${hourly.length} weekly=${weekly.length}`);
       expect(hourly.length).toBeGreaterThanOrEqual(1);
       expect(weekly.length).toBeGreaterThanOrEqual(1);

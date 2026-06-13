@@ -14,7 +14,7 @@ describe('Meteograph — home happy path', () => {
     // Both meteogram charts render (located by their native content-desc, since
     // a PlatformView has no resource-id).
     const hourly = await $$('android=new UiSelector().descriptionContains("48-hour")');
-    const weekly = await $$('android=new UiSelector().descriptionContains("14-day")');
+    const weekly = await $$('android=new UiSelector().descriptionContains("7-day")');
     expect(hourly.length).toBeGreaterThanOrEqual(1);
     expect(weekly.length).toBeGreaterThanOrEqual(1);
   });

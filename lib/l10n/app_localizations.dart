@@ -397,7 +397,7 @@ abstract class AppLocalizations {
   /// Accessibility label for the weekly meteogram chart
   ///
   /// In en, this message translates to:
-  /// **'14-day weather forecast chart'**
+  /// **'7-day weather forecast chart'**
   String get weeklyChartLabel;
 
   /// Title for the theme chooser

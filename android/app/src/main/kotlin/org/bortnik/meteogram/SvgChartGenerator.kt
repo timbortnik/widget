@@ -471,7 +471,7 @@ class SvgChartGenerator {
 
         // Anchor labels inside the "past" region but keep them clear of the
         // left edge. The plain nowFraction/2.5 formula is near zero when the
-        // past region is tiny (e.g. weekly mode with 6h past in 14 days),
+        // past region is tiny (e.g. weekly mode with 6h past in 7 days),
         // which pushes the labels off the canvas — clamp to a sane minimum.
         val centerX = (nowFraction / 2.5).coerceAtLeast(0.05) * width
 

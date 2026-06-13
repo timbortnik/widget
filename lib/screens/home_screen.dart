@@ -714,7 +714,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                         ],
                       ),
                       const SizedBox(height: 16),
-                      // Meteograph charts - 48h on top/left, 14-day stacked/next to it.
+                      // Meteograph charts - 48h on top/left, 7-day stacked/next to it.
                       // Portrait = Column, landscape = Row (each chart gets half width).
                       // Use device orientation (not layout constraints), since the enclosing
                       // card is width-constrained and would otherwise always look portrait.

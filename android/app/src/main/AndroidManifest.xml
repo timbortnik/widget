@@ -56,7 +56,7 @@
                 android:resource="@xml/meteogram_widget_info" />
         </receiver>
 
-        <!-- Meteograph 14-day Home Screen Widget -->
+        <!-- Meteograph weekly (7-day) Home Screen Widget -->
         <receiver
             android:name=".MeteogramWeeklyWidgetProvider"
             android:exported="true">

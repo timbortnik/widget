@@ -139,7 +139,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get hourlyChartLabel => '48-hour weather forecast chart';
 
   @override
-  String get weeklyChartLabel => '14-day weather forecast chart';
+  String get weeklyChartLabel => '7-day weather forecast chart';
 
   @override
   String get theme => 'थीम';
