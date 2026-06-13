@@ -1,5 +1,8 @@
 {
   "@@locale": "ro",
+  "clearSearch": "Șterge căutarea",
+  "hourlyChartLabel": "Grafic cu prognoza meteo pe 48 de ore",
+  "weeklyChartLabel": "Grafic cu prognoza meteo pe 7 zile",
   "appTitle": "Meteograph",
   "temperature": "Temperatură",
   "precipitation": "Precipitații",

@@ -1,5 +1,8 @@
 {
   "@@locale": "sq",
+  "clearSearch": "Pastro kërkimin",
+  "hourlyChartLabel": "Grafiku i parashikimit të motit për 48 orë",
+  "weeklyChartLabel": "Grafiku i parashikimit të motit për 7 ditë",
   "appTitle": "Meteograph",
   "temperature": "Temperatura",
   "precipitation": "Reshjet",

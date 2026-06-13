@@ -1,5 +1,8 @@
 {
   "@@locale": "hr",
+  "clearSearch": "Očisti pretraživanje",
+  "hourlyChartLabel": "Grafikon vremenske prognoze za 48 sati",
+  "weeklyChartLabel": "Grafikon vremenske prognoze za 7 dana",
   "appTitle": "Meteograph",
   "temperature": "Temperatura",
   "precipitation": "Oborine",

@@ -1,5 +1,8 @@
 {
   "@@locale": "ko",
+  "clearSearch": "검색 지우기",
+  "hourlyChartLabel": "48시간 일기 예보 차트",
+  "weeklyChartLabel": "7일 일기 예보 차트",
   "appTitle": "Meteograph",
   "temperature": "기온",
   "precipitation": "강수량",

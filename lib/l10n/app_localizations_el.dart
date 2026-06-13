@@ -134,13 +134,13 @@ class AppLocalizationsEl extends AppLocalizations {
   String get searchCityHint => 'Αναζήτηση πόλης...';
 
   @override
-  String get clearSearch => 'Clear search';
+  String get clearSearch => 'Εκκαθάριση αναζήτησης';
 
   @override
-  String get hourlyChartLabel => '48-hour weather forecast chart';
+  String get hourlyChartLabel => 'Γράφημα πρόγνωσης καιρού 48 ωρών';
 
   @override
-  String get weeklyChartLabel => '7-day weather forecast chart';
+  String get weeklyChartLabel => 'Γράφημα πρόγνωσης καιρού 7 ημερών';
 
   @override
   String get theme => 'Θέμα';

@@ -1,5 +1,8 @@
 {
   "@@locale": "pt",
+  "clearSearch": "Limpar pesquisa",
+  "hourlyChartLabel": "Gráfico de previsão do tempo de 48 horas",
+  "weeklyChartLabel": "Gráfico de previsão do tempo de 7 dias",
   "appTitle": "Meteograph",
   "temperature": "Temperatura",
   "precipitation": "Precipitação",

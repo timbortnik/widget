@@ -1,5 +1,8 @@
 {
   "@@locale": "ka",
+  "clearSearch": "ძიების გასუფთავება",
+  "hourlyChartLabel": "ამინდის 48-საათიანი პროგნოზის დიაგრამა",
+  "weeklyChartLabel": "ამინდის 7-დღიანი პროგნოზის დიაგრამა",
   "appTitle": "Meteograph",
   "temperature": "ტემპერატურა",
   "precipitation": "ნალექი",

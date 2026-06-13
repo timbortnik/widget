@@ -133,13 +133,13 @@ class AppLocalizationsSv extends AppLocalizations {
   String get searchCityHint => 'Sök stad...';
 
   @override
-  String get clearSearch => 'Clear search';
+  String get clearSearch => 'Rensa sökning';
 
   @override
-  String get hourlyChartLabel => '48-hour weather forecast chart';
+  String get hourlyChartLabel => '48-timmars väderprognosdiagram';
 
   @override
-  String get weeklyChartLabel => '7-day weather forecast chart';
+  String get weeklyChartLabel => '7-dagars väderprognosdiagram';
 
   @override
   String get theme => 'Tema';

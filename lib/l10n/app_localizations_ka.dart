@@ -133,13 +133,13 @@ class AppLocalizationsKa extends AppLocalizations {
   String get searchCityHint => 'მოძებნე ქალაქი...';
 
   @override
-  String get clearSearch => 'Clear search';
+  String get clearSearch => 'ძიების გასუფთავება';
 
   @override
-  String get hourlyChartLabel => '48-hour weather forecast chart';
+  String get hourlyChartLabel => 'ამინდის 48-საათიანი პროგნოზის დიაგრამა';
 
   @override
-  String get weeklyChartLabel => '7-day weather forecast chart';
+  String get weeklyChartLabel => 'ამინდის 7-დღიანი პროგნოზის დიაგრამა';
 
   @override
   String get theme => 'თემა';

@@ -1,5 +1,8 @@
 {
   "@@locale": "da",
+  "clearSearch": "Ryd søgning",
+  "hourlyChartLabel": "48-timers vejrudsigtsdiagram",
+  "weeklyChartLabel": "7-dages vejrudsigtsdiagram",
   "appTitle": "Meteograph",
   "temperature": "Temperatur",
   "precipitation": "Nedbør",

@@ -134,13 +134,13 @@ class AppLocalizationsTa extends AppLocalizations {
   String get searchCityHint => 'நகரத்தைத் தேடு...';
 
   @override
-  String get clearSearch => 'Clear search';
+  String get clearSearch => 'தேடலை அழி';
 
   @override
-  String get hourlyChartLabel => '48-hour weather forecast chart';
+  String get hourlyChartLabel => '48 மணிநேர வானிலை முன்னறிவிப்பு விளக்கப்படம்';
 
   @override
-  String get weeklyChartLabel => '7-day weather forecast chart';
+  String get weeklyChartLabel => '7 நாள் வானிலை முன்னறிவிப்பு விளக்கப்படம்';
 
   @override
   String get theme => 'தீம்';

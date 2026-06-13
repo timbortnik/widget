@@ -131,13 +131,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get searchCityHint => '도시 검색...';
 
   @override
-  String get clearSearch => 'Clear search';
+  String get clearSearch => '검색 지우기';
 
   @override
-  String get hourlyChartLabel => '48-hour weather forecast chart';
+  String get hourlyChartLabel => '48시간 일기 예보 차트';
 
   @override
-  String get weeklyChartLabel => '7-day weather forecast chart';
+  String get weeklyChartLabel => '7일 일기 예보 차트';
 
   @override
   String get theme => '테마';

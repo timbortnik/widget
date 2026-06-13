@@ -1,5 +1,8 @@
 {
   "@@locale": "uk",
+  "clearSearch": "Очистити пошук",
+  "hourlyChartLabel": "Графік прогнозу погоди на 48 годин",
+  "weeklyChartLabel": "Графік прогнозу погоди на 7 днів",
   "appTitle": "Meteograph",
   "@appTitle": {
     "description": "App name shown in title bar and widget"

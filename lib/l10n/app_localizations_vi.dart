@@ -134,13 +134,13 @@ class AppLocalizationsVi extends AppLocalizations {
   String get searchCityHint => 'Tìm thành phố...';
 
   @override
-  String get clearSearch => 'Clear search';
+  String get clearSearch => 'Xóa tìm kiếm';
 
   @override
-  String get hourlyChartLabel => '48-hour weather forecast chart';
+  String get hourlyChartLabel => 'Biểu đồ dự báo thời tiết 48 giờ';
 
   @override
-  String get weeklyChartLabel => '7-day weather forecast chart';
+  String get weeklyChartLabel => 'Biểu đồ dự báo thời tiết 7 ngày';
 
   @override
   String get theme => 'Giao diện';

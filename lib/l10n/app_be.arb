@@ -1,5 +1,8 @@
 {
   "@@locale": "be",
+  "clearSearch": "Ачысціць пошук",
+  "hourlyChartLabel": "Графік прагнозу надвор'я на 48 гадзін",
+  "weeklyChartLabel": "Графік прагнозу надвор'я на 7 дзён",
   "appTitle": "Meteograph",
   "temperature": "Тэмпература",
   "precipitation": "Ападкі",

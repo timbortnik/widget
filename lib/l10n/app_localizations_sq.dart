@@ -134,13 +134,13 @@ class AppLocalizationsSq extends AppLocalizations {
   String get searchCityHint => 'Kërko qytet...';
 
   @override
-  String get clearSearch => 'Clear search';
+  String get clearSearch => 'Pastro kërkimin';
 
   @override
-  String get hourlyChartLabel => '48-hour weather forecast chart';
+  String get hourlyChartLabel => 'Grafiku i parashikimit të motit për 48 orë';
 
   @override
-  String get weeklyChartLabel => '7-day weather forecast chart';
+  String get weeklyChartLabel => 'Grafiku i parashikimit të motit për 7 ditë';
 
   @override
   String get theme => 'Tema';

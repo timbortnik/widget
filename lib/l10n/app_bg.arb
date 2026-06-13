@@ -1,5 +1,8 @@
 {
   "@@locale": "bg",
+  "clearSearch": "Изчистване на търсенето",
+  "hourlyChartLabel": "Графика на прогнозата за времето за 48 часа",
+  "weeklyChartLabel": "Графика на прогнозата за времето за 7 дни",
   "appTitle": "Meteograph",
   "temperature": "Температура",
   "precipitation": "Валежи",

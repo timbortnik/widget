@@ -1,5 +1,8 @@
 {
   "@@locale": "no",
+  "clearSearch": "Tøm søk",
+  "hourlyChartLabel": "48-timers værvarseldiagram",
+  "weeklyChartLabel": "7-dagers værvarseldiagram",
   "appTitle": "Meteograph",
   "temperature": "Temperatur",
   "precipitation": "Nedbør",

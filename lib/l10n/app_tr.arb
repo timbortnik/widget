@@ -1,5 +1,8 @@
 {
   "@@locale": "tr",
+  "clearSearch": "Aramayı temizle",
+  "hourlyChartLabel": "48 saatlik hava durumu tahmin grafiği",
+  "weeklyChartLabel": "7 günlük hava durumu tahmin grafiği",
   "appTitle": "Meteograph",
   "temperature": "Sıcaklık",
   "precipitation": "Yağış",

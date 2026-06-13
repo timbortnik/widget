@@ -134,13 +134,13 @@ class AppLocalizationsBs extends AppLocalizations {
   String get searchCityHint => 'Pretraži grad...';
 
   @override
-  String get clearSearch => 'Clear search';
+  String get clearSearch => 'Obriši pretragu';
 
   @override
-  String get hourlyChartLabel => '48-hour weather forecast chart';
+  String get hourlyChartLabel => 'Grafikon vremenske prognoze za 48 sati';
 
   @override
-  String get weeklyChartLabel => '7-day weather forecast chart';
+  String get weeklyChartLabel => 'Grafikon vremenske prognoze za 7 dana';
 
   @override
   String get theme => 'Tema';

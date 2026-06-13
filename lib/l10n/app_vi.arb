@@ -1,5 +1,8 @@
 {
   "@@locale": "vi",
+  "clearSearch": "Xóa tìm kiếm",
+  "hourlyChartLabel": "Biểu đồ dự báo thời tiết 48 giờ",
+  "weeklyChartLabel": "Biểu đồ dự báo thời tiết 7 ngày",
   "appTitle": "Meteograph",
   "temperature": "Nhiệt độ",
   "precipitation": "Lượng mưa",

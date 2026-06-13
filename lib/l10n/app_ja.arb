@@ -1,5 +1,8 @@
 {
   "@@locale": "ja",
+  "clearSearch": "検索をクリア",
+  "hourlyChartLabel": "48時間の天気予報チャート",
+  "weeklyChartLabel": "7日間の天気予報チャート",
   "appTitle": "Meteograph",
   "temperature": "気温",
   "precipitation": "降水量",

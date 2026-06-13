@@ -132,13 +132,13 @@ class AppLocalizationsNo extends AppLocalizations {
   String get searchCityHint => 'Søk by...';
 
   @override
-  String get clearSearch => 'Clear search';
+  String get clearSearch => 'Tøm søk';
 
   @override
-  String get hourlyChartLabel => '48-hour weather forecast chart';
+  String get hourlyChartLabel => '48-timers værvarseldiagram';
 
   @override
-  String get weeklyChartLabel => '7-day weather forecast chart';
+  String get weeklyChartLabel => '7-dagers værvarseldiagram';
 
   @override
   String get theme => 'Tema';

@@ -133,13 +133,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get searchCityHint => 'ابحث عن مدينة...';
 
   @override
-  String get clearSearch => 'Clear search';
+  String get clearSearch => 'مسح البحث';
 
   @override
-  String get hourlyChartLabel => '48-hour weather forecast chart';
+  String get hourlyChartLabel => 'مخطط توقعات الطقس لمدة 48 ساعة';
 
   @override
-  String get weeklyChartLabel => '7-day weather forecast chart';
+  String get weeklyChartLabel => 'مخطط توقعات الطقس لمدة 7 أيام';
 
   @override
   String get theme => 'المظهر';

@@ -1,5 +1,8 @@
 {
   "@@locale": "fi",
+  "clearSearch": "Tyhjennä haku",
+  "hourlyChartLabel": "48 tunnin sääennustekaavio",
+  "weeklyChartLabel": "7 päivän sääennustekaavio",
   "appTitle": "Meteograph",
   "temperature": "Lämpötila",
   "precipitation": "Sademäärä",

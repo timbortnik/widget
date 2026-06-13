@@ -1,5 +1,8 @@
 {
   "@@locale": "jv",
+  "clearSearch": "Busak panggolekan",
+  "hourlyChartLabel": "Bagan ramalan cuaca 48 jam",
+  "weeklyChartLabel": "Bagan ramalan cuaca 7 dina",
   "appTitle": "Meteograph",
   "temperature": "Suhu",
   "precipitation": "Udan",

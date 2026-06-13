@@ -134,13 +134,13 @@ class AppLocalizationsSk extends AppLocalizations {
   String get searchCityHint => 'Hľadať mesto...';
 
   @override
-  String get clearSearch => 'Clear search';
+  String get clearSearch => 'Vymazať vyhľadávanie';
 
   @override
-  String get hourlyChartLabel => '48-hour weather forecast chart';
+  String get hourlyChartLabel => 'Graf predpovede počasia na 48 hodín';
 
   @override
-  String get weeklyChartLabel => '7-day weather forecast chart';
+  String get weeklyChartLabel => 'Graf predpovede počasia na 7 dní';
 
   @override
   String get theme => 'Motív';

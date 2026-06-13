@@ -1,5 +1,8 @@
 {
   "@@locale": "pl",
+  "clearSearch": "Wyczyść wyszukiwanie",
+  "hourlyChartLabel": "Wykres prognozy pogody na 48 godzin",
+  "weeklyChartLabel": "Wykres prognozy pogody na 7 dni",
   "appTitle": "Meteograph",
   "temperature": "Temperatura",
   "precipitation": "Opady",

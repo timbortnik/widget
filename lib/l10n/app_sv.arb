@@ -1,5 +1,8 @@
 {
   "@@locale": "sv",
+  "clearSearch": "Rensa sökning",
+  "hourlyChartLabel": "48-timmars väderprognosdiagram",
+  "weeklyChartLabel": "7-dagars väderprognosdiagram",
   "appTitle": "Meteograph",
   "temperature": "Temperatur",
   "precipitation": "Nederbörd",

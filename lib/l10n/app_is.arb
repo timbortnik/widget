@@ -1,5 +1,8 @@
 {
   "@@locale": "is",
+  "clearSearch": "Hreinsa leit",
+  "hourlyChartLabel": "Veðurspárit fyrir 48 klukkustundir",
+  "weeklyChartLabel": "Veðurspárit fyrir 7 daga",
   "appTitle": "Meteograph",
   "temperature": "Hitastig",
   "precipitation": "Úrkoma",

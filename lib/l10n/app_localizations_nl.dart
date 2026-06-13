@@ -134,13 +134,13 @@ class AppLocalizationsNl extends AppLocalizations {
   String get searchCityHint => 'Zoek stad...';
 
   @override
-  String get clearSearch => 'Clear search';
+  String get clearSearch => 'Zoekopdracht wissen';
 
   @override
-  String get hourlyChartLabel => '48-hour weather forecast chart';
+  String get hourlyChartLabel => 'Weersverwachtingsgrafiek van 48 uur';
 
   @override
-  String get weeklyChartLabel => '7-day weather forecast chart';
+  String get weeklyChartLabel => 'Weersverwachtingsgrafiek van 7 dagen';
 
   @override
   String get theme => 'Thema';

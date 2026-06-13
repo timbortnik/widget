@@ -1,5 +1,8 @@
 {
   "@@locale": "mk",
+  "clearSearch": "Исчисти пребарување",
+  "hourlyChartLabel": "Графикон со временска прогноза за 48 часа",
+  "weeklyChartLabel": "Графикон со временска прогноза за 7 дена",
   "appTitle": "Meteograph",
   "temperature": "Температура",
   "precipitation": "Врнежи",

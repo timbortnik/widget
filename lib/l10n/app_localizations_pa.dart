@@ -134,13 +134,13 @@ class AppLocalizationsPa extends AppLocalizations {
   String get searchCityHint => 'ਸ਼ਹਿਰ ਲੱਭੋ...';
 
   @override
-  String get clearSearch => 'Clear search';
+  String get clearSearch => 'ਖੋਜ ਸਾਫ਼ ਕਰੋ';
 
   @override
-  String get hourlyChartLabel => '48-hour weather forecast chart';
+  String get hourlyChartLabel => '48 ਘੰਟੇ ਦਾ ਮੌਸਮ ਪੂਰਵ-ਅਨੁਮਾਨ ਚਾਰਟ';
 
   @override
-  String get weeklyChartLabel => '7-day weather forecast chart';
+  String get weeklyChartLabel => '7 ਦਿਨ ਦਾ ਮੌਸਮ ਪੂਰਵ-ਅਨੁਮਾਨ ਚਾਰਟ';
 
   @override
   String get theme => 'ਥੀਮ';

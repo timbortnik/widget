@@ -131,13 +131,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get searchCityHint => '都市を検索...';
 
   @override
-  String get clearSearch => 'Clear search';
+  String get clearSearch => '検索をクリア';
 
   @override
-  String get hourlyChartLabel => '48-hour weather forecast chart';
+  String get hourlyChartLabel => '48時間の天気予報チャート';
 
   @override
-  String get weeklyChartLabel => '7-day weather forecast chart';
+  String get weeklyChartLabel => '7日間の天気予報チャート';
 
   @override
   String get theme => 'テーマ';

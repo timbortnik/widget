@@ -1,5 +1,8 @@
 {
   "@@locale": "ta",
+  "clearSearch": "தேடலை அழி",
+  "hourlyChartLabel": "48 மணிநேர வானிலை முன்னறிவிப்பு விளக்கப்படம்",
+  "weeklyChartLabel": "7 நாள் வானிலை முன்னறிவிப்பு விளக்கப்படம்",
   "appTitle": "Meteograph",
   "temperature": "வெப்பநிலை",
   "precipitation": "மழைப்பொழிவு",

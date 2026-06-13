@@ -1,5 +1,8 @@
 {
   "@@locale": "el",
+  "clearSearch": "Εκκαθάριση αναζήτησης",
+  "hourlyChartLabel": "Γράφημα πρόγνωσης καιρού 48 ωρών",
+  "weeklyChartLabel": "Γράφημα πρόγνωσης καιρού 7 ημερών",
   "appTitle": "Meteograph",
   "temperature": "Θερμοκρασία",
   "precipitation": "Βροχόπτωση",

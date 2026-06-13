@@ -1,5 +1,8 @@
 {
   "@@locale": "cs",
+  "clearSearch": "Vymazat hledání",
+  "hourlyChartLabel": "Graf předpovědi počasí na 48 hodin",
+  "weeklyChartLabel": "Graf předpovědi počasí na 7 dní",
   "appTitle": "Meteograph",
   "temperature": "Teplota",
   "precipitation": "Srážky",
