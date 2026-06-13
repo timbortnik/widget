@@ -132,6 +132,15 @@ class AppLocalizationsIs extends AppLocalizations {
   String get searchCityHint => 'Leita að borg...';
 
   @override
+  String get clearSearch => 'Clear search';
+
+  @override
+  String get hourlyChartLabel => '48-hour weather forecast chart';
+
+  @override
+  String get weeklyChartLabel => '14-day weather forecast chart';
+
+  @override
   String get theme => 'Þema';
 
   @override

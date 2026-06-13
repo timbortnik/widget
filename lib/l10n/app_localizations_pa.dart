@@ -134,6 +134,15 @@ class AppLocalizationsPa extends AppLocalizations {
   String get searchCityHint => 'ਸ਼ਹਿਰ ਲੱਭੋ...';
 
   @override
+  String get clearSearch => 'Clear search';
+
+  @override
+  String get hourlyChartLabel => '48-hour weather forecast chart';
+
+  @override
+  String get weeklyChartLabel => '14-day weather forecast chart';
+
+  @override
   String get theme => 'ਥੀਮ';
 
   @override

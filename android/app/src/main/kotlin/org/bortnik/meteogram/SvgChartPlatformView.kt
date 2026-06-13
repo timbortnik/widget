@@ -71,6 +71,13 @@ class SvgChartPlatformView(
         // Store SVG for rendering once view is laid out
         creationParams?.let {
             pendingSvg = it["svg"] as? String
+            // Accessibility label for the chart image. A Flutter Semantics
+            // wrapper cannot reach this hybrid-composition PlatformView, so the
+            // label is passed natively and set as content-desc (read by TalkBack
+            // and UiAutomator2).
+            (it["a11yLabel"] as? String)?.let { label ->
+                imageView.contentDescription = label
+            }
         }
 
         // Render when view is laid out and we know actual size

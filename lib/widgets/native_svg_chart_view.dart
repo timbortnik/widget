@@ -10,11 +10,18 @@ class NativeSvgChartView extends StatefulWidget {
   final double width;
   final double height;
 
+  /// Accessibility label set on the native ImageView's `contentDescription`
+  /// (surfaces to TalkBack / UiAutomator2 as `content-desc`). A Flutter
+  /// `Semantics` wrapper cannot reach this hybrid-composition PlatformView, so
+  /// the label must travel natively. See SvgChartPlatformView.kt.
+  final String? a11yLabel;
+
   const NativeSvgChartView({
     super.key,
     required this.svgString,
     required this.width,
     required this.height,
+    this.a11yLabel,
   });
 
   @override
@@ -39,6 +46,7 @@ class _NativeSvgChartViewState extends State<NativeSvgChartView> {
         'svg': widget.svgString,
         'width': widget.width.round(),
         'height': widget.height.round(),
+        'a11yLabel': widget.a11yLabel,
       },
       creationParamsCodec: const StandardMessageCodec(),
       onPlatformViewCreated: _onPlatformViewCreated,

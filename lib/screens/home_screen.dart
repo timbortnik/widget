@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:ui' show PlatformDispatcher;
 import 'package:flutter/material.dart';
+import '../a11y_ids.dart';
 import '../constants.dart';
 import '../l10n/app_localizations.dart';
 import '../services/location_service.dart';
@@ -12,6 +13,32 @@ import '../services/widget_store.dart';
 import '../theme/app_theme.dart';
 import '../widgets/native_svg_chart_view.dart';
 import '../generated/version.dart';
+
+/// Wraps [child] so black-box UI tests (Appium + UiAutomator2) can locate it by
+/// [id]: a Flutter `Semantics(identifier:)` surfaces to Android as the node's
+/// `resource-id`. `MergeSemantics` collapses the subtree into a SINGLE node so
+/// the resource-id, label (`content-desc`) and tap action all land together — a
+/// bare `Semantics` wrapper would otherwise put the id on a non-clickable
+/// parent node. Identifier values live in `lib/a11y_ids.dart`.
+Widget _identified(
+  String id,
+  Widget child, {
+  bool? button,
+  bool? link,
+  bool? image,
+  String? label,
+}) {
+  return MergeSemantics(
+    child: Semantics(
+      identifier: id,
+      button: button,
+      link: link,
+      image: image,
+      label: label,
+      child: child,
+    ),
+  );
+}
 
 /// Main home screen displaying the meteogram.
 class HomeScreen extends StatefulWidget {
@@ -508,16 +535,20 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 ),
               ),
               const SizedBox(height: 32),
-              FilledButton.icon(
-                onPressed: () => _loadWeather(userTriggered: true),
-                icon: const Icon(Icons.refresh_rounded),
-                label: Text(l10n.retry),
-                style: FilledButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+              _identified(
+                A11yIds.homeRetryButton,
+                FilledButton.icon(
+                  onPressed: () => _loadWeather(userTriggered: true),
+                  icon: const Icon(Icons.refresh_rounded),
+                  label: Text(l10n.retry),
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                 ),
+                button: true,
               ),
             ],
           ),
@@ -549,51 +580,69 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               // Top row: location selector + theme switcher
               Row(
                 children: [
-                  GestureDetector(
-                    onTap: _showLocationPicker,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          _getLocationIcon(),
-                          size: 14,
-                          color: colors.secondaryText,
+                  _identified(
+                    A11yIds.homeLocationSelector,
+                    GestureDetector(
+                      onTap: _showLocationPicker,
+                      behavior: HitTestBehavior.opaque,
+                      // 48dp minimum tap target (ADA); content stays visually
+                      // small, vertically centered within the row.
+                      child: SizedBox(
+                        height: 48,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              _getLocationIcon(),
+                              size: 14,
+                              color: colors.secondaryText,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              _locationName ?? l10n.unknownLocation,
+                              style: TextStyle(
+                                color: colors.secondaryText,
+                                fontSize: 13,
+                              ),
+                            ),
+                            Text(
+                              ' · ${_getLocationSourceLabel(l10n)}',
+                              style: TextStyle(
+                                color: colors.secondaryText,
+                                fontSize: 13,
+                              ),
+                            ),
+                            Icon(
+                              Icons.arrow_drop_down,
+                              size: 16,
+                              color: colors.secondaryText,
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 4),
-                        Text(
-                          _locationName ?? l10n.unknownLocation,
-                          style: TextStyle(
-                            color: colors.secondaryText,
-                            fontSize: 13,
-                          ),
-                        ),
-                        Text(
-                          ' · ${_getLocationSourceLabel(l10n)}',
-                          style: TextStyle(
-                            color: colors.secondaryText,
-                            fontSize: 13,
-                          ),
-                        ),
-                        Icon(
-                          Icons.arrow_drop_down,
-                          size: 16,
-                          color: colors.secondaryText,
-                        ),
-                      ],
+                      ),
                     ),
+                    button: true,
                   ),
                   const Spacer(),
-                  IconButton(
-                    onPressed: _showThemePicker,
-                    icon: Icon(
-                      Icons.brightness_medium_outlined,
-                      size: 20,
-                      color: colors.secondaryText,
+                  _identified(
+                    A11yIds.homeThemeButton,
+                    IconButton(
+                      onPressed: _showThemePicker,
+                      icon: Icon(
+                        Icons.brightness_medium_outlined,
+                        size: 20,
+                        color: colors.secondaryText,
+                      ),
+                      tooltip: l10n.theme,
+                      // 48dp minimum hit area for accessibility (icon stays
+                      // visually 20px, centered). Do not re-add
+                      // VisualDensity.compact — it shrinks the target below 48.
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(
+                        minWidth: 48,
+                        minHeight: 48,
+                      ),
                     ),
-                    tooltip: l10n.theme,
-                    visualDensity: VisualDensity.compact,
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
                   ),
                 ],
               ),
@@ -698,41 +747,49 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
               // Attribution (CC BY 4.0 requirement)
               const SizedBox(height: 16),
-              GestureDetector(
-                onTap: () => NativeSvgService.openUrl('https://open-meteo.com'),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.weatherDataBy('Open-Meteo.com'),
-                      style: TextStyle(
-                        color: colors.secondaryText,
-                        fontSize: 11,
+              _identified(
+                A11yIds.homeOpenMeteoLink,
+                GestureDetector(
+                  onTap: () => NativeSvgService.openUrl('https://open-meteo.com'),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.weatherDataBy('Open-Meteo.com'),
+                        style: TextStyle(
+                          color: colors.secondaryText,
+                          fontSize: 11,
+                        ),
                       ),
-                    ),
-                    Text(
-                      l10n.daylightDerived,
-                      style: TextStyle(
-                        color: colors.secondaryText,
-                        fontSize: 11,
+                      Text(
+                        l10n.daylightDerived,
+                        style: TextStyle(
+                          color: colors.secondaryText,
+                          fontSize: 11,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
+                link: true,
               ),
               const SizedBox(height: 8),
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  GestureDetector(
-                    onTap: () => NativeSvgService.openUrl('https://github.com/timbortnik/widget'),
-                    child: Text(
-                      l10n.sourceCode,
-                      style: TextStyle(
-                        color: colors.secondaryText,
-                        fontSize: 11,
+                  _identified(
+                    A11yIds.homeGithubLink,
+                    GestureDetector(
+                      onTap: () => NativeSvgService.openUrl('https://github.com/timbortnik/widget'),
+                      child: Text(
+                        l10n.sourceCode,
+                        style: TextStyle(
+                          color: colors.secondaryText,
+                          fontSize: 11,
+                        ),
                       ),
                     ),
+                    link: true,
                   ),
                   Text(
                     ' ${AppVersion.version}',
@@ -784,7 +841,17 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           );
         }
 
+        final l10n = AppLocalizations.of(context)!;
+        final isHourly = mode == NativeSvgService.chartModeHourly;
+        final chartLabel =
+            isHourly ? l10n.hourlyChartLabel : l10n.weeklyChartLabel;
+
         if (cache.svg != null) {
+          // The chart is a hybrid-composition PlatformView: a Flutter Semantics
+          // wrapper does NOT reach the embedded native view (verified — the id
+          // never surfaces to UiAutomator2). The accessibility label is set on
+          // the native ImageView via a11yLabel instead (SvgChartPlatformView.kt),
+          // surfacing as content-desc for TalkBack and Appium.
           return SizedBox(
             width: chartWidth,
             height: chartHeight,
@@ -792,6 +859,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               svgString: cache.svg!,
               width: deviceWidthPx.toDouble(),
               height: deviceHeightPx.toDouble(),
+              a11yLabel: chartLabel,
             ),
           );
         }
@@ -898,17 +966,20 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (sheetContext) {
-        Widget tile(ThemeMode mode, IconData icon, String label) {
-          return ListTile(
-            leading: Icon(icon, color: colors.temperatureLine),
-            title: Text(label, style: TextStyle(color: colors.primaryText)),
-            trailing: widget.themeMode == mode
-                ? Icon(Icons.check, color: colors.temperatureLine, size: 20)
-                : null,
-            onTap: () {
-              Navigator.pop(sheetContext);
-              widget.onThemeModeChanged?.call(mode);
-            },
+        Widget tile(ThemeMode mode, IconData icon, String label, String id) {
+          return _identified(
+            id,
+            ListTile(
+              leading: Icon(icon, color: colors.temperatureLine),
+              title: Text(label, style: TextStyle(color: colors.primaryText)),
+              trailing: widget.themeMode == mode
+                  ? Icon(Icons.check, color: colors.temperatureLine, size: 20)
+                  : null,
+              onTap: () {
+                Navigator.pop(sheetContext);
+                widget.onThemeModeChanged?.call(mode);
+              },
+            ),
           );
         }
 
@@ -930,9 +1001,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   ),
                 ),
               ),
-              tile(ThemeMode.system, Icons.brightness_auto_outlined, l10n.themeSystem),
-              tile(ThemeMode.light, Icons.light_mode_outlined, l10n.themeLight),
-              tile(ThemeMode.dark, Icons.dark_mode_outlined, l10n.themeDark),
+              tile(ThemeMode.system, Icons.brightness_auto_outlined,
+                  l10n.themeSystem, A11yIds.themeOptionSystem),
+              tile(ThemeMode.light, Icons.light_mode_outlined, l10n.themeLight,
+                  A11yIds.themeOptionLight),
+              tile(ThemeMode.dark, Icons.dark_mode_outlined, l10n.themeDark,
+                  A11yIds.themeOptionDark),
               const SizedBox(height: 12),
             ],
           ),
@@ -1080,30 +1154,41 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
                 ),
                 const SizedBox(height: 16),
                 // Search field
-                TextField(
-                  controller: _searchController,
-                  onChanged: _onSearchChanged,
-                  style: TextStyle(color: colors.primaryText),
-                  decoration: InputDecoration(
-                    hintText: l10n.searchCityHint,
-                    hintStyle: TextStyle(color: colors.secondaryText),
-                    prefixIcon: Icon(Icons.search, color: colors.secondaryText),
-                    suffixIcon: _searchController.text.isNotEmpty
-                        ? IconButton(
-                            icon: Icon(Icons.clear, color: colors.secondaryText),
-                            onPressed: () {
-                              _searchController.clear();
-                              _onSearchChanged('');
-                            },
-                          )
-                        : null,
-                    filled: true,
-                    fillColor: colors.background,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
+                // Bare Semantics (not MergeSemantics) so the suffix clear button
+                // keeps its own node and identifier instead of being merged in.
+                Semantics(
+                  identifier: A11yIds.locationSearchField,
+                  textField: true,
+                  child: TextField(
+                    controller: _searchController,
+                    onChanged: _onSearchChanged,
+                    style: TextStyle(color: colors.primaryText),
+                    decoration: InputDecoration(
+                      hintText: l10n.searchCityHint,
+                      hintStyle: TextStyle(color: colors.secondaryText),
+                      prefixIcon: Icon(Icons.search, color: colors.secondaryText),
+                      suffixIcon: _searchController.text.isNotEmpty
+                          ? _identified(
+                              A11yIds.locationClearSearch,
+                              IconButton(
+                                icon: Icon(Icons.clear, color: colors.secondaryText),
+                                onPressed: () {
+                                  _searchController.clear();
+                                  _onSearchChanged('');
+                                },
+                              ),
+                              button: true,
+                              label: l10n.clearSearch,
+                            )
+                          : null,
+                      filled: true,
+                      fillColor: colors.background,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   ),
                 ),
               ],
@@ -1136,17 +1221,20 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
                 ),
               )
             else
-              ..._searchResults.map(_buildCityResultTile),
+              ..._searchResults.indexed.map((e) => _buildCityResultTile(e.$2, e.$1)),
           ] else ...[
             // GPS option
-            ListTile(
-              leading: Icon(Icons.gps_fixed, color: colors.temperatureLine),
-              title: Text('GPS', style: TextStyle(color: colors.primaryText)),
-              subtitle: Text('Device location', style: TextStyle(color: colors.secondaryText, fontSize: 12)),
-              trailing: widget.currentSource == LocationSource.gps
-                  ? Icon(Icons.check, color: colors.temperatureLine, size: 20)
-                  : null,
-              onTap: widget.onGpsSelected,
+            _identified(
+              A11yIds.locationGpsTile,
+              ListTile(
+                leading: Icon(Icons.gps_fixed, color: colors.temperatureLine),
+                title: Text('GPS', style: TextStyle(color: colors.primaryText)),
+                subtitle: Text('Device location', style: TextStyle(color: colors.secondaryText, fontSize: 12)),
+                trailing: widget.currentSource == LocationSource.gps
+                    ? Icon(Icons.check, color: colors.temperatureLine, size: 20)
+                    : null,
+                onTap: widget.onGpsSelected,
+              ),
             ),
             // Recent cities
             if (_recentCities.isNotEmpty) ...[
@@ -1158,7 +1246,7 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
                   style: TextStyle(color: colors.secondaryText, fontSize: 12),
                 ),
               ),
-              ..._recentCities.map(_buildRecentCityTile),
+              ..._recentCities.indexed.map((e) => _buildRecentCityTile(e.$2, e.$1)),
             ],
           ],
           const SizedBox(height: 20),
@@ -1167,32 +1255,38 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
     );
   }
 
-  Widget _buildCityResultTile(CitySearchResult city) {
-    return ListTile(
-      leading: Icon(Icons.location_city, color: widget.colors.secondaryText),
-      title: Text(city.name, style: TextStyle(color: widget.colors.primaryText)),
-      subtitle: Text(
-        city.displayName != city.name ? city.displayName : city.country,
-        style: TextStyle(color: widget.colors.secondaryText, fontSize: 12),
+  Widget _buildCityResultTile(CitySearchResult city, int index) {
+    return _identified(
+      '${A11yIds.locationResultTilePrefix}_$index',
+      ListTile(
+        leading: Icon(Icons.location_city, color: widget.colors.secondaryText),
+        title: Text(city.name, style: TextStyle(color: widget.colors.primaryText)),
+        subtitle: Text(
+          city.displayName != city.name ? city.displayName : city.country,
+          style: TextStyle(color: widget.colors.secondaryText, fontSize: 12),
+        ),
+        onTap: () => widget.onCitySelected(city),
       ),
-      onTap: () => widget.onCitySelected(city),
     );
   }
 
-  Widget _buildRecentCityTile(CitySearchResult city) {
+  Widget _buildRecentCityTile(CitySearchResult city, int index) {
     final isSelected = widget.currentSource == LocationSource.manual &&
         widget.currentLocationName == city.name;
-    return ListTile(
-      leading: Icon(Icons.history, color: widget.colors.secondaryText),
-      title: Text(city.name, style: TextStyle(color: widget.colors.primaryText)),
-      subtitle: Text(
-        city.country,
-        style: TextStyle(color: widget.colors.secondaryText, fontSize: 12),
+    return _identified(
+      '${A11yIds.locationRecentTilePrefix}_$index',
+      ListTile(
+        leading: Icon(Icons.history, color: widget.colors.secondaryText),
+        title: Text(city.name, style: TextStyle(color: widget.colors.primaryText)),
+        subtitle: Text(
+          city.country,
+          style: TextStyle(color: widget.colors.secondaryText, fontSize: 12),
+        ),
+        trailing: isSelected
+            ? Icon(Icons.check, color: widget.colors.nowIndicator, size: 20)
+            : null,
+        onTap: () => widget.onCitySelected(city),
       ),
-      trailing: isSelected
-          ? Icon(Icons.check, color: widget.colors.nowIndicator, size: 20)
-          : null,
-      onTap: () => widget.onCitySelected(city),
     );
   }
 }
