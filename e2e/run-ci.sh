@@ -16,6 +16,10 @@ for _ in $(seq 1 60); do
   sleep 1
 done
 
+# Feed the emulator a GPS fix so the app's location resolves immediately instead
+# of waiting out its ~15s fallback timeout — keeps the success screen quick in CI.
+adb emu geo fix -0.1278 51.5074 >/dev/null 2>&1 || true
+
 npm test
 status=$?
 

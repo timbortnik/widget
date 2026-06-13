@@ -12,6 +12,10 @@ const ids = require('../a11y_ids');
 
 const byId = (id) => $(`android=new UiSelector().resourceId("${id}")`);
 
+// Cold CI emulator: the success screen only appears after weather loads (location
+// has a ~15s fallback timeout + fetch + render), so wait generously.
+const READY = 60000;
+
 let minTapPx;
 
 async function assertLabeled(id) {
@@ -41,7 +45,7 @@ describe('Meteograph — accessibility (black-box)', () => {
 
   describe('home screen', () => {
     before(async () => {
-      await byId(ids.homeThemeButton).waitForDisplayed({ timeout: 30000 });
+      await byId(ids.homeThemeButton).waitForDisplayed({ timeout: READY });
     });
 
     it('controls are labeled', async () => {
@@ -67,8 +71,9 @@ describe('Meteograph — accessibility (black-box)', () => {
 
   describe('location picker', () => {
     before(async () => {
+      await byId(ids.homeLocationSelector).waitForDisplayed({ timeout: READY });
       await byId(ids.homeLocationSelector).click();
-      await byId(ids.locationGpsTile).waitForDisplayed({ timeout: 10000 });
+      await byId(ids.locationGpsTile).waitForDisplayed({ timeout: 15000 });
     });
     after(async () => {
       await driver.back();
@@ -82,8 +87,9 @@ describe('Meteograph — accessibility (black-box)', () => {
 
   describe('theme picker', () => {
     before(async () => {
+      await byId(ids.homeThemeButton).waitForDisplayed({ timeout: READY });
       await byId(ids.homeThemeButton).click();
-      await byId(ids.themeOptionLight).waitForDisplayed({ timeout: 10000 });
+      await byId(ids.themeOptionLight).waitForDisplayed({ timeout: 15000 });
     });
     after(async () => {
       await driver.back();
