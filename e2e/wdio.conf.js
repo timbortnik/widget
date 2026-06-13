@@ -1,8 +1,12 @@
 const fs = require('fs');
 const path = require('path');
 
-// Failure diagnostics (screenshot + UI tree) land here; uploaded as a CI artifact.
+// Screenshots + UI tree land here; uploaded as a CI artifact every run.
 const ARTIFACTS = path.resolve(__dirname, 'artifacts');
+
+// Sequential screenshot counter + current test label (per worker/spec process).
+let shotSeq = 0;
+let currentTest = 'session';
 
 // The test consumes a PREBUILT apk by path — it has no knowledge of Flutter and
 // does not build anything. Override with APP_PATH to point at any apk.
@@ -51,11 +55,35 @@ exports.config = {
     },
   ],
 
-  // On a failed test, capture a screenshot + the UiAutomator2 page source so CI
-  // can show what the app looked like (e.g. stuck on the loading spinner vs an
-  // error screen). Files are uploaded as the `e2e-diagnostics` artifact.
+  // Track the running test so per-action screenshots can be labelled.
+  beforeTest: function (test) {
+    currentTest = `${test.parent} - ${test.title}`
+      .replace(/[^a-z0-9]+/gi, '_')
+      .slice(0, 80);
+  },
+
+  // Screenshot after each user action (tap / back / text entry) — i.e. each step
+  // — so the artifacts show the flow progressing, not just end-of-test states.
+  // Filtered to action commands so element lookups/polling don't spam shots, and
+  // 'takeScreenshot' itself never matches (no recursion).
+  afterCommand: async function (commandName) {
+    if (!/click|back|sendkeys|touch|presskey/i.test(commandName)) return;
+    fs.mkdirSync(ARTIFACTS, { recursive: true });
+    shotSeq += 1;
+    const seq = String(shotSeq).padStart(3, '0');
+    try {
+      await browser.saveScreenshot(
+        path.join(ARTIFACTS, `${seq}_${currentTest}_${commandName}.png`),
+      );
+    } catch (e) {
+      console.log('afterCommand: screenshot failed:', e.message);
+    }
+  },
+
+  // Capture a screenshot after EVERY test (pass or fail) so every run has visual
+  // artifacts; additionally dump the UiAutomator2 page source on failure (bulky,
+  // only useful for debugging). Uploaded as the `e2e-artifacts` artifact.
   afterTest: async function (test, _context, { error }) {
-    if (!error) return;
     fs.mkdirSync(ARTIFACTS, { recursive: true });
     const base = `${test.parent} - ${test.title}`
       .replace(/[^a-z0-9]+/gi, '_')
@@ -65,10 +93,12 @@ exports.config = {
     } catch (e) {
       console.log('afterTest: screenshot failed:', e.message);
     }
-    try {
-      fs.writeFileSync(path.join(ARTIFACTS, `${base}.xml`), await browser.getPageSource());
-    } catch (e) {
-      console.log('afterTest: page source failed:', e.message);
+    if (error) {
+      try {
+        fs.writeFileSync(path.join(ARTIFACTS, `${base}.xml`), await browser.getPageSource());
+      } catch (e) {
+        console.log('afterTest: page source failed:', e.message);
+      }
     }
   },
 };

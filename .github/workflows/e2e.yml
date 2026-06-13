@@ -99,11 +99,11 @@ jobs:
           # mangles multi-line inline `script:` blocks. run-ci.sh cd's into e2e/.
           script: bash e2e/run-ci.sh
 
-      - name: Upload E2E diagnostics on failure
-        if: failure()
+      - name: Upload E2E artifacts
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: e2e-diagnostics
+          name: e2e-artifacts
           path: |
             e2e/appium.log
             e2e/artifacts/
