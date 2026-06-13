@@ -95,14 +95,9 @@ jobs:
           force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -no-audio -no-boot-anim -camera-back none
           disable-animations: true
-          working-directory: e2e
-          script: |
-            APPIUM_HOME="$PWD/.appium" npx appium --base-path / --log-timestamp > appium.log 2>&1 &
-            for i in $(seq 1 30); do
-              curl -sf http://127.0.0.1:4723/status >/dev/null && break
-              sleep 1
-            done
-            npm test
+          # Single-line invocation of a script FILE — android-emulator-runner
+          # mangles multi-line inline `script:` blocks. run-ci.sh cd's into e2e/.
+          script: bash e2e/run-ci.sh
 
       - name: Upload Appium log on failure
         if: failure()
