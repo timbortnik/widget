@@ -26,7 +26,7 @@ jobs:
       # ---- Build stage: produce the x86_64 debug APK (Flutter) ----
       # This is the only Flutter step; it just produces the artifact under test.
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'corretto'
           java-version: '17'
@@ -46,7 +46,7 @@ jobs:
       # ---- Test stage: pure Node + Appium, consumes the prebuilt APK ----
       # No Flutter on PATH from here on; the test only needs the APK by path.
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '20'
           cache: 'npm'
