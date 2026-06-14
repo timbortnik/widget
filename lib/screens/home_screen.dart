@@ -26,6 +26,7 @@ Widget _identified(
   bool? button,
   bool? link,
   bool? image,
+  bool? selected,
   String? label,
 }) {
   return MergeSemantics(
@@ -34,6 +35,7 @@ Widget _identified(
       button: button,
       link: link,
       image: image,
+      selected: selected,
       label: label,
       child: child,
     ),
@@ -980,6 +982,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 widget.onThemeModeChanged?.call(mode);
               },
             ),
+            // Exposes which option is active (UiAutomator2 `selected` attribute)
+            // — announced by screen readers and asserted by the E2E theme-switch
+            // test.
+            selected: widget.themeMode == mode,
           );
         }
 

@@ -43,4 +43,36 @@ describe('Meteograph — home happy path', () => {
     await expect(byId(ids.themeOptionDark)).toBeExisting();
     await driver.back(); // dismiss the sheet
   });
+
+  it('switches the theme and the selected option follows', async () => {
+    const themeBtn = byId(ids.homeThemeButton);
+    const selectedOf = (id) => byId(id).getAttribute('selected');
+    const openPicker = async () => {
+      await themeBtn.waitForDisplayed({ timeout: READY });
+      await themeBtn.click();
+      await byId(ids.themeOptionDark).waitForDisplayed({ timeout: 15000 });
+    };
+
+    // Switch to Dark (tapping an option closes the sheet and re-themes the app —
+    // the afterCommand hook screenshots the result, giving visual proof too).
+    await openPicker();
+    await byId(ids.themeOptionDark).click();
+
+    // Reopen: Dark must now be the selected option.
+    await openPicker();
+    console.log('after Dark -> dark:', await selectedOf(ids.themeOptionDark),
+      'light:', await selectedOf(ids.themeOptionLight));
+    expect(await selectedOf(ids.themeOptionDark)).toBe('true');
+    expect(await selectedOf(ids.themeOptionLight)).toBe('false');
+
+    // Switch to Light and confirm the selection moved.
+    await byId(ids.themeOptionLight).click();
+    await openPicker();
+    console.log('after Light -> light:', await selectedOf(ids.themeOptionLight),
+      'dark:', await selectedOf(ids.themeOptionDark));
+    expect(await selectedOf(ids.themeOptionLight)).toBe('true');
+    expect(await selectedOf(ids.themeOptionDark)).toBe('false');
+
+    await driver.back(); // dismiss the sheet
+  });
 });
