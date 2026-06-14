@@ -2,8 +2,11 @@ name: E2E (Appium)
 
 # Black-box UI tests on an x86_64 emulator. Kept separate from test.yml because
 # it needs KVM + an emulator (slow, ~10-15 min) and builds a different ABI.
-# PR-only + manual to stay within free-tier minutes.
+# Runs on PRs to main (gate before merge), on push to main (catch post-merge
+# integration drift), and manually.
 on:
+  push:
+    branches: [main]
   pull_request:
     branches: [main]
   workflow_dispatch:
