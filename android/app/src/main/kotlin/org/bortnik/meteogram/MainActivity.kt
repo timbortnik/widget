@@ -100,7 +100,11 @@ class MainActivity : FlutterActivity() {
                                 if (success) {
                                     result.success(true)
                                 } else {
-                                    result.error("FETCH_FAILED", "Failed to fetch weather data", null)
+                                    result.error(
+                                        "FETCH_FAILED",
+                                        WeatherFetcher.lastFetchError ?: "Failed to fetch weather data",
+                                        null,
+                                    )
                                 }
                             }
                         } catch (e: Exception) {

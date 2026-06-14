@@ -26,6 +26,14 @@ object WeatherFetcher {
     private const val FORECAST_DAYS = 7
 
     /**
+     * Reason for the most recent fetch failure (e.g. "HTTP 429",
+     * "UnknownHostException: ..."), or null after a success. Surfaced to the UI
+     * so the error screen can show why the fetch failed.
+     */
+    @Volatile
+    var lastFetchError: String? = null
+
+    /**
      * Fetch weather data synchronously and save to SharedPreferences.
      * Uses cached location from SharedPreferences.
      * Call from background thread only.
@@ -187,6 +195,7 @@ object WeatherFetcher {
             val responseCode = connection.responseCode
             if (responseCode != HttpURLConnection.HTTP_OK) {
                 Log.e(TAG, "API returned $responseCode")
+                lastFetchError = "HTTP $responseCode"
                 return null
             }
 
@@ -198,9 +207,11 @@ object WeatherFetcher {
             }
             reader.close()
 
+            lastFetchError = null
             JSONObject(response.toString())
         } catch (e: Exception) {
             Log.e(TAG, "Network error", e)
+            lastFetchError = e.javaClass.simpleName + (e.message?.let { ": $it" } ?: "")
             null
         } finally {
             connection?.disconnect()

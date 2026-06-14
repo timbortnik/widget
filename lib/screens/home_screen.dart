@@ -332,7 +332,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       );
 
       if (!success) {
-        throw Exception('Failed to fetch weather data');
+        throw Exception(
+          NativeSvgService.lastFetchError ?? 'Failed to fetch weather data',
+        );
       }
 
       // Read the cached values (Kotlin saves current temp and timestamp)
