@@ -1,8 +1,5 @@
 {
   "@@locale": "ja",
-  "clearSearch": "検索をクリア",
-  "hourlyChartLabel": "48時間の天気予報チャート",
-  "weeklyChartLabel": "7日間の天気予報チャート",
   "appTitle": "Meteograph",
   "temperature": "気温",
   "precipitation": "降水量",
@@ -43,6 +40,9 @@
   "searchConnectionError": "検索できません - 接続を確認してください",
   "selectLocation": "場所を選択",
   "searchCityHint": "都市を検索...",
+  "clearSearch": "検索をクリア",
+  "hourlyChartLabel": "48時間の天気予報チャート",
+  "weeklyChartLabel": "7日間の天気予報チャート",
   "theme": "テーマ",
   "themeSystem": "システムのデフォルト",
   "themeLight": "ライト",

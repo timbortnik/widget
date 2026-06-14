@@ -1,8 +1,5 @@
 {
   "@@locale": "tr",
-  "clearSearch": "Aramayı temizle",
-  "hourlyChartLabel": "48 saatlik hava durumu tahmin grafiği",
-  "weeklyChartLabel": "7 günlük hava durumu tahmin grafiği",
   "appTitle": "Meteograph",
   "temperature": "Sıcaklık",
   "precipitation": "Yağış",
@@ -43,6 +40,9 @@
   "searchConnectionError": "Arama yapılamıyor - bağlantınızı kontrol edin",
   "selectLocation": "Konum seçin",
   "searchCityHint": "Şehir ara...",
+  "clearSearch": "Aramayı temizle",
+  "hourlyChartLabel": "48 saatlik hava durumu tahmin grafiği",
+  "weeklyChartLabel": "7 günlük hava durumu tahmin grafiği",
   "theme": "Tema",
   "themeSystem": "Sistem varsayılanı",
   "themeLight": "Açık",

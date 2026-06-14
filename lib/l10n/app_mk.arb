@@ -1,8 +1,5 @@
 {
   "@@locale": "mk",
-  "clearSearch": "Исчисти пребарување",
-  "hourlyChartLabel": "Графикон со временска прогноза за 48 часа",
-  "weeklyChartLabel": "Графикон со временска прогноза за 7 дена",
   "appTitle": "Meteograph",
   "temperature": "Температура",
   "precipitation": "Врнежи",
@@ -43,6 +40,9 @@
   "searchConnectionError": "Не може да се пребарува - проверете ја врската",
   "selectLocation": "Изберете локација",
   "searchCityHint": "Пребарај град...",
+  "clearSearch": "Исчисти пребарување",
+  "hourlyChartLabel": "Графикон со временска прогноза за 48 часа",
+  "weeklyChartLabel": "Графикон со временска прогноза за 7 дена",
   "theme": "Тема",
   "themeSystem": "Системски зададено",
   "themeLight": "Светла",

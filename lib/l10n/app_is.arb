@@ -1,8 +1,5 @@
 {
   "@@locale": "is",
-  "clearSearch": "Hreinsa leit",
-  "hourlyChartLabel": "Veðurspárit fyrir 48 klukkustundir",
-  "weeklyChartLabel": "Veðurspárit fyrir 7 daga",
   "appTitle": "Meteograph",
   "temperature": "Hitastig",
   "precipitation": "Úrkoma",
@@ -43,6 +40,9 @@
   "searchConnectionError": "Ekki tókst að leita - athugaðu tengingu",
   "selectLocation": "Veldu staðsetningu",
   "searchCityHint": "Leita að borg...",
+  "clearSearch": "Hreinsa leit",
+  "hourlyChartLabel": "Veðurspárit fyrir 48 klukkustundir",
+  "weeklyChartLabel": "Veðurspárit fyrir 7 daga",
   "theme": "Þema",
   "themeSystem": "Sjálfgefið kerfi",
   "themeLight": "Ljóst",

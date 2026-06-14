@@ -95,14 +95,14 @@ class MainActivity : FlutterActivity() {
                     // Run on background thread
                     Thread {
                         try {
-                            val success = WeatherFetcher.fetchWeatherSync(this, latitude, longitude)
+                            val fetchResult = WeatherFetcher.fetchWeatherSync(this, latitude, longitude)
                             runOnUiThread {
-                                if (success) {
+                                if (fetchResult.success) {
                                     result.success(true)
                                 } else {
                                     result.error(
                                         "FETCH_FAILED",
-                                        WeatherFetcher.lastFetchError ?: "Failed to fetch weather data",
+                                        fetchResult.error ?: "Failed to fetch weather data",
                                         null,
                                     )
                                 }

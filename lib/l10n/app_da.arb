@@ -1,8 +1,5 @@
 {
   "@@locale": "da",
-  "clearSearch": "Ryd søgning",
-  "hourlyChartLabel": "48-timers vejrudsigtsdiagram",
-  "weeklyChartLabel": "7-dages vejrudsigtsdiagram",
   "appTitle": "Meteograph",
   "temperature": "Temperatur",
   "precipitation": "Nedbør",
@@ -43,6 +40,9 @@
   "searchConnectionError": "Kan ikke søge - tjek din forbindelse",
   "selectLocation": "Vælg placering",
   "searchCityHint": "Søg by...",
+  "clearSearch": "Ryd søgning",
+  "hourlyChartLabel": "48-timers vejrudsigtsdiagram",
+  "weeklyChartLabel": "7-dages vejrudsigtsdiagram",
   "theme": "Tema",
   "themeSystem": "Systemstandard",
   "themeLight": "Lyst",

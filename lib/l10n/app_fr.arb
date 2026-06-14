@@ -1,8 +1,5 @@
 {
   "@@locale": "fr",
-  "clearSearch": "Effacer la recherche",
-  "hourlyChartLabel": "Graphique des prévisions météo sur 48 heures",
-  "weeklyChartLabel": "Graphique des prévisions météo sur 7 jours",
   "appTitle": "Meteograph",
   "temperature": "Température",
   "precipitation": "Précipitations",
@@ -43,6 +40,9 @@
   "searchConnectionError": "Recherche impossible - vérifiez votre connexion",
   "selectLocation": "Sélectionner un lieu",
   "searchCityHint": "Rechercher une ville...",
+  "clearSearch": "Effacer la recherche",
+  "hourlyChartLabel": "Graphique des prévisions météo sur 48 heures",
+  "weeklyChartLabel": "Graphique des prévisions météo sur 7 jours",
   "theme": "Thème",
   "themeSystem": "Système par défaut",
   "themeLight": "Clair",

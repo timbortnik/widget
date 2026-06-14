@@ -1,8 +1,5 @@
 {
   "@@locale": "jv",
-  "clearSearch": "Busak panggolekan",
-  "hourlyChartLabel": "Bagan ramalan cuaca 48 jam",
-  "weeklyChartLabel": "Bagan ramalan cuaca 7 dina",
   "appTitle": "Meteograph",
   "temperature": "Suhu",
   "precipitation": "Udan",
@@ -43,6 +40,9 @@
   "searchConnectionError": "Ora bisa nggoleki - priksa sambungan",
   "selectLocation": "Pilih lokasi",
   "searchCityHint": "Goleki kutha...",
+  "clearSearch": "Busak panggolekan",
+  "hourlyChartLabel": "Bagan ramalan cuaca 48 jam",
+  "weeklyChartLabel": "Bagan ramalan cuaca 7 dina",
   "theme": "Tema",
   "themeSystem": "Gawan sistem",
   "themeLight": "Padhang",

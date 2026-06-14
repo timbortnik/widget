@@ -1,8 +1,5 @@
 {
   "@@locale": "hi",
-  "clearSearch": "खोज साफ़ करें",
-  "hourlyChartLabel": "48 घंटे का मौसम पूर्वानुमान चार्ट",
-  "weeklyChartLabel": "7 दिन का मौसम पूर्वानुमान चार्ट",
   "appTitle": "Meteograph",
   "temperature": "तापमान",
   "precipitation": "वर्षा",
@@ -43,6 +40,9 @@
   "searchConnectionError": "खोज नहीं हो सकी - अपना कनेक्शन जांचें",
   "selectLocation": "स्थान चुनें",
   "searchCityHint": "शहर खोजें...",
+  "clearSearch": "खोज साफ़ करें",
+  "hourlyChartLabel": "48 घंटे का मौसम पूर्वानुमान चार्ट",
+  "weeklyChartLabel": "7 दिन का मौसम पूर्वानुमान चार्ट",
   "theme": "थीम",
   "themeSystem": "सिस्टम डिफ़ॉल्ट",
   "themeLight": "लाइट",

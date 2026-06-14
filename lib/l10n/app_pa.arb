@@ -1,8 +1,5 @@
 {
   "@@locale": "pa",
-  "clearSearch": "ਖੋਜ ਸਾਫ਼ ਕਰੋ",
-  "hourlyChartLabel": "48 ਘੰਟੇ ਦਾ ਮੌਸਮ ਪੂਰਵ-ਅਨੁਮਾਨ ਚਾਰਟ",
-  "weeklyChartLabel": "7 ਦਿਨ ਦਾ ਮੌਸਮ ਪੂਰਵ-ਅਨੁਮਾਨ ਚਾਰਟ",
   "appTitle": "Meteograph",
   "temperature": "ਤਾਪਮਾਨ",
   "precipitation": "ਵਰਖਾ",
@@ -43,6 +40,9 @@
   "searchConnectionError": "ਖੋਜ ਨਹੀਂ ਹੋ ਸਕਦੀ - ਆਪਣਾ ਕਨੈਕਸ਼ਨ ਚੈੱਕ ਕਰੋ",
   "selectLocation": "ਟਿਕਾਣਾ ਚੁਣੋ",
   "searchCityHint": "ਸ਼ਹਿਰ ਲੱਭੋ...",
+  "clearSearch": "ਖੋਜ ਸਾਫ਼ ਕਰੋ",
+  "hourlyChartLabel": "48 ਘੰਟੇ ਦਾ ਮੌਸਮ ਪੂਰਵ-ਅਨੁਮਾਨ ਚਾਰਟ",
+  "weeklyChartLabel": "7 ਦਿਨ ਦਾ ਮੌਸਮ ਪੂਰਵ-ਅਨੁਮਾਨ ਚਾਰਟ",
   "theme": "ਥੀਮ",
   "themeSystem": "ਸਿਸਟਮ ਡਿਫੌਲਟ",
   "themeLight": "ਲਾਈਟ",

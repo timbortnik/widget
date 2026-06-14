@@ -1,8 +1,5 @@
 {
   "@@locale": "ar",
-  "clearSearch": "مسح البحث",
-  "hourlyChartLabel": "مخطط توقعات الطقس لمدة 48 ساعة",
-  "weeklyChartLabel": "مخطط توقعات الطقس لمدة 7 أيام",
   "appTitle": "Meteograph",
   "temperature": "درجة الحرارة",
   "precipitation": "هطول الأمطار",
@@ -43,6 +40,9 @@
   "searchConnectionError": "تعذر البحث - تحقق من اتصالك",
   "selectLocation": "اختر الموقع",
   "searchCityHint": "ابحث عن مدينة...",
+  "clearSearch": "مسح البحث",
+  "hourlyChartLabel": "مخطط توقعات الطقس لمدة 48 ساعة",
+  "weeklyChartLabel": "مخطط توقعات الطقس لمدة 7 أيام",
   "theme": "المظهر",
   "themeSystem": "افتراضي النظام",
   "themeLight": "فاتح",

@@ -1,8 +1,5 @@
 {
   "@@locale": "nl",
-  "clearSearch": "Zoekopdracht wissen",
-  "hourlyChartLabel": "Weersverwachtingsgrafiek van 48 uur",
-  "weeklyChartLabel": "Weersverwachtingsgrafiek van 7 dagen",
   "appTitle": "Meteograph",
   "temperature": "Temperatuur",
   "precipitation": "Neerslag",
@@ -43,6 +40,9 @@
   "searchConnectionError": "Kan niet zoeken - controleer je verbinding",
   "selectLocation": "Selecteer locatie",
   "searchCityHint": "Zoek stad...",
+  "clearSearch": "Zoekopdracht wissen",
+  "hourlyChartLabel": "Weersverwachtingsgrafiek van 48 uur",
+  "weeklyChartLabel": "Weersverwachtingsgrafiek van 7 dagen",
   "theme": "Thema",
   "themeSystem": "Systeemstandaard",
   "themeLight": "Licht",

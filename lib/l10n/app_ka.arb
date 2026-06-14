@@ -1,8 +1,5 @@
 {
   "@@locale": "ka",
-  "clearSearch": "ძიების გასუფთავება",
-  "hourlyChartLabel": "ამინდის 48-საათიანი პროგნოზის დიაგრამა",
-  "weeklyChartLabel": "ამინდის 7-დღიანი პროგნოზის დიაგრამა",
   "appTitle": "Meteograph",
   "temperature": "ტემპერატურა",
   "precipitation": "ნალექი",
@@ -43,6 +40,9 @@
   "searchConnectionError": "ძიება ვერ მოხერხდა - შეამოწმეთ კავშირი",
   "selectLocation": "აირჩიეთ მდებარეობა",
   "searchCityHint": "მოძებნე ქალაქი...",
+  "clearSearch": "ძიების გასუფთავება",
+  "hourlyChartLabel": "ამინდის 48-საათიანი პროგნოზის დიაგრამა",
+  "weeklyChartLabel": "ამინდის 7-დღიანი პროგნოზის დიაგრამა",
   "theme": "თემა",
   "themeSystem": "სისტემის ნაგულისხმევი",
   "themeLight": "ღია",

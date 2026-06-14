@@ -46,4 +46,3 @@ Test a different build with `APP_PATH=/abs/path/to.apk npm test`.
   `resourceId` or `description*`, never `.text()`.
 - CI: `.github/workflows/e2e.yml` (PR + manual) builds the x86_64 APK then runs
   these specs on a KVM-accelerated emulator.
-```

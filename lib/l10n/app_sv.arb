@@ -1,8 +1,5 @@
 {
   "@@locale": "sv",
-  "clearSearch": "Rensa sökning",
-  "hourlyChartLabel": "48-timmars väderprognosdiagram",
-  "weeklyChartLabel": "7-dagars väderprognosdiagram",
   "appTitle": "Meteograph",
   "temperature": "Temperatur",
   "precipitation": "Nederbörd",
@@ -43,6 +40,9 @@
   "searchConnectionError": "Kan inte söka - kontrollera anslutningen",
   "selectLocation": "Välj plats",
   "searchCityHint": "Sök stad...",
+  "clearSearch": "Rensa sökning",
+  "hourlyChartLabel": "48-timmars väderprognosdiagram",
+  "weeklyChartLabel": "7-dagars väderprognosdiagram",
   "theme": "Tema",
   "themeSystem": "Systemstandard",
   "themeLight": "Ljust",

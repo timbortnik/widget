@@ -1,8 +1,5 @@
 {
   "@@locale": "ta",
-  "clearSearch": "தேடலை அழி",
-  "hourlyChartLabel": "48 மணிநேர வானிலை முன்னறிவிப்பு விளக்கப்படம்",
-  "weeklyChartLabel": "7 நாள் வானிலை முன்னறிவிப்பு விளக்கப்படம்",
   "appTitle": "Meteograph",
   "temperature": "வெப்பநிலை",
   "precipitation": "மழைப்பொழிவு",
@@ -43,6 +40,9 @@
   "searchConnectionError": "தேட இயலவில்லை - இணைப்பைச் சரிபார்க்கவும்",
   "selectLocation": "இருப்பிடத்தைத் தேர்ந்தெடுக்கவும்",
   "searchCityHint": "நகரத்தைத் தேடு...",
+  "clearSearch": "தேடலை அழி",
+  "hourlyChartLabel": "48 மணிநேர வானிலை முன்னறிவிப்பு விளக்கப்படம்",
+  "weeklyChartLabel": "7 நாள் வானிலை முன்னறிவிப்பு விளக்கப்படம்",
   "theme": "தீம்",
   "themeSystem": "அமைப்பின் இயல்புநிலை",
   "themeLight": "வெளிர்",

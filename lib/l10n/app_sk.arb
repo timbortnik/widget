@@ -1,8 +1,5 @@
 {
   "@@locale": "sk",
-  "clearSearch": "Vymazať vyhľadávanie",
-  "hourlyChartLabel": "Graf predpovede počasia na 48 hodín",
-  "weeklyChartLabel": "Graf predpovede počasia na 7 dní",
   "appTitle": "Meteograph",
   "temperature": "Teplota",
   "precipitation": "Zrážky",
@@ -43,6 +40,9 @@
   "searchConnectionError": "Nie je možné vyhľadávať - skontrolujte pripojenie",
   "selectLocation": "Vyberte umiestnenie",
   "searchCityHint": "Hľadať mesto...",
+  "clearSearch": "Vymazať vyhľadávanie",
+  "hourlyChartLabel": "Graf predpovede počasia na 48 hodín",
+  "weeklyChartLabel": "Graf predpovede počasia na 7 dní",
   "theme": "Motív",
   "themeSystem": "Predvolené systémom",
   "themeLight": "Svetlý",

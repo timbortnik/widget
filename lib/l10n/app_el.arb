@@ -1,8 +1,5 @@
 {
   "@@locale": "el",
-  "clearSearch": "Εκκαθάριση αναζήτησης",
-  "hourlyChartLabel": "Γράφημα πρόγνωσης καιρού 48 ωρών",
-  "weeklyChartLabel": "Γράφημα πρόγνωσης καιρού 7 ημερών",
   "appTitle": "Meteograph",
   "temperature": "Θερμοκρασία",
   "precipitation": "Βροχόπτωση",
@@ -43,6 +40,9 @@
   "searchConnectionError": "Αδυναμία αναζήτησης - ελέγξτε τη σύνδεση",
   "selectLocation": "Επιλογή τοποθεσίας",
   "searchCityHint": "Αναζήτηση πόλης...",
+  "clearSearch": "Εκκαθάριση αναζήτησης",
+  "hourlyChartLabel": "Γράφημα πρόγνωσης καιρού 48 ωρών",
+  "weeklyChartLabel": "Γράφημα πρόγνωσης καιρού 7 ημερών",
   "theme": "Θέμα",
   "themeSystem": "Προεπιλογή συστήματος",
   "themeLight": "Φωτεινό",

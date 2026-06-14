@@ -1,8 +1,5 @@
 {
   "@@locale": "bg",
-  "clearSearch": "Изчистване на търсенето",
-  "hourlyChartLabel": "Графика на прогнозата за времето за 48 часа",
-  "weeklyChartLabel": "Графика на прогнозата за времето за 7 дни",
   "appTitle": "Meteograph",
   "temperature": "Температура",
   "precipitation": "Валежи",
@@ -43,6 +40,9 @@
   "searchConnectionError": "Неуспешно търсене - проверете връзката",
   "selectLocation": "Изберете местоположение",
   "searchCityHint": "Търсене на град...",
+  "clearSearch": "Изчистване на търсенето",
+  "hourlyChartLabel": "Графика на прогнозата за времето за 48 часа",
+  "weeklyChartLabel": "Графика на прогнозата за времето за 7 дни",
   "theme": "Тема",
   "themeSystem": "Системна",
   "themeLight": "Светла",

@@ -1,8 +1,5 @@
 {
   "@@locale": "pl",
-  "clearSearch": "Wyczyść wyszukiwanie",
-  "hourlyChartLabel": "Wykres prognozy pogody na 48 godzin",
-  "weeklyChartLabel": "Wykres prognozy pogody na 7 dni",
   "appTitle": "Meteograph",
   "temperature": "Temperatura",
   "precipitation": "Opady",
@@ -43,6 +40,9 @@
   "searchConnectionError": "Nie można wyszukać - sprawdź połączenie",
   "selectLocation": "Wybierz lokalizację",
   "searchCityHint": "Szukaj miasta...",
+  "clearSearch": "Wyczyść wyszukiwanie",
+  "hourlyChartLabel": "Wykres prognozy pogody na 48 godzin",
+  "weeklyChartLabel": "Wykres prognozy pogody na 7 dni",
   "theme": "Motyw",
   "themeSystem": "Domyślne ustawienie systemu",
   "themeLight": "Jasny",

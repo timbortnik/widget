@@ -1,8 +1,5 @@
 {
   "@@locale": "sq",
-  "clearSearch": "Pastro kërkimin",
-  "hourlyChartLabel": "Grafiku i parashikimit të motit për 48 orë",
-  "weeklyChartLabel": "Grafiku i parashikimit të motit për 7 ditë",
   "appTitle": "Meteograph",
   "temperature": "Temperatura",
   "precipitation": "Reshjet",
@@ -43,6 +40,9 @@
   "searchConnectionError": "Nuk mund të kërkoj - kontrolloni lidhjen",
   "selectLocation": "Zgjidhni vendndodhjen",
   "searchCityHint": "Kërko qytet...",
+  "clearSearch": "Pastro kërkimin",
+  "hourlyChartLabel": "Grafiku i parashikimit të motit për 48 orë",
+  "weeklyChartLabel": "Grafiku i parashikimit të motit për 7 ditë",
   "theme": "Tema",
   "themeSystem": "Parazgjedhja e sistemit",
   "themeLight": "E çelët",
