@@ -23,7 +23,12 @@ exports.config = {
   port: Number(process.env.APPIUM_PORT || 4723),
   path: '/',
 
-  specs: ['./specs/**/*.e2e.js'],
+  // Grouped (nested array) so both specs run in ONE worker = one Appium session
+  // = one app install/launch = ONE weather fetch per job (instead of one fetch
+  // per spec). accessibility runs first; home_happy_path's theme switch is last.
+  specs: [
+    ['./specs/accessibility.e2e.js', './specs/home_happy_path.e2e.js'],
+  ],
   exclude: [],
   maxInstances: 1,
 
