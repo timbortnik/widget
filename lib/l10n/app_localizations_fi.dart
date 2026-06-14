@@ -133,6 +133,15 @@ class AppLocalizationsFi extends AppLocalizations {
   String get searchCityHint => 'Hae kaupunkia...';
 
   @override
+  String get clearSearch => 'Tyhjennä haku';
+
+  @override
+  String get hourlyChartLabel => '48 tunnin sääennustekaavio';
+
+  @override
+  String get weeklyChartLabel => '7 päivän sääennustekaavio';
+
+  @override
   String get theme => 'Teema';
 
   @override

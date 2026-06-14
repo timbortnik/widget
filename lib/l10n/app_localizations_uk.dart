@@ -134,6 +134,15 @@ class AppLocalizationsUk extends AppLocalizations {
   String get searchCityHint => 'Пошук міста...';
 
   @override
+  String get clearSearch => 'Очистити пошук';
+
+  @override
+  String get hourlyChartLabel => 'Графік прогнозу погоди на 48 годин';
+
+  @override
+  String get weeklyChartLabel => 'Графік прогнозу погоди на 7 днів';
+
+  @override
   String get theme => 'Тема';
 
   @override

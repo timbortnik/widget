@@ -133,6 +133,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchCityHint => 'Search city...';
 
   @override
+  String get clearSearch => 'Clear search';
+
+  @override
+  String get hourlyChartLabel => '48-hour weather forecast chart';
+
+  @override
+  String get weeklyChartLabel => '7-day weather forecast chart';
+
+  @override
   String get theme => 'Theme';
 
   @override

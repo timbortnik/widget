@@ -134,6 +134,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String get searchCityHint => 'Stadt suchen...';
 
   @override
+  String get clearSearch => 'Suche löschen';
+
+  @override
+  String get hourlyChartLabel => '48-Stunden-Wettervorhersage-Diagramm';
+
+  @override
+  String get weeklyChartLabel => '7-Tage-Wettervorhersage-Diagramm';
+
+  @override
   String get theme => 'Design';
 
   @override

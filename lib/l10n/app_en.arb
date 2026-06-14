@@ -227,6 +227,21 @@
     "description": "Placeholder text in city search field"
   },
 
+  "clearSearch": "Clear search",
+  "@clearSearch": {
+    "description": "Accessibility label for the button that clears the city search field"
+  },
+
+  "hourlyChartLabel": "48-hour weather forecast chart",
+  "@hourlyChartLabel": {
+    "description": "Accessibility label for the hourly meteogram chart"
+  },
+
+  "weeklyChartLabel": "7-day weather forecast chart",
+  "@weeklyChartLabel": {
+    "description": "Accessibility label for the weekly meteogram chart"
+  },
+
   "theme": "Theme",
   "@theme": {
     "description": "Title for the theme chooser"

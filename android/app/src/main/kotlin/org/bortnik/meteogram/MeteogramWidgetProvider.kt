@@ -26,7 +26,7 @@ import java.util.Locale
 
 /**
  * Default (48-hour) meteogram widget provider. Also serves as the base class
- * for variants (e.g. the 14-day weekly widget) — subclasses override the
+ * for variants (e.g. the 7-day weekly widget) — subclasses override the
  * extension points to change layout, time range, or time labels without
  * re-implementing the full RemoteViews update cycle.
  */

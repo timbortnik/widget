@@ -135,6 +135,15 @@ class AppLocalizationsMk extends AppLocalizations {
   String get searchCityHint => 'Пребарај град...';
 
   @override
+  String get clearSearch => 'Исчисти пребарување';
+
+  @override
+  String get hourlyChartLabel => 'Графикон со временска прогноза за 48 часа';
+
+  @override
+  String get weeklyChartLabel => 'Графикон со временска прогноза за 7 дена';
+
+  @override
   String get theme => 'Тема';
 
   @override

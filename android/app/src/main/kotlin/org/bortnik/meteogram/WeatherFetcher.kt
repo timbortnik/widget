@@ -26,6 +26,14 @@ object WeatherFetcher {
     private const val FORECAST_DAYS = 7
 
     /**
+     * Outcome of a single fetch: [success] plus, on failure, a short [error]
+     * reason (e.g. "HTTP 429", "UnknownHostException: ...") for the UI's error
+     * screen. Returned per call — no shared mutable state, so concurrent fetches
+     * (in-app + background worker/alarm) can't clobber each other's reason.
+     */
+    data class FetchResult(val success: Boolean, val error: String? = null)
+
+    /**
      * Fetch weather data synchronously and save to SharedPreferences.
      * Uses cached location from SharedPreferences.
      * Call from background thread only.
@@ -42,7 +50,7 @@ object WeatherFetcher {
             return
         }
 
-        if (fetchWeatherSync(context, latitude, longitude)) {
+        if (fetchWeatherSync(context, latitude, longitude).success) {
             // Trigger widget update
             WidgetUtils.rerenderAllWidgetsNative(context)
         }
@@ -52,22 +60,22 @@ object WeatherFetcher {
      * Fetch weather data synchronously for given coordinates.
      * Saves to SharedPreferences. Does NOT trigger widget update (caller's responsibility).
      * Call from background thread only.
-     * @return true on success, false on failure
+     * @return a [FetchResult] — success flag plus, on failure, the reason.
      */
-    fun fetchWeatherSync(context: Context, latitude: Double, longitude: Double): Boolean {
+    fun fetchWeatherSync(context: Context, latitude: Double, longitude: Double): FetchResult {
         Log.d(TAG, "Fetching weather for $latitude, $longitude")
 
-        val jsonResponse = fetchFromApi(latitude, longitude)
+        val (jsonResponse, fetchError) = fetchFromApi(latitude, longitude)
         if (jsonResponse == null) {
             Log.e(TAG, "Failed to fetch weather from API")
-            return false
+            return FetchResult(false, fetchError ?: "Failed to fetch weather from API")
         }
 
         // Transform API response to cached format (matching Dart's toJson())
         val cachedJson = transformApiResponse(jsonResponse)
         if (cachedJson == null) {
             Log.e(TAG, "Failed to transform API response")
-            return false
+            return FetchResult(false, "Failed to parse weather data")
         }
 
         // Save to SharedPreferences
@@ -93,7 +101,7 @@ object WeatherFetcher {
             .apply()
 
         Log.d(TAG, "Weather data cached successfully, current temp: $currentTemp°C")
-        return true
+        return FetchResult(true)
     }
 
     /**
@@ -172,9 +180,9 @@ object WeatherFetcher {
     /**
      * Fetch weather data from Open-Meteo API.
      * Certificate pinning not implemented - acceptable for public weather data with no auth.
-     * @return JSON response or null on failure
+     * @return (JSON response, null) on success, or (null, error reason) on failure.
      */
-    private fun fetchFromApi(latitude: Double, longitude: Double): JSONObject? {
+    private fun fetchFromApi(latitude: Double, longitude: Double): Pair<JSONObject?, String?> {
         val url = URL(buildUrl(latitude, longitude))
         var connection: HttpURLConnection? = null
 
@@ -187,7 +195,7 @@ object WeatherFetcher {
             val responseCode = connection.responseCode
             if (responseCode != HttpURLConnection.HTTP_OK) {
                 Log.e(TAG, "API returned $responseCode")
-                return null
+                return null to "HTTP $responseCode"
             }
 
             val reader = BufferedReader(InputStreamReader(connection.inputStream))
@@ -198,10 +206,10 @@ object WeatherFetcher {
             }
             reader.close()
 
-            JSONObject(response.toString())
+            JSONObject(response.toString()) to null
         } catch (e: Exception) {
             Log.e(TAG, "Network error", e)
-            null
+            null to (e.javaClass.simpleName + (e.message?.let { ": $it" } ?: ""))
         } finally {
             connection?.disconnect()
         }

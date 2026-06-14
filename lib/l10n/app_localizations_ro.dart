@@ -134,6 +134,15 @@ class AppLocalizationsRo extends AppLocalizations {
   String get searchCityHint => 'Căutați oraș...';
 
   @override
+  String get clearSearch => 'Șterge căutarea';
+
+  @override
+  String get hourlyChartLabel => 'Grafic cu prognoza meteo pe 48 de ore';
+
+  @override
+  String get weeklyChartLabel => 'Grafic cu prognoza meteo pe 7 zile';
+
+  @override
   String get theme => 'Temă';
 
   @override

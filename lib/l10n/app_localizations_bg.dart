@@ -133,6 +133,15 @@ class AppLocalizationsBg extends AppLocalizations {
   String get searchCityHint => 'Търсене на град...';
 
   @override
+  String get clearSearch => 'Изчистване на търсенето';
+
+  @override
+  String get hourlyChartLabel => 'Графика на прогнозата за времето за 48 часа';
+
+  @override
+  String get weeklyChartLabel => 'Графика на прогнозата за времето за 7 дни';
+
+  @override
   String get theme => 'Тема';
 
   @override

@@ -134,6 +134,15 @@ class AppLocalizationsBn extends AppLocalizations {
   String get searchCityHint => 'শহর খুঁজুন...';
 
   @override
+  String get clearSearch => 'অনুসন্ধান সাফ করুন';
+
+  @override
+  String get hourlyChartLabel => '48 ঘণ্টার আবহাওয়ার পূর্বাভাস চার্ট';
+
+  @override
+  String get weeklyChartLabel => '7 দিনের আবহাওয়ার পূর্বাভাস চার্ট';
+
+  @override
   String get theme => 'থিম';
 
   @override

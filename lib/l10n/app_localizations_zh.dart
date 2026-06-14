@@ -131,6 +131,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get searchCityHint => '搜索城市...';
 
   @override
+  String get clearSearch => '清除搜索';
+
+  @override
+  String get hourlyChartLabel => '48小时天气预报图表';
+
+  @override
+  String get weeklyChartLabel => '7天天气预报图表';
+
+  @override
   String get theme => '主题';
 
   @override

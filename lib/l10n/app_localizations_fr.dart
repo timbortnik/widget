@@ -134,6 +134,15 @@ class AppLocalizationsFr extends AppLocalizations {
   String get searchCityHint => 'Rechercher une ville...';
 
   @override
+  String get clearSearch => 'Effacer la recherche';
+
+  @override
+  String get hourlyChartLabel => 'Graphique des prévisions météo sur 48 heures';
+
+  @override
+  String get weeklyChartLabel => 'Graphique des prévisions météo sur 7 jours';
+
+  @override
   String get theme => 'Thème';
 
   @override

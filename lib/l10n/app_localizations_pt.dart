@@ -135,6 +135,15 @@ class AppLocalizationsPt extends AppLocalizations {
   String get searchCityHint => 'Pesquisar cidade...';
 
   @override
+  String get clearSearch => 'Limpar pesquisa';
+
+  @override
+  String get hourlyChartLabel => 'Gráfico de previsão do tempo de 48 horas';
+
+  @override
+  String get weeklyChartLabel => 'Gráfico de previsão do tempo de 7 dias';
+
+  @override
   String get theme => 'Tema';
 
   @override

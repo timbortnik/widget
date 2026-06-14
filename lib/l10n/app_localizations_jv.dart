@@ -133,6 +133,15 @@ class AppLocalizationsJv extends AppLocalizations {
   String get searchCityHint => 'Goleki kutha...';
 
   @override
+  String get clearSearch => 'Busak panggolekan';
+
+  @override
+  String get hourlyChartLabel => 'Bagan ramalan cuaca 48 jam';
+
+  @override
+  String get weeklyChartLabel => 'Bagan ramalan cuaca 7 dina';
+
+  @override
   String get theme => 'Tema';
 
   @override

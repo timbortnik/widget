@@ -134,6 +134,15 @@ class AppLocalizationsSq extends AppLocalizations {
   String get searchCityHint => 'Kërko qytet...';
 
   @override
+  String get clearSearch => 'Pastro kërkimin';
+
+  @override
+  String get hourlyChartLabel => 'Grafiku i parashikimit të motit për 48 orë';
+
+  @override
+  String get weeklyChartLabel => 'Grafiku i parashikimit të motit për 7 ditë';
+
+  @override
   String get theme => 'Tema';
 
   @override

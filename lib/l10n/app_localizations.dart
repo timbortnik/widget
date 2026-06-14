@@ -382,6 +382,24 @@ abstract class AppLocalizations {
   /// **'Search city...'**
   String get searchCityHint;
 
+  /// Accessibility label for the button that clears the city search field
+  ///
+  /// In en, this message translates to:
+  /// **'Clear search'**
+  String get clearSearch;
+
+  /// Accessibility label for the hourly meteogram chart
+  ///
+  /// In en, this message translates to:
+  /// **'48-hour weather forecast chart'**
+  String get hourlyChartLabel;
+
+  /// Accessibility label for the weekly meteogram chart
+  ///
+  /// In en, this message translates to:
+  /// **'7-day weather forecast chart'**
+  String get weeklyChartLabel;
+
   /// Title for the theme chooser
   ///
   /// In en, this message translates to:

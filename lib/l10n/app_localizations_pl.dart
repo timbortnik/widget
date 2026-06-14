@@ -133,6 +133,15 @@ class AppLocalizationsPl extends AppLocalizations {
   String get searchCityHint => 'Szukaj miasta...';
 
   @override
+  String get clearSearch => 'Wyczyść wyszukiwanie';
+
+  @override
+  String get hourlyChartLabel => 'Wykres prognozy pogody na 48 godzin';
+
+  @override
+  String get weeklyChartLabel => 'Wykres prognozy pogody na 7 dni';
+
+  @override
   String get theme => 'Motyw';
 
   @override

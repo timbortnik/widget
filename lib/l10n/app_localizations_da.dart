@@ -133,6 +133,15 @@ class AppLocalizationsDa extends AppLocalizations {
   String get searchCityHint => 'Søg by...';
 
   @override
+  String get clearSearch => 'Ryd søgning';
+
+  @override
+  String get hourlyChartLabel => '48-timers vejrudsigtsdiagram';
+
+  @override
+  String get weeklyChartLabel => '7-dages vejrudsigtsdiagram';
+
+  @override
   String get theme => 'Tema';
 
   @override

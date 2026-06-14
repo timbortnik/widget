@@ -134,6 +134,15 @@ class AppLocalizationsEl extends AppLocalizations {
   String get searchCityHint => 'Αναζήτηση πόλης...';
 
   @override
+  String get clearSearch => 'Εκκαθάριση αναζήτησης';
+
+  @override
+  String get hourlyChartLabel => 'Γράφημα πρόγνωσης καιρού 48 ωρών';
+
+  @override
+  String get weeklyChartLabel => 'Γράφημα πρόγνωσης καιρού 7 ημερών';
+
+  @override
   String get theme => 'Θέμα';
 
   @override

@@ -18,13 +18,19 @@ class NativeSvgService {
 
   // ============ Weather Fetching ============
 
+  /// Reason for the most recent failed [fetchWeather] — the native error
+  /// message (e.g. `HTTP 429`, `UnknownHostException: ...`), or null after a
+  /// success. Surfaced on the error screen for diagnostics.
+  static String? lastFetchError;
+
   /// Fetch weather data via native Kotlin HTTP client.
   /// Weather is saved to SharedPreferences for later use.
-  /// Returns true on success, false on failure.
+  /// Returns true on success, false on failure ([lastFetchError] holds why).
   static Future<bool> fetchWeather({
     required double latitude,
     required double longitude,
   }) async {
+    lastFetchError = null;
     try {
       final result = await _channel.invokeMethod<bool>('fetchWeather', {
         'latitude': latitude,
@@ -32,6 +38,7 @@ class NativeSvgService {
       });
       return result ?? false;
     } on PlatformException catch (e) {
+      lastFetchError = e.message;
       debugPrint('Native weather fetch failed: ${e.message}');
       return false;
     }
@@ -141,7 +148,7 @@ class NativeSvgService {
   /// The native generator reads weather data from SharedPreferences,
   /// so weather must be cached before calling this.
   ///
-  /// [mode] selects which chart to render: 'hourly' (default, 48h) or 'weekly' (14 days).
+  /// [mode] selects which chart to render: 'hourly' (default, 48h) or 'weekly' (7 days).
   static Future<String?> generateSvg({
     required int width,
     required int height,

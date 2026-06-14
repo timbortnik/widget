@@ -133,6 +133,15 @@ class AppLocalizationsHi extends AppLocalizations {
   String get searchCityHint => 'शहर खोजें...';
 
   @override
+  String get clearSearch => 'खोज साफ़ करें';
+
+  @override
+  String get hourlyChartLabel => '48 घंटे का मौसम पूर्वानुमान चार्ट';
+
+  @override
+  String get weeklyChartLabel => '7 दिन का मौसम पूर्वानुमान चार्ट';
+
+  @override
   String get theme => 'थीम';
 
   @override

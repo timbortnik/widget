@@ -133,6 +133,15 @@ class AppLocalizationsCs extends AppLocalizations {
   String get searchCityHint => 'Hledat město...';
 
   @override
+  String get clearSearch => 'Vymazat hledání';
+
+  @override
+  String get hourlyChartLabel => 'Graf předpovědi počasí na 48 hodin';
+
+  @override
+  String get weeklyChartLabel => 'Graf předpovědi počasí na 7 dní';
+
+  @override
   String get theme => 'Motiv';
 
   @override
