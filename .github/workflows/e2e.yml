@@ -49,7 +49,7 @@ jobs:
       # ---- Test stage: pure Node + Appium, consumes the prebuilt APK ----
       # No Flutter on PATH from here on; the test only needs the APK by path.
       - name: Set up Node
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v6
         with:
           node-version: '20'
           cache: 'npm'
