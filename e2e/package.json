@@ -17,8 +17,9 @@
     "webdriverio": "9.28.0"
   },
   "//uiautomator2": "Driver installed via `npm run driver:install` (uiautomator2@4.2.9 — last 4.x; 5.x+ require Appium 3). Not an npm dependency; lives under APPIUM_HOME=./.appium.",
-  "//overrides": "serialize-javascript: mocha@10.8.2 pins ^6.0.2 (vuln <7.0.5, GHSA-5c6j-r48x-rmvq + GHSA-qj8w-gfj5-8c6v). Force the patched 7.x — API-compatible (only 7.0.0 breaking change was dropping Node<20; CI runs Node 20+) and keeps @wdio/mocha-framework@9.28.0 (Dependabot's path would downgrade it to 6.1.17).",
+  "//overrides": "serialize-javascript: mocha@10.8.2 pins ^6.0.2 (vuln <7.0.5, GHSA-5c6j-r48x-rmvq + GHSA-qj8w-gfj5-8c6v). Force the patched 7.x — API-compatible (only 7.0.0 breaking change was dropping Node<20; CI runs Node 20+) and keeps @wdio/mocha-framework@9.28.0 (Dependabot's path would downgrade it to 6.1.17). form-data: appium@3.5.0 pins form-data@4.0.5 via @appium/support@7.2.3 (vuln >=4.0.0 <4.0.6, CWE-93 CRLF injection). Force the patched 4.0.6 — patch release, API-compatible; Dependabot's path would downgrade appium to 1.22.3.",
   "overrides": {
-    "serialize-javascript": "^7.0.5"
+    "serialize-javascript": "^7.0.5",
+    "form-data": "^4.0.6"
   }
 }
