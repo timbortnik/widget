@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       # ---- Build stage: produce the x86_64 debug APK (Flutter) ----
       # This is the only Flutter step; it just produces the artifact under test.
