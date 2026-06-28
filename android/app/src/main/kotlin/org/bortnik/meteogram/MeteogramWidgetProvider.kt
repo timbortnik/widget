@@ -260,8 +260,11 @@ open class MeteogramWidgetProvider : AppWidgetProvider() {
         val minWidth = newOptions.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH)
         val maxHeight = newOptions.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT)
         val density = context.resources.displayMetrics.density
-        val widthPx = (minWidth * density).toInt()
-        val heightPx = (maxHeight * density).toInt()
+        val (widthPx, heightPx) = WidgetUtils.clampChartDimensions(
+            context,
+            (minWidth * density).toInt(),
+            (maxHeight * density).toInt()
+        )
 
         Log.d(logTag, "Widget $appWidgetId new dimensions: ${minWidth}dp x ${maxHeight}dp = ${widthPx}px x ${heightPx}px")
 
@@ -308,8 +311,16 @@ open class MeteogramWidgetProvider : AppWidgetProvider() {
                 )
                 views.setOnClickPendingIntent(R.id.widget_root, pendingIntent)
 
-                appWidgetManager.updateAppWidget(appWidgetId, views)
-                Log.d(logTag, "Widget $appWidgetId updated with native charts")
+                // Guard against the launcher rejecting an over-budget bitmap
+                // update (see WidgetUtils.clampChartDimensions). Clamping should
+                // keep us under the limit, but a throw here must never crash the
+                // app process — the widget receiver runs in-process.
+                try {
+                    appWidgetManager.updateAppWidget(appWidgetId, views)
+                    Log.d(logTag, "Widget $appWidgetId updated with native charts")
+                } catch (e: Exception) {
+                    Log.e(logTag, "Failed to update widget $appWidgetId after resize", e)
+                }
                 return
             }
         }
@@ -349,8 +360,13 @@ open class MeteogramWidgetProvider : AppWidgetProvider() {
             val maxHeight = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT)
             val density = context.resources.displayMetrics.density
 
-            var widthPx = (minWidth * density).toInt()
-            var heightPx = (maxHeight * density).toInt()
+            val clamped = WidgetUtils.clampChartDimensions(
+                context,
+                (minWidth * density).toInt(),
+                (maxHeight * density).toInt()
+            )
+            var widthPx = clamped.first
+            var heightPx = clamped.second
 
             Log.d(logTag, "Widget $appWidgetId dimensions: ${minWidth}dp x ${maxHeight}dp = ${widthPx}px x ${heightPx}px")
 
@@ -433,8 +449,15 @@ open class MeteogramWidgetProvider : AppWidgetProvider() {
                 applyThemeOverride(context, views)
             }
 
-            appWidgetManager.updateAppWidget(appWidgetId, views)
-            Log.d(logTag, "Updated widget $appWidgetId")
+            // Guard against the launcher rejecting an over-budget bitmap update
+            // (see WidgetUtils.clampChartDimensions) — a throw must never crash
+            // the in-process widget receiver.
+            try {
+                appWidgetManager.updateAppWidget(appWidgetId, views)
+                Log.d(logTag, "Updated widget $appWidgetId")
+            } catch (e: Exception) {
+                Log.e(logTag, "Failed to update widget $appWidgetId", e)
+            }
         }
 
         WidgetUtils.updateLastRenderTime(context)
