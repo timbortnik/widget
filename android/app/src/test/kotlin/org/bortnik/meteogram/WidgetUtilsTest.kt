@@ -225,12 +225,17 @@ class WidgetUtilsTest {
         return dm.widthPixels.toLong() * dm.heightPixels.toLong()
     }
 
-    /** Two bitmaps of [w]x[h] must fit the launcher's 1.5x-screen budget. */
+    /**
+     * Each bitmap must stay within clampChartDimensions' 0.6x-screen target —
+     * the safety margin below the launcher's hard 0.75x-per-bitmap (1.5x-total)
+     * limit. Asserting the 0.6 target, not just the 0.75 cap, locks in the
+     * margin so a regression that loosens it is caught.
+     */
     private fun assertFitsBudget(w: Int, h: Int) {
         val area = w.toLong() * h.toLong()
         assertTrue(
-            "bitmap area $area must be <= 0.75x screen ${screenArea()} so two fit 1.5x",
-            area <= (screenArea() * 3L) / 4L
+            "bitmap area $area must be <= 0.6x screen ${screenArea()}",
+            area <= (screenArea() * 3L) / 5L
         )
     }
 
