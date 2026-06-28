@@ -250,3 +250,44 @@ class WeatherUpdateWorker : Worker() {
 
 **Related docs:**
 - [MATERIAL_YOU_COLORS.md](MATERIAL_YOU_COLORS.md) - Full implementation details
+
+---
+
+## Dev Environment: Emulator Quick Boot can destroy your SSD
+
+**Problem:** Running the Android emulator for widget testing wrote to the host SSD at
+**~1.4 GB/s sustained (~3 TB/hour)** — fast enough to consume a consumer SSD's rated write
+endurance (TBW) in days. It happened on a brand-new AVD, regardless of system image, while
+the emulator merely idled/booted.
+
+**Root cause:** With Quick Boot (the default), the emulator memory-maps the *entire guest
+RAM* to `~/.android/avd/<name>.avd/snapshots/default_boot/ram.img` (a `MAP_SHARED` file
+mapping). As the guest dirties RAM, the kernel's periodic dirty-page writeback faithfully
+flushes those pages back to `ram.img`. The writes are **RAM-snapshot writeback, not guest
+disk I/O** — which is why they're easy to misdiagnose.
+
+**Not an app bug, not an ext4 bug.** Linux is doing exactly what it should for a writable
+file-backed mapping. The fault is the emulator's file-backed-RAM design. Notably the
+emulator logs `File System is not ext4, disable QuickbootFileBacked feature` and
+auto-disables the feature on non-ext4 hosts — i.e. it assumes **ext4 is safe** and leaves
+the feature on. On a modern-kernel ext4 host that assumption is wrong.
+
+**Solution (verified → 0–3 MB/s):** disable file-backed RAM globally:
+```bash
+echo "QuickbootFileBacked = off" >> ~/.android/advancedFeatures.ini
+```
+Emulator log then shows `Feature 'QuickbootFileBacked' (17) is overridden to 'disabled'`.
+Quick Boot still works (snapshot saved on clean exit), just without continuous writeback.
+(`emulator -avd <name> -no-snapshot` also avoids it, but loses Quick Boot entirely.)
+
+**How to detect / avoid the misdiagnosis:** per-process tools (`pidstat -d`, `/proc/<pid>/io`
+`write_bytes`) **undercount** this — mmap dirty-page writeback is done by kernel flusher
+threads and isn't attributed to the qemu process. Trust **host** `/proc/diskstats` (the
+`nvme…` line, field 10 = sectors written) or `vmstat 1` (`bo` column) for the real rate, and
+compare against the **guest's** `/proc/diskstats` (≈ 0 here). A big host-vs-guest gap = RAM
+or snapshot writeback, not disk I/O. Killing the emulator drops host writes to ~0, confirming
+the source. Reproduced on emulator 36.4.10.0, Linux 7.0.0, ext4-on-LUKS, KVM.
+
+**Key insight:** the emulator's default writes far more to disk than it appears — and the
+heaviest writer is the RAM snapshot, not the guest filesystem. Set `QuickbootFileBacked = off`
+once on any dev machine that runs this emulator.
