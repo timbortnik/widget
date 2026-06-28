@@ -207,4 +207,69 @@ class WidgetUtilsTest {
     fun `chartVisibilityForThemeMode defers to system for unknown value`() {
         assertNull(WidgetUtils.chartVisibilityForThemeMode("bogus"))
     }
+
+    // ---- clampChartDimensions ----
+    //
+    // The widget sets two bitmaps (light + dark) per update, and the launcher
+    // rejects updates whose total bitmap memory exceeds 1.5 x screen area,
+    // crashing the in-process receiver. So each bitmap must fit 0.75 x screen.
+
+    private fun setScreen(width: Int, height: Int) {
+        val dm = context.resources.displayMetrics
+        dm.widthPixels = width
+        dm.heightPixels = height
+    }
+
+    private fun screenArea(): Long {
+        val dm = context.resources.displayMetrics
+        return dm.widthPixels.toLong() * dm.heightPixels.toLong()
+    }
+
+    /** Two bitmaps of [w]x[h] must fit the launcher's 1.5x-screen budget. */
+    private fun assertFitsBudget(w: Int, h: Int) {
+        val area = w.toLong() * h.toLong()
+        assertTrue(
+            "bitmap area $area must be <= 0.75x screen ${screenArea()} so two fit 1.5x",
+            area <= (screenArea() * 3L) / 4L
+        )
+    }
+
+    @Test
+    fun `clampChartDimensions leaves in-budget dimensions unchanged`() {
+        setScreen(1080, 2400)
+        val (w, h) = WidgetUtils.clampChartDimensions(context, 800, 400)
+        assertEquals(800, w)
+        assertEquals(400, h)
+    }
+
+    @Test
+    fun `clampChartDimensions scales a full-screen request to fit the budget`() {
+        setScreen(1080, 2400)
+        val dm = context.resources.displayMetrics
+        val (w, h) = WidgetUtils.clampChartDimensions(context, dm.widthPixels, dm.heightPixels)
+        assertFitsBudget(w, h)
+        // Aspect ratio preserved (within integer rounding).
+        assertEquals(
+            dm.widthPixels.toDouble() / dm.heightPixels,
+            w.toDouble() / h,
+            0.02
+        )
+    }
+
+    @Test
+    fun `clampChartDimensions clamps a very tall narrow widget`() {
+        setScreen(1440, 3120)
+        // Smart Launcher can request a widget far taller than the screen.
+        val (w, h) = WidgetUtils.clampChartDimensions(context, 600, 12000)
+        assertFitsBudget(w, h)
+        assertTrue("clamped dims stay positive", w >= 1 && h >= 1)
+        assertEquals(600.0 / 12000.0, w.toDouble() / h, 0.02)
+    }
+
+    @Test
+    fun `clampChartDimensions returns non-positive dimensions unchanged`() {
+        setScreen(1080, 2400)
+        assertEquals(Pair(0, 500), WidgetUtils.clampChartDimensions(context, 0, 500))
+        assertEquals(Pair(-1, -1), WidgetUtils.clampChartDimensions(context, -1, -1))
+    }
 }

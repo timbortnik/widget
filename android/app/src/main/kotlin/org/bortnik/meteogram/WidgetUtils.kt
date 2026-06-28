@@ -8,6 +8,7 @@ import android.content.Context
 import android.util.Log
 import android.view.View
 import java.util.concurrent.Executors
+import kotlin.math.sqrt
 
 /**
  * Shared utility functions and constants for widget operations.
@@ -72,6 +73,51 @@ object WidgetUtils {
         if (height <= 0) height = DEFAULT_HEIGHT_PX
 
         return Pair(width, height)
+    }
+
+    /**
+     * Clamp chart bitmap dimensions so the widget's RemoteViews stay within the
+     * launcher's per-widget bitmap budget.
+     *
+     * AppWidgetService rejects an update whose total bitmap memory exceeds
+     * `1.5 x screenArea x 4` bytes, throwing IllegalArgumentException from
+     * `updateAppWidget()`. We set TWO bitmaps per update (light + dark charts
+     * toggled by night-mode qualifiers), so the two together must fit — i.e.
+     * each may use at most `0.75 x screenArea`. Stock launchers cap widget size
+     * below this, but some third-party launchers (e.g. Smart Launcher) allow
+     * resizing past it, which crashed the whole app process (the widget receiver
+     * runs in-process, taking the app and widget down together).
+     *
+     * When the requested size would overflow the budget, scale both dimensions
+     * down proportionally (preserving aspect ratio). The ImageView stretches the
+     * bitmap to the view (FIT_XY), so a slightly lower-resolution raster of the
+     * same SVG chart is visually indistinguishable — and far better than a crash.
+     * A 0.6 (not 0.75) target leaves margin for the small placeholder/indicator
+     * bitmaps and for the system measuring against the full display while
+     * `displayMetrics` may report a smaller (decor-excluded) area.
+     *
+     * @return (width, height) in pixels, guaranteed to fit the budget.
+     */
+    fun clampChartDimensions(context: Context, widthPx: Int, heightPx: Int): Pair<Int, Int> {
+        if (widthPx <= 0 || heightPx <= 0) return Pair(widthPx, heightPx)
+
+        val metrics = context.resources.displayMetrics
+        val screenArea = metrics.widthPixels.toLong() * metrics.heightPixels.toLong()
+        if (screenArea <= 0L) return Pair(widthPx, heightPx)
+
+        val maxBitmapArea = (screenArea * 0.6).toLong()
+        val requestedArea = widthPx.toLong() * heightPx.toLong()
+        if (requestedArea <= maxBitmapArea) return Pair(widthPx, heightPx)
+
+        val scale = sqrt(maxBitmapArea.toDouble() / requestedArea.toDouble())
+        val clampedWidth = (widthPx * scale).toInt().coerceAtLeast(1)
+        val clampedHeight = (heightPx * scale).toInt().coerceAtLeast(1)
+        Log.d(
+            TAG,
+            "Clamped chart dimensions ${widthPx}x$heightPx -> ${clampedWidth}x$clampedHeight " +
+                "(screen area $screenArea, max bitmap area $maxBitmapArea)"
+        )
+        return Pair(clampedWidth, clampedHeight)
     }
 
     /**
