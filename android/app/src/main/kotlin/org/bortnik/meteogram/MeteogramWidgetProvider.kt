@@ -306,8 +306,13 @@ open class MeteogramWidgetProvider : AppWidgetProvider() {
      * Build the complete RemoteViews for one widget at the given pixel size:
      * click intent, native light/dark charts (falling back to saved SVG files,
      * then a "tap to load" placeholder), refresh indicator, and theme override.
-     * A pure function of its inputs, so [updateWidgetWithRetry] can rebuild it at
-     * a smaller size when the launcher rejects an over-budget update.
+     * Deterministic for the given inputs and safe to re-invoke at a smaller size,
+     * so [updateWidgetWithRetry] can rebuild it when the launcher rejects an
+     * over-budget update.
+     *
+     * @param nativeOnly when true (the resize path), skip the saved-SVG-file
+     *   fallback and the placeholder and return null if no native chart could be
+     *   generated, so the caller can trigger a weather fetch instead.
      */
     private fun buildWidgetViews(
         context: Context,
@@ -315,8 +320,9 @@ open class MeteogramWidgetProvider : AppWidgetProvider() {
         prefs: SharedPreferences,
         weatherData: WeatherData?,
         widthPx: Int,
-        heightPx: Int
-    ): RemoteViews {
+        heightPx: Int,
+        nativeOnly: Boolean = false
+    ): RemoteViews? {
         val views = RemoteViews(context.packageName, layoutRes)
 
         val intent = Intent(context, MainActivity::class.java).apply {
@@ -349,7 +355,11 @@ open class MeteogramWidgetProvider : AppWidgetProvider() {
             }
         }
 
-        if (!hasChart) {
+        // Resize wants a freshly generated chart only: skip the stale-file
+        // fallback/placeholder and signal the caller to fetch instead.
+        if (nativeOnly) {
+            if (!hasChart) return null
+        } else if (!hasChart) {
             val svgLightPath = prefs.getString("svg_path_light_$appWidgetId", null)
                 ?: prefs.getString("svg_path_light", null)
             val svgDarkPath = prefs.getString("svg_path_dark_$appWidgetId", null)
@@ -421,38 +431,12 @@ open class MeteogramWidgetProvider : AppWidgetProvider() {
             // Clamping should keep us under the launcher's bitmap budget; if a
             // host rejects the update anyway, updateWidgetWithRetry shrinks and
             // retries rather than letting the throw freeze the widget forever.
+            // nativeOnly: on resize we want only a freshly generated chart (no
+            // stale-file/placeholder fallback), so a null result falls through to
+            // the weather fetch below.
             updateWidgetWithRetry(appWidgetManager, appWidgetId, widthPx, heightPx) { w, h ->
-                val views = RemoteViews(context.packageName, layoutRes)
-
-                val lightColors = WidgetChartColors.get(context, isLight = true)
-                val lightBitmap = generateChartBitmap(context, weatherData, lightColors, w, h)
-                if (lightBitmap != null) {
-                    views.setImageViewBitmap(R.id.widget_chart_light, lightBitmap)
-                }
-
-                val darkColors = WidgetChartColors.get(context, isLight = false)
-                val darkBitmap = generateChartBitmap(context, weatherData, darkColors, w, h)
-                if (darkBitmap != null) {
-                    views.setImageViewBitmap(R.id.widget_chart_dark, darkBitmap)
-                }
-
-                if (lightBitmap == null && darkBitmap == null) return@updateWidgetWithRetry null
-
-                rendered = true
-                views.setViewVisibility(R.id.widget_placeholder, View.GONE)
-                views.setViewVisibility(R.id.widget_refresh_indicator, View.GONE)
-                applyThemeOverride(context, views)
-
-                val intent = Intent(context, MainActivity::class.java).apply {
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-                    setPackage(context.packageName)
-                }
-                val pendingIntent = PendingIntent.getActivity(
-                    context, 0, intent,
-                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-                )
-                views.setOnClickPendingIntent(R.id.widget_root, pendingIntent)
-                views
+                buildWidgetViews(context, appWidgetId, prefs, weatherData, w, h, nativeOnly = true)
+                    ?.also { rendered = true }
             }
             if (rendered) return
         }
