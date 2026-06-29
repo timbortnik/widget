@@ -137,6 +137,12 @@ open class MeteogramWidgetProvider : AppWidgetProvider() {
         } catch (e: Exception) {
             Log.e(logTag, "Error rendering SVG string to bitmap", e)
             null
+        } catch (e: OutOfMemoryError) {
+            // A too-large bitmap allocation is an Error, not an Exception, so it
+            // would escape the catch above and crash the in-process receiver.
+            // Degrade to null (caller falls back to a smaller render/placeholder).
+            Log.e(logTag, "Out of memory rendering SVG string to bitmap (${width}x$height)", e)
+            null
         }
     }
 
@@ -221,6 +227,11 @@ open class MeteogramWidgetProvider : AppWidgetProvider() {
             }
         } catch (e: Exception) {
             Log.e(logTag, "Error rendering SVG", e)
+            null
+        } catch (e: OutOfMemoryError) {
+            // See renderSvgStringToBitmap: OOM is an Error, caught here so an
+            // over-budget allocation degrades to null instead of crashing.
+            Log.e(logTag, "Out of memory rendering SVG (${width}x$height)", e)
             null
         }
     }
@@ -489,8 +500,13 @@ open class MeteogramWidgetProvider : AppWidgetProvider() {
             } else {
                 val savedDims = getWidgetDimensions(widgetData, appWidgetId)
                 if (savedDims != null) {
-                    widthPx = savedDims.first
-                    heightPx = savedDims.second
+                    // Saved dims can predate clampChartDimensions (e.g. upgraded
+                    // from a build that stored the raw launcher size), so clamp
+                    // them too — a stale over-budget value here would otherwise
+                    // OOM Bitmap.createBitmap and crash the in-process receiver.
+                    val clampedSaved = WidgetUtils.clampChartDimensions(context, savedDims.first, savedDims.second)
+                    widthPx = clampedSaved.first
+                    heightPx = clampedSaved.second
                     Log.d(logTag, "Widget $appWidgetId using saved dimensions: ${widthPx}x${heightPx}px")
                 } else {
                     widthPx = WidgetUtils.DEFAULT_WIDTH_PX
