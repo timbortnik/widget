@@ -49,6 +49,12 @@ open class MeteogramWidgetProvider : AppWidgetProvider() {
 
     companion object {
         private const val KEY_WIDGET_IDS = "widget_ids"
+
+        // Recovery bounds for updateWidgetWithRetry: how many times to shrink the
+        // chart bitmaps when the launcher rejects an over-budget update, and the
+        // pixel floor below which retrying is pointless.
+        private const val MAX_UPDATE_ATTEMPTS = 4
+        private const val MIN_CHART_DIMENSION_PX = 64
     }
 
     private fun saveWidgetDimensions(prefs: SharedPreferences, widgetId: Int, widthPx: Int, heightPx: Int, density: Float) {
@@ -249,6 +255,137 @@ open class MeteogramWidgetProvider : AppWidgetProvider() {
         return null
     }
 
+    /**
+     * Push [buildViews]'s RemoteViews to the launcher, shrinking the chart
+     * bitmaps and retrying if the launcher rejects the update for exceeding its
+     * per-widget bitmap-memory budget (`updateAppWidget` throws
+     * IllegalArgumentException).
+     *
+     * [WidgetUtils.clampChartDimensions] should keep us under the budget, but the
+     * launcher's budget basis can differ from our displayMetrics (split-screen,
+     * multi-window, third-party launchers). Without recovery a single rejection
+     * freezes the widget permanently — every later update recomputes the same
+     * over-budget size and is rejected again, fixable only by re-creating the
+     * widget. The chart is vector, so a lower-res raster stretched FIT_XY looks
+     * identical; halving both dimensions quarters the bitmap memory and almost
+     * always fits on the first retry.
+     *
+     * @param buildViews builds the complete RemoteViews for the given pixel size,
+     *   or null if there's nothing to show at that size (caller handles it).
+     */
+    private fun updateWidgetWithRetry(
+        appWidgetManager: AppWidgetManager,
+        appWidgetId: Int,
+        widthPx: Int,
+        heightPx: Int,
+        buildViews: (width: Int, height: Int) -> RemoteViews?
+    ) {
+        var w = widthPx
+        var h = heightPx
+        for (attempt in 0 until MAX_UPDATE_ATTEMPTS) {
+            val views = buildViews(w, h) ?: return
+            try {
+                appWidgetManager.updateAppWidget(appWidgetId, views)
+                if (attempt == 0) {
+                    Log.d(logTag, "Updated widget $appWidgetId")
+                } else {
+                    Log.w(logTag, "Updated widget $appWidgetId at reduced ${w}x$h after $attempt retr${if (attempt == 1) "y" else "ies"}")
+                }
+                return
+            } catch (e: Exception) {
+                Log.e(logTag, "Widget $appWidgetId update rejected at ${w}x$h (attempt ${attempt + 1}/$MAX_UPDATE_ATTEMPTS)", e)
+                w /= 2
+                h /= 2
+                if (w < MIN_CHART_DIMENSION_PX || h < MIN_CHART_DIMENSION_PX) break
+            }
+        }
+        Log.e(logTag, "Gave up updating widget $appWidgetId — could not fit launcher bitmap budget")
+    }
+
+    /**
+     * Build the complete RemoteViews for one widget at the given pixel size:
+     * click intent, native light/dark charts (falling back to saved SVG files,
+     * then a "tap to load" placeholder), refresh indicator, and theme override.
+     * A pure function of its inputs, so [updateWidgetWithRetry] can rebuild it at
+     * a smaller size when the launcher rejects an over-budget update.
+     */
+    private fun buildWidgetViews(
+        context: Context,
+        appWidgetId: Int,
+        prefs: SharedPreferences,
+        weatherData: WeatherData?,
+        widthPx: Int,
+        heightPx: Int
+    ): RemoteViews {
+        val views = RemoteViews(context.packageName, layoutRes)
+
+        val intent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            setPackage(context.packageName)
+        }
+        val pendingIntent = PendingIntent.getActivity(
+            context, 0, intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        views.setOnClickPendingIntent(R.id.widget_root, pendingIntent)
+
+        var hasChart = false
+
+        if (weatherData != null && widthPx > 0 && heightPx > 0) {
+            val lightColors = WidgetChartColors.get(context, isLight = true)
+            val lightBitmap = generateChartBitmap(context, weatherData, lightColors, widthPx, heightPx)
+            if (lightBitmap != null) {
+                views.setImageViewBitmap(R.id.widget_chart_light, lightBitmap)
+                hasChart = true
+                Log.d(logTag, "Widget $appWidgetId native light chart generated")
+            }
+
+            val darkColors = WidgetChartColors.get(context, isLight = false)
+            val darkBitmap = generateChartBitmap(context, weatherData, darkColors, widthPx, heightPx)
+            if (darkBitmap != null) {
+                views.setImageViewBitmap(R.id.widget_chart_dark, darkBitmap)
+                hasChart = true
+                Log.d(logTag, "Widget $appWidgetId native dark chart generated")
+            }
+        }
+
+        if (!hasChart) {
+            val svgLightPath = prefs.getString("svg_path_light_$appWidgetId", null)
+                ?: prefs.getString("svg_path_light", null)
+            val svgDarkPath = prefs.getString("svg_path_dark_$appWidgetId", null)
+                ?: prefs.getString("svg_path_dark", null)
+            Log.d(logTag, "Widget $appWidgetId falling back to SVG files - light: $svgLightPath, dark: $svgDarkPath")
+
+            val lightBitmap = loadChartBitmap(svgLightPath, null, widthPx, heightPx)
+            if (lightBitmap != null) {
+                views.setImageViewBitmap(R.id.widget_chart_light, lightBitmap)
+                hasChart = true
+                Log.d(logTag, "Widget $appWidgetId light chart loaded from file")
+            }
+
+            val darkBitmap = loadChartBitmap(svgDarkPath, null, widthPx, heightPx)
+            if (darkBitmap != null) {
+                views.setImageViewBitmap(R.id.widget_chart_dark, darkBitmap)
+                hasChart = true
+                Log.d(logTag, "Widget $appWidgetId dark chart loaded from file")
+            }
+        }
+
+        if (!hasChart) {
+            views.setViewVisibility(R.id.widget_placeholder, View.VISIBLE)
+            Log.d(logTag, "Widget $appWidgetId showing placeholder - no weather data")
+        } else {
+            views.setViewVisibility(R.id.widget_placeholder, View.GONE)
+        }
+
+        views.setViewVisibility(R.id.widget_refresh_indicator, View.GONE)
+        if (hasChart) {
+            applyThemeOverride(context, views)
+        }
+
+        return views
+    }
+
     override fun onAppWidgetOptionsChanged(
         context: Context,
         appWidgetManager: AppWidgetManager,
@@ -280,23 +417,28 @@ open class MeteogramWidgetProvider : AppWidgetProvider() {
         if (weatherData != null && widthPx > 0 && heightPx > 0) {
             Log.d(logTag, "Generating native chart for resize")
 
-            val views = RemoteViews(context.packageName, layoutRes)
+            var rendered = false
+            // Clamping should keep us under the launcher's bitmap budget; if a
+            // host rejects the update anyway, updateWidgetWithRetry shrinks and
+            // retries rather than letting the throw freeze the widget forever.
+            updateWidgetWithRetry(appWidgetManager, appWidgetId, widthPx, heightPx) { w, h ->
+                val views = RemoteViews(context.packageName, layoutRes)
 
-            val lightColors = WidgetChartColors.get(context, isLight = true)
-            val lightBitmap = generateChartBitmap(context, weatherData, lightColors, widthPx, heightPx)
-            if (lightBitmap != null) {
-                views.setImageViewBitmap(R.id.widget_chart_light, lightBitmap)
-                Log.d(logTag, "Native light chart generated")
-            }
+                val lightColors = WidgetChartColors.get(context, isLight = true)
+                val lightBitmap = generateChartBitmap(context, weatherData, lightColors, w, h)
+                if (lightBitmap != null) {
+                    views.setImageViewBitmap(R.id.widget_chart_light, lightBitmap)
+                }
 
-            val darkColors = WidgetChartColors.get(context, isLight = false)
-            val darkBitmap = generateChartBitmap(context, weatherData, darkColors, widthPx, heightPx)
-            if (darkBitmap != null) {
-                views.setImageViewBitmap(R.id.widget_chart_dark, darkBitmap)
-                Log.d(logTag, "Native dark chart generated")
-            }
+                val darkColors = WidgetChartColors.get(context, isLight = false)
+                val darkBitmap = generateChartBitmap(context, weatherData, darkColors, w, h)
+                if (darkBitmap != null) {
+                    views.setImageViewBitmap(R.id.widget_chart_dark, darkBitmap)
+                }
 
-            if (lightBitmap != null || darkBitmap != null) {
+                if (lightBitmap == null && darkBitmap == null) return@updateWidgetWithRetry null
+
+                rendered = true
                 views.setViewVisibility(R.id.widget_placeholder, View.GONE)
                 views.setViewVisibility(R.id.widget_refresh_indicator, View.GONE)
                 applyThemeOverride(context, views)
@@ -310,19 +452,9 @@ open class MeteogramWidgetProvider : AppWidgetProvider() {
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )
                 views.setOnClickPendingIntent(R.id.widget_root, pendingIntent)
-
-                // Guard against the launcher rejecting an over-budget bitmap
-                // update (see WidgetUtils.clampChartDimensions). Clamping should
-                // keep us under the limit, but a throw here must never crash the
-                // app process — the widget receiver runs in-process.
-                try {
-                    appWidgetManager.updateAppWidget(appWidgetId, views)
-                    Log.d(logTag, "Widget $appWidgetId updated with native charts")
-                } catch (e: Exception) {
-                    Log.e(logTag, "Failed to update widget $appWidgetId after resize", e)
-                }
-                return
+                views
             }
+            if (rendered) return
         }
 
         Log.d(logTag, "Native generation failed or no weather data, triggering weather fetch")
@@ -353,8 +485,6 @@ open class MeteogramWidgetProvider : AppWidgetProvider() {
         val weatherData = WeatherDataParser.parseFromPrefs(context)
 
         for (appWidgetId in appWidgetIds) {
-            val views = RemoteViews(context.packageName, layoutRes)
-
             val options = appWidgetManager.getAppWidgetOptions(appWidgetId)
             val minWidth = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH)
             val maxHeight = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT)
@@ -385,78 +515,11 @@ open class MeteogramWidgetProvider : AppWidgetProvider() {
                 }
             }
 
-            val intent = Intent(context, MainActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-                setPackage(context.packageName)
-            }
-            val pendingIntent = PendingIntent.getActivity(
-                context, 0, intent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-            views.setOnClickPendingIntent(R.id.widget_root, pendingIntent)
-
-            var hasChart = false
-
-            if (weatherData != null && widthPx > 0 && heightPx > 0) {
-                val lightColors = WidgetChartColors.get(context, isLight = true)
-                val lightBitmap = generateChartBitmap(context, weatherData, lightColors, widthPx, heightPx)
-                if (lightBitmap != null) {
-                    views.setImageViewBitmap(R.id.widget_chart_light, lightBitmap)
-                    hasChart = true
-                    Log.d(logTag, "Widget $appWidgetId native light chart generated")
-                }
-
-                val darkColors = WidgetChartColors.get(context, isLight = false)
-                val darkBitmap = generateChartBitmap(context, weatherData, darkColors, widthPx, heightPx)
-                if (darkBitmap != null) {
-                    views.setImageViewBitmap(R.id.widget_chart_dark, darkBitmap)
-                    hasChart = true
-                    Log.d(logTag, "Widget $appWidgetId native dark chart generated")
-                }
-            }
-
-            if (!hasChart) {
-                val svgLightPath = widgetData.getString("svg_path_light_$appWidgetId", null)
-                    ?: widgetData.getString("svg_path_light", null)
-                val svgDarkPath = widgetData.getString("svg_path_dark_$appWidgetId", null)
-                    ?: widgetData.getString("svg_path_dark", null)
-                Log.d(logTag, "Widget $appWidgetId falling back to SVG files - light: $svgLightPath, dark: $svgDarkPath")
-
-                val lightBitmap = loadChartBitmap(svgLightPath, null, widthPx, heightPx)
-                if (lightBitmap != null) {
-                    views.setImageViewBitmap(R.id.widget_chart_light, lightBitmap)
-                    hasChart = true
-                    Log.d(logTag, "Widget $appWidgetId light chart loaded from file")
-                }
-
-                val darkBitmap = loadChartBitmap(svgDarkPath, null, widthPx, heightPx)
-                if (darkBitmap != null) {
-                    views.setImageViewBitmap(R.id.widget_chart_dark, darkBitmap)
-                    hasChart = true
-                    Log.d(logTag, "Widget $appWidgetId dark chart loaded from file")
-                }
-            }
-
-            if (!hasChart) {
-                views.setViewVisibility(R.id.widget_placeholder, View.VISIBLE)
-                Log.d(logTag, "Widget $appWidgetId showing placeholder - no weather data")
-            } else {
-                views.setViewVisibility(R.id.widget_placeholder, View.GONE)
-            }
-
-            views.setViewVisibility(R.id.widget_refresh_indicator, View.GONE)
-            if (hasChart) {
-                applyThemeOverride(context, views)
-            }
-
-            // Guard against the launcher rejecting an over-budget bitmap update
-            // (see WidgetUtils.clampChartDimensions) — a throw must never crash
-            // the in-process widget receiver.
-            try {
-                appWidgetManager.updateAppWidget(appWidgetId, views)
-                Log.d(logTag, "Updated widget $appWidgetId")
-            } catch (e: Exception) {
-                Log.e(logTag, "Failed to update widget $appWidgetId", e)
+            // Clamping should keep the two chart bitmaps under the launcher's
+            // budget; if a host rejects the update anyway, updateWidgetWithRetry
+            // shrinks and retries so the widget never freezes permanently.
+            updateWidgetWithRetry(appWidgetManager, appWidgetId, widthPx, heightPx) { w, h ->
+                buildWidgetViews(context, appWidgetId, widgetData, weatherData, w, h)
             }
         }
 
