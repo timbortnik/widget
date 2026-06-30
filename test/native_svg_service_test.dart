@@ -175,5 +175,62 @@ void main() {
         expect(capturedUsesFahrenheit, [true, true]);
       });
     });
+
+    group('renderSvgToPng', () {
+      test('calls renderSvg with the svg and dimensions', () async {
+        String? capturedMethod;
+        Map<dynamic, dynamic>? capturedArgs;
+
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
+          capturedMethod = methodCall.method;
+          capturedArgs = methodCall.arguments as Map<dynamic, dynamic>;
+          return Uint8List.fromList(<int>[1, 2, 3]);
+        });
+
+        await NativeSvgService.renderSvgToPng(
+          svg: '<svg>chart</svg>',
+          width: 1000,
+          height: 500,
+        );
+
+        expect(capturedMethod, 'renderSvg');
+        expect(capturedArgs?['svg'], '<svg>chart</svg>');
+        expect(capturedArgs?['width'], 1000);
+        expect(capturedArgs?['height'], 500);
+      });
+
+      test('returns PNG bytes on success', () async {
+        final png = Uint8List.fromList(<int>[0x89, 0x50, 0x4E, 0x47]);
+
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
+          return png;
+        });
+
+        final result = await NativeSvgService.renderSvgToPng(
+          svg: '<svg/>',
+          width: 100,
+          height: 50,
+        );
+
+        expect(result, png);
+      });
+
+      test('returns null on PlatformException', () async {
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
+          throw PlatformException(code: 'RENDER_ERROR', message: 'boom');
+        });
+
+        final result = await NativeSvgService.renderSvgToPng(
+          svg: '<svg/>',
+          width: 100,
+          height: 50,
+        );
+
+        expect(result, isNull);
+      });
+    });
   });
 }

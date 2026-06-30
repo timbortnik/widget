@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data' show Uint8List;
 import 'dart:ui' show PlatformDispatcher;
 import 'package:flutter/material.dart';
 import '../a11y_ids.dart';
@@ -11,7 +12,6 @@ import '../services/units_service.dart';
 import '../services/material_you_service.dart';
 import '../services/widget_store.dart';
 import '../theme/app_theme.dart';
-import '../widgets/native_svg_chart_view.dart';
 import '../generated/version.dart';
 
 /// Wraps [child] so black-box UI tests (Appium + UiAutomator2) can locate it by
@@ -87,7 +87,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   void _invalidateChartCaches() {
     for (final entry in _chartCache.values) {
-      entry.svg = null;
+      entry.png = null;
     }
   }
 
@@ -421,7 +421,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     return isDark ? widget.materialYouColors!.dark : widget.materialYouColors!.light;
   }
 
-  /// Generate SVG asynchronously using native Kotlin generator.
+  /// Generate the chart asynchronously using the native Kotlin generator, then
+  /// rasterize it to PNG natively for display via a plain Flutter [Image]
+  /// (no PlatformView — see [NativeSvgService.renderSvgToPng]).
   /// Updates the cache entry for [mode] and triggers rebuild when complete.
   /// For hourly mode, also syncs current_temperature_celsius with nowIndex.
   Future<void> _generateSvgAsync({
@@ -439,25 +441,31 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         isLight: isLight,
         usesFahrenheit: usesFahrenheit,
       );
+      if (svgString == null || !mounted) return;
 
-      if (svgString != null && mounted) {
-        final updatedTemp = mode == NativeSvgService.chartModeHourly
-            ? await NativeSvgService.getCurrentTemperatureCelsius()
-            : null;
+      final png = await NativeSvgService.renderSvgToPng(
+        svg: svgString,
+        width: width,
+        height: height,
+      );
+      if (png == null || !mounted) return;
 
-        setState(() {
-          final cache = _chartCache[mode]!;
-          cache.svg = svgString;
-          cache.width = width;
-          cache.height = height;
-          cache.isLight = isLight;
-          if (updatedTemp != null) {
-            _currentTemperatureCelsius = updatedTemp;
-          }
-        });
-      }
+      final updatedTemp = mode == NativeSvgService.chartModeHourly
+          ? await NativeSvgService.getCurrentTemperatureCelsius()
+          : null;
+
+      setState(() {
+        final cache = _chartCache[mode]!;
+        cache.png = png;
+        cache.width = width;
+        cache.height = height;
+        cache.isLight = isLight;
+        if (updatedTemp != null) {
+          _currentTemperatureCelsius = updatedTemp;
+        }
+      });
     } catch (e) {
-      debugPrint('Error generating SVG ($mode): $e');
+      debugPrint('Error generating chart ($mode): $e');
     }
   }
 
@@ -830,7 +838,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         final deviceHeightPx = (chartHeight * dpr).round();
 
         final cache = _chartCache[mode]!;
-        final needsRegeneration = cache.svg == null ||
+        final needsRegeneration = cache.png == null ||
             cache.width != deviceWidthPx ||
             cache.height != deviceHeightPx ||
             cache.isLight != isLight;
@@ -850,20 +858,29 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         final chartLabel =
             isHourly ? l10n.hourlyChartLabel : l10n.weeklyChartLabel;
 
-        if (cache.svg != null) {
-          // The chart is a hybrid-composition PlatformView: a Flutter Semantics
-          // wrapper does NOT reach the embedded native view (verified — the id
-          // never surfaces to UiAutomator2). The accessibility label is set on
-          // the native ImageView via a11yLabel instead (SvgChartPlatformView.kt),
-          // surfacing as content-desc for TalkBack and Appium.
+        if (cache.png != null) {
+          // Plain Flutter Image over natively-rasterized PNG bytes — NOT a
+          // PlatformView, so it stays out of Impeller's external-texture path
+          // (which crashes on some Vulkan devices). A real Semantics node now
+          // reaches the widget, carrying both a resource-id and a content-desc
+          // label for TalkBack and Appium. `gaplessPlayback` keeps the current
+          // frame on screen while a new one (theme/resize) decodes.
           return SizedBox(
             width: chartWidth,
             height: chartHeight,
-            child: NativeSvgChartView(
-              svgString: cache.svg!,
-              width: deviceWidthPx.toDouble(),
-              height: deviceHeightPx.toDouble(),
-              a11yLabel: chartLabel,
+            child: Semantics(
+              identifier: isHourly
+                  ? A11yIds.homeHourlyChart
+                  : A11yIds.homeWeeklyChart,
+              label: chartLabel,
+              image: true,
+              child: Image.memory(
+                cache.png!,
+                width: chartWidth,
+                height: chartHeight,
+                fit: BoxFit.fill,
+                gaplessPlayback: true,
+              ),
             ),
           );
         }
@@ -1301,7 +1318,10 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
 
 /// Per-mode cache of the last-rendered SVG plus the params used to generate it.
 class _ChartCacheEntry {
-  String? svg;
+  /// Rasterized PNG bytes for the chart, displayed via [Image.memory].
+  /// The same instance is reused across rebuilds so [MemoryImage] equality
+  /// hits Flutter's image cache and the bitmap is not re-decoded.
+  Uint8List? png;
   int? width;
   int? height;
   bool? isLight;

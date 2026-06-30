@@ -7,6 +7,17 @@ import 'package:meteogram_widget/screens/home_screen.dart';
 import 'package:meteogram_widget/services/material_you_service.dart';
 import 'package:meteogram_widget/theme/app_theme.dart';
 
+/// A 1x1 transparent PNG — what the native `renderSvg` rasterizer returns,
+/// minimal but valid so `Image.memory` decodes it without error.
+final kTransparentPixelPng = Uint8List.fromList(<int>[
+  0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D,
+  0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
+  0x08, 0x06, 0x00, 0x00, 0x00, 0x1F, 0x15, 0xC4, 0x89, 0x00, 0x00, 0x00,
+  0x0A, 0x49, 0x44, 0x41, 0x54, 0x78, 0x9C, 0x63, 0x00, 0x01, 0x00, 0x00,
+  0x05, 0x00, 0x01, 0x0D, 0x0A, 0x2D, 0xB4, 0x00, 0x00, 0x00, 0x00, 0x49,
+  0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82,
+]);
+
 /// Widget tests for HomeScreen.
 ///
 /// These tests verify UI rendering for different states:
@@ -62,6 +73,10 @@ void main() {
           case 'generateSvg':
             // Return minimal valid SVG
             return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 50"></svg>';
+          case 'renderSvg':
+            // Native rasterizer returns PNG bytes; a 1x1 transparent PNG is
+            // enough for Image.memory to decode without error.
+            return kTransparentPixelPng;
           case 'reverseGeocode':
             // Native Geocoder lookup (coords -> city name)
             return mockCityName;

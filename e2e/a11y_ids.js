@@ -9,8 +9,10 @@ module.exports = {
   homeLocationSelector: 'home_location_selector',
   homeOpenMeteoLink: 'home_open_meteo_link',
   homeGithubLink: 'home_github_link',
-  // Charts are hybrid-composition PlatformViews with no resource-id; they carry
-  // a native content-desc instead (locate via accessibility-id if needed).
+  // Charts are plain Flutter Image widgets, so a normal Semantics reaches them:
+  // they carry both a resource-id (below) and a localized content-desc label.
+  homeHourlyChart: 'home_hourly_chart',
+  homeWeeklyChart: 'home_weekly_chart',
 
   // Location picker sheet
   locationSearchField: 'location_search_field',
