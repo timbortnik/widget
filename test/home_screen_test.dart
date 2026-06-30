@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:meteogram_widget/a11y_ids.dart';
 import 'package:meteogram_widget/l10n/app_localizations.dart';
 import 'package:meteogram_widget/screens/home_screen.dart';
 import 'package:meteogram_widget/services/material_you_service.dart';
@@ -159,6 +160,28 @@ void main() {
         (widget) => widget is Text && widget.data != null && widget.data!.contains('69'),
       );
       expect(tempFinder, findsWidgets);
+    });
+
+    testWidgets('renders both charts as images, not the placeholder', (tester) async {
+      homeWidgetData['last_weather_update'] = mockTimestamp;
+      homeWidgetData['current_temperature_celsius'] = mockTemperature;
+      homeWidgetData['cached_city_name'] = mockCityName;
+      homeWidgetData['cached_location_source'] = mockLocationSource;
+
+      await tester.pumpWidget(createTestApp());
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pump(const Duration(milliseconds: 500));
+
+      // The Semantics(identifier:) + Image only exist once the native PNG is
+      // cached; the fallback path is a bare SizedBox with neither. Asserting
+      // the identifiers proves the real chart path was taken for both modes.
+      Finder chartById(String id) => find.byWidgetPredicate(
+            (widget) => widget is Semantics && widget.properties.identifier == id,
+          );
+      expect(chartById(A11yIds.homeHourlyChart), findsOneWidget);
+      expect(chartById(A11yIds.homeWeeklyChart), findsOneWidget);
+      // Each chart is a real Flutter Image over the rasterized bytes.
+      expect(find.byType(Image), findsNWidgets(2));
     });
 
     testWidgets('displays location name after loading', (tester) async {

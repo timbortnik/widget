@@ -51,13 +51,11 @@ lib/
 │   ├── location_service.dart     # Native location (LocationBridge) with fallback
 │   ├── widget_service.dart       # Triggers native widget refresh + resize flag
 │   ├── widget_store.dart         # Method-channel KV bridge to HomeWidgetPreferences (replaces home_widget)
-│   └── native_svg_service.dart   # Method channel to native (weather fetch, SVG gen, cache)
+│   └── native_svg_service.dart   # Method channel to native (weather fetch, SVG gen + rasterize-to-PNG, cache)
 ├── theme/
 │   └── app_theme.dart       # MeteogramColors, WeatherGradients
-├── widgets/
-│   └── native_svg_chart_view.dart # Native SVG PlatformView
 └── screens/
-    └── home_screen.dart     # Main UI with SVG chart
+    └── home_screen.dart     # Main UI; chart via Image.memory over native PNG
 
 android/app/src/main/
 ├── kotlin/.../
@@ -73,9 +71,7 @@ android/app/src/main/
 │   ├── WeatherFetcher.kt             # Native HTTP client for Open-Meteo API
 │   ├── WeatherDataParser.kt          # Parse cached weather JSON
 │   ├── SvgChartGenerator.kt          # Native SVG generation (single source)
-│   ├── MaterialYouColorExtractor.kt  # Native Material You color extraction
-│   ├── SvgChartPlatformView.kt       # Native SVG rendering for in-app
-│   └── SvgChartViewFactory.kt        # PlatformView factory
+│   └── MaterialYouColorExtractor.kt  # Native Material You color extraction
 └── res/
     ├── layout/meteogram_widget.xml   # RemoteViews layout
     ├── xml/meteogram_widget_info.xml # Widget config
@@ -131,7 +127,7 @@ Android widgets use RemoteViews which only support:
 **NOT supported:** View, Space, custom views, most Material widgets
 
 ### Data Flow
-1. **In-app**: `home_screen.dart` gets location → calls `NativeSvgService.fetchWeather()` → Kotlin fetches from Open-Meteo → caches to SharedPreferences → Dart reads cache → Kotlin generates SVG → rendered via `NativeSvgChartView`
+1. **In-app**: `home_screen.dart` gets location → calls `NativeSvgService.fetchWeather()` → Kotlin fetches from Open-Meteo → caches to SharedPreferences → Dart reads cache → Kotlin generates SVG → Kotlin rasterizes SVG to PNG (`renderSvgToPng`) → Dart displays bytes with `Image.memory` (no PlatformView — avoids the Impeller Vulkan external-texture crash)
 2. **Widget**: Native code reads cached weather from SharedPreferences → `SvgChartGenerator.kt` generates SVG → AndroidSVG renders to bitmap → ImageView
 
 ### Background Refresh (fully native)

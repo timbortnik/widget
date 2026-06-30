@@ -24,10 +24,6 @@
 -keep class org.bortnik.meteogram.WeatherUpdateWorker { *; }
 -keep class org.bortnik.meteogram.MeteogramApplication { *; }
 
-# Keep platform views
--keep class org.bortnik.meteogram.SvgChartViewFactory { *; }
--keep class org.bortnik.meteogram.SvgChartPlatformView { *; }
-
 # Kotlin serialization (if used)
 -keepattributes *Annotation*, InnerClasses
 -dontnote kotlinx.serialization.AnnotationsKt

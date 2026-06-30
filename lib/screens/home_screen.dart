@@ -86,8 +86,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   };
 
   void _invalidateChartCaches() {
+    // Mark stale rather than dropping the bytes, so the current chart stays on
+    // screen until its replacement is rasterized (gapless refresh).
     for (final entry in _chartCache.values) {
-      entry.png = null;
+      entry.stale = true;
     }
   }
 
@@ -433,6 +435,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     required bool isLight,
     required bool usesFahrenheit,
   }) async {
+    final cache = _chartCache[mode]!;
+    cache.generating = true;
+    // Claim the current dirty state up front. If new data arrives mid-render,
+    // [stale] flips back to true and the post-build re-kick picks it up, so a
+    // freshly-set dirty flag is never silently cleared by this render.
+    cache.stale = false;
     try {
       final svgString = await NativeSvgService.generateSvg(
         mode: mode,
@@ -441,21 +449,23 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         isLight: isLight,
         usesFahrenheit: usesFahrenheit,
       );
-      if (svgString == null || !mounted) return;
+      if (svgString == null) return;
 
       final png = await NativeSvgService.renderSvgToPng(
         svg: svgString,
         width: width,
         height: height,
       );
-      if (png == null || !mounted) return;
+      if (png == null) return;
 
       final updatedTemp = mode == NativeSvgService.chartModeHourly
           ? await NativeSvgService.getCurrentTemperatureCelsius()
           : null;
 
+      // Re-check after the final await: the widget may have been disposed.
+      if (!mounted) return;
+
       setState(() {
-        final cache = _chartCache[mode]!;
         cache.png = png;
         cache.width = width;
         cache.height = height;
@@ -466,6 +476,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       });
     } catch (e) {
       debugPrint('Error generating chart ($mode): $e');
+    } finally {
+      cache.generating = false;
     }
   }
 
@@ -839,11 +851,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
         final cache = _chartCache[mode]!;
         final needsRegeneration = cache.png == null ||
+            cache.stale ||
             cache.width != deviceWidthPx ||
             cache.height != deviceHeightPx ||
             cache.isLight != isLight;
 
-        if (needsRegeneration) {
+        if (needsRegeneration && !cache.generating) {
           _generateSvgAsync(
             mode: mode,
             width: deviceWidthPx,
@@ -1320,9 +1333,20 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
 class _ChartCacheEntry {
   /// Rasterized PNG bytes for the chart, displayed via [Image.memory].
   /// The same instance is reused across rebuilds so [MemoryImage] equality
-  /// hits Flutter's image cache and the bitmap is not re-decoded.
+  /// hits Flutter's image cache and the bitmap is not re-decoded. Kept on
+  /// screen until a fresh frame is ready so updates stay gapless — never
+  /// nulled on invalidation.
   Uint8List? png;
   int? width;
   int? height;
   bool? isLight;
+
+  /// The chart content (weather data / "now" marker) changed and needs a
+  /// fresh render. The current [png] keeps showing until the new frame lands.
+  bool stale = false;
+
+  /// A render is in flight. Stops rapid rebuilds from spawning duplicate
+  /// native rasterizations; the build re-kicks once it clears if the target
+  /// or [stale] changed in the meantime.
+  bool generating = false;
 }
