@@ -178,12 +178,20 @@ await WidgetStore.updateWidget(androidName: 'MeteogramWidgetProvider');
 `WidgetService.triggerWidgetUpdate()` refreshes **both** providers
 (`MeteogramWidgetProvider` and `MeteogramWeeklyWidgetProvider`).
 
-### In-app chart display (`lib/widgets/native_svg_chart_view.dart`)
+### In-app chart display (`lib/screens/home_screen.dart`)
 
-A PlatformView (`AndroidView`, viewType `svg_chart_view`) embeds a native
-Android view that renders the SVG via AndroidSVG — bypassing Flutter's
-compositor for 1:1 pixel rendering. The factory is registered in
-`MainActivity` (`SvgChartViewFactory` → `SvgChartPlatformView`).
+The chart is a plain Flutter `Image.memory`, **not** a PlatformView.
+`NativeSvgService.renderSvgToPng()` sends the generated SVG + target pixel size
+to `MainActivity`'s `renderSvg` channel, which rasterizes it (AndroidSVG →
+Bitmap → PNG) off the platform thread; `_buildChart` displays the returned bytes
+with `gaplessPlayback`.
+
+This replaced an `AndroidView` PlatformView (viewType `svg_chart_view`). That
+view was composited by Impeller as a `TextureLayer` / external texture, whose
+`Image.getHardwareBuffer()` JNI call fatally aborts on some Vulkan devices
+(Adreno / Android 12 — flutter/flutter#175267). Rendering bytes in pure Flutter
+removes the only `TextureLayer` in the app and the entire crash path, with
+identical AndroidSVG rasterization (same as the widget).
 
 ## Background Refresh (fully native)
 
@@ -230,7 +238,8 @@ the app process is alive.
    `NativeSvgService.fetchWeather(lat, lon)` → Kotlin `WeatherFetcher` hits
    Open-Meteo and caches the JSON to SharedPreferences.
 2. **In-app chart**: Dart calls `generateSvg` → Kotlin reads the cache and
-   returns an SVG string → `NativeSvgChartView` renders it.
+   returns an SVG string → Dart calls `renderSvg` → Kotlin rasterizes it to PNG
+   bytes → `home_screen.dart` shows them with `Image.memory`.
 3. **Widget chart**: native `onUpdate` reads the cache, generates light+dark
    SVGs with `SvgChartGenerator`, rasterises via AndroidSVG → `Bitmap` →
    `ImageView`.

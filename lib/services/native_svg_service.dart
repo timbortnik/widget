@@ -171,6 +171,33 @@ class NativeSvgService {
     }
   }
 
+  /// Rasterize an SVG string to PNG bytes natively (AndroidSVG → Bitmap → PNG).
+  ///
+  /// The in-app chart is displayed with a plain Flutter [Image] over these
+  /// bytes rather than a native PlatformView. This keeps the meteogram out of
+  /// Impeller's external-texture path, whose `Image.getHardwareBuffer()` JNI
+  /// call fatally aborts on some Vulkan devices (e.g. Adreno / Android 12 —
+  /// flutter/flutter#175267). Rasterization is identical to the home-screen
+  /// widget's (same AndroidSVG renderer in `MainActivity.renderSvgToPng`).
+  ///
+  /// Returns null if rasterization fails.
+  static Future<Uint8List?> renderSvgToPng({
+    required String svg,
+    required int width,
+    required int height,
+  }) async {
+    try {
+      return await _channel.invokeMethod<Uint8List>('renderSvg', {
+        'svg': svg,
+        'width': width,
+        'height': height,
+      });
+    } on PlatformException catch (e) {
+      debugPrint('Native SVG rasterization failed: ${e.message}');
+      return null;
+    }
+  }
+
   /// Generate both light and dark SVG strings.
   /// Returns a record with light and dark SVGs, or nulls if generation fails.
   static Future<({String? light, String? dark})> generateSvgPair({

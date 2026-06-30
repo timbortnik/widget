@@ -17,12 +17,10 @@ describe('Meteograph — home happy path', () => {
     await byId(ids.homeThemeButton).waitForDisplayed({ timeout: READY });
     await expect(byId(ids.homeLocationSelector)).toBeDisplayed();
 
-    // Both meteogram charts render (located by their native content-desc, since
-    // a PlatformView has no resource-id).
-    const hourly = await $$('android=new UiSelector().descriptionContains("48-hour")');
-    const weekly = await $$('android=new UiSelector().descriptionContains("7-day")');
-    expect(hourly.length).toBeGreaterThanOrEqual(1);
-    expect(weekly.length).toBeGreaterThanOrEqual(1);
+    // Both meteogram charts render — located by their stable resource-ids
+    // (locale-independent, unlike the content-desc label).
+    await expect(byId(ids.homeHourlyChart)).toBeDisplayed();
+    await expect(byId(ids.homeWeeklyChart)).toBeDisplayed();
   });
 
   it('opens the location picker from the location selector', async () => {

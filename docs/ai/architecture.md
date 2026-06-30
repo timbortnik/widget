@@ -34,7 +34,7 @@ The app follows a standard Flutter architecture with clear separation of concern
 2. Weather service fetches data from Open-Meteo
 3. Data is parsed into `WeatherData` model
 4. SVG chart generated via `SvgChartGenerator`
-5. In-app: SVG rendered via PlatformView (AndroidView → native ImageView)
+5. In-app: SVG rasterized natively to PNG (`MainActivity.renderSvgToPng`), displayed with a plain Flutter `Image.memory` (no PlatformView)
 6. Widget: SVG saved to file, native provider renders via AndroidSVG
 
 ### Widget Updates
@@ -93,11 +93,16 @@ Native Kotlin SVG generation - single source of truth for both widget and in-app
 
 **Key benefit:** Works in background without Dart/Flutter engine
 
-### NativeSvgChartView (`lib/widgets/native_svg_chart_view.dart`)
-PlatformView wrapper for in-app SVG display. Responsibilities:
-- Embed native Android ImageView via AndroidView
-- Pass SVG string to native side via MethodChannel
-- Bypass Flutter's image compositor for 1:1 pixel rendering
+### In-app chart display (`lib/screens/home_screen.dart`)
+The chart is a plain Flutter `Image.memory`, NOT a PlatformView. Flow:
+- `NativeSvgService.renderSvgToPng()` sends the generated SVG + target pixel
+  size to native; `MainActivity.renderSvgToPng` rasterizes it (AndroidSVG →
+  Bitmap → PNG) off the platform thread and returns the bytes.
+- `_buildChart` caches the bytes and renders them with `Image.memory`
+  (`gaplessPlayback`, stable instance so the bitmap isn't re-decoded).
+- This keeps the chart out of Impeller's external-texture path (the old
+  `AndroidView` PlatformView composited as a `TextureLayer`, which fatally
+  aborted on some Vulkan devices — see `widget.md`).
 
 ### WeatherFetcher (`android/.../WeatherFetcher.kt`)
 Native HTTP client for Open-Meteo API. Responsibilities:
@@ -173,18 +178,16 @@ lib/
 │   ├── app_ar.arb               # Arabic
 │   └── ...                      # 30+ locales
 ├── screens/
-│   └── home_screen.dart         # Main screen with NativeSvgChartView
+│   └── home_screen.dart         # Main screen; chart via Image.memory over native PNG
 ├── services/
 │   ├── location_service.dart    # GPS/fallback location
 │   ├── widget_service.dart      # Home widget integration
 │   └── native_svg_service.dart  # Method channel to native
-├── theme/
-│   └── app_theme.dart           # Colors, light/dark themes
-└── widgets/
-    └── native_svg_chart_view.dart # PlatformView SVG display
+└── theme/
+    └── app_theme.dart           # Colors, light/dark themes
 
 android/app/src/main/kotlin/.../
-├── MainActivity.kt              # PlatformView factory, Material You colors
+├── MainActivity.kt              # SVG generate + rasterize-to-PNG channel, Material You colors
 ├── MeteogramApplication.kt      # Registers receivers, schedules alarm
 ├── MeteogramWidgetProvider.kt   # Home screen widget provider
 ├── WidgetEventReceiver.kt       # Handles locale/timezone changes
@@ -196,9 +199,7 @@ android/app/src/main/kotlin/.../
 ├── WeatherFetcher.kt            # Native HTTP client for Open-Meteo
 ├── WeatherDataParser.kt         # Parse cached weather JSON
 ├── SvgChartGenerator.kt         # Native SVG generation
-├── MaterialYouColorExtractor.kt # Native Material You color extraction
-├── SvgChartViewFactory.kt       # Creates PlatformView instances
-└── SvgChartPlatformView.kt      # Native ImageView + AndroidSVG rendering
+└── MaterialYouColorExtractor.kt # Native Material You color extraction
 
 scripts/
 └── generate_version.sh          # Generates version.dart from git
@@ -213,12 +214,12 @@ scripts/
 - Background in `res/drawable/widget_background.xml` (gradient + rounded corners)
 - Chart: reads SVG file → AndroidSVG → Bitmap → ImageView
 
-### Android In-App (PlatformView)
-- `SvgChartViewFactory` registered in MainActivity
-- `SvgChartPlatformView` embeds native ImageView
-- Receives SVG string via MethodChannel
-- Renders via AndroidSVG → Bitmap → ImageView
-- Bypasses Flutter's image compositor for 1:1 pixel rendering
+### Android In-App (render-to-image)
+- `MainActivity` exposes a `renderSvg` method channel
+- Receives SVG string + pixel size, rasterizes via AndroidSVG → Bitmap → PNG
+- Returns PNG bytes to Dart, which displays them with `Image.memory`
+- No PlatformView / `TextureLayer`, so it avoids Impeller's external-texture
+  crash path on Vulkan devices (the reason this replaced the old `AndroidView`)
 
 ### iOS Widget
 Not yet implemented. Would require:

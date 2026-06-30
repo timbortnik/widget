@@ -19,11 +19,12 @@ class A11yIds {
   static const String homeLocationSelector = 'home_location_selector';
   static const String homeOpenMeteoLink = 'home_open_meteo_link';
   static const String homeGithubLink = 'home_github_link';
-  // NOTE: the hourly/weekly charts are hybrid-composition PlatformViews — a
-  // Flutter Semantics(identifier:) does NOT reach them, so they carry no
-  // resource-id. Their accessibility label is set natively as the ImageView's
-  // content-desc (see NativeSvgChartView.a11yLabel / SvgChartPlatformView.kt);
-  // locate them by accessibility-id if needed.
+  // The hourly/weekly charts are plain Flutter `Image` widgets (PNG rasterized
+  // natively), so a normal `Semantics` reaches them: they carry both a
+  // resource-id (below) and a localized content-desc label. Tests can locate
+  // them by either.
+  static const String homeHourlyChart = 'home_hourly_chart';
+  static const String homeWeeklyChart = 'home_weekly_chart';
 
   // Location picker sheet
   static const String locationSearchField = 'location_search_field';

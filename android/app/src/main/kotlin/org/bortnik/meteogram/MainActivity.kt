@@ -34,12 +34,6 @@ class MainActivity : FlutterActivity() {
 
         super.configureFlutterEngine(flutterEngine)
 
-        // Register PlatformView for native SVG chart rendering
-        flutterEngine.platformViewsController.registry.registerViewFactory(
-            "svg_chart_view",
-            SvgChartViewFactory(flutterEngine.dartExecutor.binaryMessenger)
-        )
-
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
                 "generateSvg" -> {
@@ -76,12 +70,17 @@ class MainActivity : FlutterActivity() {
                         return@setMethodCallHandler
                     }
 
-                    try {
-                        val pngBytes = renderSvgToPng(svgString, width, height)
-                        result.success(pngBytes)
-                    } catch (e: Exception) {
-                        result.error("RENDER_ERROR", e.message, null)
-                    }
+                    // Rasterize off the platform thread — PNG encode of a
+                    // full-resolution chart bitmap is too heavy for the UI thread.
+                    Thread {
+                        try {
+                            val pngBytes = renderSvgToPng(svgString, width, height)
+                            runOnUiThread { result.success(pngBytes) }
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Error rasterizing SVG", e)
+                            runOnUiThread { result.error("RENDER_ERROR", e.message, null) }
+                        }
+                    }.start()
                 }
                 "fetchWeather" -> {
                     val latitude = call.argument<Double>("latitude")

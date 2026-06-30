@@ -39,9 +39,10 @@ Test a different build with `APP_PATH=/abs/path/to.apk npm test`.
 
 - **Driver pin:** `uiautomator2@4.2.9` is the last driver compatible with Appium
   2.x (5.x+ require Appium 3). Bump both together.
-- **Charts** are hybrid-composition PlatformViews with no `resource-id`; they
-  expose a native `content-desc` (set in `SvgChartPlatformView.kt`) and are
-  located by accessibility-id.
+- **Charts** are plain Flutter `Image` widgets (PNG rasterized natively), so a
+  normal `Semantics` reaches them: they carry both a `resource-id`
+  (`homeHourlyChart` / `homeWeeklyChart`) and a localized `content-desc` label
+  (`descriptionContains("48-hour")` / `"7-day"`). Locate by either.
 - Flutter text surfaces as `content-desc`, not the `text` attribute — locate by
   `resourceId` or `description*`, never `.text()`.
 - CI: `.github/workflows/e2e.yml` (PR + manual) builds the x86_64 APK then runs

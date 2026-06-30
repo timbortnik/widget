@@ -2,10 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:meteogram_widget/a11y_ids.dart';
 import 'package:meteogram_widget/l10n/app_localizations.dart';
 import 'package:meteogram_widget/screens/home_screen.dart';
 import 'package:meteogram_widget/services/material_you_service.dart';
 import 'package:meteogram_widget/theme/app_theme.dart';
+
+/// A 1x1 transparent PNG — what the native `renderSvg` rasterizer returns,
+/// minimal but valid so `Image.memory` decodes it without error.
+final kTransparentPixelPng = Uint8List.fromList(<int>[
+  0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D,
+  0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
+  0x08, 0x06, 0x00, 0x00, 0x00, 0x1F, 0x15, 0xC4, 0x89, 0x00, 0x00, 0x00,
+  0x0A, 0x49, 0x44, 0x41, 0x54, 0x78, 0x9C, 0x63, 0x00, 0x01, 0x00, 0x00,
+  0x05, 0x00, 0x01, 0x0D, 0x0A, 0x2D, 0xB4, 0x00, 0x00, 0x00, 0x00, 0x49,
+  0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82,
+]);
 
 /// Widget tests for HomeScreen.
 ///
@@ -62,6 +74,10 @@ void main() {
           case 'generateSvg':
             // Return minimal valid SVG
             return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 50"></svg>';
+          case 'renderSvg':
+            // Native rasterizer returns PNG bytes; a 1x1 transparent PNG is
+            // enough for Image.memory to decode without error.
+            return kTransparentPixelPng;
           case 'reverseGeocode':
             // Native Geocoder lookup (coords -> city name)
             return mockCityName;
@@ -144,6 +160,28 @@ void main() {
         (widget) => widget is Text && widget.data != null && widget.data!.contains('69'),
       );
       expect(tempFinder, findsWidgets);
+    });
+
+    testWidgets('renders both charts as images, not the placeholder', (tester) async {
+      homeWidgetData['last_weather_update'] = mockTimestamp;
+      homeWidgetData['current_temperature_celsius'] = mockTemperature;
+      homeWidgetData['cached_city_name'] = mockCityName;
+      homeWidgetData['cached_location_source'] = mockLocationSource;
+
+      await tester.pumpWidget(createTestApp());
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pump(const Duration(milliseconds: 500));
+
+      // The Semantics(identifier:) + Image only exist once the native PNG is
+      // cached; the fallback path is a bare SizedBox with neither. Asserting
+      // the identifiers proves the real chart path was taken for both modes.
+      Finder chartById(String id) => find.byWidgetPredicate(
+            (widget) => widget is Semantics && widget.properties.identifier == id,
+          );
+      expect(chartById(A11yIds.homeHourlyChart), findsOneWidget);
+      expect(chartById(A11yIds.homeWeeklyChart), findsOneWidget);
+      // Each chart is a real Flutter Image over the rasterized bytes.
+      expect(find.byType(Image), findsNWidgets(2));
     });
 
     testWidgets('displays location name after loading', (tester) async {
