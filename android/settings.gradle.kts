@@ -22,7 +22,7 @@ plugins {
     id("com.android.application") version "9.0.1" apply false
     // Declared (never applied) so Flutter's tooling can read a KGP version; Kotlin
     // compilation is handled by AGP built-in Kotlin, not this plugin.
-    id("org.jetbrains.kotlin.android") version "2.2.21" apply false
+    id("org.jetbrains.kotlin.android") version "2.4.0" apply false
 }
 
 include(":app")
