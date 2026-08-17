@@ -42,7 +42,7 @@ dependencies:
   # This keeps the app free of any Kotlin-Gradle-Plugin plugin, required by AGP-9 built-in Kotlin.
 
   # Internationalization
-  intl: ^0.20.2
+  intl: ^0.20.3
 
 dev_dependencies:
   flutter_test:
