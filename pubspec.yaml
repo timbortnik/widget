@@ -41,8 +41,11 @@ dependencies:
   # org.bortnik.meteogram/svg method channel (LocationBridge / NativeSvgService.reverseGeocode).
   # This keeps the app free of any Kotlin-Gradle-Plugin plugin, required by AGP-9 built-in Kotlin.
 
-  # Internationalization
-  intl: ^0.20.2
+  # Internationalization — `any` because the Flutter SDK pins intl exactly via
+  # flutter_localizations (https://dart.dev/go/sdk-version-pinning); a concrete
+  # constraint here can never out-resolve the pin and only generates unsolvable
+  # dependabot bumps.
+  intl: any
 
 dev_dependencies:
   flutter_test:
