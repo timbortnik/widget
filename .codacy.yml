@@ -12,3 +12,10 @@ exclude_paths:
   - ".dart_tool/**"
   - "e2e/node_modules/**"
   - "e2e/.appium/**"
+  # Local test-harness config: never shipped, never fed external input. The
+  # security scanners' taint analysis flags every path.join/fs call here as
+  # traversal, but both `base` and `currentTest` go through
+  # .replace(/[^a-z0-9]+/gi, '_') first, so "../" cannot survive. Five-plus
+  # rules across three tools fire on this one file; excluding it beats
+  # disabling each of those patterns repo-wide.
+  - "e2e/wdio.conf.js"
