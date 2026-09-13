@@ -46,5 +46,9 @@
   "theme": "主题",
   "themeSystem": "系统默认",
   "themeLight": "浅色",
-  "themeDark": "深色"
+  "themeDark": "深色",
+  "colorScheme": "配色方案",
+  "colorSchemeDefault": "默认",
+  "colorSchemeArctic": "极地",
+  "colorSchemeHighContrast": "高对比度"
 }

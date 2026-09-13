@@ -85,6 +85,120 @@ class SvgChartGeneratorTest {
     }
 
     @Test
+    fun `SvgChartColors default stroke widths preserve the original chart`() {
+        // These were literals in the SVG before schemes existed; the defaults
+        // must keep reproducing the same output for the Material You path.
+        val light = SvgChartColors.light
+
+        assertEquals(3.5, light.temperatureLineWidth, 0.0)
+        assertEquals(5.0, light.temperatureOutlineWidth, 0.0)
+        assertEquals(4.0, light.nowIndicatorWidth, 0.0)
+    }
+
+    @Test
+    fun `SvgChartColors temperature outline stays wider than the line`() {
+        val contrast = ChartSchemes.contrastLight
+
+        assertEquals(4.5, contrast.temperatureLineWidth, 0.0)
+        assertEquals(6.0, contrast.temperatureOutlineWidth, 0.0)
+    }
+
+    // ==================== ChartSchemes Tests ====================
+
+    @Test
+    fun `ChartSchemes palette returns null for the default scheme`() {
+        // Null keeps the caller on the existing Material You path.
+        assertNull(ChartSchemes.palette(ChartSchemes.DEFAULT, isLight = true))
+        assertNull(ChartSchemes.palette(ChartSchemes.DEFAULT, isLight = false))
+    }
+
+    @Test
+    fun `ChartSchemes palette returns null for unknown or absent ids`() {
+        assertNull(ChartSchemes.palette(null, isLight = true))
+        assertNull(ChartSchemes.palette("", isLight = true))
+        assertNull(ChartSchemes.palette("scheme-from-a-newer-version", isLight = true))
+    }
+
+    @Test
+    fun `ChartSchemes palette resolves each fixed scheme per theme`() {
+        assertEquals(ChartSchemes.arcticLight, ChartSchemes.palette(ChartSchemes.ARCTIC, isLight = true))
+        assertEquals(ChartSchemes.arcticDark, ChartSchemes.palette(ChartSchemes.ARCTIC, isLight = false))
+        assertEquals(ChartSchemes.contrastLight, ChartSchemes.palette(ChartSchemes.CONTRAST, isLight = true))
+        assertEquals(ChartSchemes.contrastDark, ChartSchemes.palette(ChartSchemes.CONTRAST, isLight = false))
+    }
+
+    @Test
+    fun `ChartSchemes ids lists every scheme the picker offers`() {
+        assertEquals(listOf("default", "arctic", "contrast"), ChartSchemes.ids)
+        // Every non-default id must resolve, or the picker offers a dead option.
+        for (id in ChartSchemes.ids - ChartSchemes.DEFAULT) {
+            assertNotNull("scheme '$id' has no light palette", ChartSchemes.palette(id, isLight = true))
+            assertNotNull("scheme '$id' has no dark palette", ChartSchemes.palette(id, isLight = false))
+        }
+    }
+
+    @Test
+    fun `ChartSchemes light and dark variants differ per scheme`() {
+        // A scheme that ignored the theme would render white-on-white for half
+        // the users; the two variants must be genuinely distinct.
+        assertNotEquals(ChartSchemes.arcticLight, ChartSchemes.arcticDark)
+        assertNotEquals(ChartSchemes.contrastLight, ChartSchemes.contrastDark)
+    }
+
+    @Test
+    fun `ChartSchemes bars stay blue-vs-amber for colour-vision safety`() {
+        // Precipitation and daylight are the only same-shape series, so they
+        // must never be told apart by a red/green distinction.
+        for (palette in listOf(
+            ChartSchemes.arcticLight, ChartSchemes.arcticDark,
+            ChartSchemes.contrastLight, ChartSchemes.contrastDark
+        )) {
+            val rain = palette.precipitationBar
+            val sun = palette.daylightBar
+            assertTrue("precipitation should read as blue: ${rain.toHex()}", rain.b > rain.r)
+            assertTrue("daylight should read as amber: ${sun.toHex()}", sun.r > sun.b)
+        }
+    }
+
+    @Test
+    fun `ChartSchemes text contrasts its own background`() {
+        // Labels are drawn over the card, so a scheme whose text and ground sit
+        // at the same luminance is unreadable regardless of hue.
+        fun luminance(c: SvgColor) = 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b
+
+        for (palette in listOf(
+            ChartSchemes.arcticLight, ChartSchemes.arcticDark,
+            ChartSchemes.contrastLight, ChartSchemes.contrastDark
+        )) {
+            val spread = Math.abs(luminance(palette.primaryText) - luminance(palette.cardBackground))
+            assertTrue("text/background too close (spread=$spread)", spread > 100.0)
+            // The outline is the halo behind text, so it must side with the
+            // background rather than the text it is meant to separate.
+            val outlineToBg = Math.abs(luminance(palette.outlineColor) - luminance(palette.cardBackground))
+            assertTrue("outline should match the ground (delta=$outlineToBg)", outlineToBg < 40.0)
+        }
+    }
+
+    @Test
+    fun `generate honours scheme stroke widths`() {
+        val data = createTestData(24)
+
+        val svg = SvgChartGenerator().generate(
+            data = data,
+            nowIndex = 6,
+            latitude = 52.52,
+            longitude = 13.405,
+            colors = ChartSchemes.contrastDark,
+            width = 800.0,
+            height = 400.0
+        )
+
+        assertTrue("temperature line should use the scheme width", svg.contains("stroke-width=\"4.5\""))
+        assertTrue("now marker should use the scheme width", svg.contains("stroke-width=\"5.0\""))
+        assertTrue(svg.contains(ChartSchemes.contrastDark.temperatureLine.toHex()))
+    }
+
+    @Test
     fun `SvgChartColors withDynamicColors updates temperature and time label`() {
         val original = SvgChartColors.light
         val newTempColor = SvgColor(0x12, 0x34, 0x56)

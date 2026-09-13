@@ -153,4 +153,16 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get themeDark => 'அடர்';
+
+  @override
+  String get colorScheme => 'வண்ணத் திட்டம்';
+
+  @override
+  String get colorSchemeDefault => 'இயல்பு';
+
+  @override
+  String get colorSchemeArctic => 'ஆர்க்டிக்';
+
+  @override
+  String get colorSchemeHighContrast => 'அதிக மாறுபாடு';
 }

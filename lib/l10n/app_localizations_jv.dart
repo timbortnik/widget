@@ -152,4 +152,16 @@ class AppLocalizationsJv extends AppLocalizations {
 
   @override
   String get themeDark => 'Peteng';
+
+  @override
+  String get colorScheme => 'Skema warna';
+
+  @override
+  String get colorSchemeDefault => 'Gawan';
+
+  @override
+  String get colorSchemeArctic => 'Arktik';
+
+  @override
+  String get colorSchemeHighContrast => 'Kontras dhuwur';
 }

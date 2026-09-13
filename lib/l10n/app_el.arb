@@ -46,5 +46,9 @@
   "theme": "Θέμα",
   "themeSystem": "Προεπιλογή συστήματος",
   "themeLight": "Φωτεινό",
-  "themeDark": "Σκούρο"
+  "themeDark": "Σκούρο",
+  "colorScheme": "Χρωματικός συνδυασμός",
+  "colorSchemeDefault": "Προεπιλογή",
+  "colorSchemeArctic": "Αρκτικό",
+  "colorSchemeHighContrast": "Υψηλή αντίθεση"
 }

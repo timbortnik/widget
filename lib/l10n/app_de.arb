@@ -46,5 +46,9 @@
   "theme": "Design",
   "themeSystem": "Systemstandard",
   "themeLight": "Hell",
-  "themeDark": "Dunkel"
+  "themeDark": "Dunkel",
+  "colorScheme": "Farbschema",
+  "colorSchemeDefault": "Standard",
+  "colorSchemeArctic": "Arktis",
+  "colorSchemeHighContrast": "Hoher Kontrast"
 }

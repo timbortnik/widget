@@ -46,5 +46,9 @@
   "theme": "Tema",
   "themeSystem": "Gawan sistem",
   "themeLight": "Padhang",
-  "themeDark": "Peteng"
+  "themeDark": "Peteng",
+  "colorScheme": "Skema warna",
+  "colorSchemeDefault": "Gawan",
+  "colorSchemeArctic": "Arktik",
+  "colorSchemeHighContrast": "Kontras dhuwur"
 }

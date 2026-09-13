@@ -260,5 +260,25 @@
   "themeDark": "Dark",
   "@themeDark": {
     "description": "Dark theme option"
+  },
+
+  "colorScheme": "Color scheme",
+  "@colorScheme": {
+    "description": "Title for the chart colour scheme chooser"
+  },
+
+  "colorSchemeDefault": "Default",
+  "@colorSchemeDefault": {
+    "description": "Colour scheme option using Material You dynamic colours"
+  },
+
+  "colorSchemeArctic": "Arctic",
+  "@colorSchemeArctic": {
+    "description": "Cool, muted arctic colour scheme option"
+  },
+
+  "colorSchemeHighContrast": "High contrast",
+  "@colorSchemeHighContrast": {
+    "description": "Maximum-contrast colour scheme option, for accessibility"
   }
 }

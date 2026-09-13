@@ -46,5 +46,9 @@
   "theme": "Тэма",
   "themeSystem": "Сістэмная",
   "themeLight": "Светлая",
-  "themeDark": "Цёмная"
+  "themeDark": "Цёмная",
+  "colorScheme": "Каляровая схема",
+  "colorSchemeDefault": "Стандартная",
+  "colorSchemeArctic": "Арктычная",
+  "colorSchemeHighContrast": "Высокая кантраснасць"
 }

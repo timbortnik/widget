@@ -153,4 +153,16 @@ class AppLocalizationsSk extends AppLocalizations {
 
   @override
   String get themeDark => 'Tmavý';
+
+  @override
+  String get colorScheme => 'Farebná schéma';
+
+  @override
+  String get colorSchemeDefault => 'Predvolené';
+
+  @override
+  String get colorSchemeArctic => 'Arktická';
+
+  @override
+  String get colorSchemeHighContrast => 'Vysoký kontrast';
 }

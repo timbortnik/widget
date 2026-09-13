@@ -46,5 +46,9 @@
   "theme": "Þema",
   "themeSystem": "Sjálfgefið kerfi",
   "themeLight": "Ljóst",
-  "themeDark": "Dökkt"
+  "themeDark": "Dökkt",
+  "colorScheme": "Litastef",
+  "colorSchemeDefault": "Sjálfgefið",
+  "colorSchemeArctic": "Heimskauta",
+  "colorSchemeHighContrast": "Mikil birtuskil"
 }

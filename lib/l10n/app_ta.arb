@@ -46,5 +46,9 @@
   "theme": "தீம்",
   "themeSystem": "அமைப்பின் இயல்புநிலை",
   "themeLight": "வெளிர்",
-  "themeDark": "அடர்"
+  "themeDark": "அடர்",
+  "colorScheme": "வண்ணத் திட்டம்",
+  "colorSchemeDefault": "இயல்பு",
+  "colorSchemeArctic": "ஆர்க்டிக்",
+  "colorSchemeHighContrast": "அதிக மாறுபாடு"
 }

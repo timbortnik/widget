@@ -46,5 +46,9 @@
   "theme": "Giao diện",
   "themeSystem": "Mặc định hệ thống",
   "themeLight": "Sáng",
-  "themeDark": "Tối"
+  "themeDark": "Tối",
+  "colorScheme": "Bảng màu",
+  "colorSchemeDefault": "Mặc định",
+  "colorSchemeArctic": "Bắc Cực",
+  "colorSchemeHighContrast": "Tương phản cao"
 }

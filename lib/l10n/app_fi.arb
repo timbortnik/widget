@@ -46,5 +46,9 @@
   "theme": "Teema",
   "themeSystem": "Järjestelmän oletus",
   "themeLight": "Vaalea",
-  "themeDark": "Tumma"
+  "themeDark": "Tumma",
+  "colorScheme": "Värimaailma",
+  "colorSchemeDefault": "Oletus",
+  "colorSchemeArctic": "Arktinen",
+  "colorSchemeHighContrast": "Suuri kontrasti"
 }

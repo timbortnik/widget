@@ -46,5 +46,9 @@
   "theme": "Temă",
   "themeSystem": "Prestabilit de sistem",
   "themeLight": "Luminoasă",
-  "themeDark": "Întunecată"
+  "themeDark": "Întunecată",
+  "colorScheme": "Schemă de culori",
+  "colorSchemeDefault": "Implicit",
+  "colorSchemeArctic": "Arctic",
+  "colorSchemeHighContrast": "Contrast ridicat"
 }

@@ -46,5 +46,9 @@
   "theme": "Motív",
   "themeSystem": "Predvolené systémom",
   "themeLight": "Svetlý",
-  "themeDark": "Tmavý"
+  "themeDark": "Tmavý",
+  "colorScheme": "Farebná schéma",
+  "colorSchemeDefault": "Predvolené",
+  "colorSchemeArctic": "Arktická",
+  "colorSchemeHighContrast": "Vysoký kontrast"
 }

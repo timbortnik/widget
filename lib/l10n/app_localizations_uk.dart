@@ -153,4 +153,16 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get themeDark => 'Темна';
+
+  @override
+  String get colorScheme => 'Колірна схема';
+
+  @override
+  String get colorSchemeDefault => 'Стандартна';
+
+  @override
+  String get colorSchemeArctic => 'Арктична';
+
+  @override
+  String get colorSchemeHighContrast => 'Висока контрастність';
 }

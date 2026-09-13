@@ -6,6 +6,7 @@ import 'package:meteogram_widget/a11y_ids.dart';
 import 'package:meteogram_widget/l10n/app_localizations.dart';
 import 'package:meteogram_widget/screens/home_screen.dart';
 import 'package:meteogram_widget/services/material_you_service.dart';
+import 'package:meteogram_widget/services/scheme_service.dart';
 import 'package:meteogram_widget/theme/app_theme.dart';
 
 /// A 1x1 transparent PNG — what the native `renderSvg` rasterizer returns,
@@ -374,6 +375,86 @@ void main() {
       expect(find.byType(Scaffold), findsOneWidget);
       // Temperature should still be visible
       expect(find.textContaining('69'), findsWidgets);
+    });
+  });
+
+  group('HomeScreen colour scheme picker', () {
+    Finder byA11yId(String id) => find.byWidgetPredicate(
+          (widget) => widget is Semantics && widget.properties.identifier == id,
+        );
+
+    Widget appWith({
+      ChartScheme scheme = ChartScheme.defaultScheme,
+      ValueChanged<ChartScheme>? onChanged,
+    }) {
+      return MaterialApp(
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: const Locale('en'),
+        theme: AppTheme.light(null),
+        darkTheme: AppTheme.dark(null),
+        home: HomeScreen(colorScheme: scheme, onColorSchemeChanged: onChanged),
+      );
+    }
+
+    Future<void> openPicker(WidgetTester tester) async {
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.tap(byA11yId(A11yIds.homeThemeButton));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('picker offers both theme and colour scheme sections',
+        (tester) async {
+      await tester.pumpWidget(appWith());
+      await openPicker(tester);
+
+      expect(find.text('Theme'), findsOneWidget);
+      expect(find.text('Color scheme'), findsOneWidget);
+      for (final id in [
+        A11yIds.themeOptionSystem,
+        A11yIds.themeOptionLight,
+        A11yIds.themeOptionDark,
+        A11yIds.schemeOptionDefault,
+        A11yIds.schemeOptionArctic,
+        A11yIds.schemeOptionHighContrast,
+      ]) {
+        expect(byA11yId(id), findsOneWidget, reason: '$id should be offered');
+      }
+    });
+
+    testWidgets('tapping a scheme reports the choice and closes the sheet',
+        (tester) async {
+      ChartScheme? picked;
+      await tester.pumpWidget(appWith(onChanged: (s) => picked = s));
+      await openPicker(tester);
+
+      await tester.tap(byA11yId(A11yIds.schemeOptionArctic));
+      await tester.pumpAndSettle();
+
+      expect(picked, ChartScheme.arctic);
+      expect(find.text('Color scheme'), findsNothing);
+    });
+
+    testWidgets('the active scheme is exposed as selected', (tester) async {
+      await tester.pumpWidget(appWith(scheme: ChartScheme.highContrast));
+      await openPicker(tester);
+
+      Semantics semanticsFor(String id) =>
+          tester.widget<Semantics>(byA11yId(id));
+
+      // Drives both the checkmark and the E2E assertion, so it has to track
+      // the active scheme rather than always reporting the default.
+      expect(semanticsFor(A11yIds.schemeOptionHighContrast).properties.selected,
+          isTrue);
+      expect(
+          semanticsFor(A11yIds.schemeOptionDefault).properties.selected, isFalse);
+      expect(
+          semanticsFor(A11yIds.schemeOptionArctic).properties.selected, isFalse);
     });
   });
 }

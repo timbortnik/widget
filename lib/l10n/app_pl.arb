@@ -46,5 +46,9 @@
   "theme": "Motyw",
   "themeSystem": "Domyślne ustawienie systemu",
   "themeLight": "Jasny",
-  "themeDark": "Ciemny"
+  "themeDark": "Ciemny",
+  "colorScheme": "Schemat kolorów",
+  "colorSchemeDefault": "Domyślny",
+  "colorSchemeArctic": "Arktyczny",
+  "colorSchemeHighContrast": "Wysoki kontrast"
 }
