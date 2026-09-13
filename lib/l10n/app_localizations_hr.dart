@@ -153,4 +153,16 @@ class AppLocalizationsHr extends AppLocalizations {
 
   @override
   String get themeDark => 'Tamna';
+
+  @override
+  String get colorScheme => 'Shema boja';
+
+  @override
+  String get colorSchemeDefault => 'Zadano';
+
+  @override
+  String get colorSchemeArctic => 'Arktička';
+
+  @override
+  String get colorSchemeHighContrast => 'Visoki kontrast';
 }

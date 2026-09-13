@@ -46,5 +46,9 @@
   "theme": "თემა",
   "themeSystem": "სისტემის ნაგულისხმევი",
   "themeLight": "ღია",
-  "themeDark": "მუქი"
+  "themeDark": "მუქი",
+  "colorScheme": "ფერთა სქემა",
+  "colorSchemeDefault": "ნაგულისხმევი",
+  "colorSchemeArctic": "არქტიკული",
+  "colorSchemeHighContrast": "მაღალი კონტრასტი"
 }

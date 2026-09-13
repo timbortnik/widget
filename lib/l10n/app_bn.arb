@@ -46,5 +46,9 @@
   "theme": "থিম",
   "themeSystem": "সিস্টেম ডিফল্ট",
   "themeLight": "হালকা",
-  "themeDark": "গাঢ়"
+  "themeDark": "গাঢ়",
+  "colorScheme": "রঙের স্কিম",
+  "colorSchemeDefault": "ডিফল্ট",
+  "colorSchemeArctic": "আর্কটিক",
+  "colorSchemeHighContrast": "উচ্চ কনট্রাস্ট"
 }

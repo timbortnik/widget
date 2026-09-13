@@ -46,5 +46,9 @@
   "theme": "Thème",
   "themeSystem": "Système par défaut",
   "themeLight": "Clair",
-  "themeDark": "Sombre"
+  "themeDark": "Sombre",
+  "colorScheme": "Palette de couleurs",
+  "colorSchemeDefault": "Par défaut",
+  "colorSchemeArctic": "Arctique",
+  "colorSchemeHighContrast": "Contraste élevé"
 }

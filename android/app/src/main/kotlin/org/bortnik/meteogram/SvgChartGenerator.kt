@@ -59,8 +59,19 @@ data class SvgChartColors(
     val primaryText: SvgColor,
     val outlineColor: SvgColor = SvgColor(0x00, 0x00, 0x00),  // Stroke color for contrast
     val outlineOpacity: Double = 0.5,  // Stroke opacity
-    val outlineWidth: Double = 2.0     // Stroke width
+    val outlineWidth: Double = 2.0,    // Stroke width
+    /** Stroke width of the temperature line. Widened by high-contrast schemes. */
+    val temperatureLineWidth: Double = 3.5,
+    /** Stroke width of the "now" marker. Widened by high-contrast schemes. */
+    val nowIndicatorWidth: Double = 4.0
 ) {
+    /**
+     * Width of the contrasting outline drawn under the temperature line. Kept
+     * 1.5px wider than the line itself so the halo stays visible as schemes
+     * change [temperatureLineWidth].
+     */
+    val temperatureOutlineWidth: Double get() = temperatureLineWidth + 1.5
+
     /**
      * Create colors with custom temperature line and time label colors.
      * Used to apply Material You dynamic colors.
@@ -250,7 +261,7 @@ class SvgChartGenerator {
 
         // Now indicator
         val nowX = (nowIndex.toDouble() / (data.size - 1)) * width
-        svg.append("""<line x1="${nowX.toInt()}" y1="0" x2="${nowX.toInt()}" y2="${chartHeight.toInt()}" stroke="${colors.nowIndicator.toHex()}" stroke-width="4"/>""")
+        svg.append("""<line x1="${nowX.toInt()}" y1="0" x2="${nowX.toInt()}" y2="${chartHeight.toInt()}" stroke="${colors.nowIndicator.toHex()}" stroke-width="${colors.nowIndicatorWidth}"/>""")
 
         // Grid lines. Weekday charts mark every local midnight so each day has
         // a clear left boundary; hour charts stick to fixed labelStepHours
@@ -430,8 +441,8 @@ class SvgChartGenerator {
         svg.append("""<path d="$areaPath" fill="url(#tempGradient)" stroke="none"/>""")
 
         // Temperature line with contrasting outline
-        svg.append("""<path d="$path" fill="none" stroke="${colors.outlineColor.toHex()}" stroke-width="5" stroke-opacity="${colors.outlineOpacity}" stroke-linecap="round" stroke-linejoin="round"/>""")
-        svg.append("""<path d="$path" fill="none" stroke="${colors.temperatureLine.toHex()}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>""")
+        svg.append("""<path d="$path" fill="none" stroke="${colors.outlineColor.toHex()}" stroke-width="${colors.temperatureOutlineWidth}" stroke-opacity="${colors.outlineOpacity}" stroke-linecap="round" stroke-linejoin="round"/>""")
+        svg.append("""<path d="$path" fill="none" stroke="${colors.temperatureLine.toHex()}" stroke-width="${colors.temperatureLineWidth}" stroke-linecap="round" stroke-linejoin="round"/>""")
     }
 
     /**

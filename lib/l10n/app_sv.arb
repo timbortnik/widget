@@ -46,5 +46,9 @@
   "theme": "Tema",
   "themeSystem": "Systemstandard",
   "themeLight": "Ljust",
-  "themeDark": "Mörkt"
+  "themeDark": "Mörkt",
+  "colorScheme": "Färgschema",
+  "colorSchemeDefault": "Standard",
+  "colorSchemeArctic": "Arktisk",
+  "colorSchemeHighContrast": "Hög kontrast"
 }

@@ -43,4 +43,9 @@ class A11yIds {
   static const String themeOptionSystem = 'theme_option_system';
   static const String themeOptionLight = 'theme_option_light';
   static const String themeOptionDark = 'theme_option_dark';
+
+  // Colour scheme section of the theme picker sheet
+  static const String schemeOptionDefault = 'scheme_option_default';
+  static const String schemeOptionArctic = 'scheme_option_arctic';
+  static const String schemeOptionHighContrast = 'scheme_option_high_contrast';
 }

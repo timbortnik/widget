@@ -153,4 +153,16 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get themeDark => 'Koyu';
+
+  @override
+  String get colorScheme => 'Renk şeması';
+
+  @override
+  String get colorSchemeDefault => 'Varsayılan';
+
+  @override
+  String get colorSchemeArctic => 'Arktik';
+
+  @override
+  String get colorSchemeHighContrast => 'Yüksek kontrast';
 }

@@ -152,4 +152,16 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get themeDark => 'داكن';
+
+  @override
+  String get colorScheme => 'نظام الألوان';
+
+  @override
+  String get colorSchemeDefault => 'افتراضي';
+
+  @override
+  String get colorSchemeArctic => 'قطبي';
+
+  @override
+  String get colorSchemeHighContrast => 'تباين عالٍ';
 }

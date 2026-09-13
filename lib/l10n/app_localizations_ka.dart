@@ -152,4 +152,16 @@ class AppLocalizationsKa extends AppLocalizations {
 
   @override
   String get themeDark => 'მუქი';
+
+  @override
+  String get colorScheme => 'ფერთა სქემა';
+
+  @override
+  String get colorSchemeDefault => 'ნაგულისხმევი';
+
+  @override
+  String get colorSchemeArctic => 'არქტიკული';
+
+  @override
+  String get colorSchemeHighContrast => 'მაღალი კონტრასტი';
 }

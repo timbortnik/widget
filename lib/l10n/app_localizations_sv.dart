@@ -152,4 +152,16 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get themeDark => 'Mörkt';
+
+  @override
+  String get colorScheme => 'Färgschema';
+
+  @override
+  String get colorSchemeDefault => 'Standard';
+
+  @override
+  String get colorSchemeArctic => 'Arktisk';
+
+  @override
+  String get colorSchemeHighContrast => 'Hög kontrast';
 }

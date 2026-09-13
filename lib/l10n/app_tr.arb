@@ -46,5 +46,9 @@
   "theme": "Tema",
   "themeSystem": "Sistem varsayılanı",
   "themeLight": "Açık",
-  "themeDark": "Koyu"
+  "themeDark": "Koyu",
+  "colorScheme": "Renk şeması",
+  "colorSchemeDefault": "Varsayılan",
+  "colorSchemeArctic": "Arktik",
+  "colorSchemeHighContrast": "Yüksek kontrast"
 }

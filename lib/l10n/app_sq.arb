@@ -46,5 +46,9 @@
   "theme": "Tema",
   "themeSystem": "Parazgjedhja e sistemit",
   "themeLight": "E çelët",
-  "themeDark": "E errët"
+  "themeDark": "E errët",
+  "colorScheme": "Skema e ngjyrave",
+  "colorSchemeDefault": "E parazgjedhur",
+  "colorSchemeArctic": "Arktike",
+  "colorSchemeHighContrast": "Kontrast i lartë"
 }

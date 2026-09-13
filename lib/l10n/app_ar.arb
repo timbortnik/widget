@@ -46,5 +46,9 @@
   "theme": "المظهر",
   "themeSystem": "افتراضي النظام",
   "themeLight": "فاتح",
-  "themeDark": "داكن"
+  "themeDark": "داكن",
+  "colorScheme": "نظام الألوان",
+  "colorSchemeDefault": "افتراضي",
+  "colorSchemeArctic": "قطبي",
+  "colorSchemeHighContrast": "تباين عالٍ"
 }

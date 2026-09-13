@@ -46,5 +46,9 @@
   "theme": "Tema",
   "themeSystem": "Predefinito di sistema",
   "themeLight": "Chiaro",
-  "themeDark": "Scuro"
+  "themeDark": "Scuro",
+  "colorScheme": "Combinazione colori",
+  "colorSchemeDefault": "Predefinito",
+  "colorSchemeArctic": "Artico",
+  "colorSchemeHighContrast": "Contrasto elevato"
 }

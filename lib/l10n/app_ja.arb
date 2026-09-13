@@ -46,5 +46,9 @@
   "theme": "テーマ",
   "themeSystem": "システムのデフォルト",
   "themeLight": "ライト",
-  "themeDark": "ダーク"
+  "themeDark": "ダーク",
+  "colorScheme": "カラースキーム",
+  "colorSchemeDefault": "デフォルト",
+  "colorSchemeArctic": "アークティック",
+  "colorSchemeHighContrast": "ハイコントラスト"
 }

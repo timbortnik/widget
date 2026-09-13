@@ -46,5 +46,9 @@
   "theme": "Thema",
   "themeSystem": "Systeemstandaard",
   "themeLight": "Licht",
-  "themeDark": "Donker"
+  "themeDark": "Donker",
+  "colorScheme": "Kleurenschema",
+  "colorSchemeDefault": "Standaard",
+  "colorSchemeArctic": "Arctisch",
+  "colorSchemeHighContrast": "Hoog contrast"
 }

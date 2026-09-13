@@ -152,4 +152,16 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get themeDark => 'Tumma';
+
+  @override
+  String get colorScheme => 'Värimaailma';
+
+  @override
+  String get colorSchemeDefault => 'Oletus';
+
+  @override
+  String get colorSchemeArctic => 'Arktinen';
+
+  @override
+  String get colorSchemeHighContrast => 'Suuri kontrasti';
 }

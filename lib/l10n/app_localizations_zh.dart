@@ -150,4 +150,16 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get themeDark => '深色';
+
+  @override
+  String get colorScheme => '配色方案';
+
+  @override
+  String get colorSchemeDefault => '默认';
+
+  @override
+  String get colorSchemeArctic => '极地';
+
+  @override
+  String get colorSchemeHighContrast => '高对比度';
 }

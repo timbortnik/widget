@@ -46,5 +46,9 @@
   "theme": "Tema",
   "themeSystem": "Zadano sustavom",
   "themeLight": "Svijetla",
-  "themeDark": "Tamna"
+  "themeDark": "Tamna",
+  "colorScheme": "Shema boja",
+  "colorSchemeDefault": "Zadano",
+  "colorSchemeArctic": "Arktička",
+  "colorSchemeHighContrast": "Visoki kontrast"
 }

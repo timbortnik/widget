@@ -153,4 +153,16 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get themeDark => 'Întunecată';
+
+  @override
+  String get colorScheme => 'Schemă de culori';
+
+  @override
+  String get colorSchemeDefault => 'Implicit';
+
+  @override
+  String get colorSchemeArctic => 'Arctic';
+
+  @override
+  String get colorSchemeHighContrast => 'Contrast ridicat';
 }

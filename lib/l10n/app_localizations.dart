@@ -423,6 +423,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Dark'**
   String get themeDark;
+
+  /// Title for the chart colour scheme chooser
+  ///
+  /// In en, this message translates to:
+  /// **'Color scheme'**
+  String get colorScheme;
+
+  /// Colour scheme option using Material You dynamic colours
+  ///
+  /// In en, this message translates to:
+  /// **'Default'**
+  String get colorSchemeDefault;
+
+  /// Cool, muted arctic colour scheme option
+  ///
+  /// In en, this message translates to:
+  /// **'Arctic'**
+  String get colorSchemeArctic;
+
+  /// Maximum-contrast colour scheme option, for accessibility
+  ///
+  /// In en, this message translates to:
+  /// **'High contrast'**
+  String get colorSchemeHighContrast;
 }
 
 class _AppLocalizationsDelegate
