@@ -21,6 +21,13 @@ exclude_paths:
   - "e2e/wdio.conf.js"
   # Generated lockfile — flagged purely for its line count.
   - "**/package-lock.json"
+  # Black-box Appium specs. ESLint flags WebdriverIO's runtime-injected globals
+  # (driver, browser) as undefined and its CommonJS requires as misplaced. Same
+  # reasoning as the detekt exclusion below: these are test sources, and a typo'd
+  # global throws and fails the spec in CI anyway. Scoped to specs/ on purpose —
+  # e2e/package.json and its lockfile stay in scope so Codacy keeps scanning the
+  # npm tree for vulnerable dependencies.
+  - "e2e/specs/**"
 
 engines:
   # detekt's complexity thresholds are written for production code and misfire on
