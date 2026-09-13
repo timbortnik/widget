@@ -19,3 +19,15 @@ exclude_paths:
   # rules across three tools fire on this one file; excluding it beats
   # disabling each of those patterns repo-wide.
   - "e2e/wdio.conf.js"
+  # Generated lockfile — flagged purely for its line count.
+  - "**/package-lock.json"
+
+engines:
+  # detekt's complexity thresholds are written for production code and misfire on
+  # test sources: WeatherFetcherTest is flagged for "too many functions" (24) when
+  # those are just its test cases, and for duplicate string literals when those are
+  # the API keys each test asserts on. Tests should state expected keys literally —
+  # sharing a constant with the code under test is how a rename stops failing.
+  detekt:
+    exclude_paths:
+      - "android/app/src/test/**"
