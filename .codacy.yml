@@ -1,0 +1,14 @@
+---
+# Codacy config for Meteograph. Docs: https://docs.codacy.com/repositories-configure/codacy-configuration-file/
+# Note: when this file exists, the "Ignored files" settings in the Codacy UI no longer apply.
+
+exclude_paths:
+  # Generated / build output — mirrors the old .coderabbit.yaml path filters
+  - "lib/l10n/app_localizations*.dart"
+  - "lib/generated/**"
+  - "**/*.g.dart"
+  - "build/**"
+  - "android/**/build/**"
+  - ".dart_tool/**"
+  - "e2e/node_modules/**"
+  - "e2e/.appium/**"
