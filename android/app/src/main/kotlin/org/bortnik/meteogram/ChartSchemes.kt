@@ -33,10 +33,15 @@ object ChartSchemes {
      * [DEFAULT], unknown, or absent — in which case the caller keeps the
      * existing Material You path.
      */
-    fun palette(id: String?, isLight: Boolean): SvgChartColors? = when (id) {
-        ARCTIC -> if (isLight) arcticLight else arcticDark
-        CONTRAST -> if (isLight) contrastLight else contrastDark
-        else -> null
+    // Block body rather than `= when (...)` on purpose: Codacy's Lizard cannot
+    // parse Kotlin expression bodies and keeps consuming to the end of the
+    // enclosing object, reporting this 5-line dispatch as a 66-line function.
+    fun palette(id: String?, isLight: Boolean): SvgChartColors? {
+        return when (id) {
+            ARCTIC -> if (isLight) arcticLight else arcticDark
+            CONTRAST -> if (isLight) contrastLight else contrastDark
+            else -> null
+        }
     }
 
     val arcticLight = SvgChartColors(
