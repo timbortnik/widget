@@ -151,4 +151,22 @@ class AppLocalizationsIs extends AppLocalizations {
 
   @override
   String get themeDark => 'Dökkt';
+
+  @override
+  String get colorScheme => 'Litastef';
+
+  @override
+  String get colorSchemeDefault => 'Sjálfgefið';
+
+  @override
+  String get colorSchemeThermal => 'Hita';
+
+  @override
+  String get colorSchemeHighContrast => 'Mikil birtuskil';
+
+  @override
+  String get deviceLocation => 'Staðsetning tækis';
+
+  @override
+  String get recentLocations => 'Nýlegt';
 }

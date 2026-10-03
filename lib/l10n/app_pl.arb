@@ -46,5 +46,11 @@
   "theme": "Motyw",
   "themeSystem": "Domyślne ustawienie systemu",
   "themeLight": "Jasny",
-  "themeDark": "Ciemny"
+  "themeDark": "Ciemny",
+  "colorScheme": "Schemat kolorów",
+  "colorSchemeDefault": "Domyślny",
+  "colorSchemeThermal": "Termiczny",
+  "colorSchemeHighContrast": "Wysoki kontrast",
+  "deviceLocation": "Lokalizacja urządzenia",
+  "recentLocations": "Ostatnie"
 }

@@ -8,6 +8,7 @@ import '../l10n/app_localizations.dart';
 import '../services/location_service.dart';
 import '../services/widget_service.dart';
 import '../services/native_svg_service.dart';
+import '../services/scheme_service.dart';
 import '../services/units_service.dart';
 import '../services/material_you_service.dart';
 import '../services/widget_store.dart';
@@ -52,11 +53,19 @@ class HomeScreen extends StatefulWidget {
   /// Called when the user picks a theme mode from the chooser.
   final ValueChanged<ThemeMode>? onThemeModeChanged;
 
+  /// Currently active chart colour scheme (used to show the chooser selection).
+  final ChartScheme colorScheme;
+
+  /// Called when the user picks a colour scheme from the chooser.
+  final ValueChanged<ChartScheme>? onColorSchemeChanged;
+
   const HomeScreen({
     super.key,
     this.materialYouColors,
     this.themeMode = ThemeMode.system,
     this.onThemeModeChanged,
+    this.colorScheme = ChartScheme.defaultScheme,
+    this.onColorSchemeChanged,
   });
 
   @override
@@ -108,6 +117,18 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     _refreshTimer = Timer.periodic(kForegroundRefreshInterval, (_) {
       _refreshIfStale();
     });
+  }
+
+  @override
+  void didUpdateWidget(HomeScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // A scheme change moves no other cache key (size, brightness), so the
+    // build would happily reuse the stale PNG without this nudge. A theme
+    // change needs no equivalent: it flips `isLight`, which is already part
+    // of the cache key.
+    if (oldWidget.colorScheme != widget.colorScheme) {
+      _invalidateChartCaches();
+    }
   }
 
   /// Combined initialization: load dimensions first, then data.
@@ -495,6 +516,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   Widget _buildBody(AppLocalizations l10n, MeteogramColors colors) {
+    final cardColors = widget.colorScheme.cardColors(
+      colors,
+      isDark: Theme.of(context).brightness == Brightness.dark,
+    );
     if (_loading) {
       return Center(
         child: Column(
@@ -682,7 +707,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     : null,
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: colors.cardBackground,
+                    // Matches the chart's painted ground, which shifts
+                    // with the current temperature in some schemes.
+                    color: widget.colorScheme.groundColor(
+                          currentTemp,
+                          isDark: Theme.of(context).brightness == Brightness.dark,
+                        ) ??
+                        cardColors.cardBackground,
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
@@ -707,7 +738,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 child: Text(
                                   UnitsService.formatTemperature(currentTemp, PlatformDispatcher.instance.locale),
                                   style: TextStyle(
-                                    color: colors.temperatureLine,
+                                    // Colour-coded schemes tint the reading
+                                    // by its value, matching the chart line.
+                                    color: widget.colorScheme.temperatureColor(
+                                          currentTemp,
+                                          isDark: Theme.of(context).brightness == Brightness.dark,
+                                        ) ??
+                                        cardColors.temperatureLine,
                                     fontSize: 64,
                                     fontWeight: FontWeight.w300,
                                     height: 1,
@@ -723,15 +760,27 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               _buildStatRow(
                                 icon: Icons.wb_sunny_outlined,
                                 value: l10n.daylight,
-                                colors: colors,
-                                iconColor: colors.daylightIcon,
+                                colors: cardColors,
+                                // The sun follows the reading when the
+                                // scheme colour-codes daylight bars.
+                                iconColor: widget.colorScheme.daylightColor(
+                                      currentTemp,
+                                      isDark: Theme.of(context).brightness == Brightness.dark,
+                                    ) ??
+                                    cardColors.daylightIcon,
                               ),
                               const SizedBox(height: 8),
                               _buildStatRow(
                                 icon: Icons.water_drop_outlined,
                                 value: l10n.precipitation,
-                                colors: colors,
-                                iconColor: colors.precipitationBar,
+                                colors: cardColors,
+                                iconColor: cardColors.precipitationBar,
+                                // Schemes that split precipitation by phase
+                                // show snow beside the (rain) drop.
+                                leadingIcon: Icons.ac_unit,
+                                leadingIconColor: widget.colorScheme.snowColor(
+                                  isDark: Theme.of(context).brightness == Brightness.dark,
+                                ),
                               ),
                             ],
                           ),
@@ -907,10 +956,17 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     required String value,
     required MeteogramColors colors,
     Color? iconColor,
+    IconData? leadingIcon,
+    Color? leadingIconColor,
   }) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
+        // Shown only when it has a colour, i.e. the scheme uses it.
+        if (leadingIcon != null && leadingIconColor != null) ...[
+          Icon(leadingIcon, size: 18, color: leadingIconColor),
+          const SizedBox(width: 4),
+        ],
         Icon(icon, size: 18, color: iconColor ?? colors.secondaryText),
         const SizedBox(width: 8),
         Text(
@@ -988,7 +1044,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     );
   }
 
-  /// Bottom sheet to choose the in-app theme: System default / Light / Dark.
+  /// Bottom sheet to choose the in-app theme (System / Light / Dark) and the
+  /// chart colour scheme (Default / Thermal / High contrast).
   void _showThemePicker() {
     final colors = MeteogramColors.of(context, nativeColors: _getNativeColorsForTheme(context));
     final l10n = AppLocalizations.of(context)!;
@@ -996,6 +1053,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: colors.cardBackground,
+      // Two sections of options exceed the default 9/16-of-screen cap on a
+      // short screen, which would push the scheme options under the fold.
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -1021,32 +1081,71 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           );
         }
 
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    l10n.theme,
-                    style: TextStyle(
-                      color: colors.primaryText,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+        Widget schemeTile(
+            ChartScheme scheme, IconData icon, String label, String id) {
+          return _identified(
+            id,
+            ListTile(
+              leading: Icon(icon, color: colors.temperatureLine),
+              title: Text(label, style: TextStyle(color: colors.primaryText)),
+              trailing: widget.colorScheme == scheme
+                  ? Icon(Icons.check, color: colors.temperatureLine, size: 20)
+                  : null,
+              onTap: () {
+                Navigator.pop(sheetContext);
+                widget.onColorSchemeChanged?.call(scheme);
+              },
+            ),
+            selected: widget.colorScheme == scheme,
+          );
+        }
+
+        Widget header(String text) {
+          return Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                text,
+                style: TextStyle(
+                  color: colors.primaryText,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-              tile(ThemeMode.system, Icons.brightness_auto_outlined,
-                  l10n.themeSystem, A11yIds.themeOptionSystem),
-              tile(ThemeMode.light, Icons.light_mode_outlined, l10n.themeLight,
-                  A11yIds.themeOptionLight),
-              tile(ThemeMode.dark, Icons.dark_mode_outlined, l10n.themeDark,
-                  A11yIds.themeOptionDark),
-              const SizedBox(height: 12),
-            ],
+            ),
+          );
+        }
+
+        return SafeArea(
+          // Six options plus two headers overflow a short screen (or any
+          // screen in landscape), so the sheet scrolls rather than clipping.
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                header(l10n.theme),
+                tile(ThemeMode.system, Icons.brightness_auto_outlined,
+                    l10n.themeSystem, A11yIds.themeOptionSystem),
+                tile(ThemeMode.light, Icons.light_mode_outlined,
+                    l10n.themeLight, A11yIds.themeOptionLight),
+                tile(ThemeMode.dark, Icons.dark_mode_outlined, l10n.themeDark,
+                    A11yIds.themeOptionDark),
+                const Divider(height: 1),
+                header(l10n.colorScheme),
+                schemeTile(
+                    ChartScheme.defaultScheme,
+                    Icons.auto_awesome_outlined,
+                    l10n.colorSchemeDefault,
+                    A11yIds.schemeOptionDefault),
+                schemeTile(ChartScheme.thermal, Icons.thermostat_outlined,
+                    l10n.colorSchemeThermal, A11yIds.schemeOptionThermal),
+                schemeTile(ChartScheme.highContrast, Icons.contrast_outlined,
+                    l10n.colorSchemeHighContrast,
+                    A11yIds.schemeOptionHighContrast),
+                const SizedBox(height: 12),
+              ],
+            ),
           ),
         );
       },
@@ -1267,7 +1366,7 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
               ListTile(
                 leading: Icon(Icons.gps_fixed, color: colors.temperatureLine),
                 title: Text('GPS', style: TextStyle(color: colors.primaryText)),
-                subtitle: Text('Device location', style: TextStyle(color: colors.secondaryText, fontSize: 12)),
+                subtitle: Text(l10n.deviceLocation, style: TextStyle(color: colors.secondaryText, fontSize: 12)),
                 trailing: widget.currentSource == LocationSource.gps
                     ? Icon(Icons.check, color: colors.temperatureLine, size: 20)
                     : null,
@@ -1280,7 +1379,7 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                 child: Text(
-                  'Recent',
+                  l10n.recentLocations,
                   style: TextStyle(color: colors.secondaryText, fontSize: 12),
                 ),
               ),

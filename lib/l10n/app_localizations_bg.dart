@@ -152,4 +152,22 @@ class AppLocalizationsBg extends AppLocalizations {
 
   @override
   String get themeDark => 'Тъмна';
+
+  @override
+  String get colorScheme => 'Цветова схема';
+
+  @override
+  String get colorSchemeDefault => 'По подразбиране';
+
+  @override
+  String get colorSchemeThermal => 'Термална';
+
+  @override
+  String get colorSchemeHighContrast => 'Висок контраст';
+
+  @override
+  String get deviceLocation => 'Местоположение на устройството';
+
+  @override
+  String get recentLocations => 'Последни';
 }

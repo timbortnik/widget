@@ -46,5 +46,11 @@
   "theme": "테마",
   "themeSystem": "시스템 기본값",
   "themeLight": "라이트",
-  "themeDark": "다크"
+  "themeDark": "다크",
+  "colorScheme": "색상 구성",
+  "colorSchemeDefault": "기본값",
+  "colorSchemeThermal": "서멀",
+  "colorSchemeHighContrast": "고대비",
+  "deviceLocation": "기기 위치",
+  "recentLocations": "최근"
 }

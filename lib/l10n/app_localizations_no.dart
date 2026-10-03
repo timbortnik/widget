@@ -151,4 +151,22 @@ class AppLocalizationsNo extends AppLocalizations {
 
   @override
   String get themeDark => 'Mørkt';
+
+  @override
+  String get colorScheme => 'Fargeskjema';
+
+  @override
+  String get colorSchemeDefault => 'Standard';
+
+  @override
+  String get colorSchemeThermal => 'Termisk';
+
+  @override
+  String get colorSchemeHighContrast => 'Høy kontrast';
+
+  @override
+  String get deviceLocation => 'Enhetens posisjon';
+
+  @override
+  String get recentLocations => 'Nylige';
 }

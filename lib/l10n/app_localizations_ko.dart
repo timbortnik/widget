@@ -150,4 +150,22 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get themeDark => '다크';
+
+  @override
+  String get colorScheme => '색상 구성';
+
+  @override
+  String get colorSchemeDefault => '기본값';
+
+  @override
+  String get colorSchemeThermal => '서멀';
+
+  @override
+  String get colorSchemeHighContrast => '고대비';
+
+  @override
+  String get deviceLocation => '기기 위치';
+
+  @override
+  String get recentLocations => '최근';
 }

@@ -46,5 +46,11 @@
   "theme": "ਥੀਮ",
   "themeSystem": "ਸਿਸਟਮ ਡਿਫੌਲਟ",
   "themeLight": "ਲਾਈਟ",
-  "themeDark": "ਡਾਰਕ"
+  "themeDark": "ਡਾਰਕ",
+  "colorScheme": "ਰੰਗ ਸਕੀਮ",
+  "colorSchemeDefault": "ਮੂਲ",
+  "colorSchemeThermal": "ਥਰਮਲ",
+  "colorSchemeHighContrast": "ਉੱਚ ਕੰਟਰਾਸਟ",
+  "deviceLocation": "ਡਿਵਾਈਸ ਟਿਕਾਣਾ",
+  "recentLocations": "ਹਾਲੀਆ"
 }

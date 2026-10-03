@@ -46,5 +46,11 @@
   "theme": "主题",
   "themeSystem": "系统默认",
   "themeLight": "浅色",
-  "themeDark": "深色"
+  "themeDark": "深色",
+  "colorScheme": "配色方案",
+  "colorSchemeDefault": "默认",
+  "colorSchemeThermal": "温感",
+  "colorSchemeHighContrast": "高对比度",
+  "deviceLocation": "设备位置",
+  "recentLocations": "最近"
 }

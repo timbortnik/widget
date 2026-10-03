@@ -46,5 +46,11 @@
   "theme": "Tema",
   "themeSystem": "Parazgjedhja e sistemit",
   "themeLight": "E çelët",
-  "themeDark": "E errët"
+  "themeDark": "E errët",
+  "colorScheme": "Skema e ngjyrave",
+  "colorSchemeDefault": "E parazgjedhur",
+  "colorSchemeThermal": "Termike",
+  "colorSchemeHighContrast": "Kontrast i lartë",
+  "deviceLocation": "Vendndodhja e pajisjes",
+  "recentLocations": "Të fundit"
 }

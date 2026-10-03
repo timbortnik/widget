@@ -260,5 +260,35 @@
   "themeDark": "Dark",
   "@themeDark": {
     "description": "Dark theme option"
+  },
+
+  "colorScheme": "Color scheme",
+  "@colorScheme": {
+    "description": "Title for the chart colour scheme chooser"
+  },
+
+  "colorSchemeDefault": "Default",
+  "@colorSchemeDefault": {
+    "description": "Colour scheme option using Material You dynamic colours"
+  },
+
+  "colorSchemeThermal": "Thermal",
+  "@colorSchemeThermal": {
+    "description": "Colour scheme option whose chart colours follow the temperature"
+  },
+
+  "colorSchemeHighContrast": "High contrast",
+  "@colorSchemeHighContrast": {
+    "description": "Maximum-contrast colour scheme option, for accessibility"
+  },
+
+  "deviceLocation": "Device location",
+  "@deviceLocation": {
+    "description": "Subtitle of the GPS option in the location picker"
+  },
+
+  "recentLocations": "Recent",
+  "@recentLocations": {
+    "description": "Header above recently used places in the location picker"
   }
 }

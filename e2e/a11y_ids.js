@@ -25,4 +25,9 @@ module.exports = {
   themeOptionSystem: 'theme_option_system',
   themeOptionLight: 'theme_option_light',
   themeOptionDark: 'theme_option_dark',
+
+  // Colour scheme section of the theme picker sheet
+  schemeOptionDefault: 'scheme_option_default',
+  schemeOptionThermal: 'scheme_option_thermal',
+  schemeOptionHighContrast: 'scheme_option_high_contrast',
 };

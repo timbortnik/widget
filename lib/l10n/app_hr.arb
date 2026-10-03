@@ -46,5 +46,11 @@
   "theme": "Tema",
   "themeSystem": "Zadano sustavom",
   "themeLight": "Svijetla",
-  "themeDark": "Tamna"
+  "themeDark": "Tamna",
+  "colorScheme": "Shema boja",
+  "colorSchemeDefault": "Zadano",
+  "colorSchemeThermal": "Termalna",
+  "colorSchemeHighContrast": "Visoki kontrast",
+  "deviceLocation": "Lokacija uređaja",
+  "recentLocations": "Nedavno"
 }

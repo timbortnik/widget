@@ -153,4 +153,22 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get themeDark => 'Donker';
+
+  @override
+  String get colorScheme => 'Kleurenschema';
+
+  @override
+  String get colorSchemeDefault => 'Standaard';
+
+  @override
+  String get colorSchemeThermal => 'Thermisch';
+
+  @override
+  String get colorSchemeHighContrast => 'Hoog contrast';
+
+  @override
+  String get deviceLocation => 'Apparaatlocatie';
+
+  @override
+  String get recentLocations => 'Recent';
 }

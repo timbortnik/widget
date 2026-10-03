@@ -153,4 +153,22 @@ class AppLocalizationsPa extends AppLocalizations {
 
   @override
   String get themeDark => 'ਡਾਰਕ';
+
+  @override
+  String get colorScheme => 'ਰੰਗ ਸਕੀਮ';
+
+  @override
+  String get colorSchemeDefault => 'ਮੂਲ';
+
+  @override
+  String get colorSchemeThermal => 'ਥਰਮਲ';
+
+  @override
+  String get colorSchemeHighContrast => 'ਉੱਚ ਕੰਟਰਾਸਟ';
+
+  @override
+  String get deviceLocation => 'ਡਿਵਾਈਸ ਟਿਕਾਣਾ';
+
+  @override
+  String get recentLocations => 'ਹਾਲੀਆ';
 }

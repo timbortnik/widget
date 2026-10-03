@@ -423,6 +423,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Dark'**
   String get themeDark;
+
+  /// Title for the chart colour scheme chooser
+  ///
+  /// In en, this message translates to:
+  /// **'Color scheme'**
+  String get colorScheme;
+
+  /// Colour scheme option using Material You dynamic colours
+  ///
+  /// In en, this message translates to:
+  /// **'Default'**
+  String get colorSchemeDefault;
+
+  /// Colour scheme option whose chart colours follow the temperature
+  ///
+  /// In en, this message translates to:
+  /// **'Thermal'**
+  String get colorSchemeThermal;
+
+  /// Maximum-contrast colour scheme option, for accessibility
+  ///
+  /// In en, this message translates to:
+  /// **'High contrast'**
+  String get colorSchemeHighContrast;
+
+  /// Subtitle of the GPS option in the location picker
+  ///
+  /// In en, this message translates to:
+  /// **'Device location'**
+  String get deviceLocation;
+
+  /// Header above recently used places in the location picker
+  ///
+  /// In en, this message translates to:
+  /// **'Recent'**
+  String get recentLocations;
 }
 
 class _AppLocalizationsDelegate

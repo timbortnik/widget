@@ -133,7 +133,7 @@ class WeatherFetcherTest {
         assertTrue(result.contains("api.open-meteo.com"))
         assertTrue(result.contains("latitude=52.52"))
         assertTrue(result.contains("longitude=13.405"))
-        assertTrue(result.contains("hourly=temperature_2m,precipitation,cloud_cover"))
+        assertTrue(result.contains("hourly=temperature_2m,precipitation,cloud_cover,snowfall"))
         assertTrue(result.contains("timezone=UTC"))
         assertTrue(result.contains("past_hours=${WeatherConstants.WEEKLY_PAST_HOURS}"))
         assertTrue(result.contains("forecast_days=7"))

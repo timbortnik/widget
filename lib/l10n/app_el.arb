@@ -46,5 +46,11 @@
   "theme": "Θέμα",
   "themeSystem": "Προεπιλογή συστήματος",
   "themeLight": "Φωτεινό",
-  "themeDark": "Σκούρο"
+  "themeDark": "Σκούρο",
+  "colorScheme": "Χρωματικός συνδυασμός",
+  "colorSchemeDefault": "Προεπιλογή",
+  "colorSchemeThermal": "Θερμικό",
+  "colorSchemeHighContrast": "Υψηλή αντίθεση",
+  "deviceLocation": "Τοποθεσία συσκευής",
+  "recentLocations": "Πρόσφατα"
 }

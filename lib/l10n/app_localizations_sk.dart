@@ -153,4 +153,22 @@ class AppLocalizationsSk extends AppLocalizations {
 
   @override
   String get themeDark => 'Tmavý';
+
+  @override
+  String get colorScheme => 'Farebná schéma';
+
+  @override
+  String get colorSchemeDefault => 'Predvolené';
+
+  @override
+  String get colorSchemeThermal => 'Termálne';
+
+  @override
+  String get colorSchemeHighContrast => 'Vysoký kontrast';
+
+  @override
+  String get deviceLocation => 'Poloha zariadenia';
+
+  @override
+  String get recentLocations => 'Nedávne';
 }

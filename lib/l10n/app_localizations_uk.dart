@@ -153,4 +153,22 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get themeDark => 'Темна';
+
+  @override
+  String get colorScheme => 'Колірна схема';
+
+  @override
+  String get colorSchemeDefault => 'Стандартна';
+
+  @override
+  String get colorSchemeThermal => 'Термальна';
+
+  @override
+  String get colorSchemeHighContrast => 'Висока контрастність';
+
+  @override
+  String get deviceLocation => 'Місцезнаходження пристрою';
+
+  @override
+  String get recentLocations => 'Нещодавні';
 }

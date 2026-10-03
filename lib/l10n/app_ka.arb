@@ -46,5 +46,11 @@
   "theme": "თემა",
   "themeSystem": "სისტემის ნაგულისხმევი",
   "themeLight": "ღია",
-  "themeDark": "მუქი"
+  "themeDark": "მუქი",
+  "colorScheme": "ფერთა სქემა",
+  "colorSchemeDefault": "ნაგულისხმევი",
+  "colorSchemeThermal": "თერმული",
+  "colorSchemeHighContrast": "მაღალი კონტრასტი",
+  "deviceLocation": "მოწყობილობის მდებარეობა",
+  "recentLocations": "ბოლოდროინდელი"
 }

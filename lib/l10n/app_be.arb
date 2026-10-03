@@ -46,5 +46,11 @@
   "theme": "Тэма",
   "themeSystem": "Сістэмная",
   "themeLight": "Светлая",
-  "themeDark": "Цёмная"
+  "themeDark": "Цёмная",
+  "colorScheme": "Каляровая схема",
+  "colorSchemeDefault": "Стандартная",
+  "colorSchemeThermal": "Тэрмальная",
+  "colorSchemeHighContrast": "Высокая кантраснасць",
+  "deviceLocation": "Месцазнаходжанне прылады",
+  "recentLocations": "Нядаўнія"
 }

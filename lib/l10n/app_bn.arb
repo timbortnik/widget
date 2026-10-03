@@ -46,5 +46,11 @@
   "theme": "থিম",
   "themeSystem": "সিস্টেম ডিফল্ট",
   "themeLight": "হালকা",
-  "themeDark": "গাঢ়"
+  "themeDark": "গাঢ়",
+  "colorScheme": "রঙের স্কিম",
+  "colorSchemeDefault": "ডিফল্ট",
+  "colorSchemeThermal": "থার্মাল",
+  "colorSchemeHighContrast": "উচ্চ কনট্রাস্ট",
+  "deviceLocation": "ডিভাইসের অবস্থান",
+  "recentLocations": "সাম্প্রতিক"
 }

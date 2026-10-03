@@ -46,5 +46,11 @@
   "theme": "テーマ",
   "themeSystem": "システムのデフォルト",
   "themeLight": "ライト",
-  "themeDark": "ダーク"
+  "themeDark": "ダーク",
+  "colorScheme": "カラースキーム",
+  "colorSchemeDefault": "デフォルト",
+  "colorSchemeThermal": "サーマル",
+  "colorSchemeHighContrast": "ハイコントラスト",
+  "deviceLocation": "デバイスの位置情報",
+  "recentLocations": "最近"
 }

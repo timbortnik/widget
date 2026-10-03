@@ -17,11 +17,21 @@ object WidgetChartColors {
     fun get(context: Context, isLight: Boolean): SvgChartColors {
         val baseColors = if (isLight) SvgChartColors.light else SvgChartColors.dark
 
+        val prefs = context.getSharedPreferences(WidgetUtils.PREFS_NAME, Context.MODE_PRIVATE)
+
+        // A fixed scheme replaces the whole palette and opts out of Material
+        // You entirely. Checked before the SDK guard so fixed schemes work on
+        // every supported release, not just Android 12+.
+        val schemeId = prefs.getString(WidgetUtils.KEY_COLOR_SCHEME, null)
+        val fixed = ChartSchemes.palette(schemeId, isLight)
+        if (fixed != null) {
+            Log.d(TAG, "Using fixed colour scheme '$schemeId' (isLight=$isLight)")
+            return fixed
+        }
+
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
             return baseColors
         }
-
-        val prefs = context.getSharedPreferences(WidgetUtils.PREFS_NAME, Context.MODE_PRIVATE)
 
         val tempColorKey = if (isLight) "material_you_light_on_primary_container" else "material_you_dark_primary"
         val timeColorKey = if (isLight) "material_you_light_tertiary" else "material_you_dark_tertiary"

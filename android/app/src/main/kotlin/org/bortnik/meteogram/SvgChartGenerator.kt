@@ -8,8 +8,8 @@ import kotlin.math.asin
 import kotlin.math.cos
 import kotlin.math.exp
 import kotlin.math.pow
-import kotlin.math.sin
 import kotlin.math.roundToInt
+import kotlin.math.sin
 import kotlin.math.sqrt
 
 /**
@@ -59,8 +59,105 @@ data class SvgChartColors(
     val primaryText: SvgColor,
     val outlineColor: SvgColor = SvgColor(0x00, 0x00, 0x00),  // Stroke color for contrast
     val outlineOpacity: Double = 0.5,  // Stroke opacity
-    val outlineWidth: Double = 2.0     // Stroke width
+    val outlineWidth: Double = 2.0,    // Stroke width
+    /** Stroke width of the temperature line. Widened by high-contrast schemes. */
+    val temperatureLineWidth: Double = 3.5,
+    /** Stroke width of the "now" marker. Widened by high-contrast schemes. */
+    val nowIndicatorWidth: Double = 4.0,
+    /** Bar gradient opacity at the end where bars anchor. */
+    val barGradientSolid: Double = 0.9,
+    /**
+     * Bar gradient opacity at the bars' free end. Bar height already carries
+     * the value, so this fade is decorative and high-contrast schemes raise it.
+     */
+    val barGradientFaint: Double = 0.3,
+    /**
+     * Paint [cardBackground] behind the chart. Off by default so the chart
+     * stays transparent over the system/Material You surface; schemes whose
+     * contrast depends on a specific ground turn it on, which also carries
+     * that ground into the widget.
+     */
+    val drawBackground: Boolean = false,
+    /**
+     * Colour-code the temperature by value: (°C, colour) stops in ascending
+     * order, on an absolute scale so a colour always means the same
+     * temperature. The line, its area fill and the temperature labels follow
+     * it. Null draws everything in [temperatureLine].
+     */
+    val temperatureScale: List<Pair<Double, SvgColor>>? = null,
+    /**
+     * Colour for hours where snow dominates. Null draws all precipitation in
+     * [precipitationBar]; when set, [precipitationBar] means rain.
+     */
+    val snowBar: SvgColor? = null,
+    /**
+     * Colour-code the daylight bars by the hour's temperature: (°C, colour)
+     * stops in ascending order, absolute and clamped like [temperatureScale].
+     * Null draws every bar in [daylightBar].
+     */
+    val daylightScale: List<Pair<Double, SvgColor>>? = null,
+    /**
+     * Shift the painted ground with the current temperature: (°C, colour)
+     * stops, clamped. Null keeps [cardBackground] fixed. Only meaningful with
+     * [drawBackground]; see [atTemperature].
+     */
+    val groundScale: List<Pair<Double, SvgColor>>? = null
 ) {
+    init {
+        // Interpolation and gradient offsets divide by the gap between stops;
+        // at least two strictly ascending stops keep every divisor non-zero.
+        for ((name, scale) in listOf(
+            "temperatureScale" to temperatureScale,
+            "daylightScale" to daylightScale,
+            "groundScale" to groundScale
+        )) {
+            if (scale == null) continue
+            require(scale.size >= 2) { "$name needs at least two stops, got ${scale.size}" }
+            require(scale.zipWithNext().all { (a, b) -> a.first < b.first }) {
+                "$name stops must be strictly ascending: ${scale.map { it.first }}"
+            }
+        }
+    }
+
+    /**
+     * Width of the contrasting outline drawn under the temperature line. Kept
+     * 1.5px wider than the line itself so the halo stays visible as schemes
+     * change [temperatureLineWidth].
+     */
+    val temperatureOutlineWidth: Double get() = temperatureLineWidth + 1.5
+
+    /**
+     * Colour for a temperature in °C: interpolated along [temperatureScale]
+     * in sRGB (as SVG gradients interpolate), clamped at both ends; or
+     * [temperatureLine] when there is no scale.
+     */
+    fun temperatureColorAt(celsius: Double): SvgColor =
+        temperatureScale?.let { colorOnScale(it, celsius) } ?: temperatureLine
+
+    /** Daylight bar colour for a temperature in °C: on [daylightScale], or [daylightBar] without one. */
+    fun daylightColorAt(celsius: Double): SvgColor =
+        daylightScale?.let { colorOnScale(it, celsius) } ?: daylightBar
+
+    /**
+     * This palette with its ground (and the halo, which must match the
+     * ground) resolved for [celsius] along [groundScale]; unchanged without one.
+     */
+    fun atTemperature(celsius: Double): SvgChartColors = groundScale?.let {
+        val ground = colorOnScale(it, celsius)
+        copy(cardBackground = ground, outlineColor = ground)
+    } ?: this
+
+    private fun colorOnScale(scale: List<Pair<Double, SvgColor>>, celsius: Double): SvgColor {
+        if (celsius <= scale.first().first) return scale.first().second
+        if (celsius >= scale.last().first) return scale.last().second
+        val upper = scale.indexOfFirst { it.first >= celsius }
+        val (t0, c0) = scale[upper - 1]
+        val (t1, c1) = scale[upper]
+        val f = (celsius - t0) / (t1 - t0)
+        fun mix(a: Int, b: Int) = (a + (b - a) * f).roundToInt()
+        return SvgColor(mix(c0.r, c1.r), mix(c0.g, c1.g), mix(c0.b, c1.b))
+    }
+
     /**
      * Create colors with custom temperature line and time label colors.
      * Used to apply Material You dynamic colors.
@@ -132,8 +229,17 @@ data class HourlyData(
     val time: Long,           // UTC timestamp in milliseconds
     val temperature: Double,  // Celsius
     val precipitation: Double, // mm
-    val cloudCover: Int       // 0-100
-)
+    val cloudCover: Int,      // 0-100
+    val snowfall: Double = 0.0 // cm of snow (Open-Meteo); 0 when unknown
+) {
+    /**
+     * Whether snow makes up at least half of this hour's precipitation, by
+     * water equivalent (Open-Meteo: 7 cm of snow ≈ 10 mm of water). Sleet
+     * goes to whichever phase dominates.
+     */
+    val isSnow: Boolean
+        get() = precipitation > 0 && snowfall * 10.0 / 7.0 >= precipitation / 2
+}
 
 /**
  * Chart visual constants for SVG generation.
@@ -212,6 +318,27 @@ class SvgChartGenerator {
             return """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width.toInt()} ${height.toInt()}"></svg>"""
         }
 
+        // A temperature-driven ground follows the current hour, like the
+        // reading in the card header.
+        val current = data[nowIndex.coerceIn(0, data.size - 1)].temperature
+        return render(
+            data, nowIndex, latitude, longitude, colors.atTemperature(current),
+            width, height, usePastFade, labelStepHours, labelFormat
+        )
+    }
+
+    private fun render(
+        data: List<HourlyData>,
+        nowIndex: Int,
+        latitude: Double,
+        longitude: Double,
+        colors: SvgChartColors,
+        width: Double,
+        height: Double,
+        usePastFade: Boolean,
+        labelStepHours: Int,
+        labelFormat: TimeLabelFormat
+    ): String {
         val svg = StringBuilder()
 
         // Reserve space for time labels based on font size
@@ -230,7 +357,12 @@ class SvgChartGenerator {
         writeGradientDefs(svg, colors, nowFraction, usePastFade)
         svg.append("</defs>")
 
-        // No background - widget uses system background via ?android:attr/colorBackground
+        // Transparent by default - the widget shows ?android:attr/colorBackground
+        // and the app its card. Drawn outside the past-fade mask so the ground
+        // stays solid across the past region.
+        if (colors.drawBackground) {
+            svg.append("""<rect x="0" y="0" width="${width.toInt()}" height="${height.toInt()}" fill="${colors.cardBackground.toHex()}"/>""")
+        }
 
         // Chart group with optional past-time fade mask
         if (usePastFade) {
@@ -250,7 +382,7 @@ class SvgChartGenerator {
 
         // Now indicator
         val nowX = (nowIndex.toDouble() / (data.size - 1)) * width
-        svg.append("""<line x1="${nowX.toInt()}" y1="0" x2="${nowX.toInt()}" y2="${chartHeight.toInt()}" stroke="${colors.nowIndicator.toHex()}" stroke-width="4"/>""")
+        svg.append("""<line x1="${nowX.toInt()}" y1="0" x2="${nowX.toInt()}" y2="${chartHeight.toInt()}" stroke="${colors.nowIndicator.toHex()}" stroke-width="${colors.nowIndicatorWidth}"/>""")
 
         // Grid lines. Weekday charts mark every local midnight so each day has
         // a clear left boundary; hour charts stick to fixed labelStepHours
@@ -307,15 +439,21 @@ class SvgChartGenerator {
         // fading as they hang down — mirror of the precipitation bar range,
         // which is solid at the bottom where its bars anchor).
         svg.append("""<linearGradient id="daylightGradient" x1="0" y1="0" x2="0" y2="1">""")
-        svg.append("""<stop offset="0%" stop-color="${colors.daylightBar.toHex()}" stop-opacity="0.9"/>""")
-        svg.append("""<stop offset="100%" stop-color="${colors.daylightBar.toHex()}" stop-opacity="0.3"/>""")
+        svg.append("""<stop offset="0%" stop-color="${colors.daylightBar.toHex()}" stop-opacity="${colors.barGradientSolid}"/>""")
+        svg.append("""<stop offset="100%" stop-color="${colors.daylightBar.toHex()}" stop-opacity="${colors.barGradientFaint}"/>""")
         svg.append("</linearGradient>")
 
         // Precipitation bar gradient (vertical: solid at bottom, fades at top - bars grow upward)
         svg.append("""<linearGradient id="precipGradient" x1="0" y1="0" x2="0" y2="1">""")
-        svg.append("""<stop offset="0%" stop-color="${colors.precipitationBar.toHex()}" stop-opacity="0.3"/>""")
-        svg.append("""<stop offset="100%" stop-color="${colors.precipitationBar.toHex()}" stop-opacity="0.9"/>""")
+        svg.append("""<stop offset="0%" stop-color="${colors.precipitationBar.toHex()}" stop-opacity="${colors.barGradientFaint}"/>""")
+        svg.append("""<stop offset="100%" stop-color="${colors.precipitationBar.toHex()}" stop-opacity="${colors.barGradientSolid}"/>""")
         svg.append("</linearGradient>")
+        colors.snowBar?.let { snow ->
+            svg.append("""<linearGradient id="snowGradient" x1="0" y1="0" x2="0" y2="1">""")
+            svg.append("""<stop offset="0%" stop-color="${snow.toHex()}" stop-opacity="${colors.barGradientFaint}"/>""")
+            svg.append("""<stop offset="100%" stop-color="${snow.toHex()}" stop-opacity="${colors.barGradientSolid}"/>""")
+            svg.append("</linearGradient>")
+        }
 
         // Past-time fade mask (horizontal gradient: faded on left, full opacity at now line)
         if (usePastFade) {
@@ -346,6 +484,26 @@ class SvgChartGenerator {
         val slotWidth = width / data.size
         val barWidth = slotWidth * ChartConstants.BAR_WIDTH_RATIO
 
+        // Colour-coded daylight needs one gradient per colour. Bucketing to
+        // the nearest even degree (at most 1°C off) keeps a week's worth of
+        // bars down to a handful of gradients instead of one per hour.
+        fun bucketOf(celsius: Double): Int {
+            return (celsius / 2).roundToInt()  // Block body: see writeTemperatureScaleDefs
+        }
+        val bucketIds = mutableMapOf<Int, String>()
+        if (colors.daylightScale != null) {
+            svg.append("<defs>")
+            for (d in data) {
+                val bucket = bucketOf(d.temperature)
+                if (bucket in bucketIds) continue
+                val id = "daylightT$bucket".replace("-", "m")
+                bucketIds[bucket] = id
+                val c = colors.daylightColorAt(bucket * 2.0).toHex()
+                svg.append("""<linearGradient id="$id" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="$c" stop-opacity="${colors.barGradientSolid}"/><stop offset="100%" stop-color="$c" stop-opacity="${colors.barGradientFaint}"/></linearGradient>""")
+            }
+            svg.append("</defs>")
+        }
+
         // Draw bars with contrasting outline
         svg.append("""<g opacity="${ChartConstants.DAYLIGHT_BAR_OPACITY}">""")
         for (i in data.indices) {
@@ -354,8 +512,9 @@ class SvgChartGenerator {
 
             val barHeight = daylight * chartHeight
             val x = i * slotWidth + (slotWidth - barWidth) / 2
+            val gradient = bucketIds[bucketOf(data[i].temperature)] ?: "daylightGradient"
 
-            svg.append("""<rect x="${x.toInt()}" y="0" width="${barWidth.toInt()}" height="${barHeight.toInt()}" fill="url(#daylightGradient)" stroke="${colors.outlineColor.toHex()}" stroke-width="1" stroke-opacity="${colors.outlineOpacity * 0.5}" rx="2"/>""")
+            svg.append("""<rect x="${x.toInt()}" y="0" width="${barWidth.toInt()}" height="${barHeight.toInt()}" fill="url(#$gradient)" stroke="${colors.outlineColor.toHex()}" stroke-width="1" stroke-opacity="${colors.outlineOpacity * 0.5}" rx="2"/>""")
         }
         svg.append("</g>")
     }
@@ -387,7 +546,8 @@ class SvgChartGenerator {
             val x = i * slotWidth + (slotWidth - barWidth) / 2
             val y = chartHeight - barHeight  // Start from bottom
 
-            svg.append("""<rect x="${x.toInt()}" y="${y.toInt()}" width="${barWidth.toInt()}" height="${barHeight.toInt()}" fill="url(#precipGradient)" stroke="${colors.outlineColor.toHex()}" stroke-width="1" stroke-opacity="${colors.outlineOpacity * 0.5}" rx="2"/>""")
+            val gradient = if (colors.snowBar != null && data[i].isSnow) "snowGradient" else "precipGradient"
+            svg.append("""<rect x="${x.toInt()}" y="${y.toInt()}" width="${barWidth.toInt()}" height="${barHeight.toInt()}" fill="url(#$gradient)" stroke="${colors.outlineColor.toHex()}" stroke-width="1" stroke-opacity="${colors.outlineOpacity * 0.5}" rx="2"/>""")
         }
         svg.append("</g>")
     }
@@ -429,11 +589,21 @@ class SvgChartGenerator {
 
         // Area fill with gradient
         val areaPath = "$path L ${width.toInt()} ${chartHeight.toInt()} L 0 ${chartHeight.toInt()} Z"
-        svg.append("""<path d="$areaPath" fill="url(#tempGradient)" stroke="none"/>""")
+        var areaFill = "url(#tempGradient)"
+        var lineStroke = colors.temperatureLine.toHex()
+        colors.temperatureScale?.let { scale ->
+            writeTemperatureScaleDefs(
+                svg, colors, scale, points.minOf { it.second }, chartHeight,
+                bottomTemp = minTemp - yPadding, span = tempRange + 2 * yPadding
+            )
+            areaFill = "url(#tempScaleFill)"
+            lineStroke = "url(#tempLineGradient)"
+        }
+        svg.append("""<path d="$areaPath" fill="$areaFill" stroke="none"/>""")
 
         // Temperature line with contrasting outline
-        svg.append("""<path d="$path" fill="none" stroke="${colors.outlineColor.toHex()}" stroke-width="5" stroke-opacity="${colors.outlineOpacity}" stroke-linecap="round" stroke-linejoin="round"/>""")
-        svg.append("""<path d="$path" fill="none" stroke="${colors.temperatureLine.toHex()}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>""")
+        svg.append("""<path d="$path" fill="none" stroke="${colors.outlineColor.toHex()}" stroke-width="${colors.temperatureOutlineWidth}" stroke-opacity="${colors.outlineOpacity}" stroke-linecap="round" stroke-linejoin="round"/>""")
+        svg.append("""<path d="$path" fill="none" stroke="$lineStroke" stroke-width="${colors.temperatureLineWidth}" stroke-linecap="round" stroke-linejoin="round"/>""")
     }
 
     /**
@@ -445,6 +615,54 @@ class SvgChartGenerator {
         } else {
             celsius.roundToInt().toString()
         }
+    }
+
+    /**
+     * Gradients for a colour-coded temperature: `tempLineGradient` for the
+     * line and `tempScaleFill` for the area under it. Height on the chart is
+     * temperature, so the scale maps to plain vertical gradients in chart
+     * coordinates (userSpaceOnUse; a bounding-box gradient would rescale per
+     * path and break the absolute mapping).
+     */
+    private fun writeTemperatureScaleDefs(
+        svg: StringBuilder,
+        colors: SvgChartColors,
+        scale: List<Pair<Double, SvgColor>>,
+        top: Double,
+        chartHeight: Double,
+        bottomTemp: Double,
+        span: Double
+    ) {
+        // The chart's y mapping (temperature [bottomTemp] at the bottom edge,
+        // [span] degrees across its height) and its inverse.
+        // Block bodies, not `= ...`: Lizard misparses Kotlin expression bodies
+        // and folds the rest of the function into them.
+        fun yOf(t: Double): Double {
+            return chartHeight * (1 - (t - bottomTemp) / span)
+        }
+        fun tempAt(y: Double): Double {
+            return bottomTemp + (1 - y / chartHeight) * span
+        }
+        val lo = scale.first().first
+        val hi = scale.last().first  // > lo: guaranteed by the SvgChartColors init check
+        svg.append("<defs>")
+        svg.append("""<linearGradient id="tempLineGradient" gradientUnits="userSpaceOnUse" x1="0" y1="${yOf(hi)}" x2="0" y2="${yOf(lo)}">""")
+        for ((t, c) in scale.reversed()) {
+            svg.append("""<stop offset="${(hi - t) / (hi - lo)}" stop-color="${c.toHex()}"/>""")
+        }
+        svg.append("</linearGradient>")
+        // The fill takes the line's colour at each height and keeps the usual
+        // fade towards the bottom, so it always matches the line directly above.
+        val steps = 8
+        svg.append("""<linearGradient id="tempScaleFill" gradientUnits="userSpaceOnUse" x1="0" y1="$top" x2="0" y2="$chartHeight">""")
+        for (k in 0 until steps) {
+            val f = k.toDouble() / (steps - 1)
+            val y = top + f * (chartHeight - top)
+            val opacity = colors.temperatureGradientStart.opacity * (1 - f) + colors.temperatureGradientEnd.opacity * f
+            svg.append("""<stop offset="$f" stop-color="${colors.temperatureColorAt(tempAt(y)).toHex()}" stop-opacity="${String.format(Locale.ROOT, "%.3f", opacity)}"/>""")
+        }
+        svg.append("</linearGradient>")
+        svg.append("</defs>")
     }
 
     /**
@@ -481,7 +699,6 @@ class SvgChartGenerator {
         val fontSize = (width * ChartConstants.TEMP_FONT_SIZE_RATIO).toInt()
         val baseStyle = """font-size="$fontSize" font-weight="bold" font-family="sans-serif" text-anchor="middle" dominant-baseline="middle""""
         val strokeStyle = """$baseStyle fill="none" stroke="${colors.outlineColor.toHex()}" stroke-width="${colors.outlineWidth}" stroke-opacity="${colors.outlineOpacity}""""
-        val fillStyle = """$baseStyle fill="${colors.temperatureLine.toHex()}""""
 
         // Align labels with actual temperature positions on the line
         // Add offset to account for text height
@@ -492,6 +709,8 @@ class SvgChartGenerator {
             val y = (tempToY(temp) + yOffset).toInt()
             val text = formatTemp(temp)
             svg.append("""<text x="${centerX.toInt()}" y="$y" $strokeStyle>$text</text>""")
+            // Each label takes the colour of its own value on a colour-coded scale.
+            val fillStyle = """$baseStyle fill="${colors.temperatureColorAt(temp).toHex()}""""
             svg.append("""<text x="${centerX.toInt()}" y="$y" $fillStyle>$text</text>""")
         }
     }

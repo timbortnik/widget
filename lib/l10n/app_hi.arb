@@ -46,5 +46,11 @@
   "theme": "थीम",
   "themeSystem": "सिस्टम डिफ़ॉल्ट",
   "themeLight": "लाइट",
-  "themeDark": "डार्क"
+  "themeDark": "डार्क",
+  "colorScheme": "रंग योजना",
+  "colorSchemeDefault": "डिफ़ॉल्ट",
+  "colorSchemeThermal": "थर्मल",
+  "colorSchemeHighContrast": "उच्च कंट्रास्ट",
+  "deviceLocation": "डिवाइस का स्थान",
+  "recentLocations": "हाल के"
 }

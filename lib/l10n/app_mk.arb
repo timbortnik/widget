@@ -46,5 +46,11 @@
   "theme": "Тема",
   "themeSystem": "Системски зададено",
   "themeLight": "Светла",
-  "themeDark": "Темна"
+  "themeDark": "Темна",
+  "colorScheme": "Шема на бои",
+  "colorSchemeDefault": "Стандардно",
+  "colorSchemeThermal": "Термална",
+  "colorSchemeHighContrast": "Висок контраст",
+  "deviceLocation": "Локација на уредот",
+  "recentLocations": "Неодамнешни"
 }

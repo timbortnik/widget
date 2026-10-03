@@ -46,5 +46,11 @@
   "theme": "Teema",
   "themeSystem": "Järjestelmän oletus",
   "themeLight": "Vaalea",
-  "themeDark": "Tumma"
+  "themeDark": "Tumma",
+  "colorScheme": "Värimaailma",
+  "colorSchemeDefault": "Oletus",
+  "colorSchemeThermal": "Terminen",
+  "colorSchemeHighContrast": "Suuri kontrasti",
+  "deviceLocation": "Laitteen sijainti",
+  "recentLocations": "Viimeisimmät"
 }

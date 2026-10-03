@@ -46,5 +46,11 @@
   "theme": "Motív",
   "themeSystem": "Predvolené systémom",
   "themeLight": "Svetlý",
-  "themeDark": "Tmavý"
+  "themeDark": "Tmavý",
+  "colorScheme": "Farebná schéma",
+  "colorSchemeDefault": "Predvolené",
+  "colorSchemeThermal": "Termálne",
+  "colorSchemeHighContrast": "Vysoký kontrast",
+  "deviceLocation": "Poloha zariadenia",
+  "recentLocations": "Nedávne"
 }

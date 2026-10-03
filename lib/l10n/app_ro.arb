@@ -46,5 +46,11 @@
   "theme": "Temă",
   "themeSystem": "Prestabilit de sistem",
   "themeLight": "Luminoasă",
-  "themeDark": "Întunecată"
+  "themeDark": "Întunecată",
+  "colorScheme": "Schemă de culori",
+  "colorSchemeDefault": "Implicit",
+  "colorSchemeThermal": "Termic",
+  "colorSchemeHighContrast": "Contrast ridicat",
+  "deviceLocation": "Locația dispozitivului",
+  "recentLocations": "Recente"
 }

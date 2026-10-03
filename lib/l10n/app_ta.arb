@@ -46,5 +46,11 @@
   "theme": "தீம்",
   "themeSystem": "அமைப்பின் இயல்புநிலை",
   "themeLight": "வெளிர்",
-  "themeDark": "அடர்"
+  "themeDark": "அடர்",
+  "colorScheme": "வண்ணத் திட்டம்",
+  "colorSchemeDefault": "இயல்பு",
+  "colorSchemeThermal": "வெப்ப",
+  "colorSchemeHighContrast": "அதிக மாறுபாடு",
+  "deviceLocation": "சாதன இருப்பிடம்",
+  "recentLocations": "சமீபத்தியவை"
 }

@@ -152,4 +152,22 @@ class AppLocalizationsBe extends AppLocalizations {
 
   @override
   String get themeDark => 'Цёмная';
+
+  @override
+  String get colorScheme => 'Каляровая схема';
+
+  @override
+  String get colorSchemeDefault => 'Стандартная';
+
+  @override
+  String get colorSchemeThermal => 'Тэрмальная';
+
+  @override
+  String get colorSchemeHighContrast => 'Высокая кантраснасць';
+
+  @override
+  String get deviceLocation => 'Месцазнаходжанне прылады';
+
+  @override
+  String get recentLocations => 'Нядаўнія';
 }

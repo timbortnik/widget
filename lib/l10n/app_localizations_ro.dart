@@ -153,4 +153,22 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get themeDark => 'Întunecată';
+
+  @override
+  String get colorScheme => 'Schemă de culori';
+
+  @override
+  String get colorSchemeDefault => 'Implicit';
+
+  @override
+  String get colorSchemeThermal => 'Termic';
+
+  @override
+  String get colorSchemeHighContrast => 'Contrast ridicat';
+
+  @override
+  String get deviceLocation => 'Locația dispozitivului';
+
+  @override
+  String get recentLocations => 'Recente';
 }

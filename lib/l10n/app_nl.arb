@@ -46,5 +46,11 @@
   "theme": "Thema",
   "themeSystem": "Systeemstandaard",
   "themeLight": "Licht",
-  "themeDark": "Donker"
+  "themeDark": "Donker",
+  "colorScheme": "Kleurenschema",
+  "colorSchemeDefault": "Standaard",
+  "colorSchemeThermal": "Thermisch",
+  "colorSchemeHighContrast": "Hoog contrast",
+  "deviceLocation": "Apparaatlocatie",
+  "recentLocations": "Recent"
 }

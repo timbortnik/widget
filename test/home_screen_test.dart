@@ -6,6 +6,7 @@ import 'package:meteogram_widget/a11y_ids.dart';
 import 'package:meteogram_widget/l10n/app_localizations.dart';
 import 'package:meteogram_widget/screens/home_screen.dart';
 import 'package:meteogram_widget/services/material_you_service.dart';
+import 'package:meteogram_widget/services/scheme_service.dart';
 import 'package:meteogram_widget/theme/app_theme.dart';
 
 /// A 1x1 transparent PNG — what the native `renderSvg` rasterizer returns,
@@ -109,7 +110,7 @@ void main() {
   });
 
   /// Helper to wrap HomeScreen with required providers
-  Widget createTestApp({MaterialYouColors? materialYouColors}) {
+  Widget createTestApp({MaterialYouColors? materialYouColors, Locale locale = const Locale('en')}) {
     return MaterialApp(
       localizationsDelegates: const [
         AppLocalizations.delegate,
@@ -118,7 +119,7 @@ void main() {
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: AppLocalizations.supportedLocales,
-      locale: const Locale('en'),
+      locale: locale,
       theme: AppTheme.light(null),
       darkTheme: AppTheme.dark(null),
       home: HomeScreen(materialYouColors: materialYouColors),
@@ -294,6 +295,30 @@ void main() {
       expect(find.text('Device location'), findsOneWidget);
     });
 
+    testWidgets('location picker labels are localized', (tester) async {
+      homeWidgetData['last_weather_update'] = mockTimestamp;
+      homeWidgetData['current_temperature_celsius'] = mockTemperature;
+      homeWidgetData['cached_city_name'] = mockCityName;
+      homeWidgetData['cached_location_source'] = mockLocationSource;
+      // A recent city, so the "Recent" header is shown.
+      homeWidgetData['recent_cities'] =
+          '[{"name":"Lviv","country":"Ukraine","latitude":49.84,"longitude":24.03}]';
+
+      await tester.pumpWidget(createTestApp(locale: const Locale('uk')));
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pump(const Duration(milliseconds: 500));
+
+      await tester.tap(find.text(mockCityName));
+      await tester.pump(const Duration(milliseconds: 500));
+      // Recent cities load asynchronously once the sheet opens.
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(find.text('Місцезнаходження пристрою'), findsOneWidget);
+      expect(find.text('Нещодавні'), findsOneWidget);
+      expect(find.text('Device location'), findsNothing);
+      expect(find.text('Recent'), findsNothing);
+    });
+
     testWidgets('location picker has search field', (tester) async {
       homeWidgetData['last_weather_update'] = mockTimestamp;
       homeWidgetData['current_temperature_celsius'] = mockTemperature;
@@ -374,6 +399,185 @@ void main() {
       expect(find.byType(Scaffold), findsOneWidget);
       // Temperature should still be visible
       expect(find.textContaining('69'), findsWidgets);
+    });
+  });
+
+  group('HomeScreen colour scheme picker', () {
+    Finder byA11yId(String id) => find.byWidgetPredicate(
+          (widget) => widget is Semantics && widget.properties.identifier == id,
+        );
+
+    Widget appWith({
+      ChartScheme scheme = ChartScheme.defaultScheme,
+      ValueChanged<ChartScheme>? onChanged,
+      ThemeMode themeMode = ThemeMode.system,
+    }) {
+      return MaterialApp(
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: const Locale('en'),
+        theme: AppTheme.light(null),
+        darkTheme: AppTheme.dark(null),
+        themeMode: themeMode,
+        home: HomeScreen(colorScheme: scheme, onColorSchemeChanged: onChanged),
+      );
+    }
+
+    Future<void> openPicker(WidgetTester tester) async {
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.tap(byA11yId(A11yIds.homeThemeButton));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('picker offers both theme and colour scheme sections',
+        (tester) async {
+      await tester.pumpWidget(appWith());
+      await openPicker(tester);
+
+      expect(find.text('Theme'), findsOneWidget);
+      expect(find.text('Color scheme'), findsOneWidget);
+      for (final id in [
+        A11yIds.themeOptionSystem,
+        A11yIds.themeOptionLight,
+        A11yIds.themeOptionDark,
+        A11yIds.schemeOptionDefault,
+        A11yIds.schemeOptionThermal,
+        A11yIds.schemeOptionHighContrast,
+      ]) {
+        expect(byA11yId(id), findsOneWidget, reason: '$id should be offered');
+      }
+    });
+
+    /// Fill of the weather card — the one decorated container with a shadow.
+    Color? cardColor(WidgetTester tester) {
+      final card = tester.widgetList<Container>(find.byType(Container)).where((c) {
+        final d = c.decoration;
+        return d is BoxDecoration && d.boxShadow != null;
+      }).single;
+      return (card.decoration! as BoxDecoration).color;
+    }
+
+    Future<void> pumpWithWeather(
+      WidgetTester tester,
+      ChartScheme scheme, {
+      ThemeMode themeMode = ThemeMode.system,
+    }) async {
+      homeWidgetData['last_weather_update'] = mockTimestamp;
+      homeWidgetData['current_temperature_celsius'] = mockTemperature;
+      homeWidgetData['cached_city_name'] = mockCityName;
+      homeWidgetData['cached_location_source'] = mockLocationSource;
+      await tester.pumpWidget(appWith(scheme: scheme, themeMode: themeMode));
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pump(const Duration(milliseconds: 500));
+    }
+
+    testWidgets('thermal dark card ground follows the current temperature', (tester) async {
+      await pumpWithWeather(tester, ChartScheme.thermal, themeMode: ThemeMode.dark);
+
+      expect(cardColor(tester),
+          ChartScheme.thermal.groundColor(double.parse(mockTemperature), isDark: true));
+    });
+
+    testWidgets('high contrast paints the card behind the chart white',
+        (tester) async {
+      await pumpWithWeather(tester, ChartScheme.highContrast);
+
+      expect(cardColor(tester), const Color(0xFFFFFFFF));
+    });
+
+    testWidgets('thermal light card ground follows the current temperature', (tester) async {
+      await pumpWithWeather(tester, ChartScheme.thermal);
+
+      expect(cardColor(tester),
+          ChartScheme.thermal.groundColor(double.parse(mockTemperature), isDark: false));
+      // A mild reading sits near the original periwinkle.
+      expect(cardColor(tester), isNot(const Color(0xFFF1E7EE)));
+      expect(cardColor(tester), isNot(const Color(0xFFE4ECF4)));
+    });
+
+    testWidgets('thermal tints the current reading by its value', (tester) async {
+      await pumpWithWeather(tester, ChartScheme.thermal);
+
+      final reading = tester.widget<Text>(find.byWidgetPredicate(
+        (widget) => widget is Text && widget.style?.fontSize == 64,
+      ));
+      expect(reading.style!.color,
+          ChartScheme.thermal.temperatureColor(double.parse(mockTemperature), isDark: false));
+    });
+
+    testWidgets('thermal legend sun follows the current reading', (tester) async {
+      await pumpWithWeather(tester, ChartScheme.thermal);
+
+      final sun = tester.widget<Icon>(find.byIcon(Icons.wb_sunny_outlined));
+      expect(sun.color,
+          ChartScheme.thermal.daylightColor(double.parse(mockTemperature), isDark: false));
+    });
+
+    testWidgets('thermal legend shows snow beside rain', (tester) async {
+      await pumpWithWeather(tester, ChartScheme.thermal);
+
+      expect(find.byIcon(Icons.ac_unit), findsOneWidget);
+      expect(find.byIcon(Icons.water_drop_outlined), findsOneWidget);
+    });
+
+    testWidgets('default legend shows a single precipitation icon', (tester) async {
+      await pumpWithWeather(tester, ChartScheme.defaultScheme);
+
+      expect(find.byIcon(Icons.ac_unit), findsNothing);
+      expect(find.byIcon(Icons.water_drop_outlined), findsOneWidget);
+    });
+
+    testWidgets('the default scheme keeps the Material You card', (tester) async {
+      await pumpWithWeather(tester, ChartScheme.defaultScheme);
+
+      expect(cardColor(tester), isNot(const Color(0xFFFFFFFF)));
+      expect(cardColor(tester), isNot(const Color(0xFFE7E9F4)));
+    });
+
+    testWidgets('picker marks only the active scheme as selected', (tester) async {
+      await tester.pumpWidget(appWith(scheme: ChartScheme.thermal));
+      await openPicker(tester);
+
+      bool? selectedOf(String id) =>
+          tester.widget<Semantics>(byA11yId(id)).properties.selected;
+      expect(selectedOf(A11yIds.schemeOptionThermal), isTrue);
+      expect(selectedOf(A11yIds.schemeOptionDefault), isFalse);
+      expect(selectedOf(A11yIds.schemeOptionHighContrast), isFalse);
+    });
+
+    testWidgets('tapping a scheme reports the choice and closes the sheet',
+        (tester) async {
+      ChartScheme? picked;
+      await tester.pumpWidget(appWith(onChanged: (s) => picked = s));
+      await openPicker(tester);
+
+      await tester.tap(byA11yId(A11yIds.schemeOptionThermal));
+      await tester.pumpAndSettle();
+
+      expect(picked, ChartScheme.thermal);
+      expect(find.text('Color scheme'), findsNothing);
+    });
+
+    testWidgets('the active scheme is exposed as selected', (tester) async {
+      await tester.pumpWidget(appWith(scheme: ChartScheme.highContrast));
+      await openPicker(tester);
+
+      Semantics semanticsFor(String id) =>
+          tester.widget<Semantics>(byA11yId(id));
+
+      // Drives both the checkmark and the E2E assertion, so it has to track
+      // the active scheme rather than always reporting the default.
+      expect(semanticsFor(A11yIds.schemeOptionHighContrast).properties.selected,
+          isTrue);
+      expect(
+          semanticsFor(A11yIds.schemeOptionDefault).properties.selected, isFalse);
+      expect(
+          semanticsFor(A11yIds.schemeOptionThermal).properties.selected, isFalse);
     });
   });
 }

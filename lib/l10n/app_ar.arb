@@ -46,5 +46,11 @@
   "theme": "المظهر",
   "themeSystem": "افتراضي النظام",
   "themeLight": "فاتح",
-  "themeDark": "داكن"
+  "themeDark": "داكن",
+  "colorScheme": "نظام الألوان",
+  "colorSchemeDefault": "افتراضي",
+  "colorSchemeThermal": "حراري",
+  "colorSchemeHighContrast": "تباين عالٍ",
+  "deviceLocation": "موقع الجهاز",
+  "recentLocations": "الأخيرة"
 }

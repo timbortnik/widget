@@ -153,4 +153,22 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get themeDark => 'Σκούρο';
+
+  @override
+  String get colorScheme => 'Χρωματικός συνδυασμός';
+
+  @override
+  String get colorSchemeDefault => 'Προεπιλογή';
+
+  @override
+  String get colorSchemeThermal => 'Θερμικό';
+
+  @override
+  String get colorSchemeHighContrast => 'Υψηλή αντίθεση';
+
+  @override
+  String get deviceLocation => 'Τοποθεσία συσκευής';
+
+  @override
+  String get recentLocations => 'Πρόσφατα';
 }

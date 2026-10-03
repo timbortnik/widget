@@ -46,5 +46,11 @@
   "theme": "Tema",
   "themeSystem": "Gawan sistem",
   "themeLight": "Padhang",
-  "themeDark": "Peteng"
+  "themeDark": "Peteng",
+  "colorScheme": "Skema warna",
+  "colorSchemeDefault": "Gawan",
+  "colorSchemeThermal": "Termal",
+  "colorSchemeHighContrast": "Kontras dhuwur",
+  "deviceLocation": "Lokasi piranti",
+  "recentLocations": "Paling anyar"
 }

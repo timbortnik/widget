@@ -153,4 +153,22 @@ class AppLocalizationsSq extends AppLocalizations {
 
   @override
   String get themeDark => 'E errët';
+
+  @override
+  String get colorScheme => 'Skema e ngjyrave';
+
+  @override
+  String get colorSchemeDefault => 'E parazgjedhur';
+
+  @override
+  String get colorSchemeThermal => 'Termike';
+
+  @override
+  String get colorSchemeHighContrast => 'Kontrast i lartë';
+
+  @override
+  String get deviceLocation => 'Vendndodhja e pajisjes';
+
+  @override
+  String get recentLocations => 'Të fundit';
 }

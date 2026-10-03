@@ -153,4 +153,22 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get themeDark => 'Tối';
+
+  @override
+  String get colorScheme => 'Bảng màu';
+
+  @override
+  String get colorSchemeDefault => 'Mặc định';
+
+  @override
+  String get colorSchemeThermal => 'Nhiệt';
+
+  @override
+  String get colorSchemeHighContrast => 'Tương phản cao';
+
+  @override
+  String get deviceLocation => 'Vị trí thiết bị';
+
+  @override
+  String get recentLocations => 'Gần đây';
 }

@@ -154,4 +154,22 @@ class AppLocalizationsMk extends AppLocalizations {
 
   @override
   String get themeDark => 'Темна';
+
+  @override
+  String get colorScheme => 'Шема на бои';
+
+  @override
+  String get colorSchemeDefault => 'Стандардно';
+
+  @override
+  String get colorSchemeThermal => 'Термална';
+
+  @override
+  String get colorSchemeHighContrast => 'Висок контраст';
+
+  @override
+  String get deviceLocation => 'Локација на уредот';
+
+  @override
+  String get recentLocations => 'Неодамнешни';
 }

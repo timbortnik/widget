@@ -150,4 +150,22 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get themeDark => 'ダーク';
+
+  @override
+  String get colorScheme => 'カラースキーム';
+
+  @override
+  String get colorSchemeDefault => 'デフォルト';
+
+  @override
+  String get colorSchemeThermal => 'サーマル';
+
+  @override
+  String get colorSchemeHighContrast => 'ハイコントラスト';
+
+  @override
+  String get deviceLocation => 'デバイスの位置情報';
+
+  @override
+  String get recentLocations => '最近';
 }

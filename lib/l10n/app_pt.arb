@@ -46,5 +46,11 @@
   "theme": "Tema",
   "themeSystem": "Padrão do sistema",
   "themeLight": "Claro",
-  "themeDark": "Escuro"
+  "themeDark": "Escuro",
+  "colorScheme": "Esquema de cores",
+  "colorSchemeDefault": "Padrão",
+  "colorSchemeThermal": "Térmico",
+  "colorSchemeHighContrast": "Alto contraste",
+  "deviceLocation": "Localização do dispositivo",
+  "recentLocations": "Recentes"
 }

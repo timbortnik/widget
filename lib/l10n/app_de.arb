@@ -46,5 +46,11 @@
   "theme": "Design",
   "themeSystem": "Systemstandard",
   "themeLight": "Hell",
-  "themeDark": "Dunkel"
+  "themeDark": "Dunkel",
+  "colorScheme": "Farbschema",
+  "colorSchemeDefault": "Standard",
+  "colorSchemeThermal": "Thermisch",
+  "colorSchemeHighContrast": "Hoher Kontrast",
+  "deviceLocation": "Gerätestandort",
+  "recentLocations": "Zuletzt verwendet"
 }

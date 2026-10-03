@@ -46,5 +46,11 @@
   "theme": "Tema",
   "themeSystem": "Sistem varsayılanı",
   "themeLight": "Açık",
-  "themeDark": "Koyu"
+  "themeDark": "Koyu",
+  "colorScheme": "Renk şeması",
+  "colorSchemeDefault": "Varsayılan",
+  "colorSchemeThermal": "Termal",
+  "colorSchemeHighContrast": "Yüksek kontrast",
+  "deviceLocation": "Cihaz konumu",
+  "recentLocations": "Son kullanılanlar"
 }

@@ -153,4 +153,22 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get themeDark => 'Dunkel';
+
+  @override
+  String get colorScheme => 'Farbschema';
+
+  @override
+  String get colorSchemeDefault => 'Standard';
+
+  @override
+  String get colorSchemeThermal => 'Thermisch';
+
+  @override
+  String get colorSchemeHighContrast => 'Hoher Kontrast';
+
+  @override
+  String get deviceLocation => 'Gerätestandort';
+
+  @override
+  String get recentLocations => 'Zuletzt verwendet';
 }

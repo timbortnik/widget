@@ -152,4 +152,22 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get themeDark => 'Tmavý';
+
+  @override
+  String get colorScheme => 'Barevné schéma';
+
+  @override
+  String get colorSchemeDefault => 'Výchozí';
+
+  @override
+  String get colorSchemeThermal => 'Termální';
+
+  @override
+  String get colorSchemeHighContrast => 'Vysoký kontrast';
+
+  @override
+  String get deviceLocation => 'Poloha zařízení';
+
+  @override
+  String get recentLocations => 'Nedávné';
 }

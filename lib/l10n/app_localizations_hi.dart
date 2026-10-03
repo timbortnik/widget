@@ -152,4 +152,22 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get themeDark => 'डार्क';
+
+  @override
+  String get colorScheme => 'रंग योजना';
+
+  @override
+  String get colorSchemeDefault => 'डिफ़ॉल्ट';
+
+  @override
+  String get colorSchemeThermal => 'थर्मल';
+
+  @override
+  String get colorSchemeHighContrast => 'उच्च कंट्रास्ट';
+
+  @override
+  String get deviceLocation => 'डिवाइस का स्थान';
+
+  @override
+  String get recentLocations => 'हाल के';
 }

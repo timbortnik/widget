@@ -46,5 +46,11 @@
   "theme": "Tema",
   "themeSystem": "Systemstandard",
   "themeLight": "Ljust",
-  "themeDark": "Mörkt"
+  "themeDark": "Mörkt",
+  "colorScheme": "Färgschema",
+  "colorSchemeDefault": "Standard",
+  "colorSchemeThermal": "Termisk",
+  "colorSchemeHighContrast": "Hög kontrast",
+  "deviceLocation": "Enhetens plats",
+  "recentLocations": "Senaste"
 }

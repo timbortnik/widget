@@ -46,5 +46,11 @@
   "theme": "Thème",
   "themeSystem": "Système par défaut",
   "themeLight": "Clair",
-  "themeDark": "Sombre"
+  "themeDark": "Sombre",
+  "colorScheme": "Palette de couleurs",
+  "colorSchemeDefault": "Par défaut",
+  "colorSchemeThermal": "Thermique",
+  "colorSchemeHighContrast": "Contraste élevé",
+  "deviceLocation": "Position de l'appareil",
+  "recentLocations": "Récents"
 }

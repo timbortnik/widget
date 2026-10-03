@@ -46,5 +46,11 @@
   "theme": "Þema",
   "themeSystem": "Sjálfgefið kerfi",
   "themeLight": "Ljóst",
-  "themeDark": "Dökkt"
+  "themeDark": "Dökkt",
+  "colorScheme": "Litastef",
+  "colorSchemeDefault": "Sjálfgefið",
+  "colorSchemeThermal": "Hita",
+  "colorSchemeHighContrast": "Mikil birtuskil",
+  "deviceLocation": "Staðsetning tækis",
+  "recentLocations": "Nýlegt"
 }

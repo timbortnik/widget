@@ -152,4 +152,22 @@ class AppLocalizationsDa extends AppLocalizations {
 
   @override
   String get themeDark => 'Mørkt';
+
+  @override
+  String get colorScheme => 'Farveskema';
+
+  @override
+  String get colorSchemeDefault => 'Standard';
+
+  @override
+  String get colorSchemeThermal => 'Termisk';
+
+  @override
+  String get colorSchemeHighContrast => 'Høj kontrast';
+
+  @override
+  String get deviceLocation => 'Enhedens placering';
+
+  @override
+  String get recentLocations => 'Seneste';
 }

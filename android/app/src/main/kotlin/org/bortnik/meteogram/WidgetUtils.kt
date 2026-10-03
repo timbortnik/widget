@@ -37,6 +37,10 @@ object WidgetUtils {
     // Values: "system" | "light" | "dark" (absent == follow system).
     const val KEY_THEME_MODE = "theme_mode"
 
+    // Chart colour scheme, mirrored from Dart so the widget matches the app.
+    // Values: see ChartSchemes.ids (absent == "default", i.e. Material You).
+    const val KEY_COLOR_SCHEME = "color_scheme"
+
     /**
      * Map the user's in-app theme choice to (lightVisibility, darkVisibility)
      * for the widget's two chart ImageViews, or null to defer to the system

@@ -7,6 +7,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'screens/home_screen.dart';
 import 'services/widget_service.dart';
 import 'services/material_you_service.dart';
+import 'services/scheme_service.dart';
 import 'services/theme_service.dart';
 import 'theme/app_theme.dart';
 
@@ -22,12 +23,16 @@ void main() async {
   // Load the persisted in-app theme preference (defaults to system)
   final themeMode = await ThemeService().load();
 
+  // Load the persisted chart colour scheme (defaults to Material You)
+  final colorScheme = await SchemeService().load();
+
   // Match the system bar icon brightness to the effective theme
   applySystemBarStyle(themeMode);
 
   runApp(MeteogramApp(
     materialYouColors: materialYouColors,
     initialThemeMode: themeMode,
+    initialColorScheme: colorScheme,
   ));
 }
 
@@ -62,11 +67,13 @@ void applySystemBarStyle(ThemeMode mode) {
 class MeteogramApp extends StatefulWidget {
   final MaterialYouColors? materialYouColors;
   final ThemeMode initialThemeMode;
+  final ChartScheme initialColorScheme;
 
   const MeteogramApp({
     super.key,
     this.materialYouColors,
     this.initialThemeMode = ThemeMode.system,
+    this.initialColorScheme = ChartScheme.defaultScheme,
   });
 
   @override
@@ -75,20 +82,28 @@ class MeteogramApp extends StatefulWidget {
 
 class _MeteogramAppState extends State<MeteogramApp> {
   final _themeService = ThemeService();
+  final _schemeService = SchemeService();
   late ThemeMode _themeMode = widget.initialThemeMode;
+  late ChartScheme _colorScheme = widget.initialColorScheme;
 
   void _setThemeMode(ThemeMode mode) {
     if (mode == _themeMode) return;
     setState(() => _themeMode = mode);
     applySystemBarStyle(mode);
-    _persistAndSyncWidget(mode);
+    _persistAndSync(() => _themeService.save(mode));
+  }
+
+  void _setColorScheme(ChartScheme scheme) {
+    if (scheme == _colorScheme) return;
+    setState(() => _colorScheme = scheme);
+    _persistAndSync(() => _schemeService.save(scheme));
   }
 
   /// Persist the choice, then refresh the widget so it re-renders with the
-  /// matching theme. Saving first ensures the native provider reads the new
+  /// matching colours. Saving first ensures the native provider reads the new
   /// value when the update broadcast fires.
-  Future<void> _persistAndSyncWidget(ThemeMode mode) async {
-    await _themeService.save(mode);
+  Future<void> _persistAndSync(Future<void> Function() save) async {
+    await save();
     await WidgetService().triggerWidgetUpdate();
   }
 
@@ -117,6 +132,8 @@ class _MeteogramAppState extends State<MeteogramApp> {
         materialYouColors: widget.materialYouColors,
         themeMode: _themeMode,
         onThemeModeChanged: _setThemeMode,
+        colorScheme: _colorScheme,
+        onColorSchemeChanged: _setColorScheme,
       ),
     );
   }
