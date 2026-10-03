@@ -74,16 +74,18 @@ object ChartSchemes {
         outlineColor = SvgColor(0xE7, 0xE9, 0xF4),      // Halo matches the ground
         outlineOpacity = 0.8,
         outlineWidth = 1.5,
-        // Temperature colour-coded on an absolute °C scale: indigo deep cold
-        // (polar night), steel-teal freezing, slate mild, rose-red warm.
+        // Temperature colour-coded on an absolute °C scale, stops every 20°
+        // so equal changes shift the colour equally: indigo deep cold (polar
+        // night), steel-teal at freezing, slate mild (20°C), rose-red hot
+        // (40°C).
         // Rose, not orange, so hot afternoon peaks don't melt into the
         // apricot sun bars they cross. Clamped beyond both ends.
         snowBar = SvgColor(0x35, 0x40, 0x50),
         temperatureScale = listOf(
-            -30.0 to SvgColor(0x3B, 0x3A, 0x8F),
+            -20.0 to SvgColor(0x3B, 0x3A, 0x8F),
             0.0 to SvgColor(0x1A, 0x66, 0x84),
-            15.0 to SvgColor(0x52, 0x58, 0x6A),
-            30.0 to SvgColor(0xB8, 0x3A, 0x50)
+            20.0 to SvgColor(0x52, 0x58, 0x6A),
+            40.0 to SvgColor(0xB8, 0x3A, 0x50)
         ),
         // Bars keep the default gradient: Arctic is a mood scheme, and the
         // fade is part of the chart's look.
@@ -107,10 +109,10 @@ object ChartSchemes {
         // Dark mirrors Light's hues; the deep-cold violet goes light
         // (lavender) because a deep indigo would vanish on plum.
         temperatureScale = listOf(
-            -30.0 to SvgColor(0xB8, 0xA8, 0xF0),
+            -20.0 to SvgColor(0xB8, 0xA8, 0xF0),
             0.0 to SvgColor(0x8F, 0xC9, 0xE0),
-            15.0 to SvgColor(0xD8, 0xD4, 0xDC),
-            30.0 to SvgColor(0xF2, 0x70, 0x8A)
+            20.0 to SvgColor(0xD8, 0xD4, 0xDC),
+            40.0 to SvgColor(0xF2, 0x70, 0x8A)
         ),
         drawBackground = true
     )

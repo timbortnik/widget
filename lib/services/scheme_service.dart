@@ -34,16 +34,16 @@ enum ChartScheme {
     if (this != arctic) return null;
     return isDark
         ? const [
-            (-30.0, Color(0xFFB8A8F0)),
+            (-20.0, Color(0xFFB8A8F0)),
             (0.0, Color(0xFF8FC9E0)),
-            (15.0, Color(0xFFD8D4DC)),
-            (30.0, Color(0xFFF2708A)),
+            (20.0, Color(0xFFD8D4DC)),
+            (40.0, Color(0xFFF2708A)),
           ]
         : const [
-            (-30.0, Color(0xFF3B3A8F)),
+            (-20.0, Color(0xFF3B3A8F)),
             (0.0, Color(0xFF1A6684)),
-            (15.0, Color(0xFF52586A)),
-            (30.0, Color(0xFFB83A50)),
+            (20.0, Color(0xFF52586A)),
+            (40.0, Color(0xFFB83A50)),
           ];
   }
 

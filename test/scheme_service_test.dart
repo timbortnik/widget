@@ -124,15 +124,15 @@ void main() {
           .temperatureScale(isDark: isDark)!
           .map((stop) => (stop.$1, stop.$2.toARGB32()))
           .toList();
-      expect(stops(false), [(-30.0, 0xFF3B3A8F), (0.0, 0xFF1A6684), (15.0, 0xFF52586A), (30.0, 0xFFB83A50)]);
-      expect(stops(true), [(-30.0, 0xFFB8A8F0), (0.0, 0xFF8FC9E0), (15.0, 0xFFD8D4DC), (30.0, 0xFFF2708A)]);
+      expect(stops(false), [(-20.0, 0xFF3B3A8F), (0.0, 0xFF1A6684), (20.0, 0xFF52586A), (40.0, 0xFFB83A50)]);
+      expect(stops(true), [(-20.0, 0xFFB8A8F0), (0.0, 0xFF8FC9E0), (20.0, 0xFFD8D4DC), (40.0, 0xFFF2708A)]);
     });
 
     test('arctic temperature colour interpolates and clamps like the chart', () {
       int at(double celsius) =>
           ChartScheme.arctic.temperatureColor(celsius, isDark: false)!.toARGB32();
       expect(at(0), 0xFF1A6684);
-      expect(at(7.5), 0xFF365F77); // Same midpoint SvgChartColors.temperatureColorAt gives
+      expect(at(10), 0xFF365F77); // Same midpoint SvgChartColors.temperatureColorAt gives
       expect(at(-66), 0xFF3B3A8F);
       expect(at(45), 0xFFB83A50);
     });

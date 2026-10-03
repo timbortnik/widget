@@ -656,9 +656,9 @@ class SvgChartGeneratorTest {
     fun `temperatureColorAt follows the scale and clamps at both ends`() {
         val light = ChartSchemes.arcticLight
         assertEquals("#1a6684", light.temperatureColorAt(0.0).toHex())
-        assertEquals("#b83a50", light.temperatureColorAt(30.0).toHex())
-        // Halfway between the 0°C and 15°C stops, mixed per channel.
-        assertEquals("#365f77", light.temperatureColorAt(7.5).toHex())
+        assertEquals("#b83a50", light.temperatureColorAt(40.0).toHex())
+        // Halfway between the 0°C and 20°C stops, mixed per channel.
+        assertEquals("#365f77", light.temperatureColorAt(10.0).toHex())
         assertEquals("#3b3a8f", light.temperatureColorAt(-66.0).toHex())
         assertEquals("#b83a50", light.temperatureColorAt(45.0).toHex())
     }
@@ -720,11 +720,11 @@ class SvgChartGeneratorTest {
         // the big reading in the card header matches the line; pinned there too.
         fun stops(colors: SvgChartColors) = colors.temperatureScale!!.map { (t, c) -> t to c.toHex() }
         assertEquals(
-            listOf(-30.0 to "#3b3a8f", 0.0 to "#1a6684", 15.0 to "#52586a", 30.0 to "#b83a50"),
+            listOf(-20.0 to "#3b3a8f", 0.0 to "#1a6684", 20.0 to "#52586a", 40.0 to "#b83a50"),
             stops(ChartSchemes.arcticLight)
         )
         assertEquals(
-            listOf(-30.0 to "#b8a8f0", 0.0 to "#8fc9e0", 15.0 to "#d8d4dc", 30.0 to "#f2708a"),
+            listOf(-20.0 to "#b8a8f0", 0.0 to "#8fc9e0", 20.0 to "#d8d4dc", 40.0 to "#f2708a"),
             stops(ChartSchemes.arcticDark)
         )
     }
