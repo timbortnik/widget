@@ -60,7 +60,8 @@ object ChartSchemes {
     // Precipitation splits by phase (from the forecast's own snowfall):
     // snow white, rain blue — a deeper cobalt/royal than the ice-blue line
     // it sits under near 0°C. In light the ground is too pale for white
-    // snow, so snow turns slate ("snow in shadow").
+    // snow (1.2:1), so snow is a soft blue-grey — still lighter than the
+    // rain, so in both modes snow reads as the lighter, softer phase.
     val arcticLight = SvgChartColors(
         temperatureLine = SvgColor(0x1A, 0x66, 0x84),      // Steel-teal: opposite the apricot sun
         temperatureGradientStart = SvgColor(0x1A, 0x66, 0x84, 0x1A),  // 10% opacity
@@ -78,14 +79,23 @@ object ChartSchemes {
         // so equal changes shift the colour equally: indigo deep cold (polar
         // night), steel-teal at freezing, slate mild (20°C), rose-red hot
         // (40°C).
-        // Rose, not orange, so hot afternoon peaks don't melt into the
-        // apricot sun bars they cross. Clamped beyond both ends.
-        snowBar = SvgColor(0x35, 0x40, 0x50),
+        // Crimson leaning slightly magenta, so hot afternoon peaks stay clear
+        // of the amber sun bars they cross (60° apart on the wheel at 40°C)
+        // while warm days (25–32°C) still read as warm rose, not mauve.
+        // Clamped beyond both ends.
+        snowBar = SvgColor(0x7A, 0x8A, 0xA0),
+        // The sun follows the temperature too: apricot low sun when cold,
+        // vivid amber in heat (Default's light sun; a yellow dark enough to
+        // show on this ground would read as mustard).
+        daylightScale = listOf(
+            -20.0 to SvgColor(0xD9, 0x86, 0x4F),
+            40.0 to SvgColor(0xFF, 0x8F, 0x00)
+        ),
         temperatureScale = listOf(
             -20.0 to SvgColor(0x3B, 0x3A, 0x8F),
             0.0 to SvgColor(0x1A, 0x66, 0x84),
             20.0 to SvgColor(0x52, 0x58, 0x6A),
-            40.0 to SvgColor(0xB8, 0x3A, 0x50)
+            40.0 to SvgColor(0xB8, 0x30, 0x5F)
         ),
         // Bars keep the default gradient: Arctic is a mood scheme, and the
         // fade is part of the chart's look.
@@ -106,6 +116,11 @@ object ChartSchemes {
         outlineOpacity = 0.6,
         outlineWidth = 1.5,
         snowBar = SvgColor(0xEE, 0xF3, 0xF7),
+        // Dark can afford a true golden yellow for heat on plum.
+        daylightScale = listOf(
+            -20.0 to SvgColor(0xE0, 0x90, 0x60),
+            40.0 to SvgColor(0xF2, 0xD4, 0x5C)
+        ),
         // Dark mirrors Light's hues; the deep-cold violet goes light
         // (lavender) because a deep indigo would vanish on plum.
         temperatureScale = listOf(

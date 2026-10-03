@@ -469,6 +469,14 @@ void main() {
           ChartScheme.arctic.temperatureColor(double.parse(mockTemperature), isDark: false));
     });
 
+    testWidgets('arctic legend sun follows the current reading', (tester) async {
+      await pumpWithWeather(tester, ChartScheme.arctic);
+
+      final sun = tester.widget<Icon>(find.byIcon(Icons.wb_sunny_outlined));
+      expect(sun.color,
+          ChartScheme.arctic.daylightColor(double.parse(mockTemperature), isDark: false));
+    });
+
     testWidgets('arctic legend shows snow beside rain', (tester) async {
       await pumpWithWeather(tester, ChartScheme.arctic);
 

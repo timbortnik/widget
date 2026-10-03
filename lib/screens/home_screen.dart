@@ -755,7 +755,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 icon: Icons.wb_sunny_outlined,
                                 value: l10n.daylight,
                                 colors: cardColors,
-                                iconColor: cardColors.daylightIcon,
+                                // The sun follows the reading when the
+                                // scheme colour-codes daylight bars.
+                                iconColor: widget.colorScheme.daylightColor(
+                                      currentTemp,
+                                      isDark: Theme.of(context).brightness == Brightness.dark,
+                                    ) ??
+                                    cardColors.daylightIcon,
                               ),
                               const SizedBox(height: 8),
                               _buildStatRow(

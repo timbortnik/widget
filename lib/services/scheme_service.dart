@@ -43,15 +43,31 @@ enum ChartScheme {
             (-20.0, Color(0xFF3B3A8F)),
             (0.0, Color(0xFF1A6684)),
             (20.0, Color(0xFF52586A)),
-            (40.0, Color(0xFFB83A50)),
+            (40.0, Color(0xFFB8305F)),
           ];
   }
 
   /// Colour for [celsius] on [temperatureScale], interpolated per channel as
   /// the chart's SVG gradient does and clamped at both ends; null when the
   /// scheme has no scale.
-  Color? temperatureColor(double celsius, {required bool isDark}) {
-    final scale = temperatureScale(isDark: isDark);
+  Color? temperatureColor(double celsius, {required bool isDark}) =>
+      _colorOnScale(temperatureScale(isDark: isDark), celsius);
+
+  /// Absolute scale colouring the daylight bars (and the legend's sun) by
+  /// temperature, as (°C, colour) stops; null when the sun has one colour.
+  /// Mirrors `daylightScale` in `ChartSchemes.kt`.
+  List<(double, Color)>? daylightScale({required bool isDark}) {
+    if (this != arctic) return null;
+    return isDark
+        ? const [(-20.0, Color(0xFFE09060)), (40.0, Color(0xFFF2D45C))]
+        : const [(-20.0, Color(0xFFD9864F)), (40.0, Color(0xFFFF8F00))];
+  }
+
+  /// Sun colour for [celsius] on [daylightScale]; null without a scale.
+  Color? daylightColor(double celsius, {required bool isDark}) =>
+      _colorOnScale(daylightScale(isDark: isDark), celsius);
+
+  static Color? _colorOnScale(List<(double, Color)>? scale, double celsius) {
     if (scale == null) return null;
     if (celsius <= scale.first.$1) return scale.first.$2;
     if (celsius >= scale.last.$1) return scale.last.$2;
@@ -66,7 +82,7 @@ enum ChartScheme {
   /// one colour. Mirrors `snowBar` in `ChartSchemes.kt`.
   Color? snowColor({required bool isDark}) {
     if (this != arctic) return null;
-    return isDark ? const Color(0xFFEEF3F7) : const Color(0xFF354050);
+    return isDark ? const Color(0xFFEEF3F7) : const Color(0xFF7A8AA0);
   }
 
   /// Colours for the weather card (background, big temperature, legend),

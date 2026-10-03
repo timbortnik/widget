@@ -124,7 +124,7 @@ void main() {
           .temperatureScale(isDark: isDark)!
           .map((stop) => (stop.$1, stop.$2.toARGB32()))
           .toList();
-      expect(stops(false), [(-20.0, 0xFF3B3A8F), (0.0, 0xFF1A6684), (20.0, 0xFF52586A), (40.0, 0xFFB83A50)]);
+      expect(stops(false), [(-20.0, 0xFF3B3A8F), (0.0, 0xFF1A6684), (20.0, 0xFF52586A), (40.0, 0xFFB8305F)]);
       expect(stops(true), [(-20.0, 0xFFB8A8F0), (0.0, 0xFF8FC9E0), (20.0, 0xFFD8D4DC), (40.0, 0xFFF2708A)]);
     });
 
@@ -134,16 +134,41 @@ void main() {
       expect(at(0), 0xFF1A6684);
       expect(at(10), 0xFF365F77); // Same midpoint SvgChartColors.temperatureColorAt gives
       expect(at(-66), 0xFF3B3A8F);
-      expect(at(45), 0xFFB83A50);
+      expect(at(45), 0xFFB8305F);
     });
 
     test('only arctic splits precipitation with a snow colour', () {
       // Pinned to snowBar in ChartSchemes.kt (pinned there too).
-      expect(ChartScheme.arctic.snowColor(isDark: false), const Color(0xFF354050));
+      expect(ChartScheme.arctic.snowColor(isDark: false), const Color(0xFF7A8AA0));
       expect(ChartScheme.arctic.snowColor(isDark: true), const Color(0xFFEEF3F7));
       for (final scheme in [ChartScheme.defaultScheme, ChartScheme.highContrast]) {
         expect(scheme.snowColor(isDark: false), isNull, reason: '$scheme');
       }
+    });
+
+    test('only arctic colour-codes the sun', () {
+      for (final scheme in [ChartScheme.defaultScheme, ChartScheme.highContrast]) {
+        expect(scheme.daylightScale(isDark: false), isNull, reason: '$scheme');
+        expect(scheme.daylightColor(20, isDark: true), isNull, reason: '$scheme');
+      }
+    });
+
+    test('arctic sun scale matches the chart', () {
+      // Pinned to daylightScale in ChartSchemes.kt (pinned there too).
+      List<(double, int)> stops(bool isDark) => ChartScheme.arctic
+          .daylightScale(isDark: isDark)!
+          .map((stop) => (stop.$1, stop.$2.toARGB32()))
+          .toList();
+      expect(stops(false), [(-20.0, 0xFFD9864F), (40.0, 0xFFFF8F00)]);
+      expect(stops(true), [(-20.0, 0xFFE09060), (40.0, 0xFFF2D45C)]);
+    });
+
+    test('arctic sun colour interpolates and clamps like the chart', () {
+      int at(double celsius) =>
+          ChartScheme.arctic.daylightColor(celsius, isDark: false)!.toARGB32();
+      expect(at(-20), 0xFFD9864F);
+      expect(at(0), 0xFFE68935); // Same as SvgChartColors.daylightColorAt(0.0)
+      expect(at(48), 0xFFFF8F00);
     });
 
     test('ids are unique', () {

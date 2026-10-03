@@ -89,7 +89,13 @@ data class SvgChartColors(
      * Colour for hours where snow dominates. Null draws all precipitation in
      * [precipitationBar]; when set, [precipitationBar] means rain.
      */
-    val snowBar: SvgColor? = null
+    val snowBar: SvgColor? = null,
+    /**
+     * Colour-code the daylight bars by the hour's temperature: (°C, colour)
+     * stops in ascending order, absolute and clamped like [temperatureScale].
+     * Null draws every bar in [daylightBar].
+     */
+    val daylightScale: List<Pair<Double, SvgColor>>? = null
 ) {
     /**
      * Width of the contrasting outline drawn under the temperature line. Kept
@@ -103,8 +109,14 @@ data class SvgChartColors(
      * in sRGB (as SVG gradients interpolate), clamped at both ends; or
      * [temperatureLine] when there is no scale.
      */
-    fun temperatureColorAt(celsius: Double): SvgColor {
-        val scale = temperatureScale ?: return temperatureLine
+    fun temperatureColorAt(celsius: Double): SvgColor =
+        temperatureScale?.let { colorOnScale(it, celsius) } ?: temperatureLine
+
+    /** Daylight bar colour for a temperature in °C: on [daylightScale], or [daylightBar] without one. */
+    fun daylightColorAt(celsius: Double): SvgColor =
+        daylightScale?.let { colorOnScale(it, celsius) } ?: daylightBar
+
+    private fun colorOnScale(scale: List<Pair<Double, SvgColor>>, celsius: Double): SvgColor {
         if (celsius <= scale.first().first) return scale.first().second
         if (celsius >= scale.last().first) return scale.last().second
         val upper = scale.indexOfFirst { it.first >= celsius }
@@ -420,6 +432,24 @@ class SvgChartGenerator {
         val slotWidth = width / data.size
         val barWidth = slotWidth * ChartConstants.BAR_WIDTH_RATIO
 
+        // Colour-coded daylight needs one gradient per colour. Bucketing to
+        // the nearest even degree (at most 1°C off) keeps a week's worth of
+        // bars down to a handful of gradients instead of one per hour.
+        fun bucketOf(celsius: Double) = (celsius / 2).roundToInt()
+        val bucketIds = mutableMapOf<Int, String>()
+        if (colors.daylightScale != null) {
+            svg.append("<defs>")
+            for (d in data) {
+                val bucket = bucketOf(d.temperature)
+                if (bucket in bucketIds) continue
+                val id = "daylightT$bucket".replace("-", "m")
+                bucketIds[bucket] = id
+                val c = colors.daylightColorAt(bucket * 2.0).toHex()
+                svg.append("""<linearGradient id="$id" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="$c" stop-opacity="${colors.barGradientSolid}"/><stop offset="100%" stop-color="$c" stop-opacity="${colors.barGradientFaint}"/></linearGradient>""")
+            }
+            svg.append("</defs>")
+        }
+
         // Draw bars with contrasting outline
         svg.append("""<g opacity="${ChartConstants.DAYLIGHT_BAR_OPACITY}">""")
         for (i in data.indices) {
@@ -428,8 +458,9 @@ class SvgChartGenerator {
 
             val barHeight = daylight * chartHeight
             val x = i * slotWidth + (slotWidth - barWidth) / 2
+            val gradient = bucketIds[bucketOf(data[i].temperature)] ?: "daylightGradient"
 
-            svg.append("""<rect x="${x.toInt()}" y="0" width="${barWidth.toInt()}" height="${barHeight.toInt()}" fill="url(#daylightGradient)" stroke="${colors.outlineColor.toHex()}" stroke-width="1" stroke-opacity="${colors.outlineOpacity * 0.5}" rx="2"/>""")
+            svg.append("""<rect x="${x.toInt()}" y="0" width="${barWidth.toInt()}" height="${barHeight.toInt()}" fill="url(#$gradient)" stroke="${colors.outlineColor.toHex()}" stroke-width="1" stroke-opacity="${colors.outlineOpacity * 0.5}" rx="2"/>""")
         }
         svg.append("</g>")
     }

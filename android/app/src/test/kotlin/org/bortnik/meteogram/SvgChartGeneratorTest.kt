@@ -250,7 +250,7 @@ class SvgChartGeneratorTest {
         assertEquals("#2e3440", light.primaryText.toHex())
         assertEquals("#d9864f", light.daylightBar.toHex())
         assertEquals("#2f5fc0", light.precipitationBar.toHex())
-        assertEquals("#354050", light.snowBar?.toHex())
+        assertEquals("#7a8aa0", light.snowBar?.toHex())
 
         val dark = ChartSchemes.arcticDark
         assertEquals("#2a1d2e", dark.cardBackground.toHex())
@@ -656,11 +656,11 @@ class SvgChartGeneratorTest {
     fun `temperatureColorAt follows the scale and clamps at both ends`() {
         val light = ChartSchemes.arcticLight
         assertEquals("#1a6684", light.temperatureColorAt(0.0).toHex())
-        assertEquals("#b83a50", light.temperatureColorAt(40.0).toHex())
+        assertEquals("#b8305f", light.temperatureColorAt(40.0).toHex())
         // Halfway between the 0°C and 20°C stops, mixed per channel.
         assertEquals("#365f77", light.temperatureColorAt(10.0).toHex())
         assertEquals("#3b3a8f", light.temperatureColorAt(-66.0).toHex())
-        assertEquals("#b83a50", light.temperatureColorAt(45.0).toHex())
+        assertEquals("#b8305f", light.temperatureColorAt(45.0).toHex())
     }
 
     @Test
@@ -720,13 +720,63 @@ class SvgChartGeneratorTest {
         // the big reading in the card header matches the line; pinned there too.
         fun stops(colors: SvgChartColors) = colors.temperatureScale!!.map { (t, c) -> t to c.toHex() }
         assertEquals(
-            listOf(-20.0 to "#3b3a8f", 0.0 to "#1a6684", 20.0 to "#52586a", 40.0 to "#b83a50"),
+            listOf(-20.0 to "#3b3a8f", 0.0 to "#1a6684", 20.0 to "#52586a", 40.0 to "#b8305f"),
             stops(ChartSchemes.arcticLight)
         )
         assertEquals(
             listOf(-20.0 to "#b8a8f0", 0.0 to "#8fc9e0", 20.0 to "#d8d4dc", 40.0 to "#f2708a"),
             stops(ChartSchemes.arcticDark)
         )
+    }
+
+    @Test
+    fun `daylightColorAt follows the scale and clamps at both ends`() {
+        val light = ChartSchemes.arcticLight
+        assertEquals("#d9864f", light.daylightColorAt(-20.0).toHex())
+        assertEquals("#ff8f00", light.daylightColorAt(40.0).toHex())
+        // A third of the way from -20°C to +40°C, mixed per channel.
+        assertEquals("#e68935", light.daylightColorAt(0.0).toHex())
+        assertEquals("#d9864f", light.daylightColorAt(-66.0).toHex())
+        assertEquals("#ff8f00", light.daylightColorAt(48.0).toHex())
+    }
+
+    @Test
+    fun `daylightColorAt without a scale is the daylight bar colour`() {
+        val colors = SvgChartColors.light
+        assertEquals(colors.daylightBar, colors.daylightColorAt(-20.0))
+        assertEquals(colors.daylightBar, colors.daylightColorAt(40.0))
+    }
+
+    @Test
+    fun `generate colour-codes daylight bars only for scaled palettes`() {
+        fun svgFor(colors: SvgChartColors) = SvgChartGenerator().generate(
+            data = createTestData(24),
+            nowIndex = 6,
+            latitude = 52.52,
+            longitude = 13.405,
+            colors = colors,
+            width = 800.0,
+            height = 400.0
+        )
+
+        val scaled = svgFor(ChartSchemes.arcticLight)
+        val bucketDefs = Regex("""<linearGradient id="daylightT""").findAll(scaled).count()
+        assertTrue("expected per-temperature sun gradients", bucketDefs > 0)
+        // Bucketed, so far fewer gradients than hours.
+        assertTrue("too many sun gradients: $bucketDefs", bucketDefs < 24)
+        assertTrue(scaled.contains("""fill="url(#daylightT"""))
+
+        val plain = svgFor(SvgChartColors.light)
+        assertFalse(plain.contains("daylightT"))
+    }
+
+    @Test
+    fun `ChartSchemes arctic daylight scale matches the Dart mirror`() {
+        // ChartScheme.daylightScale (scheme_service.dart) repeats these so the
+        // legend's sun matches the bars; pinned there too.
+        fun stops(colors: SvgChartColors) = colors.daylightScale!!.map { (t, c) -> t to c.toHex() }
+        assertEquals(listOf(-20.0 to "#d9864f", 40.0 to "#ff8f00"), stops(ChartSchemes.arcticLight))
+        assertEquals(listOf(-20.0 to "#e09060", 40.0 to "#f2d45c"), stops(ChartSchemes.arcticDark))
     }
 
     private fun createTestData(count: Int): List<HourlyData> {
