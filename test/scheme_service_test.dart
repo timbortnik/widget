@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:meteogram_widget/services/scheme_service.dart';
+import 'package:meteogram_widget/theme/app_theme.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -64,6 +65,33 @@ void main() {
       expect(ChartScheme.defaultScheme.id, 'default');
       expect(ChartScheme.arctic.id, 'arctic');
       expect(ChartScheme.highContrast.id, 'contrast');
+    });
+
+    test('only high contrast overrides the card colours', () {
+      for (final scheme in [ChartScheme.defaultScheme, ChartScheme.arctic]) {
+        expect(scheme.cardColors(MeteogramColors.light, isDark: false),
+            same(MeteogramColors.light), reason: '$scheme');
+        expect(scheme.cardColors(MeteogramColors.dark, isDark: true),
+            same(MeteogramColors.dark), reason: '$scheme');
+      }
+    });
+
+    test('high contrast card echoes its chart palette', () {
+      // Pinned to contrastLight/contrastDark in ChartSchemes.kt (pinned there
+      // too, in SvgChartGeneratorTest) — change both sides together.
+      final light = ChartScheme.highContrast.cardColors(MeteogramColors.light, isDark: false);
+      expect(light.cardBackground, const Color(0xFFFFFFFF));
+      expect(light.temperatureLine, const Color(0xFF000000));
+      expect(light.primaryText, const Color(0xFF000000));
+      expect(light.daylightIcon, const Color(0xFFC87000));
+      expect(light.precipitationBar, const Color(0xFF0B4FA8));
+
+      final dark = ChartScheme.highContrast.cardColors(MeteogramColors.dark, isDark: true);
+      expect(dark.cardBackground, const Color(0xFF000000));
+      expect(dark.temperatureLine, const Color(0xFFFFFFFF));
+      expect(dark.primaryText, const Color(0xFFFFFFFF));
+      expect(dark.daylightIcon, const Color(0xFFE6B84A));
+      expect(dark.precipitationBar, const Color(0xFF4FC3F7));
     });
 
     test('ids are unique', () {

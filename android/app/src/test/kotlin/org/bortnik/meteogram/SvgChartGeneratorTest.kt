@@ -180,6 +180,23 @@ class SvgChartGeneratorTest {
     }
 
     @Test
+    fun `ChartSchemes contrast colours match the Dart card mirror`() {
+        // ChartScheme.cardColors (scheme_service.dart) repeats these so the
+        // in-app card header matches the chart; pinned there too.
+        val light = ChartSchemes.contrastLight
+        assertEquals("#ffffff", light.cardBackground.toHex())
+        assertEquals("#000000", light.temperatureLine.toHex())
+        assertEquals("#c87000", light.daylightBar.toHex())
+        assertEquals("#0b4fa8", light.precipitationBar.toHex())
+
+        val dark = ChartSchemes.contrastDark
+        assertEquals("#000000", dark.cardBackground.toHex())
+        assertEquals("#ffffff", dark.temperatureLine.toHex())
+        assertEquals("#e6b84a", dark.daylightBar.toHex())
+        assertEquals("#4fc3f7", dark.precipitationBar.toHex())
+    }
+
+    @Test
     fun `generate honours scheme stroke widths`() {
         val data = createTestData(24)
 
@@ -196,6 +213,79 @@ class SvgChartGeneratorTest {
         assertTrue("temperature line should use the scheme width", svg.contains("stroke-width=\"4.5\""))
         assertTrue("now marker should use the scheme width", svg.contains("stroke-width=\"5.0\""))
         assertTrue(svg.contains(ChartSchemes.contrastDark.temperatureLine.toHex()))
+    }
+
+    @Test
+    fun `generate keeps the original bar gradient for the default palette`() {
+        // These were literals before schemes could set them; the default path
+        // must keep emitting exactly the same stops.
+        val svg = SvgChartGenerator().generate(
+            data = createTestData(24),
+            nowIndex = 6,
+            latitude = 52.52,
+            longitude = 13.405,
+            colors = SvgChartColors.light,
+            width = 800.0,
+            height = 400.0
+        )
+
+        assertTrue(svg.contains("stop-opacity=\"0.9\""))
+        assertTrue(svg.contains("stop-opacity=\"0.3\""))
+    }
+
+    @Test
+    fun `generate honours scheme bar gradient`() {
+        val svg = SvgChartGenerator().generate(
+            data = createTestData(24),
+            nowIndex = 6,
+            latitude = 52.52,
+            longitude = 13.405,
+            colors = ChartSchemes.contrastLight,
+            width = 800.0,
+            height = 400.0
+        )
+
+        assertTrue("bars should use the scheme opacity", svg.contains("stop-opacity=\"1.0\""))
+        assertFalse("default faint end must not leak through", svg.contains("stop-opacity=\"0.3\""))
+    }
+
+    @Test
+    fun `generate leaves the default chart transparent`() {
+        // The widget shows the system background and the app its Material You
+        // card through the chart; a painted ground would cover both.
+        val svg = SvgChartGenerator().generate(
+            data = createTestData(24),
+            nowIndex = 6,
+            latitude = 52.52,
+            longitude = 13.405,
+            colors = SvgChartColors.light,
+            width = 800.0,
+            height = 400.0
+        )
+
+        assertFalse(svg.contains("<rect x=\"0\" y=\"0\" width=\"800\" height=\"400\""))
+    }
+
+    @Test
+    fun `generate paints the ground for schemes that own it`() {
+        for (palette in listOf(ChartSchemes.contrastLight, ChartSchemes.contrastDark)) {
+            val svg = SvgChartGenerator().generate(
+                data = createTestData(24),
+                nowIndex = 6,
+                latitude = 52.52,
+                longitude = 13.405,
+                colors = palette,
+                width = 800.0,
+                height = 400.0,
+                usePastFade = true
+            )
+            val ground = "<rect x=\"0\" y=\"0\" width=\"800\" height=\"400\" fill=\"${palette.cardBackground.toHex()}\"/>"
+
+            assertTrue("ground should be painted", svg.contains(ground))
+            // Outside the past-fade mask, or the past region would fade to transparent.
+            assertTrue("ground must precede the masked group",
+                svg.indexOf(ground) < svg.indexOf("mask=\"url(#pastFadeMask)\""))
+        }
     }
 
     @Test

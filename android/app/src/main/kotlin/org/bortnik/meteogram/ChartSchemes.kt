@@ -6,9 +6,12 @@ package org.bortnik.meteogram
  * A scheme is orthogonal to light/dark: each one defines both variants, so
  * picking a scheme never overrides the user's theme choice.
  *
- * These palettes cover the meteogram only. App chrome (surfaces, text,
- * accents) stays on Material You in every scheme — see [WidgetChartColors] for
- * the single point where the choice is resolved.
+ * These palettes cover the meteogram. App chrome (surfaces, text, accents)
+ * stays on Material You in every scheme, except [CONTRAST]: its palette is
+ * tuned for pure white/black, so it paints that ground into the chart itself
+ * (reaching the widget) and the in-app card follows suit — the Dart side
+ * mirrors `cardBackground` in `ChartScheme.cardBackground`.
+ * See [WidgetChartColors] for the single point where the choice is resolved.
  *
  * Colour-vision safety: the two bar series are the only same-shape pair, so
  * precipitation stays blue and daylight stays amber in every scheme. The
@@ -74,13 +77,20 @@ object ChartSchemes {
         outlineWidth = 1.5
     )
 
+    // Temperature is drawn in ink (black/white) rather than a hue: it is the
+    // primary series, so it takes the strongest contrast, and an achromatic
+    // line can't be confused with either bar under any colour-vision
+    // deficiency. The "now" marker takes the accent colour instead, so the
+    // two never meet at the same colour where they cross. The accent keeps one
+    // crimson hue across both variants and sits in the hue gap between the
+    // amber and blue bars, so it never reads as part of either series.
     val contrastLight = SvgChartColors(
-        temperatureLine = SvgColor(0xC0, 0x00, 0x00),
-        temperatureGradientStart = SvgColor(0xC0, 0x00, 0x00, 0x1A),
-        temperatureGradientEnd = SvgColor(0xC0, 0x00, 0x00, 0x00),
+        temperatureLine = SvgColor(0x00, 0x00, 0x00),
+        temperatureGradientStart = SvgColor(0x00, 0x00, 0x00, 0x1A),
+        temperatureGradientEnd = SvgColor(0x00, 0x00, 0x00, 0x00),
         precipitationBar = SvgColor(0x0B, 0x4F, 0xA8),
-        daylightBar = SvgColor(0x8A, 0x4B, 0x00),
-        nowIndicator = SvgColor(0x00, 0x00, 0x00),
+        daylightBar = SvgColor(0xC8, 0x70, 0x00),          // Light enough to read as sun, not brown
+        nowIndicator = SvgColor(0xB0, 0x00, 0x5A),
         timeLabel = SvgColor(0x00, 0x00, 0x00),
         cardBackground = SvgColor(0xFF, 0xFF, 0xFF),
         primaryText = SvgColor(0x00, 0x00, 0x00),
@@ -88,16 +98,21 @@ object ChartSchemes {
         outlineOpacity = 1.0,
         outlineWidth = 2.0,
         temperatureLineWidth = 4.5,
-        nowIndicatorWidth = 5.0
+        nowIndicatorWidth = 5.0,
+        // Solid bars: amber only stops reading as brown once it is light,
+        // and a light amber can't afford any fade and still hold 3:1.
+        barGradientSolid = 1.0,
+        barGradientFaint = 1.0,
+        drawBackground = true
     )
 
     val contrastDark = SvgChartColors(
-        temperatureLine = SvgColor(0xFF, 0x5A, 0x5A),
-        temperatureGradientStart = SvgColor(0xFF, 0x5A, 0x5A, 0x47),
-        temperatureGradientEnd = SvgColor(0xFF, 0x5A, 0x5A, 0x00),
+        temperatureLine = SvgColor(0xFF, 0xFF, 0xFF),
+        temperatureGradientStart = SvgColor(0xFF, 0xFF, 0xFF, 0x47),
+        temperatureGradientEnd = SvgColor(0xFF, 0xFF, 0xFF, 0x00),
         precipitationBar = SvgColor(0x4F, 0xC3, 0xF7),
-        daylightBar = SvgColor(0xFF, 0xD5, 0x4F),
-        nowIndicator = SvgColor(0xFF, 0xFF, 0xFF),
+        daylightBar = SvgColor(0xE6, 0xB8, 0x4A),
+        nowIndicator = SvgColor(0xFF, 0x5C, 0x9A),      // Light's crimson hue, lifted for black
         timeLabel = SvgColor(0xFF, 0xFF, 0xFF),
         cardBackground = SvgColor(0x00, 0x00, 0x00),
         primaryText = SvgColor(0xFF, 0xFF, 0xFF),
@@ -105,6 +120,11 @@ object ChartSchemes {
         outlineOpacity = 1.0,
         outlineWidth = 2.0,
         temperatureLineWidth = 4.5,
-        nowIndicatorWidth = 5.0
+        nowIndicatorWidth = 5.0,
+        // Solid bars: amber only stops reading as brown once it is light,
+        // and a light amber can't afford any fade and still hold 3:1.
+        barGradientSolid = 1.0,
+        barGradientFaint = 1.0,
+        drawBackground = true
     )
 }

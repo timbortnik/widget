@@ -63,7 +63,21 @@ data class SvgChartColors(
     /** Stroke width of the temperature line. Widened by high-contrast schemes. */
     val temperatureLineWidth: Double = 3.5,
     /** Stroke width of the "now" marker. Widened by high-contrast schemes. */
-    val nowIndicatorWidth: Double = 4.0
+    val nowIndicatorWidth: Double = 4.0,
+    /** Bar gradient opacity at the end where bars anchor. */
+    val barGradientSolid: Double = 0.9,
+    /**
+     * Bar gradient opacity at the bars' free end. Bar height already carries
+     * the value, so this fade is decorative and high-contrast schemes raise it.
+     */
+    val barGradientFaint: Double = 0.3,
+    /**
+     * Paint [cardBackground] behind the chart. Off by default so the chart
+     * stays transparent over the system/Material You surface; schemes whose
+     * contrast depends on a specific ground turn it on, which also carries
+     * that ground into the widget.
+     */
+    val drawBackground: Boolean = false
 ) {
     /**
      * Width of the contrasting outline drawn under the temperature line. Kept
@@ -241,7 +255,12 @@ class SvgChartGenerator {
         writeGradientDefs(svg, colors, nowFraction, usePastFade)
         svg.append("</defs>")
 
-        // No background - widget uses system background via ?android:attr/colorBackground
+        // Transparent by default - the widget shows ?android:attr/colorBackground
+        // and the app its card. Drawn outside the past-fade mask so the ground
+        // stays solid across the past region.
+        if (colors.drawBackground) {
+            svg.append("""<rect x="0" y="0" width="${width.toInt()}" height="${height.toInt()}" fill="${colors.cardBackground.toHex()}"/>""")
+        }
 
         // Chart group with optional past-time fade mask
         if (usePastFade) {
@@ -316,14 +335,14 @@ class SvgChartGenerator {
         // fading as they hang down — mirror of the precipitation bar range,
         // which is solid at the bottom where its bars anchor).
         svg.append("""<linearGradient id="daylightGradient" x1="0" y1="0" x2="0" y2="1">""")
-        svg.append("""<stop offset="0%" stop-color="${colors.daylightBar.toHex()}" stop-opacity="0.9"/>""")
-        svg.append("""<stop offset="100%" stop-color="${colors.daylightBar.toHex()}" stop-opacity="0.3"/>""")
+        svg.append("""<stop offset="0%" stop-color="${colors.daylightBar.toHex()}" stop-opacity="${colors.barGradientSolid}"/>""")
+        svg.append("""<stop offset="100%" stop-color="${colors.daylightBar.toHex()}" stop-opacity="${colors.barGradientFaint}"/>""")
         svg.append("</linearGradient>")
 
         // Precipitation bar gradient (vertical: solid at bottom, fades at top - bars grow upward)
         svg.append("""<linearGradient id="precipGradient" x1="0" y1="0" x2="0" y2="1">""")
-        svg.append("""<stop offset="0%" stop-color="${colors.precipitationBar.toHex()}" stop-opacity="0.3"/>""")
-        svg.append("""<stop offset="100%" stop-color="${colors.precipitationBar.toHex()}" stop-opacity="0.9"/>""")
+        svg.append("""<stop offset="0%" stop-color="${colors.precipitationBar.toHex()}" stop-opacity="${colors.barGradientFaint}"/>""")
+        svg.append("""<stop offset="100%" stop-color="${colors.precipitationBar.toHex()}" stop-opacity="${colors.barGradientSolid}"/>""")
         svg.append("</linearGradient>")
 
         // Past-time fade mask (horizontal gradient: faded on left, full opacity at now line)

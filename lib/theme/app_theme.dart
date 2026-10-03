@@ -210,6 +210,9 @@ class MeteogramColors {
     Color? temperatureLine,
     Color? temperatureGradientStart,
     Color? temperatureGradientEnd,
+    Color? precipitationBar,
+    Color? primaryText,
+    Color? daylightIcon,
     Color? timeLabel,
   }) {
     return MeteogramColors(
@@ -218,15 +221,15 @@ class MeteogramColors {
       temperatureLine: temperatureLine ?? this.temperatureLine,
       temperatureGradientStart: temperatureGradientStart ?? this.temperatureGradientStart,
       temperatureGradientEnd: temperatureGradientEnd ?? this.temperatureGradientEnd,
-      precipitationBar: precipitationBar,
+      precipitationBar: precipitationBar ?? this.precipitationBar,
       nowIndicator: nowIndicator,
       gridLine: gridLine,
       labelText: labelText,
-      primaryText: primaryText,
+      primaryText: primaryText ?? this.primaryText,
       secondaryText: secondaryText,
       chartTempLabel: chartTempLabel,
       daylightBar: daylightBar,
-      daylightIcon: daylightIcon,
+      daylightIcon: daylightIcon ?? this.daylightIcon,
       timeLabel: timeLabel ?? this.timeLabel,
     );
   }

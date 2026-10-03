@@ -516,6 +516,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   Widget _buildBody(AppLocalizations l10n, MeteogramColors colors) {
+    final cardColors = widget.colorScheme.cardColors(
+      colors,
+      isDark: Theme.of(context).brightness == Brightness.dark,
+    );
     if (_loading) {
       return Center(
         child: Column(
@@ -703,7 +707,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     : null,
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: colors.cardBackground,
+                    color: cardColors.cardBackground,
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
@@ -728,7 +732,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 child: Text(
                                   UnitsService.formatTemperature(currentTemp, PlatformDispatcher.instance.locale),
                                   style: TextStyle(
-                                    color: colors.temperatureLine,
+                                    color: cardColors.temperatureLine,
                                     fontSize: 64,
                                     fontWeight: FontWeight.w300,
                                     height: 1,
@@ -744,15 +748,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               _buildStatRow(
                                 icon: Icons.wb_sunny_outlined,
                                 value: l10n.daylight,
-                                colors: colors,
-                                iconColor: colors.daylightIcon,
+                                colors: cardColors,
+                                iconColor: cardColors.daylightIcon,
                               ),
                               const SizedBox(height: 8),
                               _buildStatRow(
                                 icon: Icons.water_drop_outlined,
                                 value: l10n.precipitation,
-                                colors: colors,
-                                iconColor: colors.precipitationBar,
+                                colors: cardColors,
+                                iconColor: cardColors.precipitationBar,
                               ),
                             ],
                           ),

@@ -427,6 +427,41 @@ void main() {
       }
     });
 
+    /// Fill of the weather card — the one decorated container with a shadow.
+    Color? cardColor(WidgetTester tester) {
+      final card = tester.widgetList<Container>(find.byType(Container)).where((c) {
+        final d = c.decoration;
+        return d is BoxDecoration && d.boxShadow != null;
+      }).single;
+      return (card.decoration! as BoxDecoration).color;
+    }
+
+    Future<void> pumpWithWeather(WidgetTester tester, ChartScheme scheme) async {
+      homeWidgetData['last_weather_update'] = mockTimestamp;
+      homeWidgetData['current_temperature_celsius'] = mockTemperature;
+      homeWidgetData['cached_city_name'] = mockCityName;
+      homeWidgetData['cached_location_source'] = mockLocationSource;
+      await tester.pumpWidget(appWith(scheme: scheme));
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pump(const Duration(milliseconds: 500));
+    }
+
+    testWidgets('high contrast paints the card behind the chart white',
+        (tester) async {
+      await pumpWithWeather(tester, ChartScheme.highContrast);
+
+      expect(cardColor(tester), const Color(0xFFFFFFFF));
+    });
+
+    testWidgets('other schemes keep the Material You card', (tester) async {
+      await pumpWithWeather(tester, ChartScheme.defaultScheme);
+      final themed = cardColor(tester);
+      await pumpWithWeather(tester, ChartScheme.arctic);
+
+      expect(themed, isNot(const Color(0xFFFFFFFF)));
+      expect(cardColor(tester), themed);
+    });
+
     testWidgets('tapping a scheme reports the choice and closes the sheet',
         (tester) async {
       ChartScheme? picked;
