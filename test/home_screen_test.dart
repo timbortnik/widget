@@ -110,7 +110,7 @@ void main() {
   });
 
   /// Helper to wrap HomeScreen with required providers
-  Widget createTestApp({MaterialYouColors? materialYouColors}) {
+  Widget createTestApp({MaterialYouColors? materialYouColors, Locale locale = const Locale('en')}) {
     return MaterialApp(
       localizationsDelegates: const [
         AppLocalizations.delegate,
@@ -119,7 +119,7 @@ void main() {
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: AppLocalizations.supportedLocales,
-      locale: const Locale('en'),
+      locale: locale,
       theme: AppTheme.light(null),
       darkTheme: AppTheme.dark(null),
       home: HomeScreen(materialYouColors: materialYouColors),
@@ -293,6 +293,30 @@ void main() {
       // Should show GPS option
       expect(find.text('GPS'), findsOneWidget);
       expect(find.text('Device location'), findsOneWidget);
+    });
+
+    testWidgets('location picker labels are localized', (tester) async {
+      homeWidgetData['last_weather_update'] = mockTimestamp;
+      homeWidgetData['current_temperature_celsius'] = mockTemperature;
+      homeWidgetData['cached_city_name'] = mockCityName;
+      homeWidgetData['cached_location_source'] = mockLocationSource;
+      // A recent city, so the "Recent" header is shown.
+      homeWidgetData['recent_cities'] =
+          '[{"name":"Lviv","country":"Ukraine","latitude":49.84,"longitude":24.03}]';
+
+      await tester.pumpWidget(createTestApp(locale: const Locale('uk')));
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pump(const Duration(milliseconds: 500));
+
+      await tester.tap(find.text(mockCityName));
+      await tester.pump(const Duration(milliseconds: 500));
+      // Recent cities load asynchronously once the sheet opens.
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(find.text('Місцезнаходження пристрою'), findsOneWidget);
+      expect(find.text('Нещодавні'), findsOneWidget);
+      expect(find.text('Device location'), findsNothing);
+      expect(find.text('Recent'), findsNothing);
     });
 
     testWidgets('location picker has search field', (tester) async {

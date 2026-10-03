@@ -50,5 +50,7 @@
   "colorScheme": "ფერთა სქემა",
   "colorSchemeDefault": "ნაგულისხმევი",
   "colorSchemeArctic": "არქტიკული",
-  "colorSchemeHighContrast": "მაღალი კონტრასტი"
+  "colorSchemeHighContrast": "მაღალი კონტრასტი",
+  "deviceLocation": "მოწყობილობის მდებარეობა",
+  "recentLocations": "ბოლოდროინდელი"
 }

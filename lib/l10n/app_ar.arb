@@ -50,5 +50,7 @@
   "colorScheme": "نظام الألوان",
   "colorSchemeDefault": "افتراضي",
   "colorSchemeArctic": "قطبي",
-  "colorSchemeHighContrast": "تباين عالٍ"
+  "colorSchemeHighContrast": "تباين عالٍ",
+  "deviceLocation": "موقع الجهاز",
+  "recentLocations": "الأخيرة"
 }

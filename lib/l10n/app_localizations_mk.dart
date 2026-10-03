@@ -166,4 +166,10 @@ class AppLocalizationsMk extends AppLocalizations {
 
   @override
   String get colorSchemeHighContrast => 'Висок контраст';
+
+  @override
+  String get deviceLocation => 'Локација на уредот';
+
+  @override
+  String get recentLocations => 'Неодамнешни';
 }

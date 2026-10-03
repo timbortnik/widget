@@ -165,4 +165,10 @@ class AppLocalizationsHr extends AppLocalizations {
 
   @override
   String get colorSchemeHighContrast => 'Visoki kontrast';
+
+  @override
+  String get deviceLocation => 'Lokacija uređaja';
+
+  @override
+  String get recentLocations => 'Nedavno';
 }

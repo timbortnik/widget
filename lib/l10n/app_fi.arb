@@ -50,5 +50,7 @@
   "colorScheme": "Värimaailma",
   "colorSchemeDefault": "Oletus",
   "colorSchemeArctic": "Arktinen",
-  "colorSchemeHighContrast": "Suuri kontrasti"
+  "colorSchemeHighContrast": "Suuri kontrasti",
+  "deviceLocation": "Laitteen sijainti",
+  "recentLocations": "Viimeisimmät"
 }

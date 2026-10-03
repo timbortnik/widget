@@ -50,5 +50,7 @@
   "colorScheme": "Litastef",
   "colorSchemeDefault": "Sjálfgefið",
   "colorSchemeArctic": "Heimskauta",
-  "colorSchemeHighContrast": "Mikil birtuskil"
+  "colorSchemeHighContrast": "Mikil birtuskil",
+  "deviceLocation": "Staðsetning tækis",
+  "recentLocations": "Nýlegt"
 }

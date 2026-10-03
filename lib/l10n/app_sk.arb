@@ -50,5 +50,7 @@
   "colorScheme": "Farebná schéma",
   "colorSchemeDefault": "Predvolené",
   "colorSchemeArctic": "Arktická",
-  "colorSchemeHighContrast": "Vysoký kontrast"
+  "colorSchemeHighContrast": "Vysoký kontrast",
+  "deviceLocation": "Poloha zariadenia",
+  "recentLocations": "Nedávne"
 }

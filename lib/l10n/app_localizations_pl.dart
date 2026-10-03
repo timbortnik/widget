@@ -164,4 +164,10 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get colorSchemeHighContrast => 'Wysoki kontrast';
+
+  @override
+  String get deviceLocation => 'Lokalizacja urządzenia';
+
+  @override
+  String get recentLocations => 'Ostatnie';
 }

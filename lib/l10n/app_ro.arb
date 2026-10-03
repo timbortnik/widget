@@ -50,5 +50,7 @@
   "colorScheme": "Schemă de culori",
   "colorSchemeDefault": "Implicit",
   "colorSchemeArctic": "Arctic",
-  "colorSchemeHighContrast": "Contrast ridicat"
+  "colorSchemeHighContrast": "Contrast ridicat",
+  "deviceLocation": "Locația dispozitivului",
+  "recentLocations": "Recente"
 }

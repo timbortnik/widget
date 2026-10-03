@@ -50,5 +50,7 @@
   "colorScheme": "Palette de couleurs",
   "colorSchemeDefault": "Par défaut",
   "colorSchemeArctic": "Arctique",
-  "colorSchemeHighContrast": "Contraste élevé"
+  "colorSchemeHighContrast": "Contraste élevé",
+  "deviceLocation": "Position de l'appareil",
+  "recentLocations": "Récents"
 }

@@ -165,4 +165,10 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get colorSchemeHighContrast => 'উচ্চ কনট্রাস্ট';
+
+  @override
+  String get deviceLocation => 'ডিভাইসের অবস্থান';
+
+  @override
+  String get recentLocations => 'সাম্প্রতিক';
 }

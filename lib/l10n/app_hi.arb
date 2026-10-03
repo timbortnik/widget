@@ -50,5 +50,7 @@
   "colorScheme": "रंग योजना",
   "colorSchemeDefault": "डिफ़ॉल्ट",
   "colorSchemeArctic": "आर्कटिक",
-  "colorSchemeHighContrast": "उच्च कंट्रास्ट"
+  "colorSchemeHighContrast": "उच्च कंट्रास्ट",
+  "deviceLocation": "डिवाइस का स्थान",
+  "recentLocations": "हाल के"
 }

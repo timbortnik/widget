@@ -163,4 +163,10 @@ class AppLocalizationsNo extends AppLocalizations {
 
   @override
   String get colorSchemeHighContrast => 'Høy kontrast';
+
+  @override
+  String get deviceLocation => 'Enhetens posisjon';
+
+  @override
+  String get recentLocations => 'Nylige';
 }

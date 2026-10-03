@@ -50,5 +50,7 @@
   "colorScheme": "Shema boja",
   "colorSchemeDefault": "Zadano",
   "colorSchemeArctic": "Arktička",
-  "colorSchemeHighContrast": "Visoki kontrast"
+  "colorSchemeHighContrast": "Visoki kontrast",
+  "deviceLocation": "Lokacija uređaja",
+  "recentLocations": "Nedavno"
 }

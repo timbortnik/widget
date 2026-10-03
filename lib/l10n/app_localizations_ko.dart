@@ -162,4 +162,10 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get colorSchemeHighContrast => '고대비';
+
+  @override
+  String get deviceLocation => '기기 위치';
+
+  @override
+  String get recentLocations => '최근';
 }

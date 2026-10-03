@@ -50,5 +50,7 @@
   "colorScheme": "カラースキーム",
   "colorSchemeDefault": "デフォルト",
   "colorSchemeArctic": "アークティック",
-  "colorSchemeHighContrast": "ハイコントラスト"
+  "colorSchemeHighContrast": "ハイコントラスト",
+  "deviceLocation": "デバイスの位置情報",
+  "recentLocations": "最近"
 }

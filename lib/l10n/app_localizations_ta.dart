@@ -165,4 +165,10 @@ class AppLocalizationsTa extends AppLocalizations {
 
   @override
   String get colorSchemeHighContrast => 'அதிக மாறுபாடு';
+
+  @override
+  String get deviceLocation => 'சாதன இருப்பிடம்';
+
+  @override
+  String get recentLocations => 'சமீபத்தியவை';
 }

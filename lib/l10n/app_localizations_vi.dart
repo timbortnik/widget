@@ -165,4 +165,10 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get colorSchemeHighContrast => 'Tương phản cao';
+
+  @override
+  String get deviceLocation => 'Vị trí thiết bị';
+
+  @override
+  String get recentLocations => 'Gần đây';
 }

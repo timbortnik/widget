@@ -164,4 +164,10 @@ class AppLocalizationsJv extends AppLocalizations {
 
   @override
   String get colorSchemeHighContrast => 'Kontras dhuwur';
+
+  @override
+  String get deviceLocation => 'Lokasi piranti';
+
+  @override
+  String get recentLocations => 'Paling anyar';
 }

@@ -50,5 +50,7 @@
   "colorScheme": "Farveskema",
   "colorSchemeDefault": "Standard",
   "colorSchemeArctic": "Arktisk",
-  "colorSchemeHighContrast": "Høj kontrast"
+  "colorSchemeHighContrast": "Høj kontrast",
+  "deviceLocation": "Enhedens placering",
+  "recentLocations": "Seneste"
 }

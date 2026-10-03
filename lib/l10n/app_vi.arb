@@ -50,5 +50,7 @@
   "colorScheme": "Bảng màu",
   "colorSchemeDefault": "Mặc định",
   "colorSchemeArctic": "Bắc Cực",
-  "colorSchemeHighContrast": "Tương phản cao"
+  "colorSchemeHighContrast": "Tương phản cao",
+  "deviceLocation": "Vị trí thiết bị",
+  "recentLocations": "Gần đây"
 }

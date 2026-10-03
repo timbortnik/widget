@@ -1366,7 +1366,7 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
               ListTile(
                 leading: Icon(Icons.gps_fixed, color: colors.temperatureLine),
                 title: Text('GPS', style: TextStyle(color: colors.primaryText)),
-                subtitle: Text('Device location', style: TextStyle(color: colors.secondaryText, fontSize: 12)),
+                subtitle: Text(l10n.deviceLocation, style: TextStyle(color: colors.secondaryText, fontSize: 12)),
                 trailing: widget.currentSource == LocationSource.gps
                     ? Icon(Icons.check, color: colors.temperatureLine, size: 20)
                     : null,
@@ -1379,7 +1379,7 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                 child: Text(
-                  'Recent',
+                  l10n.recentLocations,
                   style: TextStyle(color: colors.secondaryText, fontSize: 12),
                 ),
               ),

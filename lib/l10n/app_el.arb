@@ -50,5 +50,7 @@
   "colorScheme": "Χρωματικός συνδυασμός",
   "colorSchemeDefault": "Προεπιλογή",
   "colorSchemeArctic": "Αρκτικό",
-  "colorSchemeHighContrast": "Υψηλή αντίθεση"
+  "colorSchemeHighContrast": "Υψηλή αντίθεση",
+  "deviceLocation": "Τοποθεσία συσκευής",
+  "recentLocations": "Πρόσφατα"
 }

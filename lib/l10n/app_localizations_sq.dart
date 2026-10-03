@@ -165,4 +165,10 @@ class AppLocalizationsSq extends AppLocalizations {
 
   @override
   String get colorSchemeHighContrast => 'Kontrast i lartë';
+
+  @override
+  String get deviceLocation => 'Vendndodhja e pajisjes';
+
+  @override
+  String get recentLocations => 'Të fundit';
 }

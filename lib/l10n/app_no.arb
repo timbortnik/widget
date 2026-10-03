@@ -50,5 +50,7 @@
   "colorScheme": "Fargeskjema",
   "colorSchemeDefault": "Standard",
   "colorSchemeArctic": "Arktisk",
-  "colorSchemeHighContrast": "Høy kontrast"
+  "colorSchemeHighContrast": "Høy kontrast",
+  "deviceLocation": "Enhetens posisjon",
+  "recentLocations": "Nylige"
 }

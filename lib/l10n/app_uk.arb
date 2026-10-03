@@ -152,5 +152,7 @@
   "colorScheme": "Колірна схема",
   "colorSchemeDefault": "Стандартна",
   "colorSchemeArctic": "Арктична",
-  "colorSchemeHighContrast": "Висока контрастність"
+  "colorSchemeHighContrast": "Висока контрастність",
+  "deviceLocation": "Місцезнаходження пристрою",
+  "recentLocations": "Нещодавні"
 }

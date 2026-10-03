@@ -164,4 +164,10 @@ class AppLocalizationsKa extends AppLocalizations {
 
   @override
   String get colorSchemeHighContrast => 'მაღალი კონტრასტი';
+
+  @override
+  String get deviceLocation => 'მოწყობილობის მდებარეობა';
+
+  @override
+  String get recentLocations => 'ბოლოდროინდელი';
 }

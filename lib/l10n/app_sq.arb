@@ -50,5 +50,7 @@
   "colorScheme": "Skema e ngjyrave",
   "colorSchemeDefault": "E parazgjedhur",
   "colorSchemeArctic": "Arktike",
-  "colorSchemeHighContrast": "Kontrast i lartë"
+  "colorSchemeHighContrast": "Kontrast i lartë",
+  "deviceLocation": "Vendndodhja e pajisjes",
+  "recentLocations": "Të fundit"
 }

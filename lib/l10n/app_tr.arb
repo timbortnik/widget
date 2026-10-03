@@ -50,5 +50,7 @@
   "colorScheme": "Renk şeması",
   "colorSchemeDefault": "Varsayılan",
   "colorSchemeArctic": "Arktik",
-  "colorSchemeHighContrast": "Yüksek kontrast"
+  "colorSchemeHighContrast": "Yüksek kontrast",
+  "deviceLocation": "Cihaz konumu",
+  "recentLocations": "Son kullanılanlar"
 }

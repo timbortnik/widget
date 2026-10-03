@@ -164,4 +164,10 @@ class AppLocalizationsFi extends AppLocalizations {
 
   @override
   String get colorSchemeHighContrast => 'Suuri kontrasti';
+
+  @override
+  String get deviceLocation => 'Laitteen sijainti';
+
+  @override
+  String get recentLocations => 'Viimeisimmät';
 }

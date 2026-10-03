@@ -164,4 +164,10 @@ class AppLocalizationsCs extends AppLocalizations {
 
   @override
   String get colorSchemeHighContrast => 'Vysoký kontrast';
+
+  @override
+  String get deviceLocation => 'Poloha zařízení';
+
+  @override
+  String get recentLocations => 'Nedávné';
 }

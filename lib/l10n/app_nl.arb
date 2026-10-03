@@ -50,5 +50,7 @@
   "colorScheme": "Kleurenschema",
   "colorSchemeDefault": "Standaard",
   "colorSchemeArctic": "Arctisch",
-  "colorSchemeHighContrast": "Hoog contrast"
+  "colorSchemeHighContrast": "Hoog contrast",
+  "deviceLocation": "Apparaatlocatie",
+  "recentLocations": "Recent"
 }

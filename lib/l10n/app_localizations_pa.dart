@@ -165,4 +165,10 @@ class AppLocalizationsPa extends AppLocalizations {
 
   @override
   String get colorSchemeHighContrast => 'ਉੱਚ ਕੰਟਰਾਸਟ';
+
+  @override
+  String get deviceLocation => 'ਡਿਵਾਈਸ ਟਿਕਾਣਾ';
+
+  @override
+  String get recentLocations => 'ਹਾਲੀਆ';
 }

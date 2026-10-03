@@ -164,4 +164,10 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get colorSchemeHighContrast => 'उच्च कंट्रास्ट';
+
+  @override
+  String get deviceLocation => 'डिवाइस का स्थान';
+
+  @override
+  String get recentLocations => 'हाल के';
 }

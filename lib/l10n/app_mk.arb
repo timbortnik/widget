@@ -50,5 +50,7 @@
   "colorScheme": "Шема на бои",
   "colorSchemeDefault": "Стандардно",
   "colorSchemeArctic": "Арктичка",
-  "colorSchemeHighContrast": "Висок контраст"
+  "colorSchemeHighContrast": "Висок контраст",
+  "deviceLocation": "Локација на уредот",
+  "recentLocations": "Неодамнешни"
 }

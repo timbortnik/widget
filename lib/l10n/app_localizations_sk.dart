@@ -165,4 +165,10 @@ class AppLocalizationsSk extends AppLocalizations {
 
   @override
   String get colorSchemeHighContrast => 'Vysoký kontrast';
+
+  @override
+  String get deviceLocation => 'Poloha zariadenia';
+
+  @override
+  String get recentLocations => 'Nedávne';
 }

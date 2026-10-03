@@ -50,5 +50,7 @@
   "colorScheme": "ਰੰਗ ਸਕੀਮ",
   "colorSchemeDefault": "ਮੂਲ",
   "colorSchemeArctic": "ਆਰਕਟਿਕ",
-  "colorSchemeHighContrast": "ਉੱਚ ਕੰਟਰਾਸਟ"
+  "colorSchemeHighContrast": "ਉੱਚ ਕੰਟਰਾਸਟ",
+  "deviceLocation": "ਡਿਵਾਈਸ ਟਿਕਾਣਾ",
+  "recentLocations": "ਹਾਲੀਆ"
 }

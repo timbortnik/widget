@@ -164,4 +164,10 @@ class AppLocalizationsBg extends AppLocalizations {
 
   @override
   String get colorSchemeHighContrast => 'Висок контраст';
+
+  @override
+  String get deviceLocation => 'Местоположение на устройството';
+
+  @override
+  String get recentLocations => 'Последни';
 }

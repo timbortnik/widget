@@ -162,4 +162,10 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get colorSchemeHighContrast => 'ハイコントラスト';
+
+  @override
+  String get deviceLocation => 'デバイスの位置情報';
+
+  @override
+  String get recentLocations => '最近';
 }

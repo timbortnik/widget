@@ -165,4 +165,10 @@ class AppLocalizationsRo extends AppLocalizations {
 
   @override
   String get colorSchemeHighContrast => 'Contrast ridicat';
+
+  @override
+  String get deviceLocation => 'Locația dispozitivului';
+
+  @override
+  String get recentLocations => 'Recente';
 }

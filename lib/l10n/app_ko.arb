@@ -50,5 +50,7 @@
   "colorScheme": "색상 구성",
   "colorSchemeDefault": "기본값",
   "colorSchemeArctic": "아틱",
-  "colorSchemeHighContrast": "고대비"
+  "colorSchemeHighContrast": "고대비",
+  "deviceLocation": "기기 위치",
+  "recentLocations": "최근"
 }

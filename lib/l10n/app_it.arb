@@ -50,5 +50,7 @@
   "colorScheme": "Combinazione colori",
   "colorSchemeDefault": "Predefinito",
   "colorSchemeArctic": "Artico",
-  "colorSchemeHighContrast": "Contrasto elevato"
+  "colorSchemeHighContrast": "Contrasto elevato",
+  "deviceLocation": "Posizione del dispositivo",
+  "recentLocations": "Recenti"
 }

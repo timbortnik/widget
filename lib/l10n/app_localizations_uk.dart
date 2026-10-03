@@ -165,4 +165,10 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get colorSchemeHighContrast => 'Висока контрастність';
+
+  @override
+  String get deviceLocation => 'Місцезнаходження пристрою';
+
+  @override
+  String get recentLocations => 'Нещодавні';
 }

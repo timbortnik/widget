@@ -162,4 +162,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get colorSchemeHighContrast => '高对比度';
+
+  @override
+  String get deviceLocation => '设备位置';
+
+  @override
+  String get recentLocations => '最近';
 }

@@ -165,4 +165,10 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get colorSchemeHighContrast => 'Υψηλή αντίθεση';
+
+  @override
+  String get deviceLocation => 'Τοποθεσία συσκευής';
+
+  @override
+  String get recentLocations => 'Πρόσφατα';
 }

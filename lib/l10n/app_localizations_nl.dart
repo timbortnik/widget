@@ -165,4 +165,10 @@ class AppLocalizationsNl extends AppLocalizations {
 
   @override
   String get colorSchemeHighContrast => 'Hoog contrast';
+
+  @override
+  String get deviceLocation => 'Apparaatlocatie';
+
+  @override
+  String get recentLocations => 'Recent';
 }

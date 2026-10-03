@@ -50,5 +50,7 @@
   "colorScheme": "Skema warna",
   "colorSchemeDefault": "Gawan",
   "colorSchemeArctic": "Arktik",
-  "colorSchemeHighContrast": "Kontras dhuwur"
+  "colorSchemeHighContrast": "Kontras dhuwur",
+  "deviceLocation": "Lokasi piranti",
+  "recentLocations": "Paling anyar"
 }

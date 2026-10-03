@@ -163,4 +163,10 @@ class AppLocalizationsIs extends AppLocalizations {
 
   @override
   String get colorSchemeHighContrast => 'Mikil birtuskil';
+
+  @override
+  String get deviceLocation => 'Staðsetning tækis';
+
+  @override
+  String get recentLocations => 'Nýlegt';
 }

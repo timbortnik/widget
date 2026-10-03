@@ -50,5 +50,7 @@
   "colorScheme": "வண்ணத் திட்டம்",
   "colorSchemeDefault": "இயல்பு",
   "colorSchemeArctic": "ஆர்க்டிக்",
-  "colorSchemeHighContrast": "அதிக மாறுபாடு"
+  "colorSchemeHighContrast": "அதிக மாறுபாடு",
+  "deviceLocation": "சாதன இருப்பிடம்",
+  "recentLocations": "சமீபத்தியவை"
 }
