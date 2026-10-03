@@ -28,6 +28,6 @@ module.exports = {
 
   // Colour scheme section of the theme picker sheet
   schemeOptionDefault: 'scheme_option_default',
-  schemeOptionArctic: 'scheme_option_arctic',
+  schemeOptionThermal: 'scheme_option_thermal',
   schemeOptionHighContrast: 'scheme_option_high_contrast',
 };

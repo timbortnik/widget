@@ -17,7 +17,7 @@ enum ChartScheme {
   defaultScheme('default'),
 
   /// Polar day and dusk: low apricot sun, ice-blue cold, snow.
-  arctic('arctic'),
+  thermal('thermal'),
 
   /// Maximum-contrast palette: pure black/white grounds, widened strokes.
   highContrast('contrast');
@@ -31,7 +31,7 @@ enum ChartScheme {
   /// null when the scheme draws temperature in a single colour. Mirrors
   /// `temperatureScale` in `ChartSchemes.kt`; the two must change together.
   List<(double, Color)>? temperatureScale({required bool isDark}) {
-    if (this != arctic) return null;
+    if (this != thermal) return null;
     return isDark
         ? const [
             (-20.0, Color(0xFFB8A8F0)),
@@ -57,7 +57,7 @@ enum ChartScheme {
   /// temperature, as (°C, colour) stops; null when the sun has one colour.
   /// Mirrors `daylightScale` in `ChartSchemes.kt`.
   List<(double, Color)>? daylightScale({required bool isDark}) {
-    if (this != arctic) return null;
+    if (this != thermal) return null;
     return isDark
         ? const [(-20.0, Color(0xFFE09060)), (40.0, Color(0xFFF2D45C))]
         : const [(-20.0, Color(0xFFD9864F)), (40.0, Color(0xFFFF8F00))];
@@ -67,7 +67,7 @@ enum ChartScheme {
   /// colour) stops; null when the ground is fixed. Mirrors
   /// `groundScale` in `ChartSchemes.kt`.
   List<(double, Color)>? groundScale({required bool isDark}) {
-    if (this != arctic) return null;
+    if (this != thermal) return null;
     return isDark
         ? const [(-20.0, Color(0xFF2E1D22)), (40.0, Color(0xFF1F1D33))]
         : const [(-20.0, Color(0xFFF1E7EE)), (40.0, Color(0xFFE4ECF4))];
@@ -95,7 +95,7 @@ enum ChartScheme {
   /// then takes `precipitationBar`), or null when all precipitation shares
   /// one colour. Mirrors `snowBar` in `ChartSchemes.kt`.
   Color? snowColor({required bool isDark}) {
-    if (this != arctic) return null;
+    if (this != thermal) return null;
     return isDark ? const Color(0xFFEEF3F7) : const Color(0xFF7A8AA0);
   }
 
@@ -111,7 +111,7 @@ enum ChartScheme {
     switch (this) {
       case defaultScheme:
         return base;
-      case arctic:
+      case thermal:
         return base.copyWith(
           cardBackground: isDark ? const Color(0xFF2A1D2E) : const Color(0xFFE7E9F4),
           temperatureLine: isDark ? const Color(0xFF8FC9E0) : const Color(0xFF1A6684),

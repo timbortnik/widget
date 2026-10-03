@@ -151,7 +151,7 @@
   "themeDark": "Темна",
   "colorScheme": "Колірна схема",
   "colorSchemeDefault": "Стандартна",
-  "colorSchemeArctic": "Арктична",
+  "colorSchemeThermal": "Термальна",
   "colorSchemeHighContrast": "Висока контрастність",
   "deviceLocation": "Місцезнаходження пристрою",
   "recentLocations": "Нещодавні"

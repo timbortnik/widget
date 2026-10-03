@@ -122,15 +122,15 @@ class SvgChartGeneratorTest {
 
     @Test
     fun `ChartSchemes palette resolves each fixed scheme per theme`() {
-        assertEquals(ChartSchemes.arcticLight, ChartSchemes.palette(ChartSchemes.ARCTIC, isLight = true))
-        assertEquals(ChartSchemes.arcticDark, ChartSchemes.palette(ChartSchemes.ARCTIC, isLight = false))
+        assertEquals(ChartSchemes.thermalLight, ChartSchemes.palette(ChartSchemes.THERMAL, isLight = true))
+        assertEquals(ChartSchemes.thermalDark, ChartSchemes.palette(ChartSchemes.THERMAL, isLight = false))
         assertEquals(ChartSchemes.contrastLight, ChartSchemes.palette(ChartSchemes.CONTRAST, isLight = true))
         assertEquals(ChartSchemes.contrastDark, ChartSchemes.palette(ChartSchemes.CONTRAST, isLight = false))
     }
 
     @Test
     fun `ChartSchemes ids lists every scheme the picker offers`() {
-        assertEquals(listOf("default", "arctic", "contrast"), ChartSchemes.ids)
+        assertEquals(listOf("default", "thermal", "contrast"), ChartSchemes.ids)
         // Every non-default id must resolve, or the picker offers a dead option.
         for (id in ChartSchemes.ids - ChartSchemes.DEFAULT) {
             assertNotNull("scheme '$id' has no light palette", ChartSchemes.palette(id, isLight = true))
@@ -142,7 +142,7 @@ class SvgChartGeneratorTest {
     fun `ChartSchemes light and dark variants differ per scheme`() {
         // A scheme that ignored the theme would render white-on-white for half
         // the users; the two variants must be genuinely distinct.
-        assertNotEquals(ChartSchemes.arcticLight, ChartSchemes.arcticDark)
+        assertNotEquals(ChartSchemes.thermalLight, ChartSchemes.thermalDark)
         assertNotEquals(ChartSchemes.contrastLight, ChartSchemes.contrastDark)
     }
 
@@ -159,13 +159,13 @@ class SvgChartGeneratorTest {
     }
 
     @Test
-    fun `ChartSchemes arctic snow and rain bars are clearly distinct`() {
-        // Arctic colours precipitation by phase, so the two must never be
+    fun `ChartSchemes thermal snow and rain bars are clearly distinct`() {
+        // Thermal colours precipitation by phase, so the two must never be
         // mistaken for one another.
         fun distance(a: SvgColor, b: SvgColor) =
             Math.sqrt(((a.r - b.r) * (a.r - b.r) + (a.g - b.g) * (a.g - b.g) + (a.b - b.b) * (a.b - b.b)).toDouble())
 
-        for (palette in listOf(ChartSchemes.arcticLight, ChartSchemes.arcticDark)) {
+        for (palette in listOf(ChartSchemes.thermalLight, ChartSchemes.thermalDark)) {
             val snow = palette.snowBar!!
             val rain = palette.precipitationBar
             assertTrue("snow ${snow.toHex()} too close to rain ${rain.toHex()}", distance(snow, rain) > 80.0)
@@ -195,10 +195,10 @@ class SvgChartGeneratorTest {
             colors = colors, width = 800.0, height = 400.0
         )
 
-        val arctic = svgFor(ChartSchemes.arcticDark)
-        assertTrue(arctic.contains("""<linearGradient id="snowGradient""""))
-        assertEquals(12, Regex("""fill="url\(#snowGradient\)"""").findAll(arctic).count())
-        assertEquals(12, Regex("""fill="url\(#precipGradient\)"""").findAll(arctic).count())
+        val thermal = svgFor(ChartSchemes.thermalDark)
+        assertTrue(thermal.contains("""<linearGradient id="snowGradient""""))
+        assertEquals(12, Regex("""fill="url\(#snowGradient\)"""").findAll(thermal).count())
+        assertEquals(12, Regex("""fill="url\(#precipGradient\)"""").findAll(thermal).count())
 
         val plain = svgFor(SvgChartColors.dark)
         assertFalse(plain.contains("snowGradient"))
@@ -212,7 +212,7 @@ class SvgChartGeneratorTest {
         fun luminance(c: SvgColor) = 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b
 
         for (palette in listOf(
-            ChartSchemes.arcticLight, ChartSchemes.arcticDark,
+            ChartSchemes.thermalLight, ChartSchemes.thermalDark,
             ChartSchemes.contrastLight, ChartSchemes.contrastDark
         )) {
             val spread = Math.abs(luminance(palette.primaryText) - luminance(palette.cardBackground))
@@ -242,9 +242,9 @@ class SvgChartGeneratorTest {
     }
 
     @Test
-    fun `ChartSchemes arctic colours match the Dart card mirror`() {
+    fun `ChartSchemes thermal colours match the Dart card mirror`() {
         // ChartScheme.cardColors (scheme_service.dart) repeats these; pinned there too.
-        val light = ChartSchemes.arcticLight
+        val light = ChartSchemes.thermalLight
         assertEquals("#e7e9f4", light.cardBackground.toHex())
         assertEquals("#1a6684", light.temperatureLine.toHex())
         assertEquals("#2e3440", light.primaryText.toHex())
@@ -252,7 +252,7 @@ class SvgChartGeneratorTest {
         assertEquals("#2f5fc0", light.precipitationBar.toHex())
         assertEquals("#7a8aa0", light.snowBar?.toHex())
 
-        val dark = ChartSchemes.arcticDark
+        val dark = ChartSchemes.thermalDark
         assertEquals("#2a1d2e", dark.cardBackground.toHex())
         assertEquals("#8fc9e0", dark.temperatureLine.toHex())
         assertEquals("#eceff4", dark.primaryText.toHex())
@@ -334,7 +334,7 @@ class SvgChartGeneratorTest {
     @Test
     fun `generate paints the ground for schemes that own it`() {
         for (palette in listOf(
-            ChartSchemes.arcticLight, ChartSchemes.arcticDark,
+            ChartSchemes.thermalLight, ChartSchemes.thermalDark,
             ChartSchemes.contrastLight, ChartSchemes.contrastDark
         )) {
             val data = createTestData(24)
@@ -657,7 +657,7 @@ class SvgChartGeneratorTest {
 
     @Test
     fun `temperatureColorAt follows the scale and clamps at both ends`() {
-        val light = ChartSchemes.arcticLight
+        val light = ChartSchemes.thermalLight
         assertEquals("#1a6684", light.temperatureColorAt(0.0).toHex())
         assertEquals("#b8305f", light.temperatureColorAt(40.0).toHex())
         // Halfway between the 0°C and 20°C stops, mixed per channel.
@@ -685,7 +685,7 @@ class SvgChartGeneratorTest {
             height = 400.0
         )
 
-        val scaled = svgFor(ChartSchemes.arcticLight)
+        val scaled = svgFor(ChartSchemes.thermalLight)
         // Absolute mapping needs chart coordinates, not the path's bounding box.
         assertTrue(scaled.contains("""<linearGradient id="tempLineGradient" gradientUnits="userSpaceOnUse""""))
         assertTrue(scaled.contains("""stroke="url(#tempLineGradient)""""))
@@ -706,7 +706,7 @@ class SvgChartGeneratorTest {
                 nowIndex = 6,
                 latitude = 52.52,
                 longitude = 13.405,
-                colors = ChartSchemes.arcticDark,
+                colors = ChartSchemes.thermalDark,
                 width = 800.0,
                 height = 400.0
             )
@@ -718,23 +718,23 @@ class SvgChartGeneratorTest {
     }
 
     @Test
-    fun `ChartSchemes arctic temperature scale matches the Dart mirror`() {
+    fun `ChartSchemes thermal temperature scale matches the Dart mirror`() {
         // ChartScheme.temperatureScale (scheme_service.dart) repeats these so
         // the big reading in the card header matches the line; pinned there too.
         fun stops(colors: SvgChartColors) = colors.temperatureScale!!.map { (t, c) -> t to c.toHex() }
         assertEquals(
             listOf(-20.0 to "#3b3a8f", 0.0 to "#1a6684", 20.0 to "#52586a", 40.0 to "#b8305f"),
-            stops(ChartSchemes.arcticLight)
+            stops(ChartSchemes.thermalLight)
         )
         assertEquals(
             listOf(-20.0 to "#b8a8f0", 0.0 to "#8fc9e0", 20.0 to "#d8d4dc", 40.0 to "#f2708a"),
-            stops(ChartSchemes.arcticDark)
+            stops(ChartSchemes.thermalDark)
         )
     }
 
     @Test
     fun `daylightColorAt follows the scale and clamps at both ends`() {
-        val light = ChartSchemes.arcticLight
+        val light = ChartSchemes.thermalLight
         assertEquals("#d9864f", light.daylightColorAt(-20.0).toHex())
         assertEquals("#ff8f00", light.daylightColorAt(40.0).toHex())
         // A third of the way from -20°C to +40°C, mixed per channel.
@@ -762,7 +762,7 @@ class SvgChartGeneratorTest {
             height = 400.0
         )
 
-        val scaled = svgFor(ChartSchemes.arcticLight)
+        val scaled = svgFor(ChartSchemes.thermalLight)
         val bucketDefs = Regex("""<linearGradient id="daylightT""").findAll(scaled).count()
         assertTrue("expected per-temperature sun gradients", bucketDefs > 0)
         // Bucketed, so far fewer gradients than hours.
@@ -774,20 +774,20 @@ class SvgChartGeneratorTest {
     }
 
     @Test
-    fun `ChartSchemes arctic daylight scale matches the Dart mirror`() {
+    fun `ChartSchemes thermal daylight scale matches the Dart mirror`() {
         // ChartScheme.daylightScale (scheme_service.dart) repeats these so the
         // legend's sun matches the bars; pinned there too.
         fun stops(colors: SvgChartColors) = colors.daylightScale!!.map { (t, c) -> t to c.toHex() }
-        assertEquals(listOf(-20.0 to "#d9864f", 40.0 to "#ff8f00"), stops(ChartSchemes.arcticLight))
-        assertEquals(listOf(-20.0 to "#e09060", 40.0 to "#f2d45c"), stops(ChartSchemes.arcticDark))
+        assertEquals(listOf(-20.0 to "#d9864f", 40.0 to "#ff8f00"), stops(ChartSchemes.thermalLight))
+        assertEquals(listOf(-20.0 to "#e09060", 40.0 to "#f2d45c"), stops(ChartSchemes.thermalDark))
     }
 
     @Test
     fun `atTemperature moves the ground and its halo along the scale`() {
-        val light = ChartSchemes.arcticLight
+        val light = ChartSchemes.thermalLight
         assertEquals("#e4ecf4", light.atTemperature(45.0).cardBackground.toHex())
         assertEquals("#f1e7ee", light.atTemperature(-30.0).outlineColor.toHex())
-        val dark = ChartSchemes.arcticDark
+        val dark = ChartSchemes.thermalDark
         for ((celsius, hex) in listOf(-20.0 to "#2e1d22", 0.0 to "#291d28", 40.0 to "#1f1d33", -66.0 to "#2e1d22")) {
             val resolved = dark.atTemperature(celsius)
             assertEquals("ground at $celsius", hex, resolved.cardBackground.toHex())
@@ -810,7 +810,7 @@ class SvgChartGeneratorTest {
         fun svgAt(celsius: Double) = SvgChartGenerator().generate(
             data = (0 until 24).map { HourlyData(now + it * 3_600_000L, celsius, 0.0, 50) },
             nowIndex = 6, latitude = 52.52, longitude = 13.405,
-            colors = ChartSchemes.arcticDark, width = 800.0, height = 400.0
+            colors = ChartSchemes.thermalDark, width = 800.0, height = 400.0
         )
         assertTrue(svgAt(-25.0).contains("""height="400" fill="#2e1d22"/>"""))
         assertTrue(svgAt(45.0).contains("""height="400" fill="#1f1d33"/>"""))
@@ -819,16 +819,16 @@ class SvgChartGeneratorTest {
     }
 
     @Test
-    fun `ChartSchemes arctic ground scale matches the Dart mirror`() {
+    fun `ChartSchemes thermal ground scale matches the Dart mirror`() {
         // ChartScheme.groundScale (scheme_service.dart) repeats these so the
         // in-app card matches the painted ground; pinned there too.
         assertEquals(
             listOf(-20.0 to "#f1e7ee", 40.0 to "#e4ecf4"),
-            ChartSchemes.arcticLight.groundScale!!.map { (t, c) -> t to c.toHex() }
+            ChartSchemes.thermalLight.groundScale!!.map { (t, c) -> t to c.toHex() }
         )
         assertEquals(
             listOf(-20.0 to "#2e1d22", 40.0 to "#1f1d33"),
-            ChartSchemes.arcticDark.groundScale!!.map { (t, c) -> t to c.toHex() }
+            ChartSchemes.thermalDark.groundScale!!.map { (t, c) -> t to c.toHex() }
         )
     }
 

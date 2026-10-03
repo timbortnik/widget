@@ -160,7 +160,7 @@ class AppLocalizationsBe extends AppLocalizations {
   String get colorSchemeDefault => 'Стандартная';
 
   @override
-  String get colorSchemeArctic => 'Арктычная';
+  String get colorSchemeThermal => 'Тэрмальная';
 
   @override
   String get colorSchemeHighContrast => 'Высокая кантраснасць';

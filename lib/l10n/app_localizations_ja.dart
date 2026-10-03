@@ -158,7 +158,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get colorSchemeDefault => 'デフォルト';
 
   @override
-  String get colorSchemeArctic => 'アークティック';
+  String get colorSchemeThermal => 'サーマル';
 
   @override
   String get colorSchemeHighContrast => 'ハイコントラスト';

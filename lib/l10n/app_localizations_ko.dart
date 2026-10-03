@@ -158,7 +158,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get colorSchemeDefault => '기본값';
 
   @override
-  String get colorSchemeArctic => '아틱';
+  String get colorSchemeThermal => '서멀';
 
   @override
   String get colorSchemeHighContrast => '고대비';

@@ -49,7 +49,7 @@
   "themeDark": "Тъмна",
   "colorScheme": "Цветова схема",
   "colorSchemeDefault": "По подразбиране",
-  "colorSchemeArctic": "Арктическа",
+  "colorSchemeThermal": "Термална",
   "colorSchemeHighContrast": "Висок контраст",
   "deviceLocation": "Местоположение на устройството",
   "recentLocations": "Последни"

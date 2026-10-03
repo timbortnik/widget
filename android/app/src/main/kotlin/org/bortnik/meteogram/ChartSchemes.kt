@@ -16,7 +16,7 @@ package org.bortnik.meteogram
  * Bars are the only same-shape pair, and they grow from opposite edges
  * (daylight from the top, precipitation from the bottom). [CONTRAST] is the
  * accessibility scheme, so it separates them by a blue-vs-amber hue pair that
- * survives colour blindness. [ARCTIC] is a mood scheme where colour-vision
+ * survives colour blindness. [THERMAL] is a mood scheme where colour-vision
  * safety is explicitly not a goal; its bars are both cool, so they differ in
  * lightness (bright snow, dim sun) instead.
  */
@@ -25,13 +25,13 @@ object ChartSchemes {
     const val DEFAULT = "default"
 
     /** Polar day and dusk: low apricot sun, ice-blue cold, snow. */
-    const val ARCTIC = "arctic"
+    const val THERMAL = "thermal"
 
     /** Maximum-contrast palette: pure black/white grounds, widened strokes. */
     const val CONTRAST = "contrast"
 
     /** All valid scheme ids, in the order the picker lists them. */
-    val ids = listOf(DEFAULT, ARCTIC, CONTRAST)
+    val ids = listOf(DEFAULT, THERMAL, CONTRAST)
 
     /**
      * Resolve a stored scheme id to a fixed palette, or null when the id is
@@ -43,7 +43,7 @@ object ChartSchemes {
     // enclosing object, reporting this 5-line dispatch as a 66-line function.
     fun palette(id: String?, isLight: Boolean): SvgChartColors? {
         return when (id) {
-            ARCTIC -> if (isLight) arcticLight else arcticDark
+            THERMAL -> if (isLight) thermalLight else thermalDark
             CONTRAST -> if (isLight) contrastLight else contrastDark
             else -> null
         }
@@ -62,7 +62,7 @@ object ChartSchemes {
     // it sits under near 0°C. In light the ground is too pale for white
     // snow (1.2:1), so snow is a soft blue-grey — still lighter than the
     // rain, so in both modes snow reads as the lighter, softer phase.
-    val arcticLight = SvgChartColors(
+    val thermalLight = SvgChartColors(
         temperatureLine = SvgColor(0x1A, 0x66, 0x84),      // Steel-teal: opposite the apricot sun
         temperatureGradientStart = SvgColor(0x1A, 0x66, 0x84, 0x1A),  // 10% opacity
         temperatureGradientEnd = SvgColor(0x1A, 0x66, 0x84, 0x00),
@@ -105,12 +105,12 @@ object ChartSchemes {
             20.0 to SvgColor(0x52, 0x58, 0x6A),
             40.0 to SvgColor(0xB8, 0x30, 0x5F)
         ),
-        // Bars keep the default gradient: Arctic is a mood scheme, and the
+        // Bars keep the default gradient: Thermal is a mood scheme, and the
         // fade is part of the chart's look.
         drawBackground = true
     )
 
-    val arcticDark = SvgChartColors(
+    val thermalDark = SvgChartColors(
         temperatureLine = SvgColor(0x8F, 0xC9, 0xE0),
         temperatureGradientStart = SvgColor(0x8F, 0xC9, 0xE0, 0x47),  // 28% opacity
         temperatureGradientEnd = SvgColor(0x8F, 0xC9, 0xE0, 0x00),

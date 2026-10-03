@@ -162,7 +162,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get colorSchemeDefault => 'Padrão';
 
   @override
-  String get colorSchemeArctic => 'Ártico';
+  String get colorSchemeThermal => 'Térmico';
 
   @override
   String get colorSchemeHighContrast => 'Alto contraste';

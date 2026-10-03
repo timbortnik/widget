@@ -49,7 +49,7 @@
   "themeDark": "Koyu",
   "colorScheme": "Renk şeması",
   "colorSchemeDefault": "Varsayılan",
-  "colorSchemeArctic": "Arktik",
+  "colorSchemeThermal": "Termal",
   "colorSchemeHighContrast": "Yüksek kontrast",
   "deviceLocation": "Cihaz konumu",
   "recentLocations": "Son kullanılanlar"

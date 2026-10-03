@@ -160,7 +160,7 @@ class AppLocalizationsKa extends AppLocalizations {
   String get colorSchemeDefault => 'ნაგულისხმევი';
 
   @override
-  String get colorSchemeArctic => 'არქტიკული';
+  String get colorSchemeThermal => 'თერმული';
 
   @override
   String get colorSchemeHighContrast => 'მაღალი კონტრასტი';

@@ -49,7 +49,7 @@
   "themeDark": "Oscuro",
   "colorScheme": "Esquema de color",
   "colorSchemeDefault": "Predeterminado",
-  "colorSchemeArctic": "Ártico",
+  "colorSchemeThermal": "Térmico",
   "colorSchemeHighContrast": "Alto contraste",
   "deviceLocation": "Ubicación del dispositivo",
   "recentLocations": "Recientes"

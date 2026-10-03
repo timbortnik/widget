@@ -49,7 +49,7 @@
   "themeDark": "深色",
   "colorScheme": "配色方案",
   "colorSchemeDefault": "默认",
-  "colorSchemeArctic": "极地",
+  "colorSchemeThermal": "温感",
   "colorSchemeHighContrast": "高对比度",
   "deviceLocation": "设备位置",
   "recentLocations": "最近"

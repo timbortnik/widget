@@ -160,7 +160,7 @@ class AppLocalizationsJv extends AppLocalizations {
   String get colorSchemeDefault => 'Gawan';
 
   @override
-  String get colorSchemeArctic => 'Arktik';
+  String get colorSchemeThermal => 'Termal';
 
   @override
   String get colorSchemeHighContrast => 'Kontras dhuwur';

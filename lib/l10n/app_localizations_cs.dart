@@ -160,7 +160,7 @@ class AppLocalizationsCs extends AppLocalizations {
   String get colorSchemeDefault => 'Výchozí';
 
   @override
-  String get colorSchemeArctic => 'Arktické';
+  String get colorSchemeThermal => 'Termální';
 
   @override
   String get colorSchemeHighContrast => 'Vysoký kontrast';

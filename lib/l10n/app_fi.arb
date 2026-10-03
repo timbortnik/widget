@@ -49,7 +49,7 @@
   "themeDark": "Tumma",
   "colorScheme": "Värimaailma",
   "colorSchemeDefault": "Oletus",
-  "colorSchemeArctic": "Arktinen",
+  "colorSchemeThermal": "Terminen",
   "colorSchemeHighContrast": "Suuri kontrasti",
   "deviceLocation": "Laitteen sijainti",
   "recentLocations": "Viimeisimmät"

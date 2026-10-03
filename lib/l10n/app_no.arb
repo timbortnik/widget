@@ -49,7 +49,7 @@
   "themeDark": "Mørkt",
   "colorScheme": "Fargeskjema",
   "colorSchemeDefault": "Standard",
-  "colorSchemeArctic": "Arktisk",
+  "colorSchemeThermal": "Termisk",
   "colorSchemeHighContrast": "Høy kontrast",
   "deviceLocation": "Enhetens posisjon",
   "recentLocations": "Nylige"

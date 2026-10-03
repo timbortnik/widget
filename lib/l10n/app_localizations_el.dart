@@ -161,7 +161,7 @@ class AppLocalizationsEl extends AppLocalizations {
   String get colorSchemeDefault => 'Προεπιλογή';
 
   @override
-  String get colorSchemeArctic => 'Αρκτικό';
+  String get colorSchemeThermal => 'Θερμικό';
 
   @override
   String get colorSchemeHighContrast => 'Υψηλή αντίθεση';

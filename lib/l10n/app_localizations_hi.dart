@@ -160,7 +160,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get colorSchemeDefault => 'डिफ़ॉल्ट';
 
   @override
-  String get colorSchemeArctic => 'आर्कटिक';
+  String get colorSchemeThermal => 'थर्मल';
 
   @override
   String get colorSchemeHighContrast => 'उच्च कंट्रास्ट';

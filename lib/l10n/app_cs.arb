@@ -49,7 +49,7 @@
   "themeDark": "Tmavý",
   "colorScheme": "Barevné schéma",
   "colorSchemeDefault": "Výchozí",
-  "colorSchemeArctic": "Arktické",
+  "colorSchemeThermal": "Termální",
   "colorSchemeHighContrast": "Vysoký kontrast",
   "deviceLocation": "Poloha zařízení",
   "recentLocations": "Nedávné"

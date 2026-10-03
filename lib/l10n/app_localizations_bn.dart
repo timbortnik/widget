@@ -161,7 +161,7 @@ class AppLocalizationsBn extends AppLocalizations {
   String get colorSchemeDefault => 'ডিফল্ট';
 
   @override
-  String get colorSchemeArctic => 'আর্কটিক';
+  String get colorSchemeThermal => 'থার্মাল';
 
   @override
   String get colorSchemeHighContrast => 'উচ্চ কনট্রাস্ট';

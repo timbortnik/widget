@@ -161,7 +161,7 @@ class AppLocalizationsRo extends AppLocalizations {
   String get colorSchemeDefault => 'Implicit';
 
   @override
-  String get colorSchemeArctic => 'Arctic';
+  String get colorSchemeThermal => 'Termic';
 
   @override
   String get colorSchemeHighContrast => 'Contrast ridicat';

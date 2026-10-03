@@ -158,7 +158,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get colorSchemeDefault => '默认';
 
   @override
-  String get colorSchemeArctic => '极地';
+  String get colorSchemeThermal => '温感';
 
   @override
   String get colorSchemeHighContrast => '高对比度';

@@ -1045,7 +1045,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   /// Bottom sheet to choose the in-app theme (System / Light / Dark) and the
-  /// chart colour scheme (Default / Arctic / High contrast).
+  /// chart colour scheme (Default / Thermal / High contrast).
   void _showThemePicker() {
     final colors = MeteogramColors.of(context, nativeColors: _getNativeColorsForTheme(context));
     final l10n = AppLocalizations.of(context)!;
@@ -1138,8 +1138,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     Icons.auto_awesome_outlined,
                     l10n.colorSchemeDefault,
                     A11yIds.schemeOptionDefault),
-                schemeTile(ChartScheme.arctic, Icons.ac_unit_outlined,
-                    l10n.colorSchemeArctic, A11yIds.schemeOptionArctic),
+                schemeTile(ChartScheme.thermal, Icons.thermostat_outlined,
+                    l10n.colorSchemeThermal, A11yIds.schemeOptionThermal),
                 schemeTile(ChartScheme.highContrast, Icons.contrast_outlined,
                     l10n.colorSchemeHighContrast,
                     A11yIds.schemeOptionHighContrast),

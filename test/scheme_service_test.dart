@@ -52,8 +52,8 @@ void main() {
     });
 
     test('persists the choice to HomeWidget storage for the widget', () async {
-      await SchemeService().save(ChartScheme.arctic);
-      expect(homeWidgetData['color_scheme'], 'arctic');
+      await SchemeService().save(ChartScheme.thermal);
+      expect(homeWidgetData['color_scheme'], 'thermal');
 
       await SchemeService().save(ChartScheme.highContrast);
       expect(homeWidgetData['color_scheme'], 'contrast');
@@ -63,7 +63,7 @@ void main() {
       // These strings are the contract with the native renderer; changing one
       // silently drops the user back to the default scheme.
       expect(ChartScheme.defaultScheme.id, 'default');
-      expect(ChartScheme.arctic.id, 'arctic');
+      expect(ChartScheme.thermal.id, 'thermal');
       expect(ChartScheme.highContrast.id, 'contrast');
     });
 
@@ -74,17 +74,17 @@ void main() {
           same(MeteogramColors.dark));
     });
 
-    test('arctic card echoes its chart palette', () {
-      // Pinned to arcticLight/arcticDark in ChartSchemes.kt (pinned there too,
+    test('thermal card echoes its chart palette', () {
+      // Pinned to thermalLight/thermalDark in ChartSchemes.kt (pinned there too,
       // in SvgChartGeneratorTest) — change both sides together.
-      final light = ChartScheme.arctic.cardColors(MeteogramColors.light, isDark: false);
+      final light = ChartScheme.thermal.cardColors(MeteogramColors.light, isDark: false);
       expect(light.cardBackground, const Color(0xFFE7E9F4));
       expect(light.temperatureLine, const Color(0xFF1A6684));
       expect(light.primaryText, const Color(0xFF2E3440));
       expect(light.daylightIcon, const Color(0xFFD9864F));
       expect(light.precipitationBar, const Color(0xFF2F5FC0));
 
-      final dark = ChartScheme.arctic.cardColors(MeteogramColors.dark, isDark: true);
+      final dark = ChartScheme.thermal.cardColors(MeteogramColors.dark, isDark: true);
       expect(dark.cardBackground, const Color(0xFF2A1D2E));
       expect(dark.temperatureLine, const Color(0xFF8FC9E0));
       expect(dark.primaryText, const Color(0xFFECEFF4));
@@ -110,17 +110,17 @@ void main() {
       expect(dark.precipitationBar, const Color(0xFF4FC3F7));
     });
 
-    test('only arctic colour-codes the temperature', () {
+    test('only thermal colour-codes the temperature', () {
       for (final scheme in [ChartScheme.defaultScheme, ChartScheme.highContrast]) {
         expect(scheme.temperatureScale(isDark: false), isNull, reason: '$scheme');
         expect(scheme.temperatureColor(20, isDark: true), isNull, reason: '$scheme');
       }
     });
 
-    test('arctic temperature scale matches the chart', () {
+    test('thermal temperature scale matches the chart', () {
       // Pinned to temperatureScale in ChartSchemes.kt (pinned there too, in
       // SvgChartGeneratorTest) — change both sides together.
-      List<(double, int)> stops(bool isDark) => ChartScheme.arctic
+      List<(double, int)> stops(bool isDark) => ChartScheme.thermal
           .temperatureScale(isDark: isDark)!
           .map((stop) => (stop.$1, stop.$2.toARGB32()))
           .toList();
@@ -128,34 +128,34 @@ void main() {
       expect(stops(true), [(-20.0, 0xFFB8A8F0), (0.0, 0xFF8FC9E0), (20.0, 0xFFD8D4DC), (40.0, 0xFFF2708A)]);
     });
 
-    test('arctic temperature colour interpolates and clamps like the chart', () {
+    test('thermal temperature colour interpolates and clamps like the chart', () {
       int at(double celsius) =>
-          ChartScheme.arctic.temperatureColor(celsius, isDark: false)!.toARGB32();
+          ChartScheme.thermal.temperatureColor(celsius, isDark: false)!.toARGB32();
       expect(at(0), 0xFF1A6684);
       expect(at(10), 0xFF365F77); // Same midpoint SvgChartColors.temperatureColorAt gives
       expect(at(-66), 0xFF3B3A8F);
       expect(at(45), 0xFFB8305F);
     });
 
-    test('only arctic splits precipitation with a snow colour', () {
+    test('only thermal splits precipitation with a snow colour', () {
       // Pinned to snowBar in ChartSchemes.kt (pinned there too).
-      expect(ChartScheme.arctic.snowColor(isDark: false), const Color(0xFF7A8AA0));
-      expect(ChartScheme.arctic.snowColor(isDark: true), const Color(0xFFEEF3F7));
+      expect(ChartScheme.thermal.snowColor(isDark: false), const Color(0xFF7A8AA0));
+      expect(ChartScheme.thermal.snowColor(isDark: true), const Color(0xFFEEF3F7));
       for (final scheme in [ChartScheme.defaultScheme, ChartScheme.highContrast]) {
         expect(scheme.snowColor(isDark: false), isNull, reason: '$scheme');
       }
     });
 
-    test('only arctic colour-codes the sun', () {
+    test('only thermal colour-codes the sun', () {
       for (final scheme in [ChartScheme.defaultScheme, ChartScheme.highContrast]) {
         expect(scheme.daylightScale(isDark: false), isNull, reason: '$scheme');
         expect(scheme.daylightColor(20, isDark: true), isNull, reason: '$scheme');
       }
     });
 
-    test('arctic sun scale matches the chart', () {
+    test('thermal sun scale matches the chart', () {
       // Pinned to daylightScale in ChartSchemes.kt (pinned there too).
-      List<(double, int)> stops(bool isDark) => ChartScheme.arctic
+      List<(double, int)> stops(bool isDark) => ChartScheme.thermal
           .daylightScale(isDark: isDark)!
           .map((stop) => (stop.$1, stop.$2.toARGB32()))
           .toList();
@@ -163,38 +163,38 @@ void main() {
       expect(stops(true), [(-20.0, 0xFFE09060), (40.0, 0xFFF2D45C)]);
     });
 
-    test('arctic sun colour interpolates and clamps like the chart', () {
+    test('thermal sun colour interpolates and clamps like the chart', () {
       int at(double celsius) =>
-          ChartScheme.arctic.daylightColor(celsius, isDark: false)!.toARGB32();
+          ChartScheme.thermal.daylightColor(celsius, isDark: false)!.toARGB32();
       expect(at(-20), 0xFFD9864F);
       expect(at(0), 0xFFE68935); // Same as SvgChartColors.daylightColorAt(0.0)
       expect(at(48), 0xFFFF8F00);
     });
 
-    test('only arctic moves the card ground with temperature', () {
+    test('only thermal moves the card ground with temperature', () {
       for (final scheme in [ChartScheme.defaultScheme, ChartScheme.highContrast]) {
         expect(scheme.groundScale(isDark: true), isNull, reason: '$scheme');
         expect(scheme.groundColor(0, isDark: true), isNull, reason: '$scheme');
       }
     });
 
-    test('arctic dark ground scale matches the chart', () {
+    test('thermal dark ground scale matches the chart', () {
       // Pinned to groundScale in ChartSchemes.kt (pinned there too).
-      final stops = ChartScheme.arctic
+      final stops = ChartScheme.thermal
           .groundScale(isDark: true)!
           .map((stop) => (stop.$1, stop.$2.toARGB32()))
           .toList();
       expect(stops, [(-20.0, 0xFF2E1D22), (40.0, 0xFF1F1D33)]);
-      final light = ChartScheme.arctic
+      final light = ChartScheme.thermal
           .groundScale(isDark: false)!
           .map((stop) => (stop.$1, stop.$2.toARGB32()))
           .toList();
       expect(light, [(-20.0, 0xFFF1E7EE), (40.0, 0xFFE4ECF4)]);
     });
 
-    test('arctic dark ground interpolates and clamps like the chart', () {
+    test('thermal dark ground interpolates and clamps like the chart', () {
       int at(double celsius) =>
-          ChartScheme.arctic.groundColor(celsius, isDark: true)!.toARGB32();
+          ChartScheme.thermal.groundColor(celsius, isDark: true)!.toARGB32();
       expect(at(-66), 0xFF2E1D22);
       expect(at(0), 0xFF291D28); // Same as SvgChartColors.atTemperature(0.0)
       expect(at(45), 0xFF1F1D33);

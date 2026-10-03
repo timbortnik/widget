@@ -49,7 +49,7 @@
   "themeDark": "Întunecată",
   "colorScheme": "Schemă de culori",
   "colorSchemeDefault": "Implicit",
-  "colorSchemeArctic": "Arctic",
+  "colorSchemeThermal": "Termic",
   "colorSchemeHighContrast": "Contrast ridicat",
   "deviceLocation": "Locația dispozitivului",
   "recentLocations": "Recente"

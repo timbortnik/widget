@@ -49,7 +49,7 @@
   "themeDark": "Tamna",
   "colorScheme": "Shema boja",
   "colorSchemeDefault": "Zadano",
-  "colorSchemeArctic": "Arktička",
+  "colorSchemeThermal": "Termalna",
   "colorSchemeHighContrast": "Visoki kontrast",
   "deviceLocation": "Lokacija uređaja",
   "recentLocations": "Nedavno"

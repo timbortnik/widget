@@ -161,7 +161,7 @@ class AppLocalizationsSq extends AppLocalizations {
   String get colorSchemeDefault => 'E parazgjedhur';
 
   @override
-  String get colorSchemeArctic => 'Arktike';
+  String get colorSchemeThermal => 'Termike';
 
   @override
   String get colorSchemeHighContrast => 'Kontrast i lartë';

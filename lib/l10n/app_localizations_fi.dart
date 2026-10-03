@@ -160,7 +160,7 @@ class AppLocalizationsFi extends AppLocalizations {
   String get colorSchemeDefault => 'Oletus';
 
   @override
-  String get colorSchemeArctic => 'Arktinen';
+  String get colorSchemeThermal => 'Terminen';
 
   @override
   String get colorSchemeHighContrast => 'Suuri kontrasti';

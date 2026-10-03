@@ -161,7 +161,7 @@ class AppLocalizationsBs extends AppLocalizations {
   String get colorSchemeDefault => 'Zadano';
 
   @override
-  String get colorSchemeArctic => 'Arktička';
+  String get colorSchemeThermal => 'Termalna';
 
   @override
   String get colorSchemeHighContrast => 'Visoki kontrast';

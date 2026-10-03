@@ -49,7 +49,7 @@
   "themeDark": "Donker",
   "colorScheme": "Kleurenschema",
   "colorSchemeDefault": "Standaard",
-  "colorSchemeArctic": "Arctisch",
+  "colorSchemeThermal": "Thermisch",
   "colorSchemeHighContrast": "Hoog contrast",
   "deviceLocation": "Apparaatlocatie",
   "recentLocations": "Recent"

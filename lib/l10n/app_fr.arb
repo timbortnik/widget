@@ -49,7 +49,7 @@
   "themeDark": "Sombre",
   "colorScheme": "Palette de couleurs",
   "colorSchemeDefault": "Par défaut",
-  "colorSchemeArctic": "Arctique",
+  "colorSchemeThermal": "Thermique",
   "colorSchemeHighContrast": "Contraste élevé",
   "deviceLocation": "Position de l'appareil",
   "recentLocations": "Récents"

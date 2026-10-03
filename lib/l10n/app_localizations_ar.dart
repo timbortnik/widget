@@ -160,7 +160,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get colorSchemeDefault => 'افتراضي';
 
   @override
-  String get colorSchemeArctic => 'قطبي';
+  String get colorSchemeThermal => 'حراري';
 
   @override
   String get colorSchemeHighContrast => 'تباين عالٍ';

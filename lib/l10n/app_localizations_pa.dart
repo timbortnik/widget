@@ -161,7 +161,7 @@ class AppLocalizationsPa extends AppLocalizations {
   String get colorSchemeDefault => 'ਮੂਲ';
 
   @override
-  String get colorSchemeArctic => 'ਆਰਕਟਿਕ';
+  String get colorSchemeThermal => 'ਥਰਮਲ';
 
   @override
   String get colorSchemeHighContrast => 'ਉੱਚ ਕੰਟਰਾਸਟ';

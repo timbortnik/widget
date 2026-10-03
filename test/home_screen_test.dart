@@ -446,7 +446,7 @@ void main() {
         A11yIds.themeOptionLight,
         A11yIds.themeOptionDark,
         A11yIds.schemeOptionDefault,
-        A11yIds.schemeOptionArctic,
+        A11yIds.schemeOptionThermal,
         A11yIds.schemeOptionHighContrast,
       ]) {
         expect(byA11yId(id), findsOneWidget, reason: '$id should be offered');
@@ -476,11 +476,11 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
     }
 
-    testWidgets('arctic dark card ground follows the current temperature', (tester) async {
-      await pumpWithWeather(tester, ChartScheme.arctic, themeMode: ThemeMode.dark);
+    testWidgets('thermal dark card ground follows the current temperature', (tester) async {
+      await pumpWithWeather(tester, ChartScheme.thermal, themeMode: ThemeMode.dark);
 
       expect(cardColor(tester),
-          ChartScheme.arctic.groundColor(double.parse(mockTemperature), isDark: true));
+          ChartScheme.thermal.groundColor(double.parse(mockTemperature), isDark: true));
     });
 
     testWidgets('high contrast paints the card behind the chart white',
@@ -490,36 +490,36 @@ void main() {
       expect(cardColor(tester), const Color(0xFFFFFFFF));
     });
 
-    testWidgets('arctic light card ground follows the current temperature', (tester) async {
-      await pumpWithWeather(tester, ChartScheme.arctic);
+    testWidgets('thermal light card ground follows the current temperature', (tester) async {
+      await pumpWithWeather(tester, ChartScheme.thermal);
 
       expect(cardColor(tester),
-          ChartScheme.arctic.groundColor(double.parse(mockTemperature), isDark: false));
+          ChartScheme.thermal.groundColor(double.parse(mockTemperature), isDark: false));
       // A mild reading sits near the original periwinkle.
       expect(cardColor(tester), isNot(const Color(0xFFF1E7EE)));
       expect(cardColor(tester), isNot(const Color(0xFFE4ECF4)));
     });
 
-    testWidgets('arctic tints the current reading by its value', (tester) async {
-      await pumpWithWeather(tester, ChartScheme.arctic);
+    testWidgets('thermal tints the current reading by its value', (tester) async {
+      await pumpWithWeather(tester, ChartScheme.thermal);
 
       final reading = tester.widget<Text>(find.byWidgetPredicate(
         (widget) => widget is Text && widget.style?.fontSize == 64,
       ));
       expect(reading.style!.color,
-          ChartScheme.arctic.temperatureColor(double.parse(mockTemperature), isDark: false));
+          ChartScheme.thermal.temperatureColor(double.parse(mockTemperature), isDark: false));
     });
 
-    testWidgets('arctic legend sun follows the current reading', (tester) async {
-      await pumpWithWeather(tester, ChartScheme.arctic);
+    testWidgets('thermal legend sun follows the current reading', (tester) async {
+      await pumpWithWeather(tester, ChartScheme.thermal);
 
       final sun = tester.widget<Icon>(find.byIcon(Icons.wb_sunny_outlined));
       expect(sun.color,
-          ChartScheme.arctic.daylightColor(double.parse(mockTemperature), isDark: false));
+          ChartScheme.thermal.daylightColor(double.parse(mockTemperature), isDark: false));
     });
 
-    testWidgets('arctic legend shows snow beside rain', (tester) async {
-      await pumpWithWeather(tester, ChartScheme.arctic);
+    testWidgets('thermal legend shows snow beside rain', (tester) async {
+      await pumpWithWeather(tester, ChartScheme.thermal);
 
       expect(find.byIcon(Icons.ac_unit), findsOneWidget);
       expect(find.byIcon(Icons.water_drop_outlined), findsOneWidget);
@@ -545,10 +545,10 @@ void main() {
       await tester.pumpWidget(appWith(onChanged: (s) => picked = s));
       await openPicker(tester);
 
-      await tester.tap(byA11yId(A11yIds.schemeOptionArctic));
+      await tester.tap(byA11yId(A11yIds.schemeOptionThermal));
       await tester.pumpAndSettle();
 
-      expect(picked, ChartScheme.arctic);
+      expect(picked, ChartScheme.thermal);
       expect(find.text('Color scheme'), findsNothing);
     });
 
@@ -566,7 +566,7 @@ void main() {
       expect(
           semanticsFor(A11yIds.schemeOptionDefault).properties.selected, isFalse);
       expect(
-          semanticsFor(A11yIds.schemeOptionArctic).properties.selected, isFalse);
+          semanticsFor(A11yIds.schemeOptionThermal).properties.selected, isFalse);
     });
   });
 }

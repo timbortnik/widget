@@ -436,11 +436,11 @@ abstract class AppLocalizations {
   /// **'Default'**
   String get colorSchemeDefault;
 
-  /// Cool, muted arctic colour scheme option
+  /// Colour scheme option whose chart colours follow the temperature
   ///
   /// In en, this message translates to:
-  /// **'Arctic'**
-  String get colorSchemeArctic;
+  /// **'Thermal'**
+  String get colorSchemeThermal;
 
   /// Maximum-contrast colour scheme option, for accessibility
   ///

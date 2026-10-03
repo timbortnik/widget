@@ -161,7 +161,7 @@ class AppLocalizationsUk extends AppLocalizations {
   String get colorSchemeDefault => 'Стандартна';
 
   @override
-  String get colorSchemeArctic => 'Арктична';
+  String get colorSchemeThermal => 'Термальна';
 
   @override
   String get colorSchemeHighContrast => 'Висока контрастність';

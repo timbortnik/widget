@@ -161,7 +161,7 @@ class AppLocalizationsNl extends AppLocalizations {
   String get colorSchemeDefault => 'Standaard';
 
   @override
-  String get colorSchemeArctic => 'Arctisch';
+  String get colorSchemeThermal => 'Thermisch';
 
   @override
   String get colorSchemeHighContrast => 'Hoog contrast';

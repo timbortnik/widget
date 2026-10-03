@@ -159,7 +159,7 @@ class AppLocalizationsIs extends AppLocalizations {
   String get colorSchemeDefault => 'Sjálfgefið';
 
   @override
-  String get colorSchemeArctic => 'Heimskauta';
+  String get colorSchemeThermal => 'Hita';
 
   @override
   String get colorSchemeHighContrast => 'Mikil birtuskil';

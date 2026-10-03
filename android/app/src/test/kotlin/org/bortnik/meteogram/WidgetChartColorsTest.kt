@@ -51,11 +51,11 @@ class WidgetChartColorsTest {
     }
 
     @Test
-    fun `arctic scheme is applied for both themes`() {
-        setScheme(ChartSchemes.ARCTIC)
+    fun `thermal scheme is applied for both themes`() {
+        setScheme(ChartSchemes.THERMAL)
 
-        assertEquals(ChartSchemes.arcticLight, WidgetChartColors.get(context, isLight = true))
-        assertEquals(ChartSchemes.arcticDark, WidgetChartColors.get(context, isLight = false))
+        assertEquals(ChartSchemes.thermalLight, WidgetChartColors.get(context, isLight = true))
+        assertEquals(ChartSchemes.thermalDark, WidgetChartColors.get(context, isLight = false))
     }
 
     @Test

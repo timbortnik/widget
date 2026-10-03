@@ -161,7 +161,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get colorSchemeDefault => 'Mặc định';
 
   @override
-  String get colorSchemeArctic => 'Bắc Cực';
+  String get colorSchemeThermal => 'Nhiệt';
 
   @override
   String get colorSchemeHighContrast => 'Tương phản cao';

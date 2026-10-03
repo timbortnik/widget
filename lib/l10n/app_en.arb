@@ -272,9 +272,9 @@
     "description": "Colour scheme option using Material You dynamic colours"
   },
 
-  "colorSchemeArctic": "Arctic",
-  "@colorSchemeArctic": {
-    "description": "Cool, muted arctic colour scheme option"
+  "colorSchemeThermal": "Thermal",
+  "@colorSchemeThermal": {
+    "description": "Colour scheme option whose chart colours follow the temperature"
   },
 
   "colorSchemeHighContrast": "High contrast",

@@ -161,7 +161,7 @@ class AppLocalizationsTa extends AppLocalizations {
   String get colorSchemeDefault => 'இயல்பு';
 
   @override
-  String get colorSchemeArctic => 'ஆர்க்டிக்';
+  String get colorSchemeThermal => 'வெப்ப';
 
   @override
   String get colorSchemeHighContrast => 'அதிக மாறுபாடு';
