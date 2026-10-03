@@ -95,7 +95,13 @@ data class SvgChartColors(
      * stops in ascending order, absolute and clamped like [temperatureScale].
      * Null draws every bar in [daylightBar].
      */
-    val daylightScale: List<Pair<Double, SvgColor>>? = null
+    val daylightScale: List<Pair<Double, SvgColor>>? = null,
+    /**
+     * Shift the painted ground with the current temperature: (°C, colour)
+     * stops, clamped. Null keeps [cardBackground] fixed. Only meaningful with
+     * [drawBackground]; see [atTemperature].
+     */
+    val groundScale: List<Pair<Double, SvgColor>>? = null
 ) {
     /**
      * Width of the contrasting outline drawn under the temperature line. Kept
@@ -115,6 +121,15 @@ data class SvgChartColors(
     /** Daylight bar colour for a temperature in °C: on [daylightScale], or [daylightBar] without one. */
     fun daylightColorAt(celsius: Double): SvgColor =
         daylightScale?.let { colorOnScale(it, celsius) } ?: daylightBar
+
+    /**
+     * This palette with its ground (and the halo, which must match the
+     * ground) resolved for [celsius] along [groundScale]; unchanged without one.
+     */
+    fun atTemperature(celsius: Double): SvgChartColors = groundScale?.let {
+        val ground = colorOnScale(it, celsius)
+        copy(cardBackground = ground, outlineColor = ground)
+    } ?: this
 
     private fun colorOnScale(scale: List<Pair<Double, SvgColor>>, celsius: Double): SvgColor {
         if (celsius <= scale.first().first) return scale.first().second
@@ -287,6 +302,27 @@ class SvgChartGenerator {
             return """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width.toInt()} ${height.toInt()}"></svg>"""
         }
 
+        // A temperature-driven ground follows the current hour, like the
+        // reading in the card header.
+        val current = data[nowIndex.coerceIn(0, data.size - 1)].temperature
+        return render(
+            data, nowIndex, latitude, longitude, colors.atTemperature(current),
+            width, height, usePastFade, labelStepHours, labelFormat
+        )
+    }
+
+    private fun render(
+        data: List<HourlyData>,
+        nowIndex: Int,
+        latitude: Double,
+        longitude: Double,
+        colors: SvgChartColors,
+        width: Double,
+        height: Double,
+        usePastFade: Boolean,
+        labelStepHours: Int,
+        labelFormat: TimeLabelFormat
+    ): String {
         val svg = StringBuilder()
 
         // Reserve space for time labels based on font size

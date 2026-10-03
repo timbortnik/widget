@@ -386,6 +386,7 @@ void main() {
     Widget appWith({
       ChartScheme scheme = ChartScheme.defaultScheme,
       ValueChanged<ChartScheme>? onChanged,
+      ThemeMode themeMode = ThemeMode.system,
     }) {
       return MaterialApp(
         localizationsDelegates: const [
@@ -398,6 +399,7 @@ void main() {
         locale: const Locale('en'),
         theme: AppTheme.light(null),
         darkTheme: AppTheme.dark(null),
+        themeMode: themeMode,
         home: HomeScreen(colorScheme: scheme, onColorSchemeChanged: onChanged),
       );
     }
@@ -436,15 +438,26 @@ void main() {
       return (card.decoration! as BoxDecoration).color;
     }
 
-    Future<void> pumpWithWeather(WidgetTester tester, ChartScheme scheme) async {
+    Future<void> pumpWithWeather(
+      WidgetTester tester,
+      ChartScheme scheme, {
+      ThemeMode themeMode = ThemeMode.system,
+    }) async {
       homeWidgetData['last_weather_update'] = mockTimestamp;
       homeWidgetData['current_temperature_celsius'] = mockTemperature;
       homeWidgetData['cached_city_name'] = mockCityName;
       homeWidgetData['cached_location_source'] = mockLocationSource;
-      await tester.pumpWidget(appWith(scheme: scheme));
+      await tester.pumpWidget(appWith(scheme: scheme, themeMode: themeMode));
       await tester.pump(const Duration(milliseconds: 500));
       await tester.pump(const Duration(milliseconds: 500));
     }
+
+    testWidgets('arctic dark card ground follows the current temperature', (tester) async {
+      await pumpWithWeather(tester, ChartScheme.arctic, themeMode: ThemeMode.dark);
+
+      expect(cardColor(tester),
+          ChartScheme.arctic.groundColor(double.parse(mockTemperature), isDark: true));
+    });
 
     testWidgets('high contrast paints the card behind the chart white',
         (tester) async {

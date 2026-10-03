@@ -171,6 +171,31 @@ void main() {
       expect(at(48), 0xFFFF8F00);
     });
 
+    test('only arctic dark moves the card ground with temperature', () {
+      expect(ChartScheme.arctic.groundScale(isDark: false), isNull);
+      for (final scheme in [ChartScheme.defaultScheme, ChartScheme.highContrast]) {
+        expect(scheme.groundScale(isDark: true), isNull, reason: '$scheme');
+        expect(scheme.groundColor(0, isDark: true), isNull, reason: '$scheme');
+      }
+    });
+
+    test('arctic dark ground scale matches the chart', () {
+      // Pinned to groundScale in ChartSchemes.kt (pinned there too).
+      final stops = ChartScheme.arctic
+          .groundScale(isDark: true)!
+          .map((stop) => (stop.$1, stop.$2.toARGB32()))
+          .toList();
+      expect(stops, [(-20.0, 0xFF2E1D22), (40.0, 0xFF1F1D33)]);
+    });
+
+    test('arctic dark ground interpolates and clamps like the chart', () {
+      int at(double celsius) =>
+          ChartScheme.arctic.groundColor(celsius, isDark: true)!.toARGB32();
+      expect(at(-66), 0xFF2E1D22);
+      expect(at(0), 0xFF291D28); // Same as SvgChartColors.atTemperature(0.0)
+      expect(at(45), 0xFF1F1D33);
+    });
+
     test('ids are unique', () {
       final ids = ChartScheme.values.map((s) => s.id).toSet();
       expect(ids.length, ChartScheme.values.length);

@@ -337,8 +337,9 @@ class SvgChartGeneratorTest {
             ChartSchemes.arcticLight, ChartSchemes.arcticDark,
             ChartSchemes.contrastLight, ChartSchemes.contrastDark
         )) {
+            val data = createTestData(24)
             val svg = SvgChartGenerator().generate(
-                data = createTestData(24),
+                data = data,
                 nowIndex = 6,
                 latitude = 52.52,
                 longitude = 13.405,
@@ -347,7 +348,9 @@ class SvgChartGeneratorTest {
                 height = 400.0,
                 usePastFade = true
             )
-            val ground = "<rect x=\"0\" y=\"0\" width=\"800\" height=\"400\" fill=\"${palette.cardBackground.toHex()}\"/>"
+            // A ground scale moves the ground with the current hour.
+            val fill = palette.atTemperature(data[6].temperature).cardBackground.toHex()
+            val ground = "<rect x=\"0\" y=\"0\" width=\"800\" height=\"400\" fill=\"$fill\"/>"
 
             assertTrue("ground should be painted", svg.contains(ground))
             // Outside the past-fade mask, or the past region would fade to transparent.
@@ -777,6 +780,50 @@ class SvgChartGeneratorTest {
         fun stops(colors: SvgChartColors) = colors.daylightScale!!.map { (t, c) -> t to c.toHex() }
         assertEquals(listOf(-20.0 to "#d9864f", 40.0 to "#ff8f00"), stops(ChartSchemes.arcticLight))
         assertEquals(listOf(-20.0 to "#e09060", 40.0 to "#f2d45c"), stops(ChartSchemes.arcticDark))
+    }
+
+    @Test
+    fun `atTemperature moves the ground and its halo along the scale`() {
+        val dark = ChartSchemes.arcticDark
+        for ((celsius, hex) in listOf(-20.0 to "#2e1d22", 0.0 to "#291d28", 40.0 to "#1f1d33", -66.0 to "#2e1d22")) {
+            val resolved = dark.atTemperature(celsius)
+            assertEquals("ground at $celsius", hex, resolved.cardBackground.toHex())
+            // The halo behind line and labels must match the ground it sits on.
+            assertEquals("halo at $celsius", hex, resolved.outlineColor.toHex())
+        }
+    }
+
+    @Test
+    fun `atTemperature leaves palettes without a ground scale unchanged`() {
+        for (palette in listOf(SvgChartColors.light, ChartSchemes.arcticLight, ChartSchemes.contrastDark)) {
+            assertEquals(palette, palette.atTemperature(-30.0))
+            assertEquals(palette, palette.atTemperature(40.0))
+        }
+    }
+
+    @Test
+    fun `generate paints the ground for the current hour's temperature`() {
+        val now = System.currentTimeMillis()
+        fun svgAt(celsius: Double) = SvgChartGenerator().generate(
+            data = (0 until 24).map { HourlyData(now + it * 3_600_000L, celsius, 0.0, 50) },
+            nowIndex = 6, latitude = 52.52, longitude = 13.405,
+            colors = ChartSchemes.arcticDark, width = 800.0, height = 400.0
+        )
+        assertTrue(svgAt(-25.0).contains("""height="400" fill="#2e1d22"/>"""))
+        assertTrue(svgAt(45.0).contains("""height="400" fill="#1f1d33"/>"""))
+        // The halo follows: no stroke in the fixed plum is left on a moved ground.
+        assertFalse(svgAt(45.0).contains("""stroke="#2a1d2e""""))
+    }
+
+    @Test
+    fun `ChartSchemes arctic ground scale matches the Dart mirror`() {
+        // ChartScheme.groundScale (scheme_service.dart) repeats these so the
+        // in-app card matches the painted ground; pinned there too.
+        assertNull(ChartSchemes.arcticLight.groundScale)
+        assertEquals(
+            listOf(-20.0 to "#2e1d22", 40.0 to "#1f1d33"),
+            ChartSchemes.arcticDark.groundScale!!.map { (t, c) -> t to c.toHex() }
+        )
     }
 
     private fun createTestData(count: Int): List<HourlyData> {

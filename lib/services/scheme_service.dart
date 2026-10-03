@@ -63,6 +63,18 @@ enum ChartScheme {
         : const [(-20.0, Color(0xFFD9864F)), (40.0, Color(0xFFFF8F00))];
   }
 
+  /// Scale moving the card ground with the current temperature, as (°C,
+  /// colour) stops; null when the ground is fixed. Arctic dark only. Mirrors
+  /// `groundScale` in `ChartSchemes.kt`.
+  List<(double, Color)>? groundScale({required bool isDark}) {
+    if (this != arctic || !isDark) return null;
+    return const [(-20.0, Color(0xFF2E1D22)), (40.0, Color(0xFF1F1D33))];
+  }
+
+  /// Card ground for the current [celsius]; null keeps the fixed card colour.
+  Color? groundColor(double celsius, {required bool isDark}) =>
+      _colorOnScale(groundScale(isDark: isDark), celsius);
+
   /// Sun colour for [celsius] on [daylightScale]; null without a scale.
   Color? daylightColor(double celsius, {required bool isDark}) =>
       _colorOnScale(daylightScale(isDark: isDark), celsius);

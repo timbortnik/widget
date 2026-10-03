@@ -707,7 +707,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     : null,
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: cardColors.cardBackground,
+                    // Matches the chart's painted ground, which shifts
+                    // with the current temperature in some schemes.
+                    color: widget.colorScheme.groundColor(
+                          currentTemp,
+                          isDark: Theme.of(context).brightness == Brightness.dark,
+                        ) ??
+                        cardColors.cardBackground,
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(

@@ -116,6 +116,14 @@ object ChartSchemes {
         outlineOpacity = 0.6,
         outlineWidth = 1.5,
         snowBar = SvgColor(0xEE, 0xF3, 0xF7),
+        // The ground leans against the temperature so the data always
+        // stands out: a warm wine night when freezing, a cool indigo night in
+        // heat, near the original plum on mild days. Dark only — light's card
+        // is too bright a surface to carry a mood tint.
+        groundScale = listOf(
+            -20.0 to SvgColor(0x2E, 0x1D, 0x22),
+            40.0 to SvgColor(0x1F, 0x1D, 0x33)
+        ),
         // Dark can afford a true golden yellow for heat on plum.
         daylightScale = listOf(
             -20.0 to SvgColor(0xE0, 0x90, 0x60),
