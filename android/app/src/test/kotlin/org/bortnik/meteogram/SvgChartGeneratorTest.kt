@@ -1,5 +1,6 @@
 package org.bortnik.meteogram
 
+import java.util.Locale
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -552,6 +553,37 @@ class SvgChartGeneratorTest {
     }
 
     // ==================== Helper Methods ====================
+
+    @Test
+    fun `generate writes locale-independent numbers`() {
+        // SVG numbers must use '.' as the decimal separator. String.format
+        // follows the default locale, so under comma-decimal locales (uk, de,
+        // fr, ...) the temperature fill's "0.28" became "0,28", which AndroidSVG
+        // reads as 0 — the fill under the temperature line vanished.
+        val saved = Locale.getDefault()
+        try {
+            for (tag in listOf("uk", "de", "fr")) {
+                Locale.setDefault(Locale.forLanguageTag(tag))
+                for ((colors, fill) in listOf(SvgChartColors.light to "0.10", SvgChartColors.dark to "0.28")) {
+                    val svg = SvgChartGenerator().generate(
+                        data = createTestData(24),
+                        nowIndex = 6,
+                        latitude = 52.52,
+                        longitude = 13.405,
+                        colors = colors,
+                        width = 800.0,
+                        height = 400.0
+                    )
+
+                    val commaDecimal = Regex("""="[^"]*\d,\d[^"]*"""").find(svg)
+                    assertNull("comma decimal in an attribute under $tag: ${commaDecimal?.value}", commaDecimal)
+                    assertTrue("temperature fill missing under $tag", svg.contains("stop-opacity=\"$fill\""))
+                }
+            }
+        } finally {
+            Locale.setDefault(saved)
+        }
+    }
 
     private fun createTestData(count: Int): List<HourlyData> {
         val baseTime = System.currentTimeMillis()

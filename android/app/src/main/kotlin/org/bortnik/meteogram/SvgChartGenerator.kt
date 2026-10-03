@@ -325,10 +325,12 @@ class SvgChartGenerator {
         nowFraction: Double,
         usePastFade: Boolean
     ) {
-        // Temperature area gradient (vertical: line color fading to transparent)
+        // Temperature area gradient (vertical: line color fading to transparent).
+        // Locale.ROOT: SVG needs '.' decimals; the default locale would write
+        // "0,28" under uk/de/fr/..., which AndroidSVG reads as 0.
         svg.append("""<linearGradient id="tempGradient" x1="0" y1="0" x2="0" y2="1">""")
-        svg.append("""<stop offset="0%" stop-color="${colors.temperatureLine.toHex()}" stop-opacity="${"%.2f".format(colors.temperatureGradientStart.opacity)}"/>""")
-        svg.append("""<stop offset="100%" stop-color="${colors.temperatureLine.toHex()}" stop-opacity="${"%.2f".format(colors.temperatureGradientEnd.opacity)}"/>""")
+        svg.append("""<stop offset="0%" stop-color="${colors.temperatureLine.toHex()}" stop-opacity="${String.format(Locale.ROOT, "%.2f", colors.temperatureGradientStart.opacity)}"/>""")
+        svg.append("""<stop offset="100%" stop-color="${colors.temperatureLine.toHex()}" stop-opacity="${String.format(Locale.ROOT, "%.2f", colors.temperatureGradientEnd.opacity)}"/>""")
         svg.append("</linearGradient>")
 
         // Daylight bar gradient (vertical: solid where bars anchor at the top,
