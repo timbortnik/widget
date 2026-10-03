@@ -832,6 +832,31 @@ class SvgChartGeneratorTest {
         )
     }
 
+    @Test
+    fun `colour scales must have two strictly ascending stops`() {
+        val c = SvgColor(0x11, 0x22, 0x33)
+        val base = SvgChartColors.light
+        fun rejects(scale: List<Pair<Double, SvgColor>>) {
+            for (build in listOf<() -> Unit>(
+                { base.copy(temperatureScale = scale) },
+                { base.copy(daylightScale = scale) },
+                { base.copy(groundScale = scale) }
+            )) {
+                try {
+                    build()
+                    fail("accepted invalid scale ${scale.map { it.first }}")
+                } catch (expected: IllegalArgumentException) {
+                }
+            }
+        }
+        rejects(emptyList())
+        rejects(listOf(0.0 to c))                 // single stop: zero span
+        rejects(listOf(0.0 to c, 0.0 to c))       // duplicate: zero span
+        rejects(listOf(10.0 to c, 0.0 to c))      // descending
+        // Valid scales still construct.
+        base.copy(temperatureScale = listOf(-20.0 to c, 40.0 to c))
+    }
+
     private fun createTestData(count: Int): List<HourlyData> {
         val baseTime = System.currentTimeMillis()
         return (0 until count).map { i ->

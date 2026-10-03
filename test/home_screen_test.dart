@@ -539,6 +539,17 @@ void main() {
       expect(cardColor(tester), isNot(const Color(0xFFE7E9F4)));
     });
 
+    testWidgets('picker marks only the active scheme as selected', (tester) async {
+      await tester.pumpWidget(appWith(scheme: ChartScheme.thermal));
+      await openPicker(tester);
+
+      bool? selectedOf(String id) =>
+          tester.widget<Semantics>(byA11yId(id)).properties.selected;
+      expect(selectedOf(A11yIds.schemeOptionThermal), isTrue);
+      expect(selectedOf(A11yIds.schemeOptionDefault), isFalse);
+      expect(selectedOf(A11yIds.schemeOptionHighContrast), isFalse);
+    });
+
     testWidgets('tapping a scheme reports the choice and closes the sheet',
         (tester) async {
       ChartScheme? picked;

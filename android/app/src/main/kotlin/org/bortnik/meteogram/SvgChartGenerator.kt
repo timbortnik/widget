@@ -103,6 +103,22 @@ data class SvgChartColors(
      */
     val groundScale: List<Pair<Double, SvgColor>>? = null
 ) {
+    init {
+        // Interpolation and gradient offsets divide by the gap between stops;
+        // at least two strictly ascending stops keep every divisor non-zero.
+        for ((name, scale) in listOf(
+            "temperatureScale" to temperatureScale,
+            "daylightScale" to daylightScale,
+            "groundScale" to groundScale
+        )) {
+            if (scale == null) continue
+            require(scale.size >= 2) { "$name needs at least two stops, got ${scale.size}" }
+            require(scale.zipWithNext().all { (a, b) -> a.first < b.first }) {
+                "$name stops must be strictly ascending: ${scale.map { it.first }}"
+            }
+        }
+    }
+
     /**
      * Width of the contrasting outline drawn under the temperature line. Kept
      * 1.5px wider than the line itself so the halo stays visible as schemes
@@ -628,7 +644,7 @@ class SvgChartGenerator {
             return bottomTemp + (1 - y / chartHeight) * span
         }
         val lo = scale.first().first
-        val hi = scale.last().first
+        val hi = scale.last().first  // > lo: guaranteed by the SvgChartColors init check
         svg.append("<defs>")
         svg.append("""<linearGradient id="tempLineGradient" gradientUnits="userSpaceOnUse" x1="0" y1="${yOf(hi)}" x2="0" y2="${yOf(lo)}">""")
         for ((t, c) in scale.reversed()) {

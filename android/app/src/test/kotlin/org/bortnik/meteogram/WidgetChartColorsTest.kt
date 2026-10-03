@@ -1,6 +1,7 @@
 package org.bortnik.meteogram
 
 import android.content.Context
+import android.os.Build
 import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
@@ -8,6 +9,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 
 /**
  * Tests the single point where a chart palette is chosen: the stored scheme
@@ -71,6 +73,27 @@ class WidgetChartColorsTest {
         setScheme("scheme-from-a-newer-version")
 
         assertEquals(SvgChartColors.light, WidgetChartColors.get(context, isLight = true))
+    }
+
+    @Test
+    @Config(sdk = [Build.VERSION_CODES.R])
+    fun `fixed schemes apply below Android 12 too`() {
+        // minSdk is 30: these users have no Material You, but the fixed
+        // palettes are resolved before that SDK guard and must still apply.
+        setScheme(ChartSchemes.THERMAL)
+        assertEquals(ChartSchemes.thermalLight, WidgetChartColors.get(context, isLight = true))
+        assertEquals(ChartSchemes.thermalDark, WidgetChartColors.get(context, isLight = false))
+
+        setScheme(ChartSchemes.CONTRAST)
+        assertEquals(ChartSchemes.contrastLight, WidgetChartColors.get(context, isLight = true))
+    }
+
+    @Test
+    @Config(sdk = [Build.VERSION_CODES.R])
+    fun `default scheme below Android 12 uses the built-in presets`() {
+        setScheme(ChartSchemes.DEFAULT)
+        assertEquals(SvgChartColors.light, WidgetChartColors.get(context, isLight = true))
+        assertEquals(SvgChartColors.dark, WidgetChartColors.get(context, isLight = false))
     }
 
     @Test
