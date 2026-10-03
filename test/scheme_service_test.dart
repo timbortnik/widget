@@ -171,8 +171,7 @@ void main() {
       expect(at(48), 0xFFFF8F00);
     });
 
-    test('only arctic dark moves the card ground with temperature', () {
-      expect(ChartScheme.arctic.groundScale(isDark: false), isNull);
+    test('only arctic moves the card ground with temperature', () {
       for (final scheme in [ChartScheme.defaultScheme, ChartScheme.highContrast]) {
         expect(scheme.groundScale(isDark: true), isNull, reason: '$scheme');
         expect(scheme.groundColor(0, isDark: true), isNull, reason: '$scheme');
@@ -186,6 +185,11 @@ void main() {
           .map((stop) => (stop.$1, stop.$2.toARGB32()))
           .toList();
       expect(stops, [(-20.0, 0xFF2E1D22), (40.0, 0xFF1F1D33)]);
+      final light = ChartScheme.arctic
+          .groundScale(isDark: false)!
+          .map((stop) => (stop.$1, stop.$2.toARGB32()))
+          .toList();
+      expect(light, [(-20.0, 0xFFF1E7EE), (40.0, 0xFFE4ECF4)]);
     });
 
     test('arctic dark ground interpolates and clamps like the chart', () {

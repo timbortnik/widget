@@ -64,11 +64,13 @@ enum ChartScheme {
   }
 
   /// Scale moving the card ground with the current temperature, as (°C,
-  /// colour) stops; null when the ground is fixed. Arctic dark only. Mirrors
+  /// colour) stops; null when the ground is fixed. Mirrors
   /// `groundScale` in `ChartSchemes.kt`.
   List<(double, Color)>? groundScale({required bool isDark}) {
-    if (this != arctic || !isDark) return null;
-    return const [(-20.0, Color(0xFF2E1D22)), (40.0, Color(0xFF1F1D33))];
+    if (this != arctic) return null;
+    return isDark
+        ? const [(-20.0, Color(0xFF2E1D22)), (40.0, Color(0xFF1F1D33))]
+        : const [(-20.0, Color(0xFFF1E7EE)), (40.0, Color(0xFFE4ECF4))];
   }
 
   /// Card ground for the current [celsius]; null keeps the fixed card colour.

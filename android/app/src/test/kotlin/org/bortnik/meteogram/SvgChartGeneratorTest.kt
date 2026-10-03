@@ -784,6 +784,9 @@ class SvgChartGeneratorTest {
 
     @Test
     fun `atTemperature moves the ground and its halo along the scale`() {
+        val light = ChartSchemes.arcticLight
+        assertEquals("#e4ecf4", light.atTemperature(45.0).cardBackground.toHex())
+        assertEquals("#f1e7ee", light.atTemperature(-30.0).outlineColor.toHex())
         val dark = ChartSchemes.arcticDark
         for ((celsius, hex) in listOf(-20.0 to "#2e1d22", 0.0 to "#291d28", 40.0 to "#1f1d33", -66.0 to "#2e1d22")) {
             val resolved = dark.atTemperature(celsius)
@@ -795,7 +798,7 @@ class SvgChartGeneratorTest {
 
     @Test
     fun `atTemperature leaves palettes without a ground scale unchanged`() {
-        for (palette in listOf(SvgChartColors.light, ChartSchemes.arcticLight, ChartSchemes.contrastDark)) {
+        for (palette in listOf(SvgChartColors.light, SvgChartColors.dark, ChartSchemes.contrastLight, ChartSchemes.contrastDark)) {
             assertEquals(palette, palette.atTemperature(-30.0))
             assertEquals(palette, palette.atTemperature(40.0))
         }
@@ -819,7 +822,10 @@ class SvgChartGeneratorTest {
     fun `ChartSchemes arctic ground scale matches the Dart mirror`() {
         // ChartScheme.groundScale (scheme_service.dart) repeats these so the
         // in-app card matches the painted ground; pinned there too.
-        assertNull(ChartSchemes.arcticLight.groundScale)
+        assertEquals(
+            listOf(-20.0 to "#f1e7ee", 40.0 to "#e4ecf4"),
+            ChartSchemes.arcticLight.groundScale!!.map { (t, c) -> t to c.toHex() }
+        )
         assertEquals(
             listOf(-20.0 to "#2e1d22", 40.0 to "#1f1d33"),
             ChartSchemes.arcticDark.groundScale!!.map { (t, c) -> t to c.toHex() }

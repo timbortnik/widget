@@ -466,10 +466,14 @@ void main() {
       expect(cardColor(tester), const Color(0xFFFFFFFF));
     });
 
-    testWidgets('arctic paints the card periwinkle', (tester) async {
+    testWidgets('arctic light card ground follows the current temperature', (tester) async {
       await pumpWithWeather(tester, ChartScheme.arctic);
 
-      expect(cardColor(tester), const Color(0xFFE7E9F4));
+      expect(cardColor(tester),
+          ChartScheme.arctic.groundColor(double.parse(mockTemperature), isDark: false));
+      // A mild reading sits near the original periwinkle.
+      expect(cardColor(tester), isNot(const Color(0xFFF1E7EE)));
+      expect(cardColor(tester), isNot(const Color(0xFFE4ECF4)));
     });
 
     testWidgets('arctic tints the current reading by its value', (tester) async {

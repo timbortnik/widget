@@ -91,6 +91,14 @@ object ChartSchemes {
             -20.0 to SvgColor(0xD9, 0x86, 0x4F),
             40.0 to SvgColor(0xFF, 0x8F, 0x00)
         ),
+        // The ground leans against the temperature, gently enough to stay
+        // a tint: a faint rose-lilac blush (alpenglow) when freezing, pale ice
+        // blue in heat, the original periwinkle on mild days. Both ends keep
+        // periwinkle's lightness, so no series loses contrast.
+        groundScale = listOf(
+            -20.0 to SvgColor(0xF1, 0xE7, 0xEE),
+            40.0 to SvgColor(0xE4, 0xEC, 0xF4)
+        ),
         temperatureScale = listOf(
             -20.0 to SvgColor(0x3B, 0x3A, 0x8F),
             0.0 to SvgColor(0x1A, 0x66, 0x84),
@@ -118,8 +126,7 @@ object ChartSchemes {
         snowBar = SvgColor(0xEE, 0xF3, 0xF7),
         // The ground leans against the temperature so the data always
         // stands out: a warm wine night when freezing, a cool indigo night in
-        // heat, near the original plum on mild days. Dark only — light's card
-        // is too bright a surface to carry a mood tint.
+        // heat, near the original plum on mild days.
         groundScale = listOf(
             -20.0 to SvgColor(0x2E, 0x1D, 0x22),
             40.0 to SvgColor(0x1F, 0x1D, 0x33)
