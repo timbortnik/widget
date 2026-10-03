@@ -219,7 +219,7 @@ object WeatherFetcher {
         return "$BASE_URL?" +
                 "latitude=$latitude" +
                 "&longitude=$longitude" +
-                "&hourly=temperature_2m,precipitation,cloud_cover" +
+                "&hourly=temperature_2m,precipitation,cloud_cover,snowfall" +
                 "&timezone=UTC" +
                 "&past_hours=$PAST_HOURS" +
                 "&forecast_days=$FORECAST_DAYS"
@@ -249,6 +249,9 @@ object WeatherFetcher {
                 put("temperature_2m", hourly.getJSONArray("temperature_2m"))
                 put("precipitation", hourly.getJSONArray("precipitation"))
                 put("cloud_cover", hourly.getJSONArray("cloud_cover"))
+                // Lets the chart tell snow from rain; optional so a response
+                // without it still caches.
+                hourly.optJSONArray("snowfall")?.let { put("snowfall", it) }
             }
 
             JSONObject().apply {

@@ -453,13 +453,41 @@ void main() {
       expect(cardColor(tester), const Color(0xFFFFFFFF));
     });
 
-    testWidgets('other schemes keep the Material You card', (tester) async {
-      await pumpWithWeather(tester, ChartScheme.defaultScheme);
-      final themed = cardColor(tester);
+    testWidgets('arctic paints the card periwinkle', (tester) async {
       await pumpWithWeather(tester, ChartScheme.arctic);
 
-      expect(themed, isNot(const Color(0xFFFFFFFF)));
-      expect(cardColor(tester), themed);
+      expect(cardColor(tester), const Color(0xFFE7E9F4));
+    });
+
+    testWidgets('arctic tints the current reading by its value', (tester) async {
+      await pumpWithWeather(tester, ChartScheme.arctic);
+
+      final reading = tester.widget<Text>(find.byWidgetPredicate(
+        (widget) => widget is Text && widget.style?.fontSize == 64,
+      ));
+      expect(reading.style!.color,
+          ChartScheme.arctic.temperatureColor(double.parse(mockTemperature), isDark: false));
+    });
+
+    testWidgets('arctic legend shows snow beside rain', (tester) async {
+      await pumpWithWeather(tester, ChartScheme.arctic);
+
+      expect(find.byIcon(Icons.ac_unit), findsOneWidget);
+      expect(find.byIcon(Icons.water_drop_outlined), findsOneWidget);
+    });
+
+    testWidgets('default legend shows a single precipitation icon', (tester) async {
+      await pumpWithWeather(tester, ChartScheme.defaultScheme);
+
+      expect(find.byIcon(Icons.ac_unit), findsNothing);
+      expect(find.byIcon(Icons.water_drop_outlined), findsOneWidget);
+    });
+
+    testWidgets('the default scheme keeps the Material You card', (tester) async {
+      await pumpWithWeather(tester, ChartScheme.defaultScheme);
+
+      expect(cardColor(tester), isNot(const Color(0xFFFFFFFF)));
+      expect(cardColor(tester), isNot(const Color(0xFFE7E9F4)));
     });
 
     testWidgets('tapping a scheme reports the choice and closes the sheet',

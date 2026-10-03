@@ -7,8 +7,8 @@ import 'widget_store.dart';
 ///
 /// The scheme is orthogonal to the light/dark theme: every scheme defines both
 /// variants natively, so choosing one never overrides the theme choice. The
-/// chart is affected, plus — for [highContrast] only — the card it sits on
-/// and that card's header; all other app chrome stays on Material You.
+/// chart is affected, plus — for the fixed schemes — the card it sits on and
+/// that card's header; all other app chrome stays on Material You.
 ///
 /// [id] is the wire value shared with Kotlin; it must stay in sync with
 /// `ChartSchemes` (`ChartSchemes.kt`), which resolves it during rendering.
@@ -16,7 +16,7 @@ enum ChartScheme {
   /// Material You on Android 12+, built-in presets below it.
   defaultScheme('default'),
 
-  /// Cool, muted arctic palette.
+  /// Polar day and dusk: low apricot sun, ice-blue cold, snow.
   arctic('arctic'),
 
   /// Maximum-contrast palette: pure black/white grounds, widened strokes.
@@ -27,25 +27,79 @@ enum ChartScheme {
   /// Value persisted in the shared store and read by the native renderer.
   final String id;
 
+  /// Absolute temperature colour scale as (°C, colour) stops, ascending, or
+  /// null when the scheme draws temperature in a single colour. Mirrors
+  /// `temperatureScale` in `ChartSchemes.kt`; the two must change together.
+  List<(double, Color)>? temperatureScale({required bool isDark}) {
+    if (this != arctic) return null;
+    return isDark
+        ? const [
+            (-30.0, Color(0xFFB8A8F0)),
+            (0.0, Color(0xFF8FC9E0)),
+            (15.0, Color(0xFFD8D4DC)),
+            (30.0, Color(0xFFF2708A)),
+          ]
+        : const [
+            (-30.0, Color(0xFF3B3A8F)),
+            (0.0, Color(0xFF1A6684)),
+            (15.0, Color(0xFF52586A)),
+            (30.0, Color(0xFFB83A50)),
+          ];
+  }
+
+  /// Colour for [celsius] on [temperatureScale], interpolated per channel as
+  /// the chart's SVG gradient does and clamped at both ends; null when the
+  /// scheme has no scale.
+  Color? temperatureColor(double celsius, {required bool isDark}) {
+    final scale = temperatureScale(isDark: isDark);
+    if (scale == null) return null;
+    if (celsius <= scale.first.$1) return scale.first.$2;
+    if (celsius >= scale.last.$1) return scale.last.$2;
+    final upper = scale.indexWhere((stop) => stop.$1 >= celsius);
+    final (t0, c0) = scale[upper - 1];
+    final (t1, c1) = scale[upper];
+    return Color.lerp(c0, c1, (celsius - t0) / (t1 - t0));
+  }
+
+  /// Colour for snow when the scheme splits precipitation by phase (rain
+  /// then takes `precipitationBar`), or null when all precipitation shares
+  /// one colour. Mirrors `snowBar` in `ChartSchemes.kt`.
+  Color? snowColor({required bool isDark}) {
+    if (this != arctic) return null;
+    return isDark ? const Color(0xFFEEF3F7) : const Color(0xFF354050);
+  }
+
   /// Colours for the weather card (background, big temperature, legend),
   /// derived from the Material You [base].
   ///
-  /// Only [highContrast] overrides them: its chart is tuned for pure
-  /// white/black and paints that ground itself, so the card must match, and
-  /// the header must echo the chart — temperature in ink like the line, legend
-  /// icons in the bar colours. Mirrors `contrastLight`/`contrastDark` in
-  /// `ChartSchemes.kt`; the two must change together.
+  /// [defaultScheme] keeps them. The fixed schemes are tuned for their own
+  /// ground and paint it into the chart, so the card must match, and the
+  /// header must echo the chart — temperature like the line, legend icons in
+  /// the bar colours. Mirrors the palettes in `ChartSchemes.kt`; the two must
+  /// change together.
   MeteogramColors cardColors(MeteogramColors base, {required bool isDark}) {
-    if (this != highContrast) return base;
-    const white = Color(0xFFFFFFFF);
-    const black = Color(0xFF000000);
-    return base.copyWith(
-      cardBackground: isDark ? black : white,
-      temperatureLine: isDark ? white : black,
-      primaryText: isDark ? white : black,
-      daylightIcon: isDark ? const Color(0xFFE6B84A) : const Color(0xFFC87000),
-      precipitationBar: isDark ? const Color(0xFF4FC3F7) : const Color(0xFF0B4FA8),
-    );
+    switch (this) {
+      case defaultScheme:
+        return base;
+      case arctic:
+        return base.copyWith(
+          cardBackground: isDark ? const Color(0xFF2A1D2E) : const Color(0xFFE7E9F4),
+          temperatureLine: isDark ? const Color(0xFF8FC9E0) : const Color(0xFF1A6684),
+          primaryText: isDark ? const Color(0xFFECEFF4) : const Color(0xFF2E3440),
+          daylightIcon: isDark ? const Color(0xFFE09060) : const Color(0xFFD9864F),
+          precipitationBar: isDark ? const Color(0xFF5B8DEF) : const Color(0xFF2F5FC0),
+        );
+      case highContrast:
+        const white = Color(0xFFFFFFFF);
+        const black = Color(0xFF000000);
+        return base.copyWith(
+          cardBackground: isDark ? black : white,
+          temperatureLine: isDark ? white : black,
+          primaryText: isDark ? white : black,
+          daylightIcon: isDark ? const Color(0xFFE6B84A) : const Color(0xFFC87000),
+          precipitationBar: isDark ? const Color(0xFF4FC3F7) : const Color(0xFF0B4FA8),
+        );
+    }
   }
 }
 

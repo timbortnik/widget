@@ -51,6 +51,56 @@ class WeatherDataParserTest {
     }
 
     @Test
+    fun `parseJson reads snowfall when cached`() {
+        val json = """
+        {
+            "timezone": "UTC",
+            "latitude": 67.5,
+            "longitude": 64.0,
+            "fetchedAt": "2024-01-15T12:00:00.000Z",
+            "hourly": {
+                "time": ["2024-01-15T06:00:00.000Z", "2024-01-15T07:00:00.000Z"],
+                "temperature_2m": [-2.0, 1.5],
+                "precipitation": [1.0, 0.8],
+                "cloud_cover": [90, 100],
+                "snowfall": [0.7, 0.0]
+            }
+        }
+        """.trimIndent()
+
+        val result = WeatherDataParser.parseJson(json)
+
+        assertEquals(0.7, result.hourly[0].snowfall, 0.001)
+        assertTrue(result.hourly[0].isSnow)
+        assertEquals(0.0, result.hourly[1].snowfall, 0.001)
+        assertFalse(result.hourly[1].isSnow)
+    }
+
+    @Test
+    fun `parseJson treats caches without snowfall as rain`() {
+        // Caches written before snowfall was fetched have no such array.
+        val json = """
+        {
+            "timezone": "UTC",
+            "latitude": 52.52,
+            "longitude": 13.405,
+            "fetchedAt": "2024-01-15T12:00:00.000Z",
+            "hourly": {
+                "time": ["2024-01-15T06:00:00.000Z"],
+                "temperature_2m": [-3.0],
+                "precipitation": [1.0],
+                "cloud_cover": [100]
+            }
+        }
+        """.trimIndent()
+
+        val hour = WeatherDataParser.parseJson(json).hourly.single()
+
+        assertEquals(0.0, hour.snowfall, 0.001)
+        assertFalse(hour.isSnow)
+    }
+
+    @Test
     fun `parseJson handles timestamps without milliseconds`() {
         val json = """
         {

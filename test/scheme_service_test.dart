@@ -67,13 +67,29 @@ void main() {
       expect(ChartScheme.highContrast.id, 'contrast');
     });
 
-    test('only high contrast overrides the card colours', () {
-      for (final scheme in [ChartScheme.defaultScheme, ChartScheme.arctic]) {
-        expect(scheme.cardColors(MeteogramColors.light, isDark: false),
-            same(MeteogramColors.light), reason: '$scheme');
-        expect(scheme.cardColors(MeteogramColors.dark, isDark: true),
-            same(MeteogramColors.dark), reason: '$scheme');
-      }
+    test('only the default scheme keeps the Material You card colours', () {
+      expect(ChartScheme.defaultScheme.cardColors(MeteogramColors.light, isDark: false),
+          same(MeteogramColors.light));
+      expect(ChartScheme.defaultScheme.cardColors(MeteogramColors.dark, isDark: true),
+          same(MeteogramColors.dark));
+    });
+
+    test('arctic card echoes its chart palette', () {
+      // Pinned to arcticLight/arcticDark in ChartSchemes.kt (pinned there too,
+      // in SvgChartGeneratorTest) — change both sides together.
+      final light = ChartScheme.arctic.cardColors(MeteogramColors.light, isDark: false);
+      expect(light.cardBackground, const Color(0xFFE7E9F4));
+      expect(light.temperatureLine, const Color(0xFF1A6684));
+      expect(light.primaryText, const Color(0xFF2E3440));
+      expect(light.daylightIcon, const Color(0xFFD9864F));
+      expect(light.precipitationBar, const Color(0xFF2F5FC0));
+
+      final dark = ChartScheme.arctic.cardColors(MeteogramColors.dark, isDark: true);
+      expect(dark.cardBackground, const Color(0xFF2A1D2E));
+      expect(dark.temperatureLine, const Color(0xFF8FC9E0));
+      expect(dark.primaryText, const Color(0xFFECEFF4));
+      expect(dark.daylightIcon, const Color(0xFFE09060));
+      expect(dark.precipitationBar, const Color(0xFF5B8DEF));
     });
 
     test('high contrast card echoes its chart palette', () {
@@ -92,6 +108,42 @@ void main() {
       expect(dark.primaryText, const Color(0xFFFFFFFF));
       expect(dark.daylightIcon, const Color(0xFFE6B84A));
       expect(dark.precipitationBar, const Color(0xFF4FC3F7));
+    });
+
+    test('only arctic colour-codes the temperature', () {
+      for (final scheme in [ChartScheme.defaultScheme, ChartScheme.highContrast]) {
+        expect(scheme.temperatureScale(isDark: false), isNull, reason: '$scheme');
+        expect(scheme.temperatureColor(20, isDark: true), isNull, reason: '$scheme');
+      }
+    });
+
+    test('arctic temperature scale matches the chart', () {
+      // Pinned to temperatureScale in ChartSchemes.kt (pinned there too, in
+      // SvgChartGeneratorTest) — change both sides together.
+      List<(double, int)> stops(bool isDark) => ChartScheme.arctic
+          .temperatureScale(isDark: isDark)!
+          .map((stop) => (stop.$1, stop.$2.toARGB32()))
+          .toList();
+      expect(stops(false), [(-30.0, 0xFF3B3A8F), (0.0, 0xFF1A6684), (15.0, 0xFF52586A), (30.0, 0xFFB83A50)]);
+      expect(stops(true), [(-30.0, 0xFFB8A8F0), (0.0, 0xFF8FC9E0), (15.0, 0xFFD8D4DC), (30.0, 0xFFF2708A)]);
+    });
+
+    test('arctic temperature colour interpolates and clamps like the chart', () {
+      int at(double celsius) =>
+          ChartScheme.arctic.temperatureColor(celsius, isDark: false)!.toARGB32();
+      expect(at(0), 0xFF1A6684);
+      expect(at(7.5), 0xFF365F77); // Same midpoint SvgChartColors.temperatureColorAt gives
+      expect(at(-66), 0xFF3B3A8F);
+      expect(at(45), 0xFFB83A50);
+    });
+
+    test('only arctic splits precipitation with a snow colour', () {
+      // Pinned to snowBar in ChartSchemes.kt (pinned there too).
+      expect(ChartScheme.arctic.snowColor(isDark: false), const Color(0xFF354050));
+      expect(ChartScheme.arctic.snowColor(isDark: true), const Color(0xFFEEF3F7));
+      for (final scheme in [ChartScheme.defaultScheme, ChartScheme.highContrast]) {
+        expect(scheme.snowColor(isDark: false), isNull, reason: '$scheme');
+      }
     });
 
     test('ids are unique', () {

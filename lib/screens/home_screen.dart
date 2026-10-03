@@ -732,7 +732,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 child: Text(
                                   UnitsService.formatTemperature(currentTemp, PlatformDispatcher.instance.locale),
                                   style: TextStyle(
-                                    color: cardColors.temperatureLine,
+                                    // Colour-coded schemes tint the reading
+                                    // by its value, matching the chart line.
+                                    color: widget.colorScheme.temperatureColor(
+                                          currentTemp,
+                                          isDark: Theme.of(context).brightness == Brightness.dark,
+                                        ) ??
+                                        cardColors.temperatureLine,
                                     fontSize: 64,
                                     fontWeight: FontWeight.w300,
                                     height: 1,
@@ -757,6 +763,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 value: l10n.precipitation,
                                 colors: cardColors,
                                 iconColor: cardColors.precipitationBar,
+                                // Schemes that split precipitation by phase
+                                // show snow beside the (rain) drop.
+                                leadingIcon: Icons.ac_unit,
+                                leadingIconColor: widget.colorScheme.snowColor(
+                                  isDark: Theme.of(context).brightness == Brightness.dark,
+                                ),
                               ),
                             ],
                           ),
@@ -932,10 +944,17 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     required String value,
     required MeteogramColors colors,
     Color? iconColor,
+    IconData? leadingIcon,
+    Color? leadingIconColor,
   }) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
+        // Shown only when it has a colour, i.e. the scheme uses it.
+        if (leadingIcon != null && leadingIconColor != null) ...[
+          Icon(leadingIcon, size: 18, color: leadingIconColor),
+          const SizedBox(width: 4),
+        ],
         Icon(icon, size: 18, color: iconColor ?? colors.secondaryText),
         const SizedBox(width: 8),
         Text(

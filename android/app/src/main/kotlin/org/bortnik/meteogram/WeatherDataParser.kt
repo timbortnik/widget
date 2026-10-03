@@ -173,6 +173,8 @@ object WeatherDataParser {
         val temperatures = hourlyJson.getJSONArray("temperature_2m")
         val precipitation = hourlyJson.getJSONArray("precipitation")
         val cloudCover = hourlyJson.getJSONArray("cloud_cover")
+        // Absent in caches written before snowfall was fetched: read as rain.
+        val snowfall = hourlyJson.optJSONArray("snowfall")
 
         // Find minimum length to prevent index errors
         val minLength = minOf(
@@ -194,7 +196,8 @@ object WeatherDataParser {
                     time = timeMs,
                     temperature = temperatures.getDouble(i),
                     precipitation = precipitation.optDouble(i, 0.0),
-                    cloudCover = cloudCover.optInt(i, 0)
+                    cloudCover = cloudCover.optInt(i, 0),
+                    snowfall = snowfall?.optDouble(i, 0.0) ?: 0.0
                 )
             )
         }
