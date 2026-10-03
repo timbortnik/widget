@@ -471,7 +471,9 @@ class SvgChartGenerator {
         // Colour-coded daylight needs one gradient per colour. Bucketing to
         // the nearest even degree (at most 1°C off) keeps a week's worth of
         // bars down to a handful of gradients instead of one per hour.
-        fun bucketOf(celsius: Double) = (celsius / 2).roundToInt()
+        fun bucketOf(celsius: Double): Int {
+            return (celsius / 2).roundToInt()  // Block body: see writeTemperatureScaleDefs
+        }
         val bucketIds = mutableMapOf<Int, String>()
         if (colors.daylightScale != null) {
             svg.append("<defs>")
@@ -574,34 +576,10 @@ class SvgChartGenerator {
         var areaFill = "url(#tempGradient)"
         var lineStroke = colors.temperatureLine.toHex()
         colors.temperatureScale?.let { scale ->
-            // Height on the chart is temperature, so the scale maps to plain
-            // vertical gradients in chart coordinates (userSpaceOnUse; a
-            // bounding-box gradient would rescale per path and break the
-            // absolute mapping).
-            fun yOf(t: Double) = chartHeight * (1 - (t - minTemp + yPadding) / (tempRange + 2 * yPadding))
-            fun tempAt(y: Double) = minTemp - yPadding + (1 - y / chartHeight) * (tempRange + 2 * yPadding)
-            val lo = scale.first().first
-            val hi = scale.last().first
-            svg.append("<defs>")
-            svg.append("""<linearGradient id="tempLineGradient" gradientUnits="userSpaceOnUse" x1="0" y1="${yOf(hi)}" x2="0" y2="${yOf(lo)}">""")
-            for ((t, c) in scale.reversed()) {
-                svg.append("""<stop offset="${(hi - t) / (hi - lo)}" stop-color="${c.toHex()}"/>""")
-            }
-            svg.append("</linearGradient>")
-            // The fill takes the line's colour at each height and keeps the
-            // usual fade towards the bottom, so it always matches the line
-            // directly above it.
-            val top = points.minOf { it.second }
-            val steps = 8
-            svg.append("""<linearGradient id="tempScaleFill" gradientUnits="userSpaceOnUse" x1="0" y1="$top" x2="0" y2="$chartHeight">""")
-            for (k in 0 until steps) {
-                val f = k.toDouble() / (steps - 1)
-                val y = top + f * (chartHeight - top)
-                val opacity = colors.temperatureGradientStart.opacity * (1 - f) + colors.temperatureGradientEnd.opacity * f
-                svg.append("""<stop offset="$f" stop-color="${colors.temperatureColorAt(tempAt(y)).toHex()}" stop-opacity="${String.format(Locale.ROOT, "%.3f", opacity)}"/>""")
-            }
-            svg.append("</linearGradient>")
-            svg.append("</defs>")
+            writeTemperatureScaleDefs(
+                svg, colors, scale, points.minOf { it.second }, chartHeight,
+                bottomTemp = minTemp - yPadding, span = tempRange + 2 * yPadding
+            )
             areaFill = "url(#tempScaleFill)"
             lineStroke = "url(#tempLineGradient)"
         }
@@ -621,6 +599,54 @@ class SvgChartGenerator {
         } else {
             celsius.roundToInt().toString()
         }
+    }
+
+    /**
+     * Gradients for a colour-coded temperature: `tempLineGradient` for the
+     * line and `tempScaleFill` for the area under it. Height on the chart is
+     * temperature, so the scale maps to plain vertical gradients in chart
+     * coordinates (userSpaceOnUse; a bounding-box gradient would rescale per
+     * path and break the absolute mapping).
+     */
+    private fun writeTemperatureScaleDefs(
+        svg: StringBuilder,
+        colors: SvgChartColors,
+        scale: List<Pair<Double, SvgColor>>,
+        top: Double,
+        chartHeight: Double,
+        bottomTemp: Double,
+        span: Double
+    ) {
+        // The chart's y mapping (temperature [bottomTemp] at the bottom edge,
+        // [span] degrees across its height) and its inverse.
+        // Block bodies, not `= ...`: Lizard misparses Kotlin expression bodies
+        // and folds the rest of the function into them.
+        fun yOf(t: Double): Double {
+            return chartHeight * (1 - (t - bottomTemp) / span)
+        }
+        fun tempAt(y: Double): Double {
+            return bottomTemp + (1 - y / chartHeight) * span
+        }
+        val lo = scale.first().first
+        val hi = scale.last().first
+        svg.append("<defs>")
+        svg.append("""<linearGradient id="tempLineGradient" gradientUnits="userSpaceOnUse" x1="0" y1="${yOf(hi)}" x2="0" y2="${yOf(lo)}">""")
+        for ((t, c) in scale.reversed()) {
+            svg.append("""<stop offset="${(hi - t) / (hi - lo)}" stop-color="${c.toHex()}"/>""")
+        }
+        svg.append("</linearGradient>")
+        // The fill takes the line's colour at each height and keeps the usual
+        // fade towards the bottom, so it always matches the line directly above.
+        val steps = 8
+        svg.append("""<linearGradient id="tempScaleFill" gradientUnits="userSpaceOnUse" x1="0" y1="$top" x2="0" y2="$chartHeight">""")
+        for (k in 0 until steps) {
+            val f = k.toDouble() / (steps - 1)
+            val y = top + f * (chartHeight - top)
+            val opacity = colors.temperatureGradientStart.opacity * (1 - f) + colors.temperatureGradientEnd.opacity * f
+            svg.append("""<stop offset="$f" stop-color="${colors.temperatureColorAt(tempAt(y)).toHex()}" stop-opacity="${String.format(Locale.ROOT, "%.3f", opacity)}"/>""")
+        }
+        svg.append("</linearGradient>")
+        svg.append("</defs>")
     }
 
     /**

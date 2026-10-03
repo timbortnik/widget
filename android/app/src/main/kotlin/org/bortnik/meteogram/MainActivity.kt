@@ -319,7 +319,12 @@ class MainActivity : FlutterActivity() {
             }
         }
 
-        val colors = WidgetChartColors.get(this, isLight)
+        // The in-app chart sits on the card, which Dart already paints in the
+        // scheme's ground, so it stays transparent. Painting the ground here too
+        // would leave a faint box whenever the card's reading (fetch time) and
+        // the chart's hour (render time) disagree. The widget, with no card
+        // behind it, keeps painting its own.
+        val colors = WidgetChartColors.get(this, isLight).copy(drawBackground = false)
 
         val generator = SvgChartGenerator()
         return generator.generate(
