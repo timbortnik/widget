@@ -69,7 +69,7 @@ enum ChartScheme {
   List<(double, Color)>? groundScale({required bool isDark}) {
     if (this != thermal) return null;
     return isDark
-        ? const [(-20.0, Color(0xFF2E1D22)), (40.0, Color(0xFF1F1D33))]
+        ? const [(-20.0, Color(0xFF1D0C0C)), (20.0, Color(0xFF111111)), (40.0, Color(0xFF0B111E))]
         : const [(-20.0, Color(0xFFF1E7EE)), (40.0, Color(0xFFE4ECF4))];
   }
 

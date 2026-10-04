@@ -788,7 +788,7 @@ class SvgChartGeneratorTest {
         assertEquals("#e4ecf4", light.atTemperature(45.0).cardBackground.toHex())
         assertEquals("#f1e7ee", light.atTemperature(-30.0).outlineColor.toHex())
         val dark = ChartSchemes.thermalDark
-        for ((celsius, hex) in listOf(-20.0 to "#2e1d22", 0.0 to "#291d28", 40.0 to "#1f1d33", -66.0 to "#2e1d22")) {
+        for ((celsius, hex) in listOf(-20.0 to "#1d0c0c", -10.0 to "#1a0d0d", 20.0 to "#111111", 40.0 to "#0b111e", -66.0 to "#1d0c0c")) {
             val resolved = dark.atTemperature(celsius)
             assertEquals("ground at $celsius", hex, resolved.cardBackground.toHex())
             // The halo behind line and labels must match the ground it sits on.
@@ -812,8 +812,8 @@ class SvgChartGeneratorTest {
             nowIndex = 6, latitude = 52.52, longitude = 13.405,
             colors = ChartSchemes.thermalDark, width = 800.0, height = 400.0
         )
-        assertTrue(svgAt(-25.0).contains("""height="400" fill="#2e1d22"/>"""))
-        assertTrue(svgAt(45.0).contains("""height="400" fill="#1f1d33"/>"""))
+        assertTrue(svgAt(-25.0).contains("""height="400" fill="#1d0c0c"/>"""))
+        assertTrue(svgAt(45.0).contains("""height="400" fill="#0b111e"/>"""))
         // The halo follows: no stroke in the fixed plum is left on a moved ground.
         assertFalse(svgAt(45.0).contains("""stroke="#2a1d2e""""))
     }
@@ -827,7 +827,7 @@ class SvgChartGeneratorTest {
             ChartSchemes.thermalLight.groundScale!!.map { (t, c) -> t to c.toHex() }
         )
         assertEquals(
-            listOf(-20.0 to "#2e1d22", 40.0 to "#1f1d33"),
+            listOf(-20.0 to "#1d0c0c", 20.0 to "#111111", 40.0 to "#0b111e"),
             ChartSchemes.thermalDark.groundScale!!.map { (t, c) -> t to c.toHex() }
         )
     }

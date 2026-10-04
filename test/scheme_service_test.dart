@@ -184,7 +184,7 @@ void main() {
           .groundScale(isDark: true)!
           .map((stop) => (stop.$1, stop.$2.toARGB32()))
           .toList();
-      expect(stops, [(-20.0, 0xFF2E1D22), (40.0, 0xFF1F1D33)]);
+      expect(stops, [(-20.0, 0xFF1D0C0C), (20.0, 0xFF111111), (40.0, 0xFF0B111E)]);
       final light = ChartScheme.thermal
           .groundScale(isDark: false)!
           .map((stop) => (stop.$1, stop.$2.toARGB32()))
@@ -195,9 +195,10 @@ void main() {
     test('thermal dark ground interpolates and clamps like the chart', () {
       int at(double celsius) =>
           ChartScheme.thermal.groundColor(celsius, isDark: true)!.toARGB32();
-      expect(at(-66), 0xFF2E1D22);
-      expect(at(0), 0xFF291D28); // Same as SvgChartColors.atTemperature(0.0)
-      expect(at(45), 0xFF1F1D33);
+      expect(at(-66), 0xFF1D0C0C);
+      expect(at(-10), 0xFF1A0D0D); // Same as SvgChartColors.atTemperature(-10.0)
+      expect(at(20), 0xFF111111); // Neutral where the temperature line is neutral
+      expect(at(45), 0xFF0B111E);
     });
 
     test('ids are unique', () {
