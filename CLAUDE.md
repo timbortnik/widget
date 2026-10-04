@@ -17,7 +17,7 @@ This file provides context for AI assistants working on this project.
 
 | Aspect | Value |
 |--------|-------|
-| Framework | Flutter 3.47.0 (pinned — see "Before Coding") |
+| Framework | Flutter 3.47.6 (pinned — see "Before Coding") |
 | Android SDK | minSdk 30 (Android 11), target 36 — do NOT lower minSdk, see Gotcha #9 |
 | Weather API | Open-Meteo (free, no key) |
 | Charting | Native SVG (SvgChartGenerator.kt + AndroidSVG) |
@@ -146,8 +146,8 @@ build. The project therefore has **zero Flutter plugins with native code**
 (`GeneratedPluginRegistrant` is empty): `home_widget` and `geolocator` were both removed in
 favour of native implementations (`WidgetStore`/`LocationProvider` over the method channel).
 
-**With no KGP plugin present, Flutter 3.47.0 builds clean** (unpinned from 3.41.7 to 3.44.0
-2026-05; 3.44.1 → 3.44.4 patches 2026-06; bumped to 3.47.0 2026-08). Flutter 3.47 supports
+**With no KGP plugin present, Flutter 3.47.6 builds clean** (unpinned from 3.41.7 to 3.44.0
+2026-05; 3.44.1 → 3.44.4 patches 2026-06; bumped to 3.47.0 2026-08; 3.47.6 patch 2026-10). Flutter 3.47 supports
 built-in Kotlin first-class: the old force-apply of `kotlin-android` is now gated on
 `isBuiltInKotlinEnabled()` (AGP ≥ 9 + `android.builtInKotlin=true` skips it entirely,
 flutter/flutter#184837 closed), so the benign "KGP was not found on the classpath" warning
@@ -155,9 +155,9 @@ that 3.44.x logged is gone. Note: 3.47's `flutter_localizations` pins `intl` via
 (`^0.20.3`) instead of an exact version, and the app's `intl` constraint is `any` (SDK-pinned;
 dart.dev/go/sdk-version-pinning) so dependabot has nothing to bump.
 
-- **Before coding, check the toolchain & deps.** Confirm `flutter --version` is **3.47.0** (the
+- **Before coding, check the toolchain & deps.** Confirm `flutter --version` is **3.47.6** (the
   pinned version — don't unintentionally build on another); run `flutter pub outdated` to review
-  dependency updates and note any Flutter release past 3.47.0. Treat **any** Flutter or dependency
+  dependency updates and note any Flutter release past 3.47.6. Treat **any** Flutter or dependency
   bump as a *deliberate, verified* change — it can re-break the built-in-Kotlin setup (see history
   below) — not a casual upgrade.
 - **CRITICAL:** do **not** add any Flutter plugin that applies KGP (most native plugins do) — it
@@ -165,7 +165,7 @@ dart.dev/go/sdk-version-pinning) so dependabot has nothing to bump.
   channel, or a plugin version that supports built-in Kotlin. If a KGP plugin is unavoidable,
   you must switch to the legacy path: `android.builtInKotlin=false` + re-add `id("kotlin-android")`
   to `app/build.gradle.kts` (KGP is already declared `apply false` in `settings.gradle.kts`).
-- **CI:** `flutter-version: '3.47.0'` in `.github/workflows/`.
+- **CI:** `flutter-version: '3.47.6'` in `.github/workflows/`.
 - **Verify after any toolchain/plugin change:** `make analyze` + `make test` + a debug build.
   After switching the local Flutter SDK version, run `flutter clean` first (stale kernel caches
   from a different Dart version cause spurious `dot-shorthands` framework-compile errors).
