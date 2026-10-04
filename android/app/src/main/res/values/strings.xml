@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Meteograph</string>
+    <string name="app_name" translatable="false">Meteograph</string>
     <string name="widget_description">Weather meteogram showing temperature, precipitation, and daylight</string>
     <string name="widget_weekly_description">7-day weather meteogram showing temperature, precipitation, and daylight</string>
     <string name="widget_weekly_preview_label">Meteograph 7-day</string>

@@ -20,7 +20,7 @@ dependency** — it locates elements through the Android accessibility tree
 ```bash
 cd e2e
 npm install
-npm run driver:install        # installs uiautomator2@4.2.9 into ./.appium
+npm run driver:install        # installs uiautomator2@8.7.0 into ./.appium
 
 npm run appium                # terminal 1: start the Appium server
 npm test                      # terminal 2: emulator booted + apk built
@@ -37,8 +37,8 @@ Test a different build with `APP_PATH=/abs/path/to.apk npm test`.
 
 ## Notes
 
-- **Driver pin:** `uiautomator2@4.2.9` is the last driver compatible with Appium
-  2.x (5.x+ require Appium 3). Bump both together.
+- **Driver pin:** `uiautomator2@8.7.0` (peer-requires Appium 3, which `package.json`
+  pins). Driver majors track Appium majors — bump both together.
 - **Charts** are plain Flutter `Image` widgets (PNG rasterized natively), so a
   normal `Semantics` reaches them: they carry both a `resource-id`
   (`homeHourlyChart` / `homeWeeklyChart`) and a localized `content-desc` label

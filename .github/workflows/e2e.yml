@@ -37,7 +37,7 @@ jobs:
         uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
           channel: 'stable'
-          flutter-version: '3.47.0'
+          flutter-version: '3.47.6'
           cache: true
       - name: Install Flutter dependencies
         run: flutter pub get
@@ -59,7 +59,7 @@ jobs:
         run: npm ci
       - name: Install UiAutomator2 driver
         working-directory: e2e
-        run: npm run driver:install # pinned uiautomator2@4.2.9 (last Appium-2.x driver)
+        run: npm run driver:install # pinned uiautomator2@8.7.0 (Appium 3)
 
       - name: Enable KVM
         run: |

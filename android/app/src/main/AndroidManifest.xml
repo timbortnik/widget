@@ -3,6 +3,9 @@
     <!-- Location permissions for weather data -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <!-- Location is optional (manual city search + last-known/Berlin fallback), so don't
+         let the permissions above imply a required feature that filters devices on Play -->
+    <uses-feature android:name="android.hardware.location" android:required="false" />
     <!-- Internet permission for API calls -->
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- Network state for connectivity change detection -->
