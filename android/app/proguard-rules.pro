@@ -6,8 +6,8 @@
 -dontwarn com.google.android.play.core.splitinstall.**
 -dontwarn com.google.android.play.core.tasks.**
 
-# AndroidSVG library
--keep class com.caverock.androidsvg.** { *; }
+# AndroidSVG library: no keep needed — called directly; its reflection only targets
+# framework classes (Canvas.save(int), SAXParserFactory), and enums are kept below.
 -dontwarn com.caverock.androidsvg.**
 
 # Keep widget provider and related classes
