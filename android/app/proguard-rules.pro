@@ -1,21 +1,13 @@
-# Flutter specific rules
--keep class io.flutter.app.** { *; }
--keep class io.flutter.plugin.** { *; }
--keep class io.flutter.util.** { *; }
--keep class io.flutter.view.** { *; }
--keep class io.flutter.** { *; }
--keep class io.flutter.plugins.** { *; }
-
-# Keep Flutter embedding
--keep class io.flutter.embedding.** { *; }
+# Flutter: no blanket io.flutter keeps. The engine marks its JNI entry points @Keep
+# and Flutter's Gradle plugin adds flutter_proguard_rules.pro — same as a stock app.
 
 # Play Core library (deferred components) - not used but referenced by Flutter
 -dontwarn com.google.android.play.core.splitcompat.**
 -dontwarn com.google.android.play.core.splitinstall.**
 -dontwarn com.google.android.play.core.tasks.**
 
-# AndroidSVG library
--keep class com.caverock.androidsvg.** { *; }
+# AndroidSVG library: no keep needed — called directly; its reflection only targets
+# framework classes (Canvas.save(int), SAXParserFactory), and enums are kept below.
 -dontwarn com.caverock.androidsvg.**
 
 # Keep widget provider and related classes
