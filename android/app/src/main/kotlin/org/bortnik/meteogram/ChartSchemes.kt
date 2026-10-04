@@ -49,13 +49,9 @@ object ChartSchemes {
         }
     }
 
-    // Polar day and dusk, lit by a low apricot sun. Light is polar day:
-    // periwinkle snow-light reflecting the sky, so the warm sun sits
-    // near-complementary to its ground and the line's fill stays a cool
-    // shadow (on rose it cancelled to grey). Dark is a near-black night
-    // that only leans warm or cool against the temperature, a neutral stage
-    // for the data hues, with the sun and the ice-blue line nearly opposite
-    // on the wheel. Apricot, not
+    // Lit by a low apricot sun. In both modes the ground is a near-neutral
+    // stage for the data hues that only leans warm or cool against the
+    // temperature: a light grey by day, a near-black night in dark. Apricot, not
     // gold: gold read as mustard/ochre. The "now" marker matches the time
     // labels, so it reads as part of the time axis rather than as a series.
     // Precipitation splits by phase (from the forecast's own snowfall):
@@ -93,12 +89,14 @@ object ChartSchemes {
             40.0 to SvgColor(0xFF, 0x8F, 0x00)
         ),
         // The ground leans against the temperature, gently enough to stay
-        // a tint: a faint rose-lilac blush (alpenglow) when freezing, pale ice
-        // blue in heat, the original periwinkle on mild days. Both ends keep
-        // periwinkle's lightness, so no series loses contrast.
+        // a tint (chroma ~3.5): warm off-white when freezing, neutral grey at
+        // 20°C (where the line is neutral too), a cool grey-blue in heat. All
+        // three share one lightness, so no series loses contrast and the card
+        // keeps its edge against the page.
         groundScale = listOf(
-            -20.0 to SvgColor(0xF1, 0xE7, 0xEE),
-            40.0 to SvgColor(0xE4, 0xEC, 0xF4)
+            -20.0 to SvgColor(0xEF, 0xE7, 0xEA),
+            20.0 to SvgColor(0xE9, 0xE9, 0xE9),
+            40.0 to SvgColor(0xE4, 0xEA, 0xEF)
         ),
         temperatureScale = listOf(
             -20.0 to SvgColor(0x3B, 0x3A, 0x8F),

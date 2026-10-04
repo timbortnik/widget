@@ -70,7 +70,7 @@ enum ChartScheme {
     if (this != thermal) return null;
     return isDark
         ? const [(-20.0, Color(0xFF1D0C0C)), (20.0, Color(0xFF111111)), (40.0, Color(0xFF0B111E))]
-        : const [(-20.0, Color(0xFFF1E7EE)), (40.0, Color(0xFFE4ECF4))];
+        : const [(-20.0, Color(0xFFEFE7EA)), (20.0, Color(0xFFE9E9E9)), (40.0, Color(0xFFE4EAEF))];
   }
 
   /// Card ground for the current [celsius]; null keeps the fixed card colour.

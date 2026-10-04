@@ -189,7 +189,7 @@ void main() {
           .groundScale(isDark: false)!
           .map((stop) => (stop.$1, stop.$2.toARGB32()))
           .toList();
-      expect(light, [(-20.0, 0xFFF1E7EE), (40.0, 0xFFE4ECF4)]);
+      expect(light, [(-20.0, 0xFFEFE7EA), (20.0, 0xFFE9E9E9), (40.0, 0xFFE4EAEF)]);
     });
 
     test('thermal dark ground interpolates and clamps like the chart', () {

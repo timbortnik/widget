@@ -785,8 +785,9 @@ class SvgChartGeneratorTest {
     @Test
     fun `atTemperature moves the ground and its halo along the scale`() {
         val light = ChartSchemes.thermalLight
-        assertEquals("#e4ecf4", light.atTemperature(45.0).cardBackground.toHex())
-        assertEquals("#f1e7ee", light.atTemperature(-30.0).outlineColor.toHex())
+        assertEquals("#e4eaef", light.atTemperature(45.0).cardBackground.toHex())
+        assertEquals("#efe7ea", light.atTemperature(-30.0).outlineColor.toHex())
+        assertEquals("#e9e9e9", light.atTemperature(20.0).cardBackground.toHex())
         val dark = ChartSchemes.thermalDark
         for ((celsius, hex) in listOf(-20.0 to "#1d0c0c", -10.0 to "#1a0d0d", 20.0 to "#111111", 40.0 to "#0b111e", -66.0 to "#1d0c0c")) {
             val resolved = dark.atTemperature(celsius)
@@ -823,7 +824,7 @@ class SvgChartGeneratorTest {
         // ChartScheme.groundScale (scheme_service.dart) repeats these so the
         // in-app card matches the painted ground; pinned there too.
         assertEquals(
-            listOf(-20.0 to "#f1e7ee", 40.0 to "#e4ecf4"),
+            listOf(-20.0 to "#efe7ea", 20.0 to "#e9e9e9", 40.0 to "#e4eaef"),
             ChartSchemes.thermalLight.groundScale!!.map { (t, c) -> t to c.toHex() }
         )
         assertEquals(
