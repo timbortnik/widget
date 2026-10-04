@@ -1,13 +1,5 @@
-# Flutter specific rules
--keep class io.flutter.app.** { *; }
--keep class io.flutter.plugin.** { *; }
--keep class io.flutter.util.** { *; }
--keep class io.flutter.view.** { *; }
--keep class io.flutter.** { *; }
--keep class io.flutter.plugins.** { *; }
-
-# Keep Flutter embedding
--keep class io.flutter.embedding.** { *; }
+# Flutter: no blanket io.flutter keeps. The engine marks its JNI entry points @Keep
+# and Flutter's Gradle plugin adds flutter_proguard_rules.pro — same as a stock app.
 
 # Play Core library (deferred components) - not used but referenced by Flutter
 -dontwarn com.google.android.play.core.splitcompat.**
