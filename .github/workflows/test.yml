@@ -30,6 +30,10 @@ jobs:
           fail-on-severity: high
           # Allow common permissive licenses compatible with BSL 1.1
           allow-licenses: MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC, 0BSD, MPL-2.0
+          # GitHub reports pub.dev licenses lowercase ("bsd-3-clause"), which the action rejects as
+          # invalid SPDX: https://github.com/actions/dependency-review-action/issues/1168
+          # These are SDK-pinned dart-lang packages (Apache-2.0 / BSD-3-Clause). Remove once fixed.
+          allow-dependencies-licenses: pkg:pub/clock, pkg:pub/stack_trace, pkg:pub/vector_math
 
   test:
     runs-on: ubuntu-latest
