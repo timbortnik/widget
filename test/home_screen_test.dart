@@ -495,9 +495,9 @@ void main() {
 
       expect(cardColor(tester),
           ChartScheme.thermal.groundColor(double.parse(mockTemperature), isDark: false));
-      // A mild reading sits near the original periwinkle.
-      expect(cardColor(tester), isNot(const Color(0xFFF1E7EE)));
-      expect(cardColor(tester), isNot(const Color(0xFFE4ECF4)));
+      // A mild reading sits at the neutral middle, not at either tinted end.
+      expect(cardColor(tester), isNot(const Color(0xFFEFE7EA)));
+      expect(cardColor(tester), isNot(const Color(0xFFE4EAEF)));
     });
 
     testWidgets('thermal tints the current reading by its value', (tester) async {

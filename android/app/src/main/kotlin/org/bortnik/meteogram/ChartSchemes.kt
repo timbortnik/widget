@@ -49,12 +49,9 @@ object ChartSchemes {
         }
     }
 
-    // Polar day and dusk, lit by a low apricot sun. Light is polar day:
-    // periwinkle snow-light reflecting the sky, so the warm sun sits
-    // near-complementary to its ground and the line's fill stays a cool
-    // shadow (on rose it cancelled to grey). Dark is polar dusk: a plum sky,
-    // sharing Light's violet lean so both read as one scheme, with the sun
-    // and the ice-blue line nearly opposite on the wheel. Apricot, not
+    // Lit by a low apricot sun. In both modes the ground is a near-neutral
+    // stage for the data hues that only leans warm or cool against the
+    // temperature: a light grey by day, a near-black night in dark. Apricot, not
     // gold: gold read as mustard/ochre. The "now" marker matches the time
     // labels, so it reads as part of the time axis rather than as a series.
     // Precipitation splits by phase (from the forecast's own snowfall):
@@ -92,12 +89,14 @@ object ChartSchemes {
             40.0 to SvgColor(0xFF, 0x8F, 0x00)
         ),
         // The ground leans against the temperature, gently enough to stay
-        // a tint: a faint rose-lilac blush (alpenglow) when freezing, pale ice
-        // blue in heat, the original periwinkle on mild days. Both ends keep
-        // periwinkle's lightness, so no series loses contrast.
+        // a tint (chroma ~3.5): warm off-white when freezing, neutral grey at
+        // 20°C (where the line is neutral too), a cool grey-blue in heat. All
+        // three share one lightness, so no series loses contrast and the card
+        // keeps its edge against the page.
         groundScale = listOf(
-            -20.0 to SvgColor(0xF1, 0xE7, 0xEE),
-            40.0 to SvgColor(0xE4, 0xEC, 0xF4)
+            -20.0 to SvgColor(0xEF, 0xE7, 0xEA),
+            20.0 to SvgColor(0xE9, 0xE9, 0xE9),
+            40.0 to SvgColor(0xE4, 0xEA, 0xEF)
         ),
         temperatureScale = listOf(
             -20.0 to SvgColor(0x3B, 0x3A, 0x8F),
@@ -125,19 +124,22 @@ object ChartSchemes {
         outlineWidth = 1.5,
         snowBar = SvgColor(0xEE, 0xF3, 0xF7),
         // The ground leans against the temperature so the data always
-        // stands out: a warm wine night when freezing, a cool indigo night in
-        // heat, near the original plum on mild days.
+        // stands out: a warm black when freezing, neutral at 20°C (where the
+        // line is neutral too), a cool navy black in heat. Near-black so the
+        // card sits as a dark well clearly below the page (L≈5 vs the page's
+        // ≈10); its low chroma keeps it a neutral stage for the data hues.
         groundScale = listOf(
-            -20.0 to SvgColor(0x2E, 0x1D, 0x22),
-            40.0 to SvgColor(0x1F, 0x1D, 0x33)
+            -20.0 to SvgColor(0x1D, 0x0C, 0x0C),
+            20.0 to SvgColor(0x11, 0x11, 0x11),
+            40.0 to SvgColor(0x0B, 0x11, 0x1E)
         ),
-        // Dark can afford a true golden yellow for heat on plum.
+        // Dark can afford a true golden yellow for heat on a near-black ground.
         daylightScale = listOf(
             -20.0 to SvgColor(0xE0, 0x90, 0x60),
             40.0 to SvgColor(0xF2, 0xD4, 0x5C)
         ),
         // Dark mirrors Light's hues; the deep-cold violet goes light
-        // (lavender) because a deep indigo would vanish on plum.
+        // (lavender) because a deep indigo would vanish on near-black.
         temperatureScale = listOf(
             -20.0 to SvgColor(0xB8, 0xA8, 0xF0),
             0.0 to SvgColor(0x8F, 0xC9, 0xE0),
