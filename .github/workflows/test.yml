@@ -29,11 +29,7 @@ jobs:
           # Fail on high/critical vulnerabilities
           fail-on-severity: high
           # Allow common permissive licenses compatible with BSL 1.1
-          # Lowercase duplicates: GitHub reports pub.dev licenses in lowercase (e.g. "bsd-3-clause"),
-          # which the action rejects as invalid SPDX despite IDs being case-insensitive per spec.
-          allow-licenses: >-
-            MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC, 0BSD, MPL-2.0,
-            mit, apache-2.0, bsd-2-clause, bsd-3-clause, isc, 0bsd, mpl-2.0
+          allow-licenses: MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC, 0BSD, MPL-2.0
 
   test:
     runs-on: ubuntu-latest
