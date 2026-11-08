@@ -87,9 +87,6 @@ class AppLocalizationsNl extends AppLocalizations {
   }
 
   @override
-  String get locationSourceGps => 'GPS';
-
-  @override
   String get locationSourceManual => 'Handmatig';
 
   @override
@@ -120,8 +117,12 @@ class AppLocalizationsNl extends AppLocalizations {
   String get unknownLocation => 'Onbekend';
 
   @override
-  String get gpsPermissionDenied =>
-      'GPS-toestemming geweigerd. Schakel in via apparaatinstellingen.';
+  String get locationServicesOff =>
+      'Locatie staat uit. Schakel in via apparaatinstellingen.';
+
+  @override
+  String get locationPermissionDenied =>
+      'Locatietoestemming geweigerd. Schakel in via app-instellingen.';
 
   @override
   String get searchConnectionError =>

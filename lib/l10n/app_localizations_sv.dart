@@ -87,9 +87,6 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get locationSourceGps => 'GPS';
-
-  @override
   String get locationSourceManual => 'Manuell';
 
   @override
@@ -119,8 +116,12 @@ class AppLocalizationsSv extends AppLocalizations {
   String get unknownLocation => 'Okänd';
 
   @override
-  String get gpsPermissionDenied =>
-      'GPS-behörighet nekad. Aktivera i enhetsinställningar.';
+  String get locationServicesOff =>
+      'Plats är avstängd. Aktivera i enhetsinställningar.';
+
+  @override
+  String get locationPermissionDenied =>
+      'Platsbehörighet nekad. Aktivera i appinställningar.';
 
   @override
   String get searchConnectionError =>

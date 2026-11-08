@@ -87,9 +87,6 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get locationSourceGps => 'GPS';
-
-  @override
   String get locationSourceManual => '手動';
 
   @override
@@ -119,7 +116,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get unknownLocation => '不明';
 
   @override
-  String get gpsPermissionDenied => 'GPS権限が拒否されました。設定で有効にしてください。';
+  String get locationServicesOff => '位置情報がオフになっています。設定で有効にしてください。';
+
+  @override
+  String get locationPermissionDenied => '位置情報の権限が拒否されました。アプリの設定で有効にしてください。';
 
   @override
   String get searchConnectionError => '検索できません - 接続を確認してください';

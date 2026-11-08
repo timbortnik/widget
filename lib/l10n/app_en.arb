@@ -70,7 +70,7 @@
 
   "currentLocation": "Current location",
   "@currentLocation": {
-    "description": "Option to use GPS location"
+    "description": "Option to use the device's current location"
   },
 
   "setManually": "Set manually",
@@ -147,11 +147,6 @@
     }
   },
 
-  "locationSourceGps": "GPS",
-  "@locationSourceGps": {
-    "description": "Short label for GPS location source"
-  },
-
   "@locationSourceIp": {
     "description": "Short label for IP-based location source"
   },
@@ -207,9 +202,14 @@
     "description": "Fallback text when location name is not available"
   },
 
-  "gpsPermissionDenied": "GPS permission denied. Enable in device settings.",
-  "@gpsPermissionDenied": {
-    "description": "Snackbar message when GPS permission is denied"
+  "locationServicesOff": "Location is off. Enable in device settings.",
+  "@locationServicesOff": {
+    "description": "Snackbar message when the device's Location setting is off; its Settings button opens the system location settings"
+  },
+
+  "locationPermissionDenied": "Location permission denied. Enable in app settings.",
+  "@locationPermissionDenied": {
+    "description": "Snackbar message when location permission is denied; its Settings button opens this app's system settings page"
   },
 
   "searchConnectionError": "Unable to search - check your connection",
@@ -284,7 +284,7 @@
 
   "deviceLocation": "Device location",
   "@deviceLocation": {
-    "description": "Subtitle of the GPS option in the location picker"
+    "description": "Subtitle of the current-location option in the location picker"
   },
 
   "recentLocations": "Recent",

@@ -256,6 +256,19 @@ class MainActivity : FlutterActivity() {
                         result.error("OPEN_SETTINGS_ERROR", e.message, null)
                     }
                 }
+                "openAppSettings" -> {
+                    try {
+                        val intent = Intent(
+                            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                            Uri.fromParts("package", packageName, null)
+                        ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        startActivity(intent)
+                        result.success(true)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error opening app settings", e)
+                        result.error("OPEN_SETTINGS_ERROR", e.message, null)
+                    }
+                }
                 else -> result.notImplemented()
             }
         }

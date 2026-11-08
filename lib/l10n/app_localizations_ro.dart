@@ -87,9 +87,6 @@ class AppLocalizationsRo extends AppLocalizations {
   }
 
   @override
-  String get locationSourceGps => 'GPS';
-
-  @override
   String get locationSourceManual => 'Manual';
 
   @override
@@ -120,8 +117,12 @@ class AppLocalizationsRo extends AppLocalizations {
   String get unknownLocation => 'Necunoscut';
 
   @override
-  String get gpsPermissionDenied =>
-      'Permisiunea GPS refuzată. Activați din setările dispozitivului.';
+  String get locationServicesOff =>
+      'Locația este dezactivată. Activați din setările dispozitivului.';
+
+  @override
+  String get locationPermissionDenied =>
+      'Permisiunea de locație a fost refuzată. Activați din setările aplicației.';
 
   @override
   String get searchConnectionError =>

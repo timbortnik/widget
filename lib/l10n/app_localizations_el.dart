@@ -87,9 +87,6 @@ class AppLocalizationsEl extends AppLocalizations {
   }
 
   @override
-  String get locationSourceGps => 'GPS';
-
-  @override
   String get locationSourceManual => 'Χειροκίνητα';
 
   @override
@@ -120,8 +117,12 @@ class AppLocalizationsEl extends AppLocalizations {
   String get unknownLocation => 'Άγνωστο';
 
   @override
-  String get gpsPermissionDenied =>
-      'Η άδεια GPS απορρίφθηκε. Ενεργοποιήστε στις ρυθμίσεις.';
+  String get locationServicesOff =>
+      'Η τοποθεσία είναι απενεργοποιημένη. Ενεργοποιήστε στις ρυθμίσεις.';
+
+  @override
+  String get locationPermissionDenied =>
+      'Η άδεια τοποθεσίας απορρίφθηκε. Ενεργοποιήστε στις ρυθμίσεις της εφαρμογής.';
 
   @override
   String get searchConnectionError =>

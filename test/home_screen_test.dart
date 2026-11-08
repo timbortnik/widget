@@ -41,10 +41,18 @@ void main() {
   /// Storage for HomeWidget mock data
   Map<String, dynamic> homeWidgetData = {};
 
+  /// Native location state the tests can drive, and the settings screens opened.
+  var mockServiceEnabled = true;
+  var mockPermission = 'granted';
+  final openedSettings = <String>[];
+
   /// Setup mock method channels before each test
   setUp(() {
     // Use current timestamp to avoid triggering staleness refresh
     mockTimestamp = DateTime.now().millisecondsSinceEpoch.toString();
+    mockServiceEnabled = true;
+    mockPermission = 'granted';
+    openedSettings.clear();
     homeWidgetData = {};
 
     // Mock the native method channel: SVG generation, weather fetch, and the
@@ -84,16 +92,18 @@ void main() {
             return mockCityName;
           // LocationBridge methods (native LocationManager)
           case 'isLocationServiceEnabled':
-            return true;
+            return mockServiceEnabled;
           case 'checkLocationPermission':
-            return 'granted';
+            return mockPermission;
           case 'requestLocationPermission':
-            return 'granted';
+            return mockPermission;
           case 'getCurrentPosition':
             return {'latitude': 52.52, 'longitude': 13.405};
           case 'getLastKnownPosition':
             return {'latitude': 52.52, 'longitude': 13.405};
           case 'openLocationSettings':
+          case 'openAppSettings':
+            openedSettings.add(methodCall.method);
             return true;
           default:
             return null;
@@ -196,7 +206,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
 
       // Should show city name
-      expect(find.text(mockCityName), findsOneWidget);
+      expect(find.textContaining(mockCityName), findsOneWidget);
     });
 
     testWidgets('has RefreshIndicator for pull-to-refresh', (tester) async {
@@ -269,14 +279,14 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
 
       // Tap the location row
-      await tester.tap(find.text(mockCityName));
+      await tester.tap(find.textContaining(mockCityName));
       await tester.pump(const Duration(milliseconds: 500));
 
       // Should open bottom sheet with location picker
       expect(find.text('Select Location'), findsOneWidget);
     });
 
-    testWidgets('location picker shows GPS option', (tester) async {
+    testWidgets('location picker shows current-location option', (tester) async {
       homeWidgetData['last_weather_update'] = mockTimestamp;
       homeWidgetData['current_temperature_celsius'] = mockTemperature;
       homeWidgetData['cached_city_name'] = mockCityName;
@@ -286,13 +296,85 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
       await tester.pump(const Duration(milliseconds: 500));
 
+      // The chip names the source "Current location", not "GPS".
+      expect(find.text('$mockCityName · Current location'), findsOneWidget);
+
       // Open location picker
-      await tester.tap(find.text(mockCityName));
+      await tester.tap(find.textContaining(mockCityName));
       await tester.pump(const Duration(milliseconds: 500));
 
-      // Should show GPS option
-      expect(find.text('GPS'), findsOneWidget);
+      // Should show the current-location option
+      expect(find.text('Current location'), findsOneWidget);
       expect(find.text('Device location'), findsOneWidget);
+      expect(find.textContaining('GPS'), findsNothing);
+    });
+
+    /// Opens the picker and taps the current-location option.
+    Future<void> tapCurrentLocationOption(WidgetTester tester) async {
+      homeWidgetData['last_weather_update'] = mockTimestamp;
+      homeWidgetData['current_temperature_celsius'] = mockTemperature;
+      homeWidgetData['cached_city_name'] = mockCityName;
+      homeWidgetData['cached_location_source'] = mockLocationSource;
+
+      await tester.pumpWidget(createTestApp());
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pump(const Duration(milliseconds: 500));
+
+      await tester.tap(find.textContaining(mockCityName));
+      // First pump starts the sheet's entrance animation, second finishes it;
+      // until then the sheet sits below the screen and taps miss.
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.tap(find.text('Current location'));
+      // Let the SnackBar finish sliding in: its action isn't hittable before,
+      // and its auto-dismiss timer only starts once the entrance completes.
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pump(const Duration(milliseconds: 500));
+    }
+
+    testWidgets('location off: says so, Settings opens location settings', (tester) async {
+      mockServiceEnabled = false;
+      await tapCurrentLocationOption(tester);
+
+      expect(find.text('Location is off. Enable in device settings.'), findsOneWidget);
+      await tester.tap(find.widgetWithText(SnackBarAction, 'Settings'));
+      await tester.pump();
+      expect(openedSettings, ['openLocationSettings']);
+    });
+
+    testWidgets('permission denied: says so, Settings opens app settings', (tester) async {
+      mockPermission = 'denied';
+      await tapCurrentLocationOption(tester);
+
+      expect(find.text('Location permission denied. Enable in app settings.'), findsOneWidget);
+      await tester.tap(find.widgetWithText(SnackBarAction, 'Settings'));
+      await tester.pump();
+      expect(openedSettings, ['openAppSettings']);
+    });
+
+    testWidgets('location message auto-dismisses despite its action', (tester) async {
+      mockServiceEnabled = false;
+      await tapCurrentLocationOption(tester);
+      expect(find.text('Location is off. Enable in device settings.'), findsOneWidget);
+
+      // Flutter >= 3.38 would keep a SnackBar with an action up forever
+      // (flutter/flutter#173084) unless persist is false.
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pump(const Duration(seconds: 1));
+      expect(find.text('Location is off. Enable in device settings.'), findsNothing);
+    });
+
+    testWidgets('location message stays up for screen-reader users', (tester) async {
+      tester.platformDispatcher.accessibilityFeaturesTestValue =
+          const FakeAccessibilityFeatures(accessibleNavigation: true);
+      addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
+      mockServiceEnabled = false;
+      await tapCurrentLocationOption(tester);
+
+      await tester.pump(const Duration(seconds: 5));
+      await tester.pump(const Duration(seconds: 1));
+      expect(find.text('Location is off. Enable in device settings.'), findsOneWidget);
     });
 
     testWidgets('location picker labels are localized', (tester) async {
@@ -308,11 +390,12 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
       await tester.pump(const Duration(milliseconds: 500));
 
-      await tester.tap(find.text(mockCityName));
+      await tester.tap(find.textContaining(mockCityName));
       await tester.pump(const Duration(milliseconds: 500));
       // Recent cities load asynchronously once the sheet opens.
       await tester.pump(const Duration(milliseconds: 500));
 
+      expect(find.text('Поточне місце'), findsOneWidget);
       expect(find.text('Місцезнаходження пристрою'), findsOneWidget);
       expect(find.text('Нещодавні'), findsOneWidget);
       expect(find.text('Device location'), findsNothing);
@@ -330,7 +413,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
 
       // Open location picker
-      await tester.tap(find.text(mockCityName));
+      await tester.tap(find.textContaining(mockCityName));
       await tester.pump(const Duration(milliseconds: 500));
 
       // Should have search field

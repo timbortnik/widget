@@ -87,9 +87,6 @@ class AppLocalizationsCs extends AppLocalizations {
   }
 
   @override
-  String get locationSourceGps => 'GPS';
-
-  @override
   String get locationSourceManual => 'Ručně';
 
   @override
@@ -119,8 +116,12 @@ class AppLocalizationsCs extends AppLocalizations {
   String get unknownLocation => 'Neznámé';
 
   @override
-  String get gpsPermissionDenied =>
-      'Oprávnění GPS zamítnuto. Povolte v nastavení zařízení.';
+  String get locationServicesOff =>
+      'Poloha je vypnutá. Povolte v nastavení zařízení.';
+
+  @override
+  String get locationPermissionDenied =>
+      'Oprávnění k poloze zamítnuto. Povolte v nastavení aplikace.';
 
   @override
   String get searchConnectionError =>

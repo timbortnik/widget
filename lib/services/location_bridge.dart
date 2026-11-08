@@ -77,6 +77,15 @@ class LocationBridge {
     }
   }
 
+  /// Open this app's system settings page (where permissions are granted).
+  static Future<void> openAppSettings() async {
+    try {
+      await _channel.invokeMethod<bool>('openAppSettings');
+    } on PlatformException catch (e) {
+      debugPrint('openAppSettings failed: ${e.message}');
+    }
+  }
+
   static LocationPermissionStatus _parse(String? status) {
     switch (status) {
       case 'granted':

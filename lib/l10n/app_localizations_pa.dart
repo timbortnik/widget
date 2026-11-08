@@ -87,9 +87,6 @@ class AppLocalizationsPa extends AppLocalizations {
   }
 
   @override
-  String get locationSourceGps => 'GPS';
-
-  @override
   String get locationSourceManual => 'ਹੱਥੀਂ';
 
   @override
@@ -120,8 +117,12 @@ class AppLocalizationsPa extends AppLocalizations {
   String get unknownLocation => 'ਅਣਜਾਣ';
 
   @override
-  String get gpsPermissionDenied =>
-      'GPS ਇਜਾਜ਼ਤ ਰੱਦ। ਡਿਵਾਈਸ ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਯੋਗ ਕਰੋ।';
+  String get locationServicesOff =>
+      'ਸਥਾਨ ਬੰਦ ਹੈ। ਡਿਵਾਈਸ ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਯੋਗ ਕਰੋ।';
+
+  @override
+  String get locationPermissionDenied =>
+      'ਸਥਾਨ ਦੀ ਇਜਾਜ਼ਤ ਰੱਦ। ਐਪ ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਯੋਗ ਕਰੋ।';
 
   @override
   String get searchConnectionError =>

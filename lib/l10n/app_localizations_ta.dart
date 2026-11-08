@@ -87,9 +87,6 @@ class AppLocalizationsTa extends AppLocalizations {
   }
 
   @override
-  String get locationSourceGps => 'GPS';
-
-  @override
   String get locationSourceManual => 'கைமுறை';
 
   @override
@@ -120,8 +117,12 @@ class AppLocalizationsTa extends AppLocalizations {
   String get unknownLocation => 'தெரியாத';
 
   @override
-  String get gpsPermissionDenied =>
-      'GPS அனுமதி மறுக்கப்பட்டது. சாதன அமைப்புகளில் இயக்கவும்.';
+  String get locationServicesOff =>
+      'இடம் முடக்கப்பட்டுள்ளது. சாதன அமைப்புகளில் இயக்கவும்.';
+
+  @override
+  String get locationPermissionDenied =>
+      'இட அனுமதி மறுக்கப்பட்டது. ஆப் அமைப்புகளில் இயக்கவும்.';
 
   @override
   String get searchConnectionError =>

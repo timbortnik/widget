@@ -87,9 +87,6 @@ class AppLocalizationsJv extends AppLocalizations {
   }
 
   @override
-  String get locationSourceGps => 'GPS';
-
-  @override
   String get locationSourceManual => 'Manual';
 
   @override
@@ -120,8 +117,12 @@ class AppLocalizationsJv extends AppLocalizations {
   String get unknownLocation => 'Ora dingerteni';
 
   @override
-  String get gpsPermissionDenied =>
-      'Ijin GPS ditolak. Aktifake ing setelan piranti.';
+  String get locationServicesOff =>
+      'Lokasi dipateni. Aktifake ing setelan piranti.';
+
+  @override
+  String get locationPermissionDenied =>
+      'Ijin lokasi ditolak. Aktifake ing setelan aplikasi.';
 
   @override
   String get searchConnectionError => 'Ora bisa nggoleki - priksa sambungan';

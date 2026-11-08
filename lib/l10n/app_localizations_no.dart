@@ -87,9 +87,6 @@ class AppLocalizationsNo extends AppLocalizations {
   }
 
   @override
-  String get locationSourceGps => 'GPS';
-
-  @override
   String get locationSourceManual => 'Manuell';
 
   @override
@@ -119,8 +116,12 @@ class AppLocalizationsNo extends AppLocalizations {
   String get unknownLocation => 'Ukjent';
 
   @override
-  String get gpsPermissionDenied =>
-      'GPS-tillatelse avslått. Aktiver i enhetsinnstillinger.';
+  String get locationServicesOff =>
+      'Plassering er slått av. Aktiver i enhetsinnstillinger.';
+
+  @override
+  String get locationPermissionDenied =>
+      'Plasseringstillatelse avslått. Aktiver i appinnstillinger.';
 
   @override
   String get searchConnectionError => 'Kan ikke søke - sjekk tilkoblingen';

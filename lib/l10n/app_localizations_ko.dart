@@ -87,9 +87,6 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get locationSourceGps => 'GPS';
-
-  @override
   String get locationSourceManual => '수동';
 
   @override
@@ -119,7 +116,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get unknownLocation => '알 수 없음';
 
   @override
-  String get gpsPermissionDenied => 'GPS 권한이 거부되었습니다. 기기 설정에서 활성화하세요.';
+  String get locationServicesOff => '위치가 꺼져 있습니다. 기기 설정에서 활성화하세요.';
+
+  @override
+  String get locationPermissionDenied => '위치 권한이 거부되었습니다. 앱 설정에서 활성화하세요.';
 
   @override
   String get searchConnectionError => '검색 불가 - 연결을 확인하세요';

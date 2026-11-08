@@ -87,9 +87,6 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get locationSourceGps => 'GPS';
-
-  @override
   String get locationSourceManual => 'Manuel';
 
   @override
@@ -120,8 +117,12 @@ class AppLocalizationsFr extends AppLocalizations {
   String get unknownLocation => 'Inconnu';
 
   @override
-  String get gpsPermissionDenied =>
-      'Permission GPS refusée. Activer dans les paramètres.';
+  String get locationServicesOff =>
+      'La localisation est désactivée. Activer dans les paramètres.';
+
+  @override
+  String get locationPermissionDenied =>
+      'Autorisation de localisation refusée. Activer dans les paramètres de l\'application.';
 
   @override
   String get searchConnectionError =>
