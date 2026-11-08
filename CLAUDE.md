@@ -148,7 +148,8 @@ favour of native implementations (`WidgetStore`/`LocationProvider` over the meth
 
 **With no KGP plugin present, Flutter 3.47.9 builds clean** (unpinned from 3.41.7 to 3.44.0
 2026-05; 3.44.1 → 3.44.4 patches 2026-06; bumped to 3.47.0 2026-08; 3.47.6 patch 2026-10;
-3.47.9 patch 2026-11 for Dart TLS advisory GHSA-frr6-h895-5pxp). Flutter 3.47 supports
+3.47.9 patch 2026-11 for the Dart TLS fix in GitHub Security Advisory (GHSA)
+GHSA-frr6-h895-5pxp). Flutter 3.47 supports
 built-in Kotlin first-class: the old force-apply of `kotlin-android` is now gated on
 `isBuiltInKotlinEnabled()` (AGP ≥ 9 + `android.builtInKotlin=true` skips it entirely,
 flutter/flutter#184837 closed), so the benign "KGP was not found on the classpath" warning
