@@ -1,10 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-    <!-- Location permissions for weather data -->
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <!-- Approximate location only: a weather forecast doesn't need precise location, and
+         Google Play's minimum-scope location policy (effective 2027-01-27) allows
+         ACCESS_FINE_LOCATION only when coarse location can't support the feature. -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <!-- Location is optional (manual city search + last-known/Berlin fallback), so don't
-         let the permissions above imply a required feature that filters devices on Play -->
+         let the permission above imply a required feature that filters devices on Play -->
     <uses-feature android:name="android.hardware.location" android:required="false" />
     <!-- Internet permission for API calls -->
     <uses-permission android:name="android.permission.INTERNET" />

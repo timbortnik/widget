@@ -34,13 +34,13 @@ object LocationProvider {
         return lm.isLocationEnabled
     }
 
-    /** "granted" if fine or coarse location is held, else "denied". */
+    /**
+     * "granted" if coarse location is held, else "denied". The app declares only
+     * ACCESS_COARSE_LOCATION (see AndroidManifest.xml), so fine is never held.
+     */
     fun checkPermissionStatus(context: Context): String {
-        val fine = context.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
         val coarse = context.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
-        val granted = fine == PackageManager.PERMISSION_GRANTED ||
-            coarse == PackageManager.PERMISSION_GRANTED
-        return if (granted) "granted" else "denied"
+        return if (coarse == PackageManager.PERMISSION_GRANTED) "granted" else "denied"
     }
 
     private fun hasPermission(context: Context): Boolean =

@@ -1,6 +1,6 @@
 # Privacy Policy
 
-**Effective Date:** January 8, 2025
+**Effective Date:** November 8, 2026
 
 **Meteograph** ("the App") is developed by Tim Bortnik. This Privacy Policy explains how the App collects, uses, and protects your information.
 
@@ -17,7 +17,7 @@
 
 The App may collect location information in two ways:
 
-1. **GPS Location** (optional): If you grant location permission, the App uses your device's GPS to determine your coordinates. This is used solely to fetch weather data for your current location.
+1. **Current Location** (optional): If you grant location permission, the App uses your device's location services to determine your coordinates. This is used solely to fetch weather data for your current location.
 
 2. **Manual Location**: You can manually search for and select a city. The city name and coordinates are stored locally on your device.
 
@@ -104,4 +104,4 @@ You can review exactly what data the App collects and how it's used by examining
 
 ---
 
-*This Privacy Policy was last updated on January 8, 2025.*
+*This Privacy Policy was last updated on November 8, 2026.*
