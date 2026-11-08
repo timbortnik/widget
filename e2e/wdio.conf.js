@@ -17,6 +17,12 @@ const APP_PATH =
 exports.config = {
   runner: 'local',
 
+  // Appium drives an Android emulator — no browser, so no virtual display is needed.
+  // Without this, WDIO 9 wraps each worker in xvfb-run when DISPLAY is unset, and
+  // Ubuntu 26.04's xvfb-run closes the worker's IPC fd: every worker dies with
+  // "write EINVAL" on its first process.send (webdriverio/webdriverio#15685).
+  autoXvfb: false,
+
   // Expect an Appium 2 server already running on this address (started by the
   // CI step / `npm run appium`). Appium 2's default base path is '/'.
   hostname: process.env.APPIUM_HOST || '127.0.0.1',
