@@ -87,9 +87,6 @@ class AppLocalizationsHr extends AppLocalizations {
   }
 
   @override
-  String get locationSourceGps => 'GPS';
-
-  @override
   String get locationSourceManual => 'Ručno';
 
   @override
@@ -120,8 +117,12 @@ class AppLocalizationsHr extends AppLocalizations {
   String get unknownLocation => 'Nepoznato';
 
   @override
-  String get gpsPermissionDenied =>
-      'GPS dozvola odbijena. Omogućite u postavkama uređaja.';
+  String get locationServicesOff =>
+      'Lokacija je isključena. Omogućite u postavkama uređaja.';
+
+  @override
+  String get locationPermissionDenied =>
+      'Dozvola za lokaciju odbijena. Omogućite u postavkama aplikacije.';
 
   @override
   String get searchConnectionError =>

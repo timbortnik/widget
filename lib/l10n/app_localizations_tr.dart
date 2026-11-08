@@ -87,9 +87,6 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
-  String get locationSourceGps => 'GPS';
-
-  @override
   String get locationSourceManual => 'Manuel';
 
   @override
@@ -120,8 +117,12 @@ class AppLocalizationsTr extends AppLocalizations {
   String get unknownLocation => 'Bilinmiyor';
 
   @override
-  String get gpsPermissionDenied =>
-      'GPS izni reddedildi. Cihaz ayarlarından etkinleştirin.';
+  String get locationServicesOff =>
+      'Konum kapalı. Cihaz ayarlarından etkinleştirin.';
+
+  @override
+  String get locationPermissionDenied =>
+      'Konum izni reddedildi. Uygulama ayarlarından etkinleştirin.';
 
   @override
   String get searchConnectionError =>

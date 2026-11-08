@@ -224,13 +224,13 @@ class LocationService {
     );
   }
 
-  /// Request GPS permission explicitly.
-  /// Returns true if permission is granted.
-  Future<bool> requestGpsPermission() async {
-    // Check if location services are enabled
+  /// Check that device location can be used, prompting for permission if needed.
+  /// Distinguishes the Location switch being off from permission being denied,
+  /// since each needs a different settings screen to fix.
+  Future<GpsAccess> requestGpsAccess() async {
     final serviceEnabled = await LocationBridge.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      return false;
+      return GpsAccess.serviceDisabled;
     }
 
     // Check and request permission
@@ -239,12 +239,19 @@ class LocationService {
       permission = await LocationBridge.requestPermission();
     }
 
-    return permission == LocationPermissionStatus.granted;
+    return permission == LocationPermissionStatus.granted
+        ? GpsAccess.granted
+        : GpsAccess.permissionDenied;
   }
 
-  /// Open device location settings.
+  /// Open device location settings (the system Location switch).
   Future<void> openLocationSettings() async {
     await LocationBridge.openLocationSettings();
+  }
+
+  /// Open this app's system settings page, where location permission is granted.
+  Future<void> openAppSettings() async {
+    await LocationBridge.openAppSettings();
   }
 
   /// Search for cities using Open-Meteo geocoding API.
@@ -424,6 +431,15 @@ class LocationService {
 enum LocationSource {
   gps,
   manual,
+}
+
+/// Outcome of [LocationService.requestGpsAccess].
+enum GpsAccess {
+  granted,
+  /// The device's Location switch is off.
+  serviceDisabled,
+  /// Location permission was denied (now or permanently).
+  permissionDenied,
 }
 
 /// Location data.

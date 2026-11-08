@@ -87,9 +87,6 @@ class AppLocalizationsUk extends AppLocalizations {
   }
 
   @override
-  String get locationSourceGps => 'GPS';
-
-  @override
   String get locationSourceManual => 'Вручну';
 
   @override
@@ -120,8 +117,12 @@ class AppLocalizationsUk extends AppLocalizations {
   String get unknownLocation => 'Невідомо';
 
   @override
-  String get gpsPermissionDenied =>
-      'Дозвіл GPS відхилено. Увімкніть у налаштуваннях пристрою.';
+  String get locationServicesOff =>
+      'Місцезнаходження вимкнено. Увімкніть у налаштуваннях пристрою.';
+
+  @override
+  String get locationPermissionDenied =>
+      'Дозвіл на місцезнаходження відхилено. Увімкніть у налаштуваннях застосунку.';
 
   @override
   String get searchConnectionError =>

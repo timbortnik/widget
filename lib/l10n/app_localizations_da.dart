@@ -87,9 +87,6 @@ class AppLocalizationsDa extends AppLocalizations {
   }
 
   @override
-  String get locationSourceGps => 'GPS';
-
-  @override
   String get locationSourceManual => 'Manuel';
 
   @override
@@ -120,8 +117,12 @@ class AppLocalizationsDa extends AppLocalizations {
   String get unknownLocation => 'Ukendt';
 
   @override
-  String get gpsPermissionDenied =>
-      'GPS-tilladelse afvist. Aktivér i enhedsindstillinger.';
+  String get locationServicesOff =>
+      'Placering er slået fra. Aktivér i enhedsindstillinger.';
+
+  @override
+  String get locationPermissionDenied =>
+      'Placeringstilladelse afvist. Aktivér i appindstillinger.';
 
   @override
   String get searchConnectionError => 'Kan ikke søge - tjek din forbindelse';

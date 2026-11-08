@@ -87,9 +87,6 @@ class AppLocalizationsIs extends AppLocalizations {
   }
 
   @override
-  String get locationSourceGps => 'GPS';
-
-  @override
   String get locationSourceManual => 'Handvirkt';
 
   @override
@@ -119,8 +116,12 @@ class AppLocalizationsIs extends AppLocalizations {
   String get unknownLocation => 'Óþekkt';
 
   @override
-  String get gpsPermissionDenied =>
-      'GPS heimild hafnað. Virkja í stillingar tækis.';
+  String get locationServicesOff =>
+      'Slökkt er á staðsetningu. Virkja í stillingum tækis.';
+
+  @override
+  String get locationPermissionDenied =>
+      'Staðsetningarheimild hafnað. Virkja í stillingum forrits.';
 
   @override
   String get searchConnectionError => 'Ekki tókst að leita - athugaðu tengingu';

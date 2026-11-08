@@ -628,51 +628,55 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             children: [
               // Top row: location selector + theme switcher
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _identified(
-                    A11yIds.homeLocationSelector,
-                    GestureDetector(
-                      onTap: _showLocationPicker,
-                      behavior: HitTestBehavior.opaque,
-                      // 48dp minimum tap target (ADA); content stays visually
-                      // small, vertically centered within the row.
-                      child: SizedBox(
-                        height: 48,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              _getLocationIcon(),
-                              size: 14,
-                              color: colors.secondaryText,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              _locationName ?? l10n.unknownLocation,
-                              style: TextStyle(
+                  // Flexible so a long city name (or a long translated source
+                  // label) ellipsizes instead of overflowing the row.
+                  Flexible(
+                    child: _identified(
+                      A11yIds.homeLocationSelector,
+                      GestureDetector(
+                        onTap: _showLocationPicker,
+                        behavior: HitTestBehavior.opaque,
+                        // 48dp minimum tap target (ADA); content stays visually
+                        // small, vertically centered within the row.
+                        child: SizedBox(
+                          height: 48,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                _getLocationIcon(),
+                                size: 14,
                                 color: colors.secondaryText,
-                                fontSize: 13,
                               ),
-                            ),
-                            Text(
-                              ' · ${_getLocationSourceLabel(l10n)}',
-                              style: TextStyle(
+                              const SizedBox(width: 4),
+                              // One text, ellipsized at the end, so a long
+                              // source label is cut before the city name is.
+                              Flexible(
+                                child: Text(
+                                  '${_locationName ?? l10n.unknownLocation}'
+                                  ' · ${_getLocationSourceLabel(l10n)}',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    color: colors.secondaryText,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ),
+                              Icon(
+                                Icons.arrow_drop_down,
+                                size: 16,
                                 color: colors.secondaryText,
-                                fontSize: 13,
                               ),
-                            ),
-                            Icon(
-                              Icons.arrow_drop_down,
-                              size: 16,
-                              color: colors.secondaryText,
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
+                      button: true,
                     ),
-                    button: true,
                   ),
-                  const Spacer(),
                   _identified(
                     A11yIds.homeThemeButton,
                     IconButton(
@@ -1000,19 +1004,30 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         languageCode: locale.languageCode,
         onGpsSelected: () async {
           Navigator.pop(context);
-          final hasPermission = await _locationService.requestGpsPermission();
-          if (hasPermission) {
+          final access = await _locationService.requestGpsAccess();
+          if (access == GpsAccess.granted) {
             await _locationService.useGpsLocation();
             await _loadWeather(userTriggered: true);
           } else {
             if (mounted) {
               final l10n = AppLocalizations.of(this.context)!;
+              final serviceOff = access == GpsAccess.serviceDisabled;
               ScaffoldMessenger.of(this.context).showSnackBar(
                 SnackBar(
-                  content: Text(l10n.gpsPermissionDenied),
+                  content: Text(serviceOff
+                      ? l10n.locationServicesOff
+                      : l10n.locationPermissionDenied),
+                  // Since Flutter 3.38 a SnackBar with an action persists until
+                  // tapped (flutter/flutter#173084), so it outlived the problem
+                  // (e.g. Location re-enabled from Quick Settings). Restore the
+                  // pre-3.38 behaviour: auto-dismiss, but keep it up for
+                  // screen-reader users, who need time to reach the action.
+                  persist: MediaQuery.accessibleNavigationOf(this.context),
                   action: SnackBarAction(
                     label: l10n.settings,
-                    onPressed: _locationService.openLocationSettings,
+                    onPressed: serviceOff
+                        ? _locationService.openLocationSettings
+                        : _locationService.openAppSettings,
                   ),
                 ),
               );
@@ -1164,7 +1179,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   String _getLocationSourceLabel(AppLocalizations l10n) {
     switch (_locationSource) {
       case LocationSource.gps:
-        return l10n.locationSourceGps;
+        return l10n.currentLocation;
       case LocationSource.manual:
         return l10n.locationSourceManual;
     }
@@ -1365,7 +1380,7 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
               A11yIds.locationGpsTile,
               ListTile(
                 leading: Icon(Icons.gps_fixed, color: colors.temperatureLine),
-                title: Text('GPS', style: TextStyle(color: colors.primaryText)),
+                title: Text(l10n.currentLocation, style: TextStyle(color: colors.primaryText)),
                 subtitle: Text(l10n.deviceLocation, style: TextStyle(color: colors.secondaryText, fontSize: 12)),
                 trailing: widget.currentSource == LocationSource.gps
                     ? Icon(Icons.check, color: colors.temperatureLine, size: 20)

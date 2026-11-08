@@ -87,9 +87,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get locationSourceGps => 'GPS';
-
-  @override
   String get locationSourceManual => '手动';
 
   @override
@@ -119,7 +116,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get unknownLocation => '未知';
 
   @override
-  String get gpsPermissionDenied => 'GPS权限被拒绝。请在设备设置中启用。';
+  String get locationServicesOff => '位置信息已关闭。请在设备设置中启用。';
+
+  @override
+  String get locationPermissionDenied => '位置权限被拒绝。请在应用设置中启用。';
 
   @override
   String get searchConnectionError => '无法搜索 - 请检查您的连接';

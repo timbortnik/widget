@@ -87,9 +87,6 @@ class AppLocalizationsBg extends AppLocalizations {
   }
 
   @override
-  String get locationSourceGps => 'GPS';
-
-  @override
   String get locationSourceManual => 'Ръчно';
 
   @override
@@ -120,8 +117,12 @@ class AppLocalizationsBg extends AppLocalizations {
   String get unknownLocation => 'Неизвестно';
 
   @override
-  String get gpsPermissionDenied =>
-      'Достъпът до GPS е отказан. Активирайте в настройките.';
+  String get locationServicesOff =>
+      'Местоположението е изключено. Активирайте в настройките.';
+
+  @override
+  String get locationPermissionDenied =>
+      'Достъпът до местоположението е отказан. Активирайте в настройките на приложението.';
 
   @override
   String get searchConnectionError => 'Неуспешно търсене - проверете връзката';

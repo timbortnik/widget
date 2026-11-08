@@ -87,9 +87,6 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String get locationSourceGps => 'GPS';
-
-  @override
   String get locationSourceManual => 'Thủ công';
 
   @override
@@ -120,8 +117,12 @@ class AppLocalizationsVi extends AppLocalizations {
   String get unknownLocation => 'Không xác định';
 
   @override
-  String get gpsPermissionDenied =>
-      'Quyền GPS bị từ chối. Bật trong cài đặt thiết bị.';
+  String get locationServicesOff =>
+      'Vị trí đang tắt. Bật trong cài đặt thiết bị.';
+
+  @override
+  String get locationPermissionDenied =>
+      'Quyền truy cập vị trí bị từ chối. Bật trong cài đặt ứng dụng.';
 
   @override
   String get searchConnectionError =>

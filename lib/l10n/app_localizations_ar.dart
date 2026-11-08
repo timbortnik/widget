@@ -87,9 +87,6 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get locationSourceGps => 'GPS';
-
-  @override
   String get locationSourceManual => 'يدوي';
 
   @override
@@ -120,8 +117,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get unknownLocation => 'غير معروف';
 
   @override
-  String get gpsPermissionDenied =>
-      'تم رفض إذن GPS. قم بتمكينه في إعدادات الجهاز.';
+  String get locationServicesOff =>
+      'الموقع متوقف. قم بتمكينه في إعدادات الجهاز.';
+
+  @override
+  String get locationPermissionDenied =>
+      'تم رفض إذن الموقع. قم بتمكينه في إعدادات التطبيق.';
 
   @override
   String get searchConnectionError => 'تعذر البحث - تحقق من اتصالك';

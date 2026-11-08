@@ -88,9 +88,6 @@ class AppLocalizationsMk extends AppLocalizations {
   }
 
   @override
-  String get locationSourceGps => 'GPS';
-
-  @override
   String get locationSourceManual => 'Рачно';
 
   @override
@@ -121,8 +118,12 @@ class AppLocalizationsMk extends AppLocalizations {
   String get unknownLocation => 'Непознато';
 
   @override
-  String get gpsPermissionDenied =>
-      'GPS дозволата е одбиена. Овозможете во поставките.';
+  String get locationServicesOff =>
+      'Локацијата е исклучена. Овозможете во поставките.';
+
+  @override
+  String get locationPermissionDenied =>
+      'Дозволата за локација е одбиена. Овозможете во поставките на апликацијата.';
 
   @override
   String get searchConnectionError =>

@@ -33,7 +33,7 @@ The App stores the following data locally using Android SharedPreferences:
 
 - Selected location coordinates (latitude/longitude)
 - City name
-- Location preference (GPS or manual)
+- Location preference (current location or manual)
 - Recently searched cities (up to 5)
 - Cached weather data (for offline access)
 - Widget display preferences

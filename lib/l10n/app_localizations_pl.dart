@@ -87,9 +87,6 @@ class AppLocalizationsPl extends AppLocalizations {
   }
 
   @override
-  String get locationSourceGps => 'GPS';
-
-  @override
   String get locationSourceManual => 'Ręcznie';
 
   @override
@@ -120,8 +117,12 @@ class AppLocalizationsPl extends AppLocalizations {
   String get unknownLocation => 'Nieznane';
 
   @override
-  String get gpsPermissionDenied =>
-      'Odmowa dostępu do GPS. Włącz w ustawieniach urządzenia.';
+  String get locationServicesOff =>
+      'Lokalizacja jest wyłączona. Włącz w ustawieniach urządzenia.';
+
+  @override
+  String get locationPermissionDenied =>
+      'Odmowa dostępu do lokalizacji. Włącz w ustawieniach aplikacji.';
 
   @override
   String get searchConnectionError => 'Nie można wyszukać - sprawdź połączenie';

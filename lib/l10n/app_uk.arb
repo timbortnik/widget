@@ -124,7 +124,6 @@
       }
     }
   },
-  "locationSourceGps": "GPS",
   "locationSourceManual": "Вручну",
   "daylight": "Денне світло",
   "weatherDataBy": "Дані погоди від {provider} (CC BY 4.0)",
@@ -138,7 +137,8 @@
   "loadingWeather": "Завантаження погоди...",
   "unableToLoadWeather": "Не вдалося завантажити погоду",
   "unknownLocation": "Невідомо",
-  "gpsPermissionDenied": "Дозвіл GPS відхилено. Увімкніть у налаштуваннях пристрою.",
+  "locationServicesOff": "Місцезнаходження вимкнено. Увімкніть у налаштуваннях пристрою.",
+  "locationPermissionDenied": "Дозвіл на місцезнаходження відхилено. Увімкніть у налаштуваннях застосунку.",
   "searchConnectionError": "Не вдалося знайти - перевірте підключення",
   "selectLocation": "Оберіть місце",
   "searchCityHint": "Пошук міста...",

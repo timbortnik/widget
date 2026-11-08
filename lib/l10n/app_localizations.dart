@@ -232,7 +232,7 @@ abstract class AppLocalizations {
   /// **'Location'**
   String get location;
 
-  /// Option to use GPS location
+  /// Option to use the device's current location
   ///
   /// In en, this message translates to:
   /// **'Current location'**
@@ -298,12 +298,6 @@ abstract class AppLocalizations {
   /// **'{amount} mm/h'**
   String precipitationRate(String amount);
 
-  /// Short label for GPS location source
-  ///
-  /// In en, this message translates to:
-  /// **'GPS'**
-  String get locationSourceGps;
-
   /// Short label for manually set location
   ///
   /// In en, this message translates to:
@@ -358,11 +352,17 @@ abstract class AppLocalizations {
   /// **'Unknown'**
   String get unknownLocation;
 
-  /// Snackbar message when GPS permission is denied
+  /// Snackbar message when the device's Location setting is off; its Settings button opens the system location settings
   ///
   /// In en, this message translates to:
-  /// **'GPS permission denied. Enable in device settings.'**
-  String get gpsPermissionDenied;
+  /// **'Location is off. Enable in device settings.'**
+  String get locationServicesOff;
+
+  /// Snackbar message when location permission is denied; its Settings button opens this app's system settings page
+  ///
+  /// In en, this message translates to:
+  /// **'Location permission denied. Enable in app settings.'**
+  String get locationPermissionDenied;
 
   /// Error message when city search fails due to network
   ///
@@ -448,7 +448,7 @@ abstract class AppLocalizations {
   /// **'High contrast'**
   String get colorSchemeHighContrast;
 
-  /// Subtitle of the GPS option in the location picker
+  /// Subtitle of the current-location option in the location picker
   ///
   /// In en, this message translates to:
   /// **'Device location'**

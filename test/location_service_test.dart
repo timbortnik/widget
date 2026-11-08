@@ -810,6 +810,27 @@ void main() {
     });
   });
 
+  group('LocationService.requestGpsAccess', () {
+    test('location switch off -> serviceDisabled (even with permission)', () async {
+      mockServiceEnabled = false;
+      expect(await LocationService().requestGpsAccess(), GpsAccess.serviceDisabled);
+    });
+
+    test('permission granted -> granted', () async {
+      expect(await LocationService().requestGpsAccess(), GpsAccess.granted);
+    });
+
+    test('permission denied -> permissionDenied', () async {
+      mockPermission = 'denied';
+      expect(await LocationService().requestGpsAccess(), GpsAccess.permissionDenied);
+    });
+
+    test('permission permanently denied -> permissionDenied', () async {
+      mockPermission = 'deniedForever';
+      expect(await LocationService().requestGpsAccess(), GpsAccess.permissionDenied);
+    });
+  });
+
   group('LocationService dispose', () {
     test('closes HTTP client', () async {
       final service = LocationService(client: MockClient((r) async => http.Response('', 200)));

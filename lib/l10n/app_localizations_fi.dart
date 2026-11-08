@@ -87,9 +87,6 @@ class AppLocalizationsFi extends AppLocalizations {
   }
 
   @override
-  String get locationSourceGps => 'GPS';
-
-  @override
   String get locationSourceManual => 'Manuaalinen';
 
   @override
@@ -120,8 +117,12 @@ class AppLocalizationsFi extends AppLocalizations {
   String get unknownLocation => 'Tuntematon';
 
   @override
-  String get gpsPermissionDenied =>
-      'GPS-lupa evätty. Ota käyttöön laitteen asetuksista.';
+  String get locationServicesOff =>
+      'Sijainti on pois päältä. Ota käyttöön laitteen asetuksista.';
+
+  @override
+  String get locationPermissionDenied =>
+      'Sijaintilupa evätty. Ota käyttöön sovelluksen asetuksista.';
 
   @override
   String get searchConnectionError => 'Haku epäonnistui - tarkista yhteys';

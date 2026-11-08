@@ -87,9 +87,6 @@ class AppLocalizationsSq extends AppLocalizations {
   }
 
   @override
-  String get locationSourceGps => 'GPS';
-
-  @override
   String get locationSourceManual => 'Manual';
 
   @override
@@ -120,8 +117,12 @@ class AppLocalizationsSq extends AppLocalizations {
   String get unknownLocation => 'E panjohur';
 
   @override
-  String get gpsPermissionDenied =>
-      'Leja GPS u refuzua. Aktivizoni në cilësimet e pajisjes.';
+  String get locationServicesOff =>
+      'Vendndodhja është e çaktivizuar. Aktivizoni në cilësimet e pajisjes.';
+
+  @override
+  String get locationPermissionDenied =>
+      'Leja për vendndodhjen u refuzua. Aktivizoni në cilësimet e aplikacionit.';
 
   @override
   String get searchConnectionError =>

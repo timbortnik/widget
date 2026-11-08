@@ -87,9 +87,6 @@ class AppLocalizationsKa extends AppLocalizations {
   }
 
   @override
-  String get locationSourceGps => 'GPS';
-
-  @override
   String get locationSourceManual => 'ხელით';
 
   @override
@@ -120,8 +117,12 @@ class AppLocalizationsKa extends AppLocalizations {
   String get unknownLocation => 'უცნობი';
 
   @override
-  String get gpsPermissionDenied =>
-      'GPS ნებართვა უარყოფილია. ჩართეთ მოწყობილობის პარამეტრებში.';
+  String get locationServicesOff =>
+      'მდებარეობა გამორთულია. ჩართეთ მოწყობილობის პარამეტრებში.';
+
+  @override
+  String get locationPermissionDenied =>
+      'მდებარეობის ნებართვა უარყოფილია. ჩართეთ აპის პარამეტრებში.';
 
   @override
   String get searchConnectionError => 'ძიება ვერ მოხერხდა - შეამოწმეთ კავშირი';
