@@ -62,7 +62,7 @@ This app uses these third-party services:
 
 The app requests these Android permissions:
 
-- `ACCESS_FINE_LOCATION` / `ACCESS_COARSE_LOCATION` - Optional, for GPS weather
+- `ACCESS_COARSE_LOCATION` - Optional, approximate location for local weather (no precise location requested)
 - `INTERNET` - Required for weather API
 - `ACCESS_NETWORK_STATE` - For offline detection
 

@@ -230,10 +230,7 @@ class MainActivity : FlutterActivity() {
                     }
                     pendingPermissionResult = result
                     requestPermissions(
-                        arrayOf(
-                            Manifest.permission.ACCESS_FINE_LOCATION,
-                            Manifest.permission.ACCESS_COARSE_LOCATION
-                        ),
+                        arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION),
                         LOCATION_PERMISSION_REQUEST_CODE
                     )
                 }
@@ -281,7 +278,7 @@ class MainActivity : FlutterActivity() {
         val status = when {
             granted -> "granted"
             // Not granted and no rationale allowed → user chose "don't ask again" (or it's policy-blocked).
-            !shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION) -> "deniedForever"
+            !shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION) -> "deniedForever"
             else -> "denied"
         }
         pending.success(status)
