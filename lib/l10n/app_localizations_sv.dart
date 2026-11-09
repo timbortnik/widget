@@ -124,6 +124,10 @@ class AppLocalizationsSv extends AppLocalizations {
       'Platsbehörighet nekad. Aktivera i appinställningar.';
 
   @override
+  String get widgetBackgroundRestricted =>
+      'Widgeten kan inte uppdateras i bakgrunden. Tillåt bakgrundsanvändning i appinställningar.';
+
+  @override
   String get searchConnectionError =>
       'Kan inte söka - kontrollera anslutningen';
 

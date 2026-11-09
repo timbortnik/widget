@@ -125,6 +125,10 @@ class AppLocalizationsVi extends AppLocalizations {
       'Quyền truy cập vị trí bị từ chối. Bật trong cài đặt ứng dụng.';
 
   @override
+  String get widgetBackgroundRestricted =>
+      'Tiện ích không thể cập nhật trong nền. Cho phép sử dụng trong nền trong cài đặt ứng dụng.';
+
+  @override
   String get searchConnectionError =>
       'Không thể tìm kiếm - kiểm tra kết nối của bạn';
 

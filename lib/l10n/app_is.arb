@@ -37,6 +37,7 @@
   "unknownLocation": "Óþekkt",
   "locationServicesOff": "Slökkt er á staðsetningu. Virkja í stillingum tækis.",
   "locationPermissionDenied": "Staðsetningarheimild hafnað. Virkja í stillingum forrits.",
+  "widgetBackgroundRestricted": "Græjan getur ekki uppfærst í bakgrunni. Leyfðu notkun í bakgrunni í stillingum forrits.",
   "searchConnectionError": "Ekki tókst að leita - athugaðu tengingu",
   "selectLocation": "Veldu staðsetningu",
   "searchCityHint": "Leita að borg...",

@@ -37,6 +37,7 @@
   "unknownLocation": "Desconocido",
   "locationServicesOff": "La ubicación está desactivada. Habilitar en ajustes del dispositivo.",
   "locationPermissionDenied": "Permiso de ubicación denegado. Habilitar en ajustes de la aplicación.",
+  "widgetBackgroundRestricted": "El widget no puede actualizarse en segundo plano. Permitir el uso en segundo plano en ajustes de la aplicación.",
   "searchConnectionError": "No se puede buscar - verifica tu conexión",
   "selectLocation": "Seleccionar ubicación",
   "searchCityHint": "Buscar ciudad...",

@@ -125,6 +125,10 @@ class AppLocalizationsKa extends AppLocalizations {
       'მდებარეობის ნებართვა უარყოფილია. ჩართეთ აპის პარამეტრებში.';
 
   @override
+  String get widgetBackgroundRestricted =>
+      'ვიჯეტი ფონურ რეჟიმში ვერ განახლდება. დაუშვით ფონური გამოყენება აპის პარამეტრებში.';
+
+  @override
   String get searchConnectionError => 'ძიება ვერ მოხერხდა - შეამოწმეთ კავშირი';
 
   @override

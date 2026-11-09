@@ -9,6 +9,7 @@ module.exports = {
   homeLocationSelector: 'home_location_selector',
   homeOpenMeteoLink: 'home_open_meteo_link',
   homeGithubLink: 'home_github_link',
+  homeBackgroundSettingsButton: 'home_background_settings_button',
   // Charts are plain Flutter Image widgets, so a normal Semantics reaches them:
   // they carry both a resource-id (below) and a localized content-desc label.
   homeHourlyChart: 'home_hourly_chart',

@@ -37,6 +37,7 @@
   "unknownLocation": "Ukendt",
   "locationServicesOff": "Placering er slået fra. Aktivér i enhedsindstillinger.",
   "locationPermissionDenied": "Placeringstilladelse afvist. Aktivér i appindstillinger.",
+  "widgetBackgroundRestricted": "Widgetten kan ikke opdatere i baggrunden. Tillad brug i baggrunden i appindstillinger.",
   "searchConnectionError": "Kan ikke søge - tjek din forbindelse",
   "selectLocation": "Vælg placering",
   "searchCityHint": "Søg by...",

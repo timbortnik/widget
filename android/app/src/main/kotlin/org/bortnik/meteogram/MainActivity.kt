@@ -269,6 +269,9 @@ class MainActivity : FlutterActivity() {
                         result.error("OPEN_SETTINGS_ERROR", e.message, null)
                     }
                 }
+                "isWidgetBackgroundRestricted" -> {
+                    result.success(WidgetUtils.isWidgetBackgroundRestricted(this))
+                }
                 else -> result.notImplemented()
             }
         }

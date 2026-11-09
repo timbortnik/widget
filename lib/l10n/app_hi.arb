@@ -37,6 +37,7 @@
   "unknownLocation": "अज्ञात",
   "locationServicesOff": "स्थान बंद है। डिवाइस सेटिंग्स में सक्षम करें।",
   "locationPermissionDenied": "स्थान अनुमति अस्वीकृत। ऐप सेटिंग्स में सक्षम करें।",
+  "widgetBackgroundRestricted": "विजेट बैकग्राउंड में अपडेट नहीं हो सकता। ऐप सेटिंग्स में बैकग्राउंड उपयोग की अनुमति दें।",
   "searchConnectionError": "खोज नहीं हो सकी - अपना कनेक्शन जांचें",
   "selectLocation": "स्थान चुनें",
   "searchCityHint": "शहर खोजें...",

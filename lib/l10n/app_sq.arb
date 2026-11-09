@@ -37,6 +37,7 @@
   "unknownLocation": "E panjohur",
   "locationServicesOff": "Vendndodhja është e çaktivizuar. Aktivizoni në cilësimet e pajisjes.",
   "locationPermissionDenied": "Leja për vendndodhjen u refuzua. Aktivizoni në cilësimet e aplikacionit.",
+  "widgetBackgroundRestricted": "Miniaplikacioni nuk mund të përditësohet në sfond. Lejoni përdorimin në sfond në cilësimet e aplikacionit.",
   "searchConnectionError": "Nuk mund të kërkoj - kontrolloni lidhjen",
   "selectLocation": "Zgjidhni vendndodhjen",
   "searchCityHint": "Kërko qytet...",

@@ -125,6 +125,10 @@ class AppLocalizationsPa extends AppLocalizations {
       'ਸਥਾਨ ਦੀ ਇਜਾਜ਼ਤ ਰੱਦ। ਐਪ ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਯੋਗ ਕਰੋ।';
 
   @override
+  String get widgetBackgroundRestricted =>
+      'ਵਿਜੇਟ ਬੈਕਗ੍ਰਾਊਂਡ ਵਿੱਚ ਅੱਪਡੇਟ ਨਹੀਂ ਹੋ ਸਕਦਾ। ਐਪ ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਬੈਕਗ੍ਰਾਊਂਡ ਵਰਤੋਂ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ।';
+
+  @override
   String get searchConnectionError =>
       'ਖੋਜ ਨਹੀਂ ਹੋ ਸਕਦੀ - ਆਪਣਾ ਕਨੈਕਸ਼ਨ ਚੈੱਕ ਕਰੋ';
 

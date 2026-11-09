@@ -37,6 +37,7 @@
   "unknownLocation": "알 수 없음",
   "locationServicesOff": "위치가 꺼져 있습니다. 기기 설정에서 활성화하세요.",
   "locationPermissionDenied": "위치 권한이 거부되었습니다. 앱 설정에서 활성화하세요.",
+  "widgetBackgroundRestricted": "위젯을 백그라운드에서 업데이트할 수 없습니다. 앱 설정에서 백그라운드 사용을 허용하세요.",
   "searchConnectionError": "검색 불가 - 연결을 확인하세요",
   "selectLocation": "위치 선택",
   "searchCityHint": "도시 검색...",

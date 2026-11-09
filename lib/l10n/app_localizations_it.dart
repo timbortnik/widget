@@ -125,6 +125,10 @@ class AppLocalizationsIt extends AppLocalizations {
       'Permesso di posizione negato. Attivare nelle impostazioni dell\'app.';
 
   @override
+  String get widgetBackgroundRestricted =>
+      'Il widget non può aggiornarsi in background. Consentire l\'utilizzo in background nelle impostazioni dell\'app.';
+
+  @override
   String get searchConnectionError =>
       'Impossibile cercare - controlla la connessione';
 

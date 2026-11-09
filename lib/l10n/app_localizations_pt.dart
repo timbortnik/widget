@@ -126,6 +126,10 @@ class AppLocalizationsPt extends AppLocalizations {
       'Permissão de localização negada. Ative nas configurações do app.';
 
   @override
+  String get widgetBackgroundRestricted =>
+      'O widget não pode ser atualizado em segundo plano. Permita o uso em segundo plano nas configurações do app.';
+
+  @override
   String get searchConnectionError =>
       'Não foi possível pesquisar - verifique sua conexão';
 

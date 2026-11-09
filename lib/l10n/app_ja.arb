@@ -37,6 +37,7 @@
   "unknownLocation": "不明",
   "locationServicesOff": "位置情報がオフになっています。設定で有効にしてください。",
   "locationPermissionDenied": "位置情報の権限が拒否されました。アプリの設定で有効にしてください。",
+  "widgetBackgroundRestricted": "ウィジェットをバックグラウンドで更新できません。アプリの設定でバックグラウンドでの使用を許可してください。",
   "searchConnectionError": "検索できません - 接続を確認してください",
   "selectLocation": "場所を選択",
   "searchCityHint": "都市を検索...",

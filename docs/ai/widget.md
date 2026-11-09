@@ -159,6 +159,8 @@ Dart talks to Kotlin over a single channel. Relevant methods (see
 | `getWidgetData` / `saveWidgetData` | KV read/write to the shared prefs file (used by `WidgetStore`) |
 | `updateWidget(name)` | Sends `ACTION_APPWIDGET_UPDATE` to the named provider |
 | `isLocationServiceEnabled` / `checkLocationPermission` / `requestLocationPermission` / `getCurrentPosition` / `getLastKnownPosition` / `openLocationSettings` | Native location surface (`LocationProvider`, used by `LocationBridge`) |
+| `openAppSettings` | Opens this app's system settings page (location permission, battery usage) |
+| `isWidgetBackgroundRestricted` | `WidgetUtils.isWidgetBackgroundRestricted`: battery usage "Restricted" with a widget placed (drives the home-screen notice) |
 
 ### WidgetStore (`lib/services/widget_store.dart`)
 
@@ -210,6 +212,13 @@ mechanisms, all coordinated through `WidgetUtils`:
 `MeteogramApplication.onCreate()` registers the Material You `ContentObserver`,
 schedules the alarm (`WidgetAlarmScheduler`), and enqueues the worker.
 
+None of these run while the user has set the app's battery usage to
+**Restricted** (background usage off, appop `RUN_ANY_IN_BACKGROUND` = ignore):
+Android withholds alarms, jobs and `BOOT_COMPLETED` until the app is opened, so
+the widget freezes. Apps can't lift this themselves; the home screen shows a
+notice with a Settings button while it applies
+(`WidgetUtils.isWidgetBackgroundRestricted`, re-checked on every resume).
+
 ### WidgetUtils helpers (`WidgetUtils.kt`)
 
 - `isWeatherDataStale(context)` — true if `last_weather_update` is older than
@@ -223,6 +232,8 @@ schedules the alarm (`WidgetAlarmScheduler`), and enqueues the worker.
   **every** provider in `WIDGET_PROVIDERS` (48h + weekly).
 - `rerenderAllWidgetsIfNeeded(context)` — `rerenderAllWidgetsNative` guarded by
   `isRerenderNeeded`.
+- `isWidgetBackgroundRestricted(context)` — true if battery usage is
+  "Restricted" and at least one widget is placed (see above).
 
 ### "Now" indicator updates
 
@@ -398,6 +409,7 @@ adb logcat | grep -i "Error inflating"
 |-------|-------|----------|
 | "Can't load widget" | Unsupported view in layout, or `WidgetTheme` unavailable below API 29 | Remove `View`/`Space`; keep `minSdk ≥ 29` |
 | Widget shows "Tap to load forecast" | No weather cached yet | Open the app once (or wait for a background fetch with a stored location) |
+| Widget not updating, catches up only when the app is opened | Battery usage set to Restricted | `adb shell cmd appops get org.bortnik.meteogram RUN_ANY_IN_BACKGROUND` shows `ignore`; the user must allow background usage (App info → App battery usage) |
 | Widget not updating | Alarm/worker not scheduled | Check `MeteogramApplication.onCreate` scheduled the alarm and enqueued `WeatherUpdateWorker` |
 | Weekly widget blank but 48h works | Weekly view slice empty | Check `WeatherData.getWeeklyView()` and that the fetch covers the full forecast window |
 

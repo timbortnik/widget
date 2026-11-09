@@ -37,6 +37,7 @@
   "unknownLocation": "Невядома",
   "locationServicesOff": "Месцазнаходжанне выключана. Уключыце ў наладах прылады.",
   "locationPermissionDenied": "Дазвол на месцазнаходжанне адхілены. Уключыце ў наладах праграмы.",
+  "widgetBackgroundRestricted": "Віджэт не можа абнаўляцца ў фоне. Дазвольце фонавае выкарыстанне ў наладах праграмы.",
   "searchConnectionError": "Немагчыма шукаць - праверце падключэнне",
   "selectLocation": "Выбраць месца",
   "searchCityHint": "Пошук горада...",

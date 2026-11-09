@@ -125,6 +125,10 @@ class AppLocalizationsRo extends AppLocalizations {
       'Permisiunea de locație a fost refuzată. Activați din setările aplicației.';
 
   @override
+  String get widgetBackgroundRestricted =>
+      'Widgetul nu se poate actualiza în fundal. Permiteți utilizarea în fundal din setările aplicației.';
+
+  @override
   String get searchConnectionError =>
       'Nu se poate căuta - verificați conexiunea';
 

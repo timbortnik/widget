@@ -125,6 +125,10 @@ class AppLocalizationsTr extends AppLocalizations {
       'Konum izni reddedildi. Uygulama ayarlarından etkinleştirin.';
 
   @override
+  String get widgetBackgroundRestricted =>
+      'Widget arka planda güncellenemiyor. Uygulama ayarlarından arka plan kullanımına izin verin.';
+
+  @override
   String get searchConnectionError =>
       'Arama yapılamıyor - bağlantınızı kontrol edin';
 

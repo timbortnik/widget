@@ -37,6 +37,7 @@
   "unknownLocation": "Ora dingerteni",
   "locationServicesOff": "Lokasi dipateni. Aktifake ing setelan piranti.",
   "locationPermissionDenied": "Ijin lokasi ditolak. Aktifake ing setelan aplikasi.",
+  "widgetBackgroundRestricted": "Widget ora bisa nganyari ing latar mburi. Idinake panggunaan latar mburi ing setelan aplikasi.",
   "searchConnectionError": "Ora bisa nggoleki - priksa sambungan",
   "selectLocation": "Pilih lokasi",
   "searchCityHint": "Goleki kutha...",

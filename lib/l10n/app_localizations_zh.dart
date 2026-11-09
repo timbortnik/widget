@@ -122,6 +122,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get locationPermissionDenied => '位置权限被拒绝。请在应用设置中启用。';
 
   @override
+  String get widgetBackgroundRestricted => '小部件无法在后台更新。请在应用设置中允许后台使用。';
+
+  @override
   String get searchConnectionError => '无法搜索 - 请检查您的连接';
 
   @override

@@ -87,6 +87,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   Brightness? _lastRenderedBrightness; // Track theme for re-render on change
   bool _isUpdatingWidget = false; // Prevents concurrent widget updates
   bool _isLoadingWeather = false; // Prevents concurrent weather fetches
+  // Battery usage "Restricted" with a widget placed: the widget can't refresh
+  // in the background, so the home screen says so.
+  bool _backgroundRestricted = false;
 
   // Cached SVG strings for in-app chart display, keyed by chart mode.
   final Map<String, _ChartCacheEntry> _chartCache = {
@@ -113,6 +116,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _initialize();
+    _checkBackgroundRestriction();
     // Start periodic refresh timer (checks staleness and hour boundaries)
     _refreshTimer = Timer.periodic(kForegroundRefreshInterval, (_) {
       _refreshIfStale();
@@ -232,9 +236,19 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     if (state == AppLifecycleState.resumed) {
       // App came to foreground - check if widget was resized
       _checkAndSyncWidget();
+      // The user may be back from system settings with the restriction lifted
+      _checkBackgroundRestriction();
     } else if (state == AppLifecycleState.paused) {
       // App going to background - update widget with fresh chart
       _updateWidgetOnBackground();
+    }
+  }
+
+  /// Re-read whether the battery setting stops the widget from refreshing.
+  Future<void> _checkBackgroundRestriction() async {
+    final restricted = await _widgetService.isBackgroundRestricted();
+    if (mounted && restricted != _backgroundRestricted) {
+      setState(() => _backgroundRestricted = restricted);
     }
   }
 
@@ -701,6 +715,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               ),
               const SizedBox(height: 16),
 
+              if (_backgroundRestricted) ...[
+                _buildBackgroundRestrictedNotice(l10n, colors),
+                const SizedBox(height: 16),
+              ],
+
               // Unified weather card: temperature + legend + chart
               Center(
               child: Container(
@@ -881,6 +900,32 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           ),
         ),
       ),
+    );
+  }
+
+  /// Shown while battery usage is "Restricted": Android then runs none of the
+  /// widget's background refreshes, and only the user can lift it.
+  Widget _buildBackgroundRestrictedNotice(AppLocalizations l10n, MeteogramColors colors) {
+    return Row(
+      children: [
+        Icon(Icons.battery_alert_outlined, size: 16, color: colors.secondaryText),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            l10n.widgetBackgroundRestricted,
+            style: TextStyle(color: colors.secondaryText, fontSize: 13),
+          ),
+        ),
+        _identified(
+          A11yIds.homeBackgroundSettingsButton,
+          TextButton(
+            // This app's system settings page, where background usage is allowed.
+            onPressed: _locationService.openAppSettings,
+            child: Text(l10n.settings),
+          ),
+          button: true,
+        ),
+      ],
     );
   }
 

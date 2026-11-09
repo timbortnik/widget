@@ -37,6 +37,7 @@
   "unknownLocation": "Bilinmiyor",
   "locationServicesOff": "Konum kapalı. Cihaz ayarlarından etkinleştirin.",
   "locationPermissionDenied": "Konum izni reddedildi. Uygulama ayarlarından etkinleştirin.",
+  "widgetBackgroundRestricted": "Widget arka planda güncellenemiyor. Uygulama ayarlarından arka plan kullanımına izin verin.",
   "searchConnectionError": "Arama yapılamıyor - bağlantınızı kontrol edin",
   "selectLocation": "Konum seçin",
   "searchCityHint": "Şehir ara...",

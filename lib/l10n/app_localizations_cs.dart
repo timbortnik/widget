@@ -124,6 +124,10 @@ class AppLocalizationsCs extends AppLocalizations {
       'Oprávnění k poloze zamítnuto. Povolte v nastavení aplikace.';
 
   @override
+  String get widgetBackgroundRestricted =>
+      'Widget se nemůže aktualizovat na pozadí. Povolte využití na pozadí v nastavení aplikace.';
+
+  @override
   String get searchConnectionError =>
       'Nelze vyhledávat - zkontrolujte připojení';
 

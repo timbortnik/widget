@@ -125,6 +125,10 @@ class AppLocalizationsNl extends AppLocalizations {
       'Locatietoestemming geweigerd. Schakel in via app-instellingen.';
 
   @override
+  String get widgetBackgroundRestricted =>
+      'De widget kan niet op de achtergrond bijwerken. Sta achtergrondgebruik toe via app-instellingen.';
+
+  @override
   String get searchConnectionError =>
       'Kan niet zoeken - controleer je verbinding';
 

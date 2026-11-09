@@ -125,6 +125,10 @@ class AppLocalizationsBe extends AppLocalizations {
       'Дазвол на месцазнаходжанне адхілены. Уключыце ў наладах праграмы.';
 
   @override
+  String get widgetBackgroundRestricted =>
+      'Віджэт не можа абнаўляцца ў фоне. Дазвольце фонавае выкарыстанне ў наладах праграмы.';
+
+  @override
   String get searchConnectionError => 'Немагчыма шукаць - праверце падключэнне';
 
   @override

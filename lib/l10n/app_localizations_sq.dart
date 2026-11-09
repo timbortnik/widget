@@ -125,6 +125,10 @@ class AppLocalizationsSq extends AppLocalizations {
       'Leja për vendndodhjen u refuzua. Aktivizoni në cilësimet e aplikacionit.';
 
   @override
+  String get widgetBackgroundRestricted =>
+      'Miniaplikacioni nuk mund të përditësohet në sfond. Lejoni përdorimin në sfond në cilësimet e aplikacionit.';
+
+  @override
   String get searchConnectionError =>
       'Nuk mund të kërkoj - kontrolloni lidhjen';
 

@@ -37,6 +37,7 @@
   "unknownLocation": "Neznáme",
   "locationServicesOff": "Poloha je vypnutá. Povoľte v nastaveniach zariadenia.",
   "locationPermissionDenied": "Povolenie na prístup k polohe zamietnuté. Povoľte v nastaveniach aplikácie.",
+  "widgetBackgroundRestricted": "Miniaplikácia sa nemôže aktualizovať na pozadí. Povoľte používanie na pozadí v nastaveniach aplikácie.",
   "searchConnectionError": "Nie je možné vyhľadávať - skontrolujte pripojenie",
   "selectLocation": "Vyberte umiestnenie",
   "searchCityHint": "Hľadať mesto...",

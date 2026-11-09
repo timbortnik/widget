@@ -19,6 +19,8 @@ class A11yIds {
   static const String homeLocationSelector = 'home_location_selector';
   static const String homeOpenMeteoLink = 'home_open_meteo_link';
   static const String homeGithubLink = 'home_github_link';
+  // Settings button of the notice shown while battery usage is "Restricted".
+  static const String homeBackgroundSettingsButton = 'home_background_settings_button';
   // The hourly/weekly charts are plain Flutter `Image` widgets (PNG rasterized
   // natively), so a normal `Semantics` reaches them: they carry both a
   // resource-id (below) and a localized content-desc label. Tests can locate

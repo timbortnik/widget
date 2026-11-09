@@ -37,6 +37,7 @@
   "unknownLocation": "Tuntematon",
   "locationServicesOff": "Sijainti on pois päältä. Ota käyttöön laitteen asetuksista.",
   "locationPermissionDenied": "Sijaintilupa evätty. Ota käyttöön sovelluksen asetuksista.",
+  "widgetBackgroundRestricted": "Widget ei voi päivittyä taustalla. Salli taustakäyttö sovelluksen asetuksista.",
   "searchConnectionError": "Haku epäonnistui - tarkista yhteys",
   "selectLocation": "Valitse sijainti",
   "searchCityHint": "Hae kaupunkia...",

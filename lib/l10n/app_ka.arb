@@ -37,6 +37,7 @@
   "unknownLocation": "უცნობი",
   "locationServicesOff": "მდებარეობა გამორთულია. ჩართეთ მოწყობილობის პარამეტრებში.",
   "locationPermissionDenied": "მდებარეობის ნებართვა უარყოფილია. ჩართეთ აპის პარამეტრებში.",
+  "widgetBackgroundRestricted": "ვიჯეტი ფონურ რეჟიმში ვერ განახლდება. დაუშვით ფონური გამოყენება აპის პარამეტრებში.",
   "searchConnectionError": "ძიება ვერ მოხერხდა - შეამოწმეთ კავშირი",
   "selectLocation": "აირჩიეთ მდებარეობა",
   "searchCityHint": "მოძებნე ქალაქი...",

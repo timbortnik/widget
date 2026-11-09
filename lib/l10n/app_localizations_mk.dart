@@ -126,6 +126,10 @@ class AppLocalizationsMk extends AppLocalizations {
       'Дозволата за локација е одбиена. Овозможете во поставките на апликацијата.';
 
   @override
+  String get widgetBackgroundRestricted =>
+      'Виџетот не може да се ажурира во заднина. Дозволете користење во заднина во поставките на апликацијата.';
+
+  @override
   String get searchConnectionError =>
       'Не може да се пребарува - проверете ја врската';
 

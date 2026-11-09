@@ -37,6 +37,7 @@
   "unknownLocation": "Inconnu",
   "locationServicesOff": "La localisation est désactivée. Activer dans les paramètres.",
   "locationPermissionDenied": "Autorisation de localisation refusée. Activer dans les paramètres de l'application.",
+  "widgetBackgroundRestricted": "Le widget ne peut pas se mettre à jour en arrière-plan. Autoriser l'utilisation en arrière-plan dans les paramètres de l'application.",
   "searchConnectionError": "Recherche impossible - vérifiez votre connexion",
   "selectLocation": "Sélectionner un lieu",
   "searchCityHint": "Rechercher une ville...",

@@ -122,6 +122,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get locationPermissionDenied => '位置情報の権限が拒否されました。アプリの設定で有効にしてください。';
 
   @override
+  String get widgetBackgroundRestricted =>
+      'ウィジェットをバックグラウンドで更新できません。アプリの設定でバックグラウンドでの使用を許可してください。';
+
+  @override
   String get searchConnectionError => '検索できません - 接続を確認してください';
 
   @override

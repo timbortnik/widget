@@ -122,6 +122,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get locationPermissionDenied => '위치 권한이 거부되었습니다. 앱 설정에서 활성화하세요.';
 
   @override
+  String get widgetBackgroundRestricted =>
+      '위젯을 백그라운드에서 업데이트할 수 없습니다. 앱 설정에서 백그라운드 사용을 허용하세요.';
+
+  @override
   String get searchConnectionError => '검색 불가 - 연결을 확인하세요';
 
   @override

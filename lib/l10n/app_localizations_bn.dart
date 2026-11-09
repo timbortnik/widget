@@ -125,6 +125,10 @@ class AppLocalizationsBn extends AppLocalizations {
       'অবস্থানের অনুমতি অস্বীকৃত। অ্যাপ সেটিংসে সক্ষম করুন।';
 
   @override
+  String get widgetBackgroundRestricted =>
+      'উইজেট ব্যাকগ্রাউন্ডে আপডেট হতে পারে না। অ্যাপ সেটিংসে ব্যাকগ্রাউন্ড ব্যবহারের অনুমতি দিন।';
+
+  @override
   String get searchConnectionError =>
       'অনুসন্ধান করা যাচ্ছে না - আপনার সংযোগ পরীক্ষা করুন';
 
