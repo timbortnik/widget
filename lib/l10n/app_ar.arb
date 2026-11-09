@@ -37,6 +37,7 @@
   "unknownLocation": "غير معروف",
   "locationServicesOff": "الموقع متوقف. قم بتمكينه في إعدادات الجهاز.",
   "locationPermissionDenied": "تم رفض إذن الموقع. قم بتمكينه في إعدادات التطبيق.",
+  "widgetBackgroundRestricted": "لا يمكن للتطبيق المصغّر التحديث في الخلفية. اسمح بالاستخدام في الخلفية في إعدادات التطبيق.",
   "searchConnectionError": "تعذر البحث - تحقق من اتصالك",
   "selectLocation": "اختر الموقع",
   "searchCityHint": "ابحث عن مدينة...",

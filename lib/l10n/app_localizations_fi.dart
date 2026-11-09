@@ -125,6 +125,10 @@ class AppLocalizationsFi extends AppLocalizations {
       'Sijaintilupa evätty. Ota käyttöön sovelluksen asetuksista.';
 
   @override
+  String get widgetBackgroundRestricted =>
+      'Widget ei voi päivittyä taustalla. Salli taustakäyttö sovelluksen asetuksista.';
+
+  @override
   String get searchConnectionError => 'Haku epäonnistui - tarkista yhteys';
 
   @override

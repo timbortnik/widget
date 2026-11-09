@@ -125,6 +125,10 @@ class AppLocalizationsUk extends AppLocalizations {
       'Дозвіл на місцезнаходження відхилено. Увімкніть у налаштуваннях застосунку.';
 
   @override
+  String get widgetBackgroundRestricted =>
+      'Віджет не може оновлюватися у фоновому режимі. Дозвольте фонове використання в налаштуваннях застосунку.';
+
+  @override
   String get searchConnectionError =>
       'Не вдалося знайти - перевірте підключення';
 

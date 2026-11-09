@@ -125,6 +125,10 @@ class AppLocalizationsFr extends AppLocalizations {
       'Autorisation de localisation refusée. Activer dans les paramètres de l\'application.';
 
   @override
+  String get widgetBackgroundRestricted =>
+      'Le widget ne peut pas se mettre à jour en arrière-plan. Autoriser l\'utilisation en arrière-plan dans les paramètres de l\'application.';
+
+  @override
   String get searchConnectionError =>
       'Recherche impossible - vérifiez votre connexion';
 

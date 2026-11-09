@@ -37,6 +37,7 @@
   "unknownLocation": "Onbekend",
   "locationServicesOff": "Locatie staat uit. Schakel in via apparaatinstellingen.",
   "locationPermissionDenied": "Locatietoestemming geweigerd. Schakel in via app-instellingen.",
+  "widgetBackgroundRestricted": "De widget kan niet op de achtergrond bijwerken. Sta achtergrondgebruik toe via app-instellingen.",
   "searchConnectionError": "Kan niet zoeken - controleer je verbinding",
   "selectLocation": "Selecteer locatie",
   "searchCityHint": "Zoek stad...",

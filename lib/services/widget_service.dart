@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'widget_store.dart';
 
 /// Service for updating the home screen widget.
@@ -9,6 +10,23 @@ class WidgetService {
   static const _androidWidgetName = 'MeteogramWidgetProvider';
   static const _androidWeeklyWidgetName = 'MeteogramWeeklyWidgetProvider';
   static const _iosWidgetName = 'MeteogramWidget';
+  static const _channel = MethodChannel('org.bortnik.meteogram/svg');
+
+  /// Whether a placed widget can't refresh in the background because the user
+  /// set this app's battery usage to "Restricted" (background usage off).
+  /// See `WidgetUtils.isWidgetBackgroundRestricted` on the native side.
+  ///
+  /// False when the check fails: a missing hint is better than a wrong one.
+  Future<bool> isBackgroundRestricted() async {
+    try {
+      return await _channel.invokeMethod<bool>('isWidgetBackgroundRestricted') ?? false;
+    } on PlatformException catch (e) {
+      debugPrint('isWidgetBackgroundRestricted failed: ${e.message}');
+      return false;
+    } on MissingPluginException {
+      return false;
+    }
+  }
 
   /// Trigger a native widget update for all provider variants.
   /// The native code will generate SVGs from cached weather data.

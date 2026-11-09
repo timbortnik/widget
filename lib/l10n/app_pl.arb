@@ -37,6 +37,7 @@
   "unknownLocation": "Nieznane",
   "locationServicesOff": "Lokalizacja jest wyłączona. Włącz w ustawieniach urządzenia.",
   "locationPermissionDenied": "Odmowa dostępu do lokalizacji. Włącz w ustawieniach aplikacji.",
+  "widgetBackgroundRestricted": "Widżet nie może aktualizować się w tle. Zezwól na używanie w tle w ustawieniach aplikacji.",
   "searchConnectionError": "Nie można wyszukać - sprawdź połączenie",
   "selectLocation": "Wybierz lokalizację",
   "searchCityHint": "Szukaj miasta...",

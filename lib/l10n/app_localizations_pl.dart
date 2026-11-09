@@ -125,6 +125,10 @@ class AppLocalizationsPl extends AppLocalizations {
       'Odmowa dostępu do lokalizacji. Włącz w ustawieniach aplikacji.';
 
   @override
+  String get widgetBackgroundRestricted =>
+      'Widżet nie może aktualizować się w tle. Zezwól na używanie w tle w ustawieniach aplikacji.';
+
+  @override
   String get searchConnectionError => 'Nie można wyszukać - sprawdź połączenie';
 
   @override

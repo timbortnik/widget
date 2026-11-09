@@ -125,6 +125,10 @@ class AppLocalizationsBg extends AppLocalizations {
       'Достъпът до местоположението е отказан. Активирайте в настройките на приложението.';
 
   @override
+  String get widgetBackgroundRestricted =>
+      'Приспособлението не може да се обновява във фонов режим. Разрешете използването във фонов режим в настройките на приложението.';
+
+  @override
   String get searchConnectionError => 'Неуспешно търсене - проверете връзката';
 
   @override

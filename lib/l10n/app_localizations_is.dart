@@ -124,6 +124,10 @@ class AppLocalizationsIs extends AppLocalizations {
       'Staðsetningarheimild hafnað. Virkja í stillingum forrits.';
 
   @override
+  String get widgetBackgroundRestricted =>
+      'Græjan getur ekki uppfærst í bakgrunni. Leyfðu notkun í bakgrunni í stillingum forrits.';
+
+  @override
   String get searchConnectionError => 'Ekki tókst að leita - athugaðu tengingu';
 
   @override

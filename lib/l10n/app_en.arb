@@ -211,6 +211,10 @@
   "@locationPermissionDenied": {
     "description": "Snackbar message when location permission is denied; its Settings button opens this app's system settings page"
   },
+  "widgetBackgroundRestricted": "The widget can't update in the background. Allow background usage in app settings.",
+  "@widgetBackgroundRestricted": {
+    "description": "Notice on the home screen while this app's battery usage is set to Restricted (background usage off), which stops the home-screen widget from refreshing; its Settings button opens this app's system settings page"
+  },
 
   "searchConnectionError": "Unable to search - check your connection",
   "@searchConnectionError": {

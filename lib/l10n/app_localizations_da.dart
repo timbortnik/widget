@@ -125,6 +125,10 @@ class AppLocalizationsDa extends AppLocalizations {
       'Placeringstilladelse afvist. Aktivér i appindstillinger.';
 
   @override
+  String get widgetBackgroundRestricted =>
+      'Widgetten kan ikke opdatere i baggrunden. Tillad brug i baggrunden i appindstillinger.';
+
+  @override
   String get searchConnectionError => 'Kan ikke søge - tjek din forbindelse';
 
   @override

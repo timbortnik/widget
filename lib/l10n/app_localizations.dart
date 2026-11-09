@@ -364,6 +364,12 @@ abstract class AppLocalizations {
   /// **'Location permission denied. Enable in app settings.'**
   String get locationPermissionDenied;
 
+  /// Notice on the home screen while this app's battery usage is set to Restricted (background usage off), which stops the home-screen widget from refreshing; its Settings button opens this app's system settings page
+  ///
+  /// In en, this message translates to:
+  /// **'The widget can\'t update in the background. Allow background usage in app settings.'**
+  String get widgetBackgroundRestricted;
+
   /// Error message when city search fails due to network
   ///
   /// In en, this message translates to:

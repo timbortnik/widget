@@ -125,6 +125,10 @@ class AppLocalizationsAr extends AppLocalizations {
       'تم رفض إذن الموقع. قم بتمكينه في إعدادات التطبيق.';
 
   @override
+  String get widgetBackgroundRestricted =>
+      'لا يمكن للتطبيق المصغّر التحديث في الخلفية. اسمح بالاستخدام في الخلفية في إعدادات التطبيق.';
+
+  @override
   String get searchConnectionError => 'تعذر البحث - تحقق من اتصالك';
 
   @override

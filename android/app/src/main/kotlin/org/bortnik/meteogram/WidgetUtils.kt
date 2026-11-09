@@ -1,5 +1,6 @@
 package org.bortnik.meteogram
 
+import android.app.ActivityManager
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.BroadcastReceiver
@@ -220,6 +221,24 @@ object WidgetUtils {
     fun rerenderAllWidgetsIfNeeded(context: Context) {
         if (isRerenderNeeded(context)) {
             rerenderAllWidgetsNative(context)
+        }
+    }
+
+    /**
+     * Whether the widget is frozen by the user's battery setting: battery usage is
+     * "Restricted" (background usage off) and at least one widget is placed.
+     *
+     * A restricted app gets no alarms, jobs or BOOT_COMPLETED while in the
+     * background, so every refresh path waits until the app is opened. Without a
+     * placed widget there is nothing to warn about. Apps can't lift the
+     * restriction themselves; the user must change it in system settings.
+     */
+    fun isWidgetBackgroundRestricted(context: Context): Boolean {
+        val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        if (!activityManager.isBackgroundRestricted) return false
+        val appWidgetManager = AppWidgetManager.getInstance(context)
+        return WIDGET_PROVIDERS.any { providerClass ->
+            appWidgetManager.getAppWidgetIds(ComponentName(context, providerClass)).isNotEmpty()
         }
     }
 

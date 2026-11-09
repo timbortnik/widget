@@ -125,6 +125,10 @@ class AppLocalizationsTa extends AppLocalizations {
       'இட அனுமதி மறுக்கப்பட்டது. ஆப் அமைப்புகளில் இயக்கவும்.';
 
   @override
+  String get widgetBackgroundRestricted =>
+      'விட்ஜெட் பின்னணியில் புதுப்பிக்க முடியாது. ஆப் அமைப்புகளில் பின்னணிப் பயன்பாட்டை அனுமதிக்கவும்.';
+
+  @override
   String get searchConnectionError =>
       'தேட இயலவில்லை - இணைப்பைச் சரிபார்க்கவும்';
 

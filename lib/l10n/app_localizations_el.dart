@@ -125,6 +125,10 @@ class AppLocalizationsEl extends AppLocalizations {
       'Η άδεια τοποθεσίας απορρίφθηκε. Ενεργοποιήστε στις ρυθμίσεις της εφαρμογής.';
 
   @override
+  String get widgetBackgroundRestricted =>
+      'Το γραφικό στοιχείο δεν μπορεί να ενημερώνεται στο παρασκήνιο. Επιτρέψτε τη χρήση στο παρασκήνιο στις ρυθμίσεις της εφαρμογής.';
+
+  @override
   String get searchConnectionError =>
       'Αδυναμία αναζήτησης - ελέγξτε τη σύνδεση';
 

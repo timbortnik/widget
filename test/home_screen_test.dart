@@ -46,6 +46,9 @@ void main() {
   var mockPermission = 'granted';
   final openedSettings = <String>[];
 
+  /// Native battery check: battery usage "Restricted" with a widget placed.
+  var mockBackgroundRestricted = false;
+
   /// Setup mock method channels before each test
   setUp(() {
     // Use current timestamp to avoid triggering staleness refresh
@@ -53,6 +56,7 @@ void main() {
     mockServiceEnabled = true;
     mockPermission = 'granted';
     openedSettings.clear();
+    mockBackgroundRestricted = false;
     homeWidgetData = {};
 
     // Mock the native method channel: SVG generation, weather fetch, and the
@@ -105,6 +109,8 @@ void main() {
           case 'openAppSettings':
             openedSettings.add(methodCall.method);
             return true;
+          case 'isWidgetBackgroundRestricted':
+            return mockBackgroundRestricted;
           default:
             return null;
         }
@@ -419,6 +425,53 @@ void main() {
       // Should have search field
       expect(find.byType(TextField), findsOneWidget);
       expect(find.text('Search city...'), findsOneWidget);
+    });
+  });
+
+  group('HomeScreen background restriction notice', () {
+    const notice =
+        "The widget can't update in the background. Allow background usage in app settings.";
+
+    Future<void> pumpWithCachedData(WidgetTester tester) async {
+      homeWidgetData['last_weather_update'] = mockTimestamp;
+      homeWidgetData['current_temperature_celsius'] = mockTemperature;
+      homeWidgetData['cached_city_name'] = mockCityName;
+      homeWidgetData['cached_location_source'] = mockLocationSource;
+
+      await tester.pumpWidget(createTestApp());
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pump(const Duration(milliseconds: 500));
+    }
+
+    testWidgets('no notice while background usage is allowed', (tester) async {
+      await pumpWithCachedData(tester);
+
+      expect(find.text(notice), findsNothing);
+    });
+
+    testWidgets('restricted: notice shows, Settings opens app settings', (tester) async {
+      mockBackgroundRestricted = true;
+      await pumpWithCachedData(tester);
+
+      expect(find.text(notice), findsOneWidget);
+      await tester.tap(find.widgetWithText(TextButton, 'Settings'));
+      await tester.pump();
+      expect(openedSettings, ['openAppSettings']);
+    });
+
+    testWidgets('notice goes away on return once the restriction is lifted', (tester) async {
+      mockBackgroundRestricted = true;
+      await pumpWithCachedData(tester);
+      expect(find.text(notice), findsOneWidget);
+
+      // The user allows background usage in system settings and comes back.
+      mockBackgroundRestricted = false;
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(find.text(notice), findsNothing);
     });
   });
 

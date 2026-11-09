@@ -37,6 +37,7 @@
   "unknownLocation": "未知",
   "locationServicesOff": "位置信息已关闭。请在设备设置中启用。",
   "locationPermissionDenied": "位置权限被拒绝。请在应用设置中启用。",
+  "widgetBackgroundRestricted": "小部件无法在后台更新。请在应用设置中允许后台使用。",
   "searchConnectionError": "无法搜索 - 请检查您的连接",
   "selectLocation": "选择位置",
   "searchCityHint": "搜索城市...",

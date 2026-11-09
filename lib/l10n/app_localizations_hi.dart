@@ -125,6 +125,10 @@ class AppLocalizationsHi extends AppLocalizations {
       'स्थान अनुमति अस्वीकृत। ऐप सेटिंग्स में सक्षम करें।';
 
   @override
+  String get widgetBackgroundRestricted =>
+      'विजेट बैकग्राउंड में अपडेट नहीं हो सकता। ऐप सेटिंग्स में बैकग्राउंड उपयोग की अनुमति दें।';
+
+  @override
   String get searchConnectionError => 'खोज नहीं हो सकी - अपना कनेक्शन जांचें';
 
   @override

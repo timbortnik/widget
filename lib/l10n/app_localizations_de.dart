@@ -125,6 +125,10 @@ class AppLocalizationsDe extends AppLocalizations {
       'Standortberechtigung verweigert. In App-Einstellungen aktivieren.';
 
   @override
+  String get widgetBackgroundRestricted =>
+      'Das Widget kann sich im Hintergrund nicht aktualisieren. Hintergrundnutzung in App-Einstellungen erlauben.';
+
+  @override
   String get searchConnectionError =>
       'Suche fehlgeschlagen - Verbindung prüfen';
 

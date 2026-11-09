@@ -37,6 +37,7 @@
   "unknownLocation": "Neznámé",
   "locationServicesOff": "Poloha je vypnutá. Povolte v nastavení zařízení.",
   "locationPermissionDenied": "Oprávnění k poloze zamítnuto. Povolte v nastavení aplikace.",
+  "widgetBackgroundRestricted": "Widget se nemůže aktualizovat na pozadí. Povolte využití na pozadí v nastavení aplikace.",
   "searchConnectionError": "Nelze vyhledávat - zkontrolujte připojení",
   "selectLocation": "Vyberte umístění",
   "searchCityHint": "Hledat město...",

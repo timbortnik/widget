@@ -125,6 +125,10 @@ class AppLocalizationsHr extends AppLocalizations {
       'Dozvola za lokaciju odbijena. Omogućite u postavkama aplikacije.';
 
   @override
+  String get widgetBackgroundRestricted =>
+      'Widget se ne može ažurirati u pozadini. Dopustite korištenje u pozadini u postavkama aplikacije.';
+
+  @override
   String get searchConnectionError =>
       'Nije moguće pretraživati - provjerite vezu';
 

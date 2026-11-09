@@ -249,7 +249,8 @@ class LocationService {
     await LocationBridge.openLocationSettings();
   }
 
-  /// Open this app's system settings page, where location permission is granted.
+  /// Open this app's system settings page, where location permission is granted
+  /// (and battery usage is set).
   Future<void> openAppSettings() async {
     await LocationBridge.openAppSettings();
   }

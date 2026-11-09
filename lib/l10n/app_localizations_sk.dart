@@ -125,6 +125,10 @@ class AppLocalizationsSk extends AppLocalizations {
       'Povolenie na prístup k polohe zamietnuté. Povoľte v nastaveniach aplikácie.';
 
   @override
+  String get widgetBackgroundRestricted =>
+      'Miniaplikácia sa nemôže aktualizovať na pozadí. Povoľte používanie na pozadí v nastaveniach aplikácie.';
+
+  @override
   String get searchConnectionError =>
       'Nie je možné vyhľadávať - skontrolujte pripojenie';
 

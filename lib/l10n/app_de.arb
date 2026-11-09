@@ -37,6 +37,7 @@
   "unknownLocation": "Unbekannt",
   "locationServicesOff": "Standort ist deaktiviert. In Geräteeinstellungen aktivieren.",
   "locationPermissionDenied": "Standortberechtigung verweigert. In App-Einstellungen aktivieren.",
+  "widgetBackgroundRestricted": "Das Widget kann sich im Hintergrund nicht aktualisieren. Hintergrundnutzung in App-Einstellungen erlauben.",
   "searchConnectionError": "Suche fehlgeschlagen - Verbindung prüfen",
   "selectLocation": "Standort auswählen",
   "searchCityHint": "Stadt suchen...",

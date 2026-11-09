@@ -1,6 +1,10 @@
 package org.bortnik.meteogram
 
+import android.app.ActivityManager
+import android.appwidget.AppWidgetManager
+import android.content.ComponentName
 import android.content.Context
+import android.os.Build
 import android.view.View
 import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert.*
@@ -8,6 +12,8 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows.shadowOf
+import org.robolectric.annotation.Config
 
 /**
  * Unit tests for WidgetUtils using Robolectric.
@@ -276,5 +282,50 @@ class WidgetUtilsTest {
         setScreen(1080, 2400)
         assertEquals(Pair(0, 500), WidgetUtils.clampChartDimensions(context, 0, 500))
         assertEquals(Pair(-1, -1), WidgetUtils.clampChartDimensions(context, -1, -1))
+    }
+
+    private fun setBackgroundRestricted(restricted: Boolean) {
+        val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        shadowOf(activityManager).setBackgroundRestricted(restricted)
+    }
+
+    private fun placeWidget(widgetId: Int, providerClass: Class<*>) {
+        shadowOf(AppWidgetManager.getInstance(context))
+            .bindAppWidgetId(widgetId, ComponentName(context, providerClass))
+    }
+
+    @Test
+    @Config(sdk = [Build.VERSION_CODES.R]) // isBackgroundRestricted is API 28+; default run is API 23
+    fun `isWidgetBackgroundRestricted is false when background usage is allowed`() {
+        setBackgroundRestricted(false)
+        placeWidget(1, MeteogramWidgetProvider::class.java)
+
+        assertFalse(WidgetUtils.isWidgetBackgroundRestricted(context))
+    }
+
+    @Test
+    @Config(sdk = [Build.VERSION_CODES.R]) // isBackgroundRestricted is API 28+; default run is API 23
+    fun `isWidgetBackgroundRestricted is false when restricted but no widget is placed`() {
+        setBackgroundRestricted(true)
+
+        assertFalse(WidgetUtils.isWidgetBackgroundRestricted(context))
+    }
+
+    @Test
+    @Config(sdk = [Build.VERSION_CODES.R]) // isBackgroundRestricted is API 28+; default run is API 23
+    fun `isWidgetBackgroundRestricted is true when restricted with a 48h widget placed`() {
+        setBackgroundRestricted(true)
+        placeWidget(1, MeteogramWidgetProvider::class.java)
+
+        assertTrue(WidgetUtils.isWidgetBackgroundRestricted(context))
+    }
+
+    @Test
+    @Config(sdk = [Build.VERSION_CODES.R]) // isBackgroundRestricted is API 28+; default run is API 23
+    fun `isWidgetBackgroundRestricted is true when restricted with only a weekly widget placed`() {
+        setBackgroundRestricted(true)
+        placeWidget(2, MeteogramWeeklyWidgetProvider::class.java)
+
+        assertTrue(WidgetUtils.isWidgetBackgroundRestricted(context))
     }
 }

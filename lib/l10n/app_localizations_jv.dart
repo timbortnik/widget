@@ -125,6 +125,10 @@ class AppLocalizationsJv extends AppLocalizations {
       'Ijin lokasi ditolak. Aktifake ing setelan aplikasi.';
 
   @override
+  String get widgetBackgroundRestricted =>
+      'Widget ora bisa nganyari ing latar mburi. Idinake panggunaan latar mburi ing setelan aplikasi.';
+
+  @override
   String get searchConnectionError => 'Ora bisa nggoleki - priksa sambungan';
 
   @override

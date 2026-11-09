@@ -124,6 +124,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Location permission denied. Enable in app settings.';
 
   @override
+  String get widgetBackgroundRestricted =>
+      'The widget can\'t update in the background. Allow background usage in app settings.';
+
+  @override
   String get searchConnectionError =>
       'Unable to search - check your connection';
 

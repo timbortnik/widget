@@ -37,6 +37,7 @@
   "unknownLocation": "Necunoscut",
   "locationServicesOff": "Locația este dezactivată. Activați din setările dispozitivului.",
   "locationPermissionDenied": "Permisiunea de locație a fost refuzată. Activați din setările aplicației.",
+  "widgetBackgroundRestricted": "Widgetul nu se poate actualiza în fundal. Permiteți utilizarea în fundal din setările aplicației.",
   "searchConnectionError": "Nu se poate căuta - verificați conexiunea",
   "selectLocation": "Selectați locația",
   "searchCityHint": "Căutați oraș...",

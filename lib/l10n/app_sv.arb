@@ -37,6 +37,7 @@
   "unknownLocation": "Okänd",
   "locationServicesOff": "Plats är avstängd. Aktivera i enhetsinställningar.",
   "locationPermissionDenied": "Platsbehörighet nekad. Aktivera i appinställningar.",
+  "widgetBackgroundRestricted": "Widgeten kan inte uppdateras i bakgrunden. Tillåt bakgrundsanvändning i appinställningar.",
   "searchConnectionError": "Kan inte söka - kontrollera anslutningen",
   "selectLocation": "Välj plats",
   "searchCityHint": "Sök stad...",

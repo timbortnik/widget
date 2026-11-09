@@ -124,6 +124,10 @@ class AppLocalizationsNo extends AppLocalizations {
       'Plasseringstillatelse avslått. Aktiver i appinnstillinger.';
 
   @override
+  String get widgetBackgroundRestricted =>
+      'Modulen kan ikke oppdateres i bakgrunnen. Tillat bakgrunnsbruk i appinnstillinger.';
+
+  @override
   String get searchConnectionError => 'Kan ikke søke - sjekk tilkoblingen';
 
   @override
