@@ -18,10 +18,9 @@ This directory contains assets for the Google Play Store listing.
 
 ## Text Content
 
-See `metadata.txt` for:
-- App name (30 chars max)
-- Short description (80 chars max)
-- Full description (4000 chars max)
+The listing text (app name, short and full description, in every language) is
+maintained only in Play Console — it is not kept in this repo. Limits: name 30,
+short description 80, full description 4000 characters.
 
 ## Screenshot Tips
 
